@@ -80,6 +80,8 @@ Use the exact secret name `NUGET_API_KEY`.
 6. Run `Publish AstraFlow Packages`.
 7. Type `PUBLISH` when prompted.
 8. Verify all packages on NuGet.
+9. Install the packages into a clean sample project.
+10. Migrate NEXORA from local project references to NuGet `PackageReference` entries only after package verification succeeds.
 
 ## Local Package Verification
 
@@ -104,3 +106,28 @@ Manual workstation publishing is an emergency fallback only. Prefer GitHub Actio
 If manual publishing is approved, use `scripts/publish-nuget.ps1` from a private terminal session and remove the temporary environment variable immediately after publishing.
 
 Do not save the key in shell profiles, `.env` files, source files, or documentation.
+
+## After Publish: NEXORA Consumption
+
+After NuGet shows all three packages, update NEXORA to consume published packages:
+
+```xml
+<PackageReference Include="AstraFlow.Mediator" Version="1.0.0" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.0.0" />
+```
+
+Use the meta-package only where both mediator and mapper are intentionally needed:
+
+```xml
+<PackageReference Include="AstraFlow" Version="1.0.0" />
+```
+
+Then run:
+
+```powershell
+dotnet restore NEXORA-Backend/NEXORA-Backend.sln
+dotnet build NEXORA-Backend/NEXORA-Backend.sln --no-restore
+dotnet test NEXORA-Backend/NEXORA-Backend.sln --no-build --no-restore
+```
+
+Delete `packages/AstraFlow` from the NEXORA monorepo only after restore, build, tests, and package reference scans pass.

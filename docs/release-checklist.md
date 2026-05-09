@@ -40,3 +40,13 @@
 - Publish workflow is run manually by a release owner.
 - Packages are verified on NuGet after publishing.
 - Any exposed key is revoked immediately.
+
+## Post-Publish NEXORA Migration
+
+- A clean sample project can install `AstraFlow`, `AstraFlow.Mediator`, and `AstraFlow.Mapper`.
+- NEXORA project references to local AstraFlow source are replaced with NuGet package references.
+- NEXORA restore succeeds from NuGet.
+- NEXORA backend build succeeds.
+- NEXORA backend tests pass.
+- Scans show no active local `packages/AstraFlow` project references.
+- `packages/AstraFlow` is deleted from the NEXORA monorepo only after the migration is verified.
