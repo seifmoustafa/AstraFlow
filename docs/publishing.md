@@ -83,6 +83,25 @@ Use the exact secret name `NUGET_API_KEY`.
 9. Install the packages into a clean sample project.
 10. Migrate NEXORA from local project references to NuGet `PackageReference` entries only after package verification succeeds.
 
+## Listing Packages On NuGet
+
+After the first push, NuGet may show the packages under `Unlisted Packages`. Unlisted packages are published and installable by exact package ID and version, but they are hidden from search results.
+
+To list them publicly:
+
+1. Open `nuget.org/account/Packages`.
+2. Expand `Unlisted Packages`.
+3. For each package, click the edit button.
+4. Open the package version management page.
+5. Choose the listing/relist option for version `1.0.0`.
+6. Save the change.
+7. Repeat for:
+   - `AstraFlow`
+   - `AstraFlow.Mediator`
+   - `AstraFlow.Mapper`
+
+NuGet indexing can take a few minutes after relisting. During that time, the packages may install by exact ID before they appear in search.
+
 ## Local Package Verification
 
 Use local packing only to verify artifacts before release:
