@@ -9,11 +9,18 @@ on:
 
 jobs:
   publish:
-    if: ${{ github.event.inputs.confirm == 'PUBLISH' }}
     runs-on: windows-latest
     environment: nuget
 
     steps:
+      - name: Validate publish confirmation
+        shell: pwsh
+        run: |
+          $confirmation = "${{ github.event.inputs.confirm }}".Trim()
+          if ($confirmation -ne "PUBLISH") {
+            throw "Publish confirmation must be exactly PUBLISH after trimming whitespace."
+          }
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -41,4 +48,30 @@ jobs:
         run: dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
       - name: Publish
-        run: dotnet nuget push "src/**/bin/Release/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        shell: pwsh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+            throw "NUGET_API_KEY repository secret is not configured."
+          }
+
+          $packages = Get-ChildItem -Path "src" -Recurse -Filter "*.nupkg" |
+            Where-Object { $_.FullName -like "*\bin\Release\*" } |
+            Sort-Object FullName
+
+          if ($packages.Count -eq 0) {
+            throw "No .nupkg files were found under src/**/bin/Release."
+          }
+
+          foreach ($package in $packages) {
+            Write-Host "Publishing $($package.Name)"
+            dotnet nuget push $package.FullName `
+              --api-key $env:NUGET_API_KEY `
+              --source https://api.nuget.org/v3/index.json `
+              --skip-duplicate
+
+            if ($LASTEXITCODE -ne 0) {
+              throw "Publishing $($package.Name) failed with exit code $LASTEXITCODE."
+            }
+          }
