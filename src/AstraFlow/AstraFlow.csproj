@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>AstraFlow</PackageId>
+    <Title>AstraFlow</Title>
+    <Description>Convenience package for AstraFlow.Mediator and AstraFlow.Mapper.</Description>
+    <PackageTags>mediator;mapper;cqrs;mapping;dotnet</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AstraFlow.Mediator\AstraFlow.Mediator.csproj" />
+    <ProjectReference Include="..\AstraFlow.Mapper\AstraFlow.Mapper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

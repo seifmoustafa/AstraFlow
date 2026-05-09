@@ -1,0 +1,12 @@
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+*.nupkg
+*.snupkg
+*.trx
+coverage/
+artifacts/
+.vs/
+.idea/

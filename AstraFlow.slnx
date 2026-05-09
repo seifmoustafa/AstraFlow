@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/AspNetCoreSample/AspNetCoreSample.csproj" />
+    <Project Path="samples/BasicMediatorSample/BasicMediatorSample.csproj" />
+    <Project Path="samples/ExplicitMapperSample/ExplicitMapperSample.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/AstraFlow.Mapper/AstraFlow.Mapper.csproj" />
+    <Project Path="src/AstraFlow.Mediator/AstraFlow.Mediator.csproj" />
+    <Project Path="src/AstraFlow/AstraFlow.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AstraFlow.IntegrationTests/AstraFlow.IntegrationTests.csproj" />
+    <Project Path="tests/AstraFlow.Mapper.Tests/AstraFlow.Mapper.Tests.csproj" />
+    <Project Path="tests/AstraFlow.Mediator.Tests/AstraFlow.Mediator.Tests.csproj" />
+  </Folder>
+</Solution>

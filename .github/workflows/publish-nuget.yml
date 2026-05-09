@@ -1,0 +1,44 @@
+name: Publish AstraFlow Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type PUBLISH to push packages to NuGet.
+        required: true
+
+jobs:
+  publish:
+    if: ${{ github.event.inputs.confirm == 'PUBLISH' }}
+    runs-on: windows-latest
+    environment: nuget
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore AstraFlow.slnx --configfile NuGet.Config --disable-parallel
+
+      - name: Build
+        run: dotnet build AstraFlow.slnx -c Release --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Test
+        run: dotnet test AstraFlow.slnx -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Pack mediator
+        run: dotnet pack src/AstraFlow.Mediator/AstraFlow.Mediator.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Pack mapper
+        run: dotnet pack src/AstraFlow.Mapper/AstraFlow.Mapper.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Pack meta package
+        run: dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Publish
+        run: dotnet nuget push "src/**/bin/Release/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
