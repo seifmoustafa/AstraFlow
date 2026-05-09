@@ -137,9 +137,9 @@ The package folder includes CI, a gated publish workflow, security policy, contr
 - NEXORA consumes the package projects successfully,
 - package artifacts build with XML docs and symbols,
 - the API surface is reviewed for v1 stability,
-- a NuGet API key is configured in the release repository.
+- NuGet Trusted Publishing is configured, or a scoped GitHub Actions publishing secret is configured in the release repository.
 
-For first publish setup, create a dedicated GitHub repository, copy this folder into the repository root, configure `NUGET_API_KEY`, and run the gated publish workflow. See `docs/publishing.md`.
+For first publish setup, create a dedicated GitHub repository, copy this folder into the repository root, configure Trusted Publishing or the documented GitHub secret, and run the gated publish workflow. See `docs/publishing.md`.
 
 ## License
 

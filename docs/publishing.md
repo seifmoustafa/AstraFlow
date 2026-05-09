@@ -1,14 +1,14 @@
 # Publishing
 
-AstraFlow publishing is intentionally gated. Do not publish directly from a developer machine unless the release workflow is unavailable and the release owner approves the fallback.
+AstraFlow releases are gated and should be published from GitHub Actions, not from a developer workstation.
 
-## Repository Setup
+## Release Repository Setup
 
 Recommended flow:
 
-1. Create a dedicated GitHub repository for AstraFlow.
+1. Create a dedicated public GitHub repository for AstraFlow.
 2. Copy the contents of `packages/AstraFlow` into that repository root.
-3. Initialize git there:
+3. Initialize and push the release repository:
 
 ```powershell
 git init
@@ -19,64 +19,88 @@ git remote add origin https://github.com/astra-flow/astraflow.git
 git push -u origin main
 ```
 
-Do not run `git init` inside the monorepo folder as the long-term publishing shape. A nested repository inside NEXORA is easy to confuse with a submodule. Keep this monorepo folder as the development source until the dedicated repo is ready.
+Do not keep the release repository as a nested Git repository inside the NEXORA monorepo. A nested repository is easy to confuse with a submodule and can hide source changes from the parent repository.
 
-## Required Secrets
+## Preferred Publish Method
 
-Configure this repository secret before publishing:
+Use NuGet Trusted Publishing when it is available for the final GitHub repository. Trusted Publishing is preferred because it avoids long-lived API keys.
 
-- `NUGET_API_KEY`
+If Trusted Publishing is not available, use a scoped NuGet API key stored only as a GitHub Actions repository secret.
+
+## GitHub Secret Name
+
+The workflow expects a repository secret named:
+
+```text
+NUGET_API_KEY
+```
+
+This is the secret name only. It is not a key value. Never commit the real value to source control or documentation.
 
 ## NuGet API Key Setup
 
-For the screen at `nuget.org/account/apikeys`:
+Create the key at `nuget.org/account/apikeys` with the narrowest practical scope:
 
 - Key Name: `AstraFlow GitHub Actions Publish`
-- Expires In: choose the shortest practical period. `365 days` is acceptable for a first release, but rotate it before expiry.
-- Package Owner: your NuGet owner account or organization.
-- Select Scopes: `Push`
-- Push option: `Push new packages and package versions`
-- Select Packages: use glob pattern `AstraFlow*` for the first publish so all three package IDs are covered:
-  - `AstraFlow`
-  - `AstraFlow.Mediator`
-  - `AstraFlow.Mapper`
+- Expires In: shortest practical period; rotate before expiry.
+- Package Owner: the NuGet owner account or organization.
+- Scope: `Push`.
+- Push option: `Push new packages and package versions`.
+- Package selection for first publish: glob pattern `AstraFlow*`.
 
-After the first publish, you can tighten the key to exact package IDs if NuGet offers them in the package list.
+The first publish needs to cover:
 
-Copy the API key once and store it only in GitHub Actions secrets as `NUGET_API_KEY`. Do not paste it into source files, terminals you record, screenshots, chat, or documentation.
+- `AstraFlow`
+- `AstraFlow.Mediator`
+- `AstraFlow.Mapper`
 
-NuGet also offers Trusted Publishing for GitHub Actions in some accounts. If it is available for the final repository, prefer it because it avoids long-lived API keys.
+After the first publish, tighten the key to exact package IDs if NuGet offers them in the package list.
+
+Store the copied key value only in:
+
+`GitHub repository -> Settings -> Secrets and variables -> Actions -> New repository secret`
+
+Use the exact secret name `NUGET_API_KEY`.
+
+## Secret Handling Rules
+
+- Do not paste the key value into markdown files.
+- Do not paste the key value into workflow YAML.
+- Do not paste the key value into terminal commands as part of normal release work.
+- Do not send the key value in chat, screenshots, email, issue comments, or pull requests.
+- If the key is exposed, revoke it immediately and create a new one.
 
 ## Release Flow
 
 1. Update `Version`, `AssemblyVersion`, and `FileVersion` in `Directory.Build.props`.
 2. Update `CHANGELOG.md`.
-3. Run the release checklist.
-4. Create a tag such as `v1.0.0`.
-5. Run the NuGet publish workflow from GitHub Actions.
-6. Verify all three packages are visible on NuGet:
-   - `AstraFlow.Mediator`
-   - `AstraFlow.Mapper`
-   - `AstraFlow`
+3. Run `docs/release-checklist.md`.
+4. Create and push a release tag such as `v1.0.0`.
+5. Open GitHub Actions.
+6. Run `Publish AstraFlow Packages`.
+7. Type `PUBLISH` when prompted.
+8. Verify all packages on NuGet.
 
-## Manual Pack Commands
+## Local Package Verification
 
-```powershell
-dotnet build AstraFlow.slnx -c Release /m:1 /p:UseSharedCompilation=false
-dotnet test AstraFlow.slnx -c Release --no-build /m:1 /p:UseSharedCompilation=false
-dotnet pack src/AstraFlow.Mediator/AstraFlow.Mediator.csproj -c Release --no-build /m:1 /p:UseSharedCompilation=false
-dotnet pack src/AstraFlow.Mapper/AstraFlow.Mapper.csproj -c Release --no-build /m:1 /p:UseSharedCompilation=false
-dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build /m:1 /p:UseSharedCompilation=false
-```
-
-Or use:
+Use local packing only to verify artifacts before release:
 
 ```powershell
 .\scripts\pack.ps1
 ```
 
-## Manual Push Fallback
+Expected package artifacts:
 
-```powershell
-.\scripts\publish-nuget.ps1 -ApiKey $env:NUGET_API_KEY -SkipPack
-```
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.0.0.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.0.0.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.0.0.nupkg`
+
+Do not commit `bin/`, `obj/`, `.nupkg`, or `.snupkg` files.
+
+## Emergency Manual Publish
+
+Manual workstation publishing is an emergency fallback only. Prefer GitHub Actions.
+
+If manual publishing is approved, use `scripts/publish-nuget.ps1` from a private terminal session and remove the temporary environment variable immediately after publishing.
+
+Do not save the key in shell profiles, `.env` files, source files, or documentation.
