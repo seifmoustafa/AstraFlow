@@ -12,6 +12,22 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
 Push-Location $repoRoot
 
+function Invoke-DotNetStep {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    Write-Host "==> $Name"
+    & dotnet @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Name failed with exit code $LASTEXITCODE."
+    }
+}
+
 try {
     if (-not $SkipPack) {
         & .\scripts\pack.ps1 -Configuration $Configuration
@@ -23,10 +39,16 @@ try {
     }
 
     foreach ($package in $packages) {
-        dotnet nuget push $package.FullName `
-            --api-key $ApiKey `
-            --source https://api.nuget.org/v3/index.json `
-            --skip-duplicate
+        Invoke-DotNetStep "Publish $($package.Name)" @(
+            "nuget",
+            "push",
+            $package.FullName,
+            "--api-key",
+            $ApiKey,
+            "--source",
+            "https://api.nuget.org/v3/index.json",
+            "--skip-duplicate"
+        )
     }
 }
 finally {
