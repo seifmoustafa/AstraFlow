@@ -10,14 +10,16 @@ Install the package that matches the surface you need:
 
 - `AstraFlow.Mediator` for CQRS dispatch and notifications.
 - `AstraFlow.Mapper` for explicit object mapping and projections.
+- `AstraFlow.Diagnostics` for registration and validation reports.
 - `AstraFlow` for both.
 
 AstraFlow currently targets `net10.0`. .NET 10 is an active LTS release supported by Microsoft until November 14, 2028.
 
 ```powershell
-dotnet add package AstraFlow.Mediator --version 1.0.1
-dotnet add package AstraFlow.Mapper --version 1.0.1
-dotnet add package AstraFlow --version 1.0.1
+dotnet add package AstraFlow.Mediator --version 1.1.0
+dotnet add package AstraFlow.Mapper --version 1.1.0
+dotnet add package AstraFlow.Diagnostics --version 1.1.0
+dotnet add package AstraFlow --version 1.1.0
 ```
 
 Use only the package you need. If a project only sends requests, install `AstraFlow.Mediator`. If a project only maps DTOs, install `AstraFlow.Mapper`. Use the meta-package when both are intentionally part of the same project.
@@ -176,3 +178,20 @@ dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore
 ```
 
 For release details, see [Publishing](publishing.md).
+
+## 10. Add Diagnostics For Development And CI
+
+```csharp
+services.AddAstraFlowDiagnostics(options =>
+{
+    options.AssemblyMarkerTypes.Add(typeof(CreateOrderCommand));
+    options.AssemblyMarkerTypes.Add(typeof(CustomerMappingRule));
+});
+```
+
+```csharp
+var reporter = provider.GetRequiredService<IAstraFlowDiagnosticsReporter>();
+Console.WriteLine(reporter.CreateMarkdownReport());
+```
+
+Diagnostics should be registered after mediator and mapper so it captures the final AstraFlow service snapshot. See [Diagnostics](diagnostics.md).

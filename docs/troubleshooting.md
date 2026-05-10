@@ -107,7 +107,7 @@ Publishing with zero handlers is valid. Confirm:
 
 ### Query Provider Cannot Translate Projection
 
-AstraFlow v1.0.1 applies the expression but does not validate provider translation. If EF Core or another provider cannot translate it:
+AstraFlow v1.1.0 applies the expression but does not validate provider translation. If EF Core or another provider cannot translate it:
 
 - remove service calls from the expression,
 - avoid runtime mapper calls inside `Select`,
@@ -142,3 +142,12 @@ That is expected for invalid input when your codec returns null. Treat null as "
 | XML docs missing | Confirm `GenerateDocumentationFile` is true and the `.nupkg` contains `lib/net10.0/*.xml`. |
 | Restore fails due external config permissions | Use an explicit `NuGet.Config` and set `DOTNET_CLI_HOME` to a writable folder. |
 
+## Diagnostics Findings
+
+| Code | Meaning | Fix |
+| --- | --- | --- |
+| `AFD101` | Multiple request handlers are registered for the same closed request handler service. | Keep one request handler per request/response pair. |
+| `AFD102` | A request implements multiple `IRequest<TResponse>` contracts. | Split it into separate request types. |
+| `AFD103` | A scanned request has no registered handler. | Add the handler or include the handler assembly marker. |
+| `AFD201` | Handler, behavior, or mapping rule is singleton. | Prefer scoped lifetime unless singleton is deliberate. |
+| `AFD301` | Mapper catalog validation failed. | Fix declared mappings, duplicate pairs, undeclared rules, or `CanMap` drift. |

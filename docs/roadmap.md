@@ -76,6 +76,30 @@ Purpose:
 - Provides `AddAstraFlow(...)`.
 - Adds no hidden runtime behavior by default.
 
+### `AstraFlow.Diagnostics`
+
+Purpose:
+
+- Report registered request handlers.
+- Report registered notification handlers.
+- Report registered pipeline behaviors.
+- Report registered mapping rules.
+- Report registered projections.
+- Produce stable findings with severity and diagnostic codes.
+- Render reports as in-memory objects, JSON, or Markdown.
+- Provide a summary object that can be used by health-check-style code without depending on ASP.NET Core.
+
+Current v1.1 public concepts:
+
+- `IAstraFlowDiagnosticsReporter`
+- `AstraFlowDiagnosticsOptions`
+- `AstraFlowDiagnosticReport`
+- `AstraFlowDiagnosticsSummary`
+- `AstraFlowDiagnosticFinding`
+- `AstraFlowDiagnosticRegistration`
+- `DiagnosticSeverity`
+- `AddAstraFlowDiagnostics(...)`
+
 ## v1 Status
 
 v1 is the stable explicit core. The implementation is intentionally focused and production-oriented.
@@ -130,6 +154,7 @@ v1 is the stable explicit core. The implementation is intentionally focused and 
 - Release checklist.
 - Local pack script.
 - Samples for mediator, mapper, and ASP.NET Core integration.
+- Diagnostics reporting and diagnostics sample.
 
 ## v1 Non-Goals
 
@@ -159,7 +184,7 @@ Before first public publish:
 
 - `dotnet build packages/AstraFlow/AstraFlow.slnx -c Release` passes.
 - `dotnet test packages/AstraFlow/AstraFlow.slnx -c Release` passes.
-- `dotnet pack` works for all three packages.
+- `dotnet pack` works for all package projects.
 - Generated packages contain DLL, PDB, XML docs, README, LICENSE, and `.nuspec`.
 - GitHub Actions CI passes on the public repository.
 - Publish workflow requires manual confirmation.
@@ -179,10 +204,11 @@ Before first public publish:
 5. Create tag `v1.0.0`.
 6. Run the gated publish workflow.
 7. Type `PUBLISH` in the workflow input.
-8. Verify all three packages appear on NuGet:
+8. Verify all package projects appear on NuGet:
    - `AstraFlow`
    - `AstraFlow.Mediator`
    - `AstraFlow.Mapper`
+   - `AstraFlow.Diagnostics`
 9. Install each package into a clean sample project.
 10. Only then migrate NEXORA from local project references to package references.
 
@@ -195,14 +221,15 @@ Do not delete `packages/AstraFlow` from the NEXORA monorepo until the published 
 In NEXORA backend projects that currently reference local AstraFlow projects, replace project references with package references:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.0.1" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.0.1" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.1.0" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.1.0" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.1.0" />
 ```
 
 Use the meta-package only where both are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.0.1" />
+<PackageReference Include="AstraFlow" Version="1.1.0" />
 ```
 
 ### Step 2: Restore And Build
@@ -296,6 +323,10 @@ Goal:
 
 Make operational failures easier to understand before adding advanced mapping or generation.
 
+Status:
+
+Implemented in `AstraFlow.Diagnostics` v1.1.0.
+
 Planned package:
 
 - `AstraFlow.Diagnostics`
@@ -322,6 +353,15 @@ Features:
 - package extension:
   - `services.AddAstraFlowDiagnostics(...)`
 - no hard dependency on ASP.NET Core.
+
+Implemented finding codes:
+
+- `AFD000`: registration counts discovered,
+- `AFD101`: duplicate request handlers,
+- `AFD102`: request type has multiple request contracts,
+- `AFD103`: scanned request type has no handler,
+- `AFD201`: singleton lifetime warning for handlers, behaviors, or mapping rules,
+- `AFD301`: mapper catalog validation failure.
 
 Acceptance gates:
 

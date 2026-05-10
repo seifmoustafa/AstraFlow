@@ -119,7 +119,7 @@ Expected behavior:
 - Missing item rules fail with the same missing-rule error.
 - Strings are not treated as collections.
 
-Supported destination shapes in v1.0.1:
+Supported destination shapes in v1.1.0:
 
 - arrays
 - `List<T>`
@@ -195,7 +195,7 @@ Expected behavior:
 
 - `ProjectWith` applies the expression to the query.
 - The LINQ provider receives the expression.
-- AstraFlow does not validate provider translation in v1.0.1.
+- AstraFlow does not validate provider translation in v1.1.0.
 
 Provider-aware projection validation is planned for a later package.
 
@@ -233,4 +233,3 @@ Expected behavior:
 - `SecureIdMapper.Encrypt(Guid?)` returns null for null input.
 - `SecureIdMapper.TryDecrypt(string?)` returns a `Guid?`.
 - Secrets, keys, algorithms, and rotation remain outside AstraFlow.
-

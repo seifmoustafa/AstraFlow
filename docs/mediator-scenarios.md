@@ -67,7 +67,7 @@ This is invalid:
 public sealed record BadRequest : IRequest<string>, IRequest<int>;
 ```
 
-AstraFlow v1.0.1 rejects this. It cannot safely know whether the caller intended the string response or the integer response. Split the request into two distinct request types instead.
+AstraFlow rejects this. It cannot safely know whether the caller intended the string response or the integer response. Split the request into two distinct request types instead.
 
 ## Handler Registration
 
@@ -152,7 +152,7 @@ public sealed class SendEmailHandler : INotificationHandler<OrderCreated>
 }
 ```
 
-Notifications are sequential in v1.0.1. AstraFlow does not run handlers in parallel.
+Notifications are sequential in v1.1.0. AstraFlow does not run handlers in parallel.
 
 ## Notification Failure Policies
 
@@ -180,4 +180,3 @@ services.Configure<NotificationPublishOptions>(options =>
 | `IMediator` | Composition code genuinely needs both roles. |
 
 Prefer the narrowest interface. It makes dependencies easier to read and test.
-

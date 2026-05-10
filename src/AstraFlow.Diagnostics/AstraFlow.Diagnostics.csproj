@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>AstraFlow.Diagnostics</PackageId>
+    <Title>AstraFlow Diagnostics</Title>
+    <Description>Framework-neutral diagnostics reporting for AstraFlow mediator, mapper, pipeline, projection, and mapping registrations.</Description>
+    <PackageTags>diagnostics;mediator;mapper;cqrs;mapping;dotnet</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AstraFlow.Mediator\AstraFlow.Mediator.csproj" />
+    <ProjectReference Include="..\AstraFlow.Mapper\AstraFlow.Mapper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

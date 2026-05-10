@@ -2,6 +2,13 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.1.0
+
+- Added `AstraFlow.Diagnostics` with framework-neutral registration reports for request handlers, notification handlers, pipeline behaviors, mapping rules, and projections.
+- Added severity-coded findings, including duplicate request handlers, ambiguous request contracts, missing request handlers, singleton lifetime warnings, and mapper catalog validation failures.
+- Added in-memory diagnostics reports, camelCase JSON output, Markdown output, and a health-check-ready summary object.
+- Added diagnostics tests, a diagnostics sample, CI packing, publishing workflow support, and documentation.
+
 ## 1.0.1
 
 - Hardened mediator dispatch so request types that implement multiple `IRequest<TResponse>` contracts fail with a clear diagnostic instead of choosing an arbitrary response type.

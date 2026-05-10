@@ -1,8 +1,6 @@
 # AstraFlow
 
-<p align="center">
-  <img src="assets/branding/astraflow-icon.png" alt="AstraFlow package icon" width="160" />
-</p>
+![AstraFlow package icon](https://raw.githubusercontent.com/seifmoustafa/AstraFlow/main/assets/branding/astraflow-icon.png)
 
 AstraFlow is a MIT-licensed .NET package family for explicit CQRS dispatch and source-auditable object mapping.
 
@@ -14,23 +12,25 @@ It was built to keep production applications free from runtime license checks, h
 | --- | --- |
 | `AstraFlow.Mediator` | Request/response dispatch, notification publishing, pipeline behaviors, handler scanning, duplicate handler detection, and optional handler coverage validation. |
 | `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, explicit LINQ projections, and secure ID mapping abstractions. |
+| `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
 | `AstraFlow` | Convenience package referencing both mediator and mapper with one registration method. |
 
 ## Documentation Map
 
 | Document | Read When |
 | --- | --- |
-| [Getting Started](docs/getting-started.md) | You want the shortest path from install to working mediator and mapper usage. |
-| [API Reference](docs/api-reference.md) | You need every public type, method, option, and expected behavior in one table-driven reference. |
-| [Architecture](docs/architecture.md) | You want to understand the package design, runtime flow, dependency boundaries, and non-goals. |
-| [Mediator Guide](docs/mediator.md) | You are using requests, handlers, notifications, or pipeline behaviors. |
-| [Mediator Scenarios](docs/mediator-scenarios.md) | You want expected behavior for success cases, missing handlers, duplicate handlers, ambiguous requests, pipeline order, and notification failures. |
-| [Mapper Guide](docs/mapper.md) | You are writing mapping rules, projections, validation, or secure ID mapping. |
-| [Mapper Scenarios](docs/mapper-scenarios.md) | You want expected behavior for object mapping, nulls, collections, validation failures, projections, and secure IDs. |
-| [Troubleshooting](docs/troubleshooting.md) | You hit an exception and want the likely cause and fix. |
-| [Community Release Guide](docs/community-release-guide.md) | You are preparing the `v1.0.1` repo push, tag, package verification, and community-facing release notes. |
-| [Roadmap](docs/roadmap.md) | You want the v1.0.1 patch scope and the future diagnostics/projection/testing roadmap. |
-| [Publishing](docs/publishing.md) | You are preparing or verifying a NuGet release. |
+| [Getting Started](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/getting-started.md) | You want the shortest path from install to working mediator and mapper usage. |
+| [API Reference](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/api-reference.md) | You need every public type, method, option, and expected behavior in one table-driven reference. |
+| [Architecture](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/architecture.md) | You want to understand the package design, runtime flow, dependency boundaries, and non-goals. |
+| [Mediator Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator.md) | You are using requests, handlers, notifications, or pipeline behaviors. |
+| [Mediator Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator-scenarios.md) | You want expected behavior for success cases, missing handlers, duplicate handlers, ambiguous requests, pipeline order, and notification failures. |
+| [Mapper Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mapper.md) | You are writing mapping rules, projections, validation, or secure ID mapping. |
+| [Mapper Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mapper-scenarios.md) | You want expected behavior for object mapping, nulls, collections, validation failures, projections, and secure IDs. |
+| [Diagnostics Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/diagnostics.md) | You want JSON or Markdown reports of handlers, behaviors, mappings, projections, and diagnostics findings. |
+| [Troubleshooting](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/troubleshooting.md) | You hit an exception and want the likely cause and fix. |
+| [Community Release Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/community-release-guide.md) | You are preparing the repo push, tag, package verification, and community-facing release notes. |
+| [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | You want the completed v1.1 diagnostics scope and the future projection/testing roadmap. |
+| [Publishing](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/publishing.md) | You are preparing or verifying a NuGet release. |
 
 ## Target Framework
 
@@ -45,6 +45,7 @@ AstraFlow currently targets `net10.0`. Per Microsoft's .NET support policy, .NET
 | `services.AddAstraFlowMediator(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and scan marker assemblies without request coverage validation. | `IMediator`, `ISender`, `IPublisher`, request handlers, and notification handlers are available from DI. |
 | `services.AddAstraFlowMediator(bool validateRequestCoverage, params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and optionally fail startup when scanned requests have no handler or ambiguous contracts. | Same registration as above, with extra validation when enabled. |
 | `services.AddAstraFlowMapper(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mapper` | Register mapper services and scan marker assemblies for mapping rules. | `IMapper`, `IObjectMappingValidator`, `SecureIdMapper`, and startup validation are registered. |
+| `services.AddAstraFlowDiagnostics(Action<AstraFlowDiagnosticsOptions>?)` | `AstraFlow.Diagnostics` | Register diagnostics after mediator/mapper services so it can snapshot registrations. | `IAstraFlowDiagnosticsReporter` can create in-memory, JSON, and Markdown reports. |
 | `services.AddAstraFlow(bool validateRequestCoverage = false, params Type[] assemblyMarkerTypes)` | `AstraFlow` | Register mediator and mapper together. | Combined setup for applications that intentionally use both packages. |
 
 ### Mediator
@@ -76,6 +77,16 @@ AstraFlow currently targets `net10.0`. Per Microsoft's .NET support policy, .NET
 | `query.ProjectWith(...)` | Apply an explicit LINQ projection. | Returns `IQueryable<TDestination>` using the supplied expression. |
 | `ISecureIdCodec` | Plug in application-owned ID encryption/decryption. | AstraFlow stays decoupled from secrets and algorithms. |
 | `SecureIdMapper` | Use secure ID conversion inside mapping rules. | Converts required or optional `Guid` values to encrypted strings and attempts decryption. |
+
+### Diagnostics
+
+| API | Use It For | Expected Result |
+| --- | --- | --- |
+| `AddAstraFlowDiagnostics(...)` | Add diagnostics reporting after core AstraFlow registration. | Captures service descriptors and registers the diagnostics reporter. |
+| `IAstraFlowDiagnosticsReporter.CreateReport()` | Create an in-memory report. | Returns registrations, findings, and a health-check-ready summary object. |
+| `IAstraFlowDiagnosticsReporter.CreateJsonReport()` | Export diagnostics for tools or CI. | Returns deterministic camelCase JSON. |
+| `IAstraFlowDiagnosticsReporter.CreateMarkdownReport()` | Export human-readable diagnostics. | Returns a Markdown report with summary, findings, and registration tables. |
+| `DiagnosticSeverity` | Classify findings. | Uses `Info`, `Warning`, `Error`, and `Fatal`. |
 
 ## Design Principles
 
@@ -186,13 +197,41 @@ Policies:
 - `Continue`: log failures and run remaining handlers.
 - `Aggregate`: run all handlers, then throw one `AggregateException`.
 
+## Quick Start: Diagnostics
+
+Register diagnostics after mediator and mapper services:
+
+```csharp
+using AstraFlow.Diagnostics;
+
+services.AddAstraFlowMediator(typeof(CreateInvoiceCommand));
+services.AddAstraFlowMapper(typeof(UserMappingRule));
+services.AddAstraFlowDiagnostics(options =>
+{
+    options.AssemblyMarkerTypes.Add(typeof(CreateInvoiceCommand));
+    options.AssemblyMarkerTypes.Add(typeof(UserMappingRule));
+});
+```
+
+Create reports:
+
+```csharp
+var reporter = provider.GetRequiredService<IAstraFlowDiagnosticsReporter>();
+
+var report = reporter.CreateReport();
+var json = reporter.CreateJsonReport();
+var markdown = reporter.CreateMarkdownReport();
+```
+
+Diagnostics are framework-neutral and do not expose request payloads, DTO payloads, secrets, tokens, or connection strings.
+
 ## v1 Non-Goals
 
 AstraFlow v1 intentionally does not include convention mapping, flattening, reverse-map generation, compatibility shims, source generators, or analyzers. Those belong in optional packages after the explicit core is stable in real production use.
 
 ## Roadmap
 
-The long-term plan is to add optional convention mapping, projection validation, diagnostics, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, EF Core helpers, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
+The long-term plan is to continue improving diagnostics, then add projection validation, testing support, optional convention mapping, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, EF Core helpers, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
 
 ## Branding
 

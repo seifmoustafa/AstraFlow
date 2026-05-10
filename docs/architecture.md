@@ -4,7 +4,7 @@ AstraFlow is a small explicit application-flow package family. The core idea is 
 
 ## Design Goals
 
-| Goal | What It Means In v1.0.1 |
+| Goal | What It Means In v1.1.0 |
 | --- | --- |
 | Explicit flow | Requests declare response types. Handlers are concrete classes. Mapping rules are code, not naming magic. |
 | Clear failure modes | Missing handlers, duplicate handlers, ambiguous request contracts, missing mappings, duplicate mappings, and invalid mapping catalogs throw actionable exceptions. |
@@ -18,6 +18,8 @@ AstraFlow is a small explicit application-flow package family. The core idea is 
 `AstraFlow.Mediator` owns in-process dispatch. It knows about requests, handlers, notifications, notification handlers, pipeline behaviors, DI registration, and notification failure policy. It does not know about validation frameworks, web endpoints, database transactions, authorization policies, or result wrappers.
 
 `AstraFlow.Mapper` owns explicit runtime mapping and basic projection helpers. It knows about mapping rules, declared mapping catalogs, collection mapping, startup validation, query projection expressions, and secure ID abstraction. It does not know about application encryption keys, provider-specific SQL translation, convention mapping, or DTO security policies.
+
+`AstraFlow.Diagnostics` owns framework-neutral reporting. It inspects service registrations, reports findings with stable severity codes, and renders in-memory, JSON, or Markdown reports. It does not own web health endpoints, telemetry export, payload logging, or remediation.
 
 `AstraFlow` is only a convenience package. It references mediator and mapper and provides `AddAstraFlow(...)`. It should not grow hidden runtime behavior.
 
@@ -68,6 +70,17 @@ This keeps the package honest: if no rule exists, mapping fails instead of guess
 
 This catches drift such as declaring `Order -> OrderDto` but accidentally implementing `CanMap` for `Invoice -> InvoiceDto`.
 
+## Diagnostics Reporting Flow
+
+1. The application registers mediator and/or mapper services.
+2. The application calls `AddAstraFlowDiagnostics(...)`.
+3. Diagnostics captures a deterministic snapshot of the current service descriptors.
+4. A caller resolves `IAstraFlowDiagnosticsReporter`.
+5. The reporter creates an in-memory report, JSON report, or Markdown report.
+6. The report lists registrations, findings, and a health-check-ready summary.
+
+Diagnostics should be registered after AstraFlow services. If more services are added later, call diagnostics registration after those additions so the snapshot is complete.
+
 ## Dependency Injection Model
 
 AstraFlow uses Microsoft.Extensions.DependencyInjection. Services are registered as scoped by default because handlers, mapping rules, and codecs frequently depend on scoped application services. This is the conservative default for web applications, background workers, and modular monoliths.
@@ -84,7 +97,9 @@ AstraFlow does not map by convention in v1. Sensitive fields are copied only if 
 
 The package also avoids request payload logging. Future diagnostics and observability packages must redact by default.
 
-## Non-Goals In v1.0.1
+Diagnostics reports include type names, service categories, lifetimes, counts, and exception messages from validation. They do not inspect request payloads, DTO payloads, encrypted ID values, connection strings, tokens, or secret configuration values.
+
+## Non-Goals In v1.1.0
 
 - No automatic convention mapping.
 - No automatic flattening.
@@ -97,4 +112,3 @@ The package also avoids request payload logging. Future diagnostics and observab
 - No result type, tenant, permission, or validation framework coupling.
 
 These are intentional boundaries, not missing implementation.
-

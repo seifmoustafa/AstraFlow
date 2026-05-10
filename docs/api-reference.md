@@ -1,6 +1,6 @@
 # API Reference
 
-This reference describes the public AstraFlow v1.0.1 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow v1.1.0 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
@@ -8,6 +8,7 @@ This reference describes the public AstraFlow v1.0.1 API surface. It is intentio
 | --- | --- | --- |
 | `AstraFlow.Mediator` | `AstraFlow.Mediator` | Request dispatch, notifications, pipeline behaviors, handler scanning, and mediator options. |
 | `AstraFlow.Mapper` | `AstraFlow.Mapper` | Explicit object mapping, mapping validation, projections, and secure ID abstractions. |
+| `AstraFlow.Diagnostics` | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reporting for AstraFlow registrations and validation findings. |
 | `AstraFlow` | `AstraFlow` | Convenience registration for mediator and mapper together. |
 
 ## Registration APIs
@@ -17,6 +18,7 @@ This reference describes the public AstraFlow v1.0.1 API surface. It is intentio
 | `AddAstraFlowMediator` | `IServiceCollection AddAstraFlowMediator(this IServiceCollection services, params Type[] assemblyMarkerTypes)` | Logging, notification options, scoped `IMediator`, scoped `ISender`, scoped `IPublisher`, closed request handlers, and notification handlers from marker assemblies. | Throws `ArgumentNullException` when `services` is null. Throws for duplicate request handlers discovered during scanning. |
 | `AddAstraFlowMediator` | `IServiceCollection AddAstraFlowMediator(this IServiceCollection services, bool validateRequestCoverage, params Type[] assemblyMarkerTypes)` | Same as above, with optional request coverage validation. | When validation is true, throws if a concrete scanned request has no handler or implements multiple request contracts. |
 | `AddAstraFlowMapper` | `IServiceCollection AddAstraFlowMapper(this IServiceCollection services, params Type[] assemblyMarkerTypes)` | Mapper options, scoped `SecureIdMapper`, scoped `IMapper`, scoped `IObjectMappingValidator`, startup validator hosted service, and mapping rules from marker assemblies. | Throws `ArgumentNullException` when `services` is null. Startup validation may later throw mapping catalog errors. |
+| `AddAstraFlowDiagnostics` | `IServiceCollection AddAstraFlowDiagnostics(this IServiceCollection services, Action<AstraFlowDiagnosticsOptions>? configure = null)` | Diagnostics options, a captured service descriptor snapshot, and `IAstraFlowDiagnosticsReporter`. | Throws `ArgumentNullException` when `services` is null. Call after core AstraFlow registration for a complete report. |
 | `AddAstraFlow` | `IServiceCollection AddAstraFlow(this IServiceCollection services, bool validateRequestCoverage = false, params Type[] assemblyMarkerTypes)` | Calls mediator and mapper registration using the same marker assemblies. | Same failure cases as mediator and mapper registration. |
 
 Marker types are used only to find assemblies. Passing `typeof(Program)` scans the assembly containing `Program`. Passing `typeof(SomeHandler)` scans the assembly containing that handler. Null marker entries are ignored by mediator and mapper registration.
@@ -125,3 +127,37 @@ Each item is mapped through the same explicit rule lookup. Collection mapping do
 | `SecureIdMapper` | Scoped | Depends on application-provided `ISecureIdCodec`. |
 | Mapping startup validator | Hosted service | Runs once at host startup when enabled. |
 
+## Diagnostics Types
+
+| Type | Kind | Purpose |
+| --- | --- | --- |
+| `IAstraFlowDiagnosticsReporter` | Interface | Creates in-memory, JSON, and Markdown diagnostics reports. |
+| `AstraFlowDiagnosticsOptions` | Class | Configures diagnostics scanning and validation behavior. |
+| `AstraFlowDiagnosticReport` | Record | Complete deterministic diagnostics report. |
+| `AstraFlowDiagnosticsSummary` | Record | Count summary suitable for health-check-style decisions. |
+| `AstraFlowDiagnosticFinding` | Record | One severity-coded diagnostics finding. |
+| `AstraFlowDiagnosticRegistration` | Record | One discovered AstraFlow service registration. |
+| `DiagnosticSeverity` | Enum | Finding severity: `Info`, `Warning`, `Error`, or `Fatal`. |
+
+## Diagnostics Methods And Properties
+
+| API | Signature | What Happens | Important Notes |
+| --- | --- | --- | --- |
+| `CreateReport` | `AstraFlowDiagnosticReport CreateReport()` | Builds a deterministic report from the captured service descriptors and optional validation checks. | Does not include payload values or secrets. |
+| `CreateJsonReport` | `string CreateJsonReport(JsonSerializerOptions? jsonOptions = null)` | Serializes the report as JSON. | Default output is indented camelCase JSON. |
+| `CreateMarkdownReport` | `string CreateMarkdownReport()` | Renders summary, findings, and registration tables as Markdown. | Useful for local diagnostics, CI artifacts, and issue reports. |
+| `AstraFlowDiagnosticsOptions.AssemblyMarkerTypes` | `IList<Type>` | Adds assemblies to scan for request coverage. | Use this when request contracts live outside handler implementation assemblies. |
+| `ValidateRequestCoverage` | `bool` default `true` | Reports missing request handlers and ambiguous request contracts. | Diagnostics only; it does not change mediator registration behavior. |
+| `ValidateMappingCatalog` | `bool` default `true` | Resolves mapper validator and reports catalog validation failures. | May instantiate mapping rules through DI, same as mapper startup validation. |
+| `IncludeInfoFindings` | `bool` default `true` | Adds count-oriented informational findings. | Disable when reports should include warnings/errors only. |
+
+## Diagnostics Finding Codes
+
+| Code | Severity | Meaning |
+| --- | --- | --- |
+| `AFD000` | `Info` | Registration counts were discovered. |
+| `AFD101` | `Error` | Multiple request handlers are registered for the same closed request handler service. |
+| `AFD102` | `Error` | A request type implements multiple `IRequest<TResponse>` contracts. |
+| `AFD103` | `Error` | A scanned request type has no registered handler. |
+| `AFD201` | `Warning` | A handler, behavior, or mapping rule is registered as singleton. |
+| `AFD301` | `Error` | Mapper catalog validation failed. |
