@@ -39,7 +39,10 @@ public static class AstraFlowMediatorRegistration
         bool validateRequestCoverage,
         params Type[] assemblyMarkerTypes)
     {
-        var assemblies = assemblyMarkerTypes
+        ArgumentNullException.ThrowIfNull(services);
+
+        var assemblies = (assemblyMarkerTypes ?? [])
+            .Where(t => t is not null)
             .Select(t => t.Assembly)
             .Append(typeof(AstraFlowMediatorRegistration).Assembly)
             .Distinct()
@@ -81,9 +84,8 @@ public static class AstraFlowMediatorRegistration
         bool allowMultiple)
     {
         var registrations = assemblies
-            .SelectMany(a => a.DefinedTypes)
+            .SelectMany(GetLoadableTypes)
             .Where(t => t is { IsAbstract: false, IsInterface: false })
-            .Select(t => t.AsType())
             .SelectMany(implementationType =>
                 implementationType
                     .GetInterfaces()
@@ -133,23 +135,42 @@ public static class AstraFlowMediatorRegistration
             .Select(r => r.ServiceType)
             .ToHashSet();
 
-        var missingRequests = assemblies
-            .SelectMany(a => a.DefinedTypes)
+        var requestContracts = assemblies
+            .SelectMany(GetLoadableTypes)
             .Where(t => t is { IsAbstract: false, IsInterface: false, ContainsGenericParameters: false })
-            .Select(t => t.AsType())
             .Select(requestType => new
             {
                 RequestType = requestType,
-                RequestInterface = requestType
+                RequestInterfaces = requestType
                     .GetInterfaces()
                     .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequest<>))
                     .Distinct()
-                    .SingleOrDefault()
+                    .ToArray()
             })
-            .Where(r => r.RequestInterface is not null)
+            .Where(r => r.RequestInterfaces.Length != 0)
+            .ToArray();
+
+        var ambiguousRequests = requestContracts
+            .Where(r => r.RequestInterfaces.Length > 1)
             .Select(r =>
             {
-                var responseType = r.RequestInterface!.GetGenericArguments()[0];
+                var contracts = string.Join(", ", r.RequestInterfaces.Select(i => i.FullName));
+                return $"{r.RequestType.FullName} ({contracts})";
+            })
+            .OrderBy(message => message)
+            .ToArray();
+
+        if (ambiguousRequests.Length != 0)
+        {
+            throw new InvalidOperationException(
+                "AstraFlow mediator request handler coverage validation failed. Ambiguous request contracts: "
+                + string.Join(", ", ambiguousRequests));
+        }
+
+        var missingRequests = requestContracts
+            .Select(r =>
+            {
+                var responseType = r.RequestInterfaces[0].GetGenericArguments()[0];
                 var handlerType = typeof(IRequestHandler<,>).MakeGenericType(r.RequestType, responseType);
                 return new { r.RequestType, HandlerType = handlerType };
             })
@@ -164,6 +185,18 @@ public static class AstraFlowMediatorRegistration
         throw new InvalidOperationException(
             "AstraFlow mediator request handler coverage validation failed. Missing handlers: "
             + string.Join(", ", missingRequests));
+    }
+
+    private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            return ex.Types.Where(type => type is not null)!;
+        }
     }
 
     /// <summary>

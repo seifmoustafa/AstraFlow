@@ -18,6 +18,17 @@ public sealed class AstraFlowMediatorTests
     }
 
     [Fact]
+    public async Task Send_WithRuntimeRequest_DispatchesRequest()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+
+        var response = await sender.Send((object)new PingRequest("runtime"));
+
+        response.Should().Be("handled:runtime");
+    }
+
+    [Fact]
     public async Task Send_WithoutRegisteredHandler_FailsClearly()
     {
         using var provider = CreateServices().BuildServiceProvider();
@@ -44,6 +55,72 @@ public sealed class AstraFlowMediatorTests
         await act.Should()
             .ThrowAsync<InvalidOperationException>()
             .WithMessage("*Multiple request handlers registered*PingRequest*");
+    }
+
+    [Fact]
+    public async Task Send_WithMultipleRequestContracts_FailsClearly()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+
+        var act = () => sender.Send<string>(new AmbiguousRequest("ambiguous"));
+
+        await act.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*AmbiguousRequest*implements multiple*IRequest*contracts*");
+    }
+
+    [Fact]
+    public async Task Send_WithRuntimeRequestAndMultipleRequestContracts_FailsClearly()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+
+        var act = () => sender.Send((object)new AmbiguousRequest("ambiguous"));
+
+        await act.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*AmbiguousRequest*implements multiple*IRequest*contracts*");
+    }
+
+    [Fact]
+    public void AddAstraFlowMediator_WithNullServices_FailsClearly()
+    {
+        IServiceCollection services = null!;
+
+        var act = () => services.AddAstraFlowMediator(typeof(AstraFlowMediatorTests));
+
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Fact]
+    public async Task AddAstraFlowMediator_WithNullMarkerType_IgnoresMarker()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<ExecutionLog>();
+
+        services.AddAstraFlowMediator(typeof(AstraFlowMediatorTests), null!);
+
+        using var provider = services.BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+
+        var response = await sender.Send(new PingRequest("null-marker"));
+
+        response.Should().Be("handled:null-marker");
+    }
+
+    [Fact]
+    public void AddAstraFlowMediator_WithCoverageValidationAndMultipleRequestContracts_FailsClearly()
+    {
+        var services = new ServiceCollection();
+
+        var act = () => services.AddAstraFlowMediator(
+            validateRequestCoverage: true,
+            assemblyMarkerTypes: typeof(AstraFlowMediatorTests));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*coverage validation failed*Ambiguous request contracts*AmbiguousRequest*");
     }
 
     [Fact]
@@ -140,6 +217,8 @@ public sealed class AstraFlowMediatorTests
 
     public sealed record PingRequest(string Message) : IRequest<string>;
 
+    public sealed record AmbiguousRequest(string Message) : IRequest<string>, IRequest<int>;
+
     public sealed record MissingHandlerRequest : IRequest<string>;
 
     public sealed record PingNotification : INotification;
@@ -152,6 +231,22 @@ public sealed class AstraFlowMediatorTests
         {
             log.Items.Add("handler");
             return Task.FromResult($"handled:{request.Message}");
+        }
+    }
+
+    public sealed class AmbiguousStringHandler : IRequestHandler<AmbiguousRequest, string>
+    {
+        public Task<string> Handle(AmbiguousRequest request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(request.Message);
+        }
+    }
+
+    public sealed class AmbiguousIntHandler : IRequestHandler<AmbiguousRequest, int>
+    {
+        public Task<int> Handle(AmbiguousRequest request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(request.Message.Length);
         }
     }
 

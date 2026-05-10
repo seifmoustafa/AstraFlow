@@ -7,13 +7,14 @@
 - Samples compile.
 - Tests pass in Release configuration.
 - README, changelog, roadmap, security policy, and publishing docs are current.
+- API reference, architecture guide, mediator scenarios, mapper scenarios, troubleshooting docs, and community release guide are current.
 - No competitor migration pages or retired package references exist in AstraFlow docs.
 
 ## Package
 
 - `PackageId`, title, description, tags, license, repository URL, symbols, and README metadata are present.
 - `.nupkg` and `.snupkg` files are produced for every package.
-- Package contents include `README.md`, `LICENSE`, package icon, `.nuspec`, library DLL, PDB, and XML docs.
+- Package contents include `README.md`, `LICENSE`, package icon, repository docs, `.nuspec`, library DLL, PDB, and XML docs.
 - No `bin/`, `obj/`, temporary logs, local SDK cache folders, `.nupkg`, or `.snupkg` files are committed.
 
 ## Consumer Validation

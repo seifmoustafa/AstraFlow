@@ -183,17 +183,26 @@ public sealed class AstraFlowMediator : IMediator
     /// <returns>A delegate that dispatches the request through <see cref="SendTypedCore{TRequest,TResponse}"/>.</returns>
     private static Func<AstraFlowMediator, object, CancellationToken, Task<object?>> CreateSendDelegate(Type requestType)
     {
-        var responseType = requestType
+        var requestInterfaces = requestType
             .GetInterfaces()
             .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequest<>))
-            .Select(i => i.GetGenericArguments()[0])
-            .FirstOrDefault();
+            .Distinct()
+            .ToArray();
 
-        if (responseType is null)
+        if (requestInterfaces.Length == 0)
         {
             throw new InvalidOperationException(
                 $"Request '{requestType.FullName}' must implement {typeof(IRequest<>).FullName}.");
         }
+
+        if (requestInterfaces.Length > 1)
+        {
+            var contracts = string.Join(", ", requestInterfaces.Select(i => i.FullName));
+            throw new InvalidOperationException(
+                $"Request '{requestType.FullName}' implements multiple {typeof(IRequest<>).FullName} contracts: {contracts}. AstraFlow requests must declare exactly one response type.");
+        }
+
+        var responseType = requestInterfaces[0].GetGenericArguments()[0];
 
         var method = typeof(AstraFlowMediator)
             .GetMethod(nameof(SendTypedCore), BindingFlags.Instance | BindingFlags.NonPublic)!

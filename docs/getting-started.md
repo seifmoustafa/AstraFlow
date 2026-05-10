@@ -1,10 +1,28 @@
 # Getting Started
 
+This guide takes a new consumer from package choice to the first working mediator and mapper setup.
+
+For complete reference tables, see [API Reference](api-reference.md). For expected behavior in edge cases, see [Mediator Scenarios](mediator-scenarios.md), [Mapper Scenarios](mapper-scenarios.md), and [Troubleshooting](troubleshooting.md).
+
+## 1. Choose A Package
+
 Install the package that matches the surface you need:
 
 - `AstraFlow.Mediator` for CQRS dispatch and notifications.
 - `AstraFlow.Mapper` for explicit object mapping and projections.
 - `AstraFlow` for both.
+
+AstraFlow currently targets `net10.0`. .NET 10 is an active LTS release supported by Microsoft until November 14, 2028.
+
+```powershell
+dotnet add package AstraFlow.Mediator --version 1.0.1
+dotnet add package AstraFlow.Mapper --version 1.0.1
+dotnet add package AstraFlow --version 1.0.1
+```
+
+Use only the package you need. If a project only sends requests, install `AstraFlow.Mediator`. If a project only maps DTOs, install `AstraFlow.Mapper`. Use the meta-package when both are intentionally part of the same project.
+
+## 2. Register Services
 
 Register by marker assembly:
 
@@ -14,6 +32,147 @@ services.AddAstraFlow(
     assemblyMarkerTypes: typeof(Program));
 ```
 
+Marker types identify assemblies to scan. If handlers live in `Orders.Application`, pass a type from `Orders.Application`. If mapping rules live in `Orders.Contracts`, pass a type from that assembly too.
+
+```csharp
+services.AddAstraFlow(
+    validateRequestCoverage: true,
+    typeof(CreateOrderCommand),
+    typeof(CustomerMappingRule));
+```
+
 Use `ISender` when a class only sends requests. Use `IPublisher` when a class only publishes notifications. Reserve `IMediator` for composition code that needs both.
 
+## 3. Create A Request And Handler
+
+```csharp
+public sealed record CreateOrderCommand(string Number) : IRequest<CreateOrderResponse>;
+
+public sealed record CreateOrderResponse(Guid Id, string Number);
+
+public sealed class CreateOrderCommandHandler
+    : IRequestHandler<CreateOrderCommand, CreateOrderResponse>
+{
+    public Task<CreateOrderResponse> Handle(
+        CreateOrderCommand request,
+        CancellationToken cancellationToken)
+    {
+        return Task.FromResult(new CreateOrderResponse(Guid.NewGuid(), request.Number));
+    }
+}
+```
+
+Expected behavior:
+
+- `CreateOrderCommand` has exactly one response type.
+- `CreateOrderCommandHandler` is the only handler for that request.
+- Sending the request returns `CreateOrderResponse`.
+- Missing or duplicate handlers fail clearly.
+
+## 4. Send The Request
+
+```csharp
+public sealed class OrderEndpoint(ISender sender)
+{
+    public Task<CreateOrderResponse> Create(string number, CancellationToken cancellationToken)
+    {
+        return sender.Send(new CreateOrderCommand(number), cancellationToken);
+    }
+}
+```
+
+Inject `ISender` instead of `IMediator` when the class only sends requests. This keeps dependencies honest.
+
+## 5. Publish A Notification
+
+```csharp
+public sealed record OrderCreated(Guid OrderId) : INotification;
+
+public sealed class OrderCreatedEmailHandler
+    : INotificationHandler<OrderCreated>
+{
+    public Task Handle(OrderCreated notification, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+```
+
+```csharp
+await publisher.Publish(new OrderCreated(orderId), cancellationToken);
+```
+
+Expected behavior:
+
+- All matching notification handlers run sequentially.
+- Zero handlers is allowed.
+- Failures follow `NotificationPublishOptions.FailurePolicy`.
+
+## 6. Add Pipeline Behaviors When Needed
+
+```csharp
+services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+```
+
+Behaviors run in registration order. A behavior can short-circuit by returning without calling `next`.
+
+## 7. Create A Mapping Rule
+
 For mapping, create small `IDeclaredObjectMappingRule` classes and declare every supported pair with `ObjectMappingPair.Create<TSource, TDestination>()`. Startup validation catches duplicate pairs and undeclared rules before traffic reaches the app.
+
+```csharp
+public sealed record Customer(Guid Id, string Name, string InternalNote);
+
+public sealed record CustomerResponse(string Id, string Name);
+
+public sealed class CustomerMappingRule(SecureIdMapper ids)
+    : IDeclaredObjectMappingRule
+{
+    public IReadOnlyCollection<ObjectMappingPair> DeclaredMappings { get; } =
+    [
+        ObjectMappingPair.Create<Customer, CustomerResponse>()
+    ];
+
+    public bool CanMap(Type sourceType, Type destinationType)
+    {
+        return sourceType == typeof(Customer)
+            && destinationType == typeof(CustomerResponse);
+    }
+
+    public object? Map(object? source, Type destinationType, IMapper mapper)
+    {
+        var customer = (Customer)source!;
+        return new CustomerResponse(ids.Encrypt(customer.Id), customer.Name);
+    }
+}
+```
+
+Expected behavior:
+
+- Only `Id` and `Name` are mapped.
+- `InternalNote` is not copied because you did not copy it.
+- Mapping ownership is declared and validated.
+- Secure ID conversion is delegated to your application codec.
+
+## 8. Register Secure ID Codec When Needed
+
+```csharp
+services.AddScoped<ISecureIdCodec, MySecureIdCodec>();
+```
+
+AstraFlow does not provide encryption. It only provides `ISecureIdCodec` and `SecureIdMapper` so your mapping rules can depend on a stable abstraction.
+
+## 9. Validate Before Publishing
+
+Run the same checks the package release uses:
+
+```powershell
+dotnet build AstraFlow.slnx -c Release
+dotnet test AstraFlow.slnx -c Release --no-build --no-restore
+dotnet pack src/AstraFlow.Mediator/AstraFlow.Mediator.csproj -c Release --no-build --no-restore
+dotnet pack src/AstraFlow.Mapper/AstraFlow.Mapper.csproj -c Release --no-build --no-restore
+dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore
+```
+
+For release details, see [Publishing](publishing.md).

@@ -195,14 +195,14 @@ Do not delete `packages/AstraFlow` from the NEXORA monorepo until the published 
 In NEXORA backend projects that currently reference local AstraFlow projects, replace project references with package references:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.0.0" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.0.0" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.0.1" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.0.1" />
 ```
 
 Use the meta-package only where both are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.0.0" />
+<PackageReference Include="AstraFlow" Version="1.0.1" />
 ```
 
 ### Step 2: Restore And Build
@@ -265,6 +265,30 @@ Commit NEXORA separately from the package repository:
 git add NEXORA-Backend tools NEXORA-Frontend
 git commit -m "Use published AstraFlow packages"
 ```
+
+## v1.0.1 Roadmap: Patch Hardening
+
+Goal:
+
+Ship a SemVer-safe patch release before new packages are added.
+
+Features:
+
+- reject request types that implement multiple `IRequest<TResponse>` contracts with a clear diagnostic,
+- keep object-based and generic request dispatch behavior covered by tests,
+- tolerate null mediator marker types during registration,
+- throw `ArgumentNullException` for null mediator service collections,
+- tolerate partially loadable assemblies during mediator scanning,
+- clarify `MediatorOptions` documentation without adding a new options API,
+- document the `net10.0` target and Microsoft support window.
+
+Acceptance gates:
+
+- no breaking public API changes,
+- Release build passes,
+- package tests pass,
+- all three packages pack as version `1.0.1`,
+- package artifacts contain README, LICENSE, icon, XML docs, DLL, PDB, `.nuspec`, `.nupkg`, and `.snupkg`.
 
 ## v1.1 Roadmap: Diagnostics And Production Ergonomics
 
@@ -343,7 +367,39 @@ Acceptance gates:
 - NEXORA read models can use projections without leaking raw IDs,
 - EF Core tests cover SQL Server, PostgreSQL, and provider-neutral behavior where possible.
 
-## v1.3 Roadmap: Optional Convention Mapping
+## v1.3 Roadmap: Testing Support
+
+Goal:
+
+Make request handlers, notification handlers, pipeline behaviors, and mapping rules easier to test.
+
+Planned package:
+
+- `AstraFlow.Testing`
+
+Features:
+
+- fake sender,
+- fake publisher,
+- fake mediator,
+- request recording,
+- notification recording,
+- handler test harness,
+- pipeline test harness,
+- mapper validation assertions,
+- mapping snapshot helper,
+- projection assertion helper,
+- secure ID test codec,
+- duplicate handler fixture helper,
+- missing handler fixture helper.
+
+Acceptance gates:
+
+- no mocking framework dependency,
+- easy integration with xUnit, NUnit, and MSTest,
+- NEXORA handler tests can remove repetitive test setup.
+
+## v1.4 Roadmap: Optional Convention Mapping
 
 Goal:
 
@@ -382,38 +438,6 @@ Acceptance gates:
 - explicit rules continue to be the recommended enterprise default,
 - convention mapping is opt-in and auditable,
 - NEXORA uses convention mapping only for internal non-sensitive DTOs if at all.
-
-## v1.4 Roadmap: Testing Support
-
-Goal:
-
-Make request handlers, notification handlers, pipeline behaviors, and mapping rules easier to test.
-
-Planned package:
-
-- `AstraFlow.Testing`
-
-Features:
-
-- fake sender,
-- fake publisher,
-- fake mediator,
-- request recording,
-- notification recording,
-- handler test harness,
-- pipeline test harness,
-- mapper validation assertions,
-- mapping snapshot helper,
-- projection assertion helper,
-- secure ID test codec,
-- duplicate handler fixture helper,
-- missing handler fixture helper.
-
-Acceptance gates:
-
-- no mocking framework dependency,
-- easy integration with xUnit, NUnit, and MSTest,
-- NEXORA handler tests can remove repetitive test setup.
 
 ## v1.5 Roadmap: Observability Hooks
 
