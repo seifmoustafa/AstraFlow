@@ -15,7 +15,7 @@ git init
 git add .
 git commit -m "Initial AstraFlow v1 package family"
 git branch -M main
-git remote add origin https://github.com/astra-flow/astraflow.git
+git remote add origin https://github.com/seifmoustafa/AstraFlow.git
 git push -u origin main
 ```
 

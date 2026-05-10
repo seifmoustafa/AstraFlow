@@ -15,8 +15,8 @@
     <Product>AstraFlow</Product>
     <Copyright>Copyright (c) AstraFlow Contributors</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/astra-flow/astraflow</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/astra-flow/astraflow</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/seifmoustafa/AstraFlow</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageReleaseNotes>Stable v1 explicit mediator and mapper core.</PackageReleaseNotes>
