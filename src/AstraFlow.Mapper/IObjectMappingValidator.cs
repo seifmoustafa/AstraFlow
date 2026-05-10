@@ -1,7 +1,7 @@
 namespace AstraFlow.Mapper;
 
 /// <summary>
-/// Validates registered NEXORA object mapping rules before handlers depend on them.
+/// Validates registered object mapping rules before handlers depend on them.
 /// </summary>
 public interface IObjectMappingValidator
 {

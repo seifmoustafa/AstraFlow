@@ -1,7 +1,7 @@
 namespace AstraFlow.Mapper;
 
 /// <summary>
-/// Identifies one explicit source-to-destination DTO mapping owned by a NEXORA mapping rule.
+/// Identifies one explicit source-to-destination DTO mapping owned by an AstraFlow mapping rule.
 /// The pair is used for startup validation, duplicate detection, and architecture tests.
 /// </summary>
 /// <param name="SourceType">The source domain, persistence, or application model type.</param>

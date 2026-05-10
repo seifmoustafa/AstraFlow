@@ -27,9 +27,11 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>assets/branding/astraflow-icon.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="" />
+    <None Include="$(MSBuildThisFileDirectory)assets\branding\astraflow-icon.png" Pack="true" PackagePath="assets\branding\" />
   </ItemGroup>
 </Project>

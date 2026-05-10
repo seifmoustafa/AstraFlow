@@ -13,7 +13,7 @@
 
 - `PackageId`, title, description, tags, license, repository URL, symbols, and README metadata are present.
 - `.nupkg` and `.snupkg` files are produced for every package.
-- Package contents include `README.md`, `LICENSE`, `.nuspec`, library DLL, PDB, and XML docs.
+- Package contents include `README.md`, `LICENSE`, package icon, `.nuspec`, library DLL, PDB, and XML docs.
 - No `bin/`, `obj/`, temporary logs, local SDK cache folders, `.nupkg`, or `.snupkg` files are committed.
 
 ## Consumer Validation

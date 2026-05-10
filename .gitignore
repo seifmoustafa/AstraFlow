@@ -10,3 +10,4 @@ coverage/
 artifacts/
 .vs/
 .idea/
+.dotnet-cli-home/

@@ -50,7 +50,7 @@ public interface IPublisher
 }
 
 /// <summary>
-/// Combines request sending and notification publishing for NEXORA application workflows.
+/// Combines request sending and notification publishing for application workflows.
 /// </summary>
 public interface IMediator : ISender, IPublisher
 {

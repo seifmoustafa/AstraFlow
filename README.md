@@ -1,5 +1,9 @@
 # AstraFlow
 
+<p align="center">
+  <img src="assets/branding/astraflow-icon.png" alt="AstraFlow package icon" width="160" />
+</p>
+
 AstraFlow is a MIT-licensed .NET package family for explicit CQRS dispatch and source-auditable object mapping.
 
 It was built to keep production applications free from runtime license checks, hidden mapping behavior, and framework lock-in. The v1 design is deliberately small: secure defaults, clear errors, explicit extension points, and package-quality diagnostics before optional convention layers are added.
@@ -128,6 +132,16 @@ AstraFlow v1 intentionally does not include convention mapping, flattening, reve
 ## Roadmap
 
 The long-term plan is to add optional convention mapping, projection validation, diagnostics, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, EF Core helpers, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
+
+## Branding
+
+The package icon is stored at `assets/branding/astraflow-icon.png` and is included in every NuGet package through `PackageIcon`.
+
+Generator prompt:
+
+```text
+Create a square app/package icon for a .NET library named AstraFlow. Use an abstract orbital star and flowing path motif that suggests explicit application flow, mediator dispatch, and auditable mapping. Keep it as a clean vector-friendly modern tech logo with crisp edges, centered symbol only, no text, strong silhouette readable at 64x64, generous padding, deep navy background with cyan, teal, white, and a small warm amber star accent. Avoid words, letters, code snippets, watermarks, photorealism, and complex gradients.
+```
 
 ## Repository Readiness
 

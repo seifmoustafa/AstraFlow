@@ -1,7 +1,7 @@
 namespace AstraFlow.Mapper;
 
 /// <summary>
-/// Default validator for NEXORA explicit object mapping rules.
+/// Default validator for AstraFlow explicit object mapping rules.
 /// It verifies that module rules declare their owned pairs and that no pair is owned by more than one rule.
 /// </summary>
 public sealed class AstraFlowObjectMappingValidator : IObjectMappingValidator

@@ -1,7 +1,7 @@
 namespace AstraFlow.Mediator;
 
 /// <summary>
-/// Runtime options for NEXORA notification publishing.
+/// Runtime options for AstraFlow notification publishing.
 /// Values are loaded from <c>Mediator:Notifications</c> in appsettings, user secrets, or environment variables.
 /// </summary>
 public sealed class NotificationPublishOptions
