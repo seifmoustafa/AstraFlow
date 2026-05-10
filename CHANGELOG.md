@@ -2,6 +2,15 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.2.0
+
+- Added projection registry support with deterministic unnamed and named projection lookup.
+- Added `INamedProjection<TSource, TDestination>` for explicit multiple projection shapes per source/destination pair.
+- Added projection validation with warning-by-default findings for duplicate projections, null expressions, mapper calls, custom method calls, non-deterministic values, complex closure captures, and unsupported construction risks.
+- Added diagnostics integration for projection names and projection validation findings.
+- Added optional `AstraFlow.Mapper.EntityFrameworkCore` package with EF Core relational translation validation helpers.
+- Added SQLite EF Core integration tests and expanded projection registry tests.
+
 ## 1.1.0
 
 - Added `AstraFlow.Diagnostics` with framework-neutral registration reports for request handlers, notification handlers, pipeline behaviors, mapping rules, and projections.

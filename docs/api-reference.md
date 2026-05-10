@@ -1,13 +1,14 @@
 # API Reference
 
-This reference describes the public AstraFlow v1.1.0 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow v1.2.0 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
 | Package | Namespace | Main Responsibility |
 | --- | --- | --- |
 | `AstraFlow.Mediator` | `AstraFlow.Mediator` | Request dispatch, notifications, pipeline behaviors, handler scanning, and mediator options. |
-| `AstraFlow.Mapper` | `AstraFlow.Mapper` | Explicit object mapping, mapping validation, projections, and secure ID abstractions. |
+| `AstraFlow.Mapper` | `AstraFlow.Mapper` | Explicit object mapping, mapping validation, projection registry, projection validation, and secure ID abstractions. |
+| `AstraFlow.Mapper.EntityFrameworkCore` | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers. |
 | `AstraFlow.Diagnostics` | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reporting for AstraFlow registrations and validation findings. |
 | `AstraFlow` | `AstraFlow` | Convenience registration for mediator and mapper together. |
 
@@ -17,7 +18,8 @@ This reference describes the public AstraFlow v1.1.0 API surface. It is intentio
 | --- | --- | --- | --- |
 | `AddAstraFlowMediator` | `IServiceCollection AddAstraFlowMediator(this IServiceCollection services, params Type[] assemblyMarkerTypes)` | Logging, notification options, scoped `IMediator`, scoped `ISender`, scoped `IPublisher`, closed request handlers, and notification handlers from marker assemblies. | Throws `ArgumentNullException` when `services` is null. Throws for duplicate request handlers discovered during scanning. |
 | `AddAstraFlowMediator` | `IServiceCollection AddAstraFlowMediator(this IServiceCollection services, bool validateRequestCoverage, params Type[] assemblyMarkerTypes)` | Same as above, with optional request coverage validation. | When validation is true, throws if a concrete scanned request has no handler or implements multiple request contracts. |
-| `AddAstraFlowMapper` | `IServiceCollection AddAstraFlowMapper(this IServiceCollection services, params Type[] assemblyMarkerTypes)` | Mapper options, scoped `SecureIdMapper`, scoped `IMapper`, scoped `IObjectMappingValidator`, startup validator hosted service, and mapping rules from marker assemblies. | Throws `ArgumentNullException` when `services` is null. Startup validation may later throw mapping catalog errors. |
+| `AddAstraFlowMapper` | `IServiceCollection AddAstraFlowMapper(this IServiceCollection services, params Type[] assemblyMarkerTypes)` | Mapper options, scoped `SecureIdMapper`, scoped `IMapper`, scoped `IObjectMappingValidator`, scoped `IProjectionRegistry`, scoped `IProjectionValidator`, startup validator hosted service, mapping rules, and projections from marker assemblies. | Throws `ArgumentNullException` when `services` is null. Startup validation may later throw mapping or strict projection catalog errors. |
+| `AddAstraFlowMapper` | `IServiceCollection AddAstraFlowMapper(this IServiceCollection services, IEnumerable<Type> assemblyMarkerTypes, Action<MappingOptions>? configure = null)` | Same as above, with options configuration. | Throws `ArgumentNullException` when `services` or marker collection is null. |
 | `AddAstraFlowDiagnostics` | `IServiceCollection AddAstraFlowDiagnostics(this IServiceCollection services, Action<AstraFlowDiagnosticsOptions>? configure = null)` | Diagnostics options, a captured service descriptor snapshot, and `IAstraFlowDiagnosticsReporter`. | Throws `ArgumentNullException` when `services` is null. Call after core AstraFlow registration for a complete report. |
 | `AddAstraFlow` | `IServiceCollection AddAstraFlow(this IServiceCollection services, bool validateRequestCoverage = false, params Type[] assemblyMarkerTypes)` | Calls mediator and mapper registration using the same marker assemblies. | Same failure cases as mediator and mapper registration. |
 
@@ -71,6 +73,13 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `IObjectMappingValidator` | Interface | Validates mapping catalog consistency. | No, inject or use in tests. |
 | `MappingOptions` | Class | Controls mapper validation behavior. | Configure through options. |
 | `IProjection<TSource, TDestination>` | Interface | Provides an explicit LINQ expression projection. | Yes. |
+| `INamedProjection<TSource, TDestination>` | Interface | Adds an explicit projection name. | Yes, when multiple projections share the same source/destination pair. |
+| `IProjectionRegistry` | Interface | Resolves registered projections by pair and optional name. | No, inject it. |
+| `IProjectionValidator` | Interface | Validates projection registrations and high-risk expression patterns. | No, inject or use in tests. |
+| `ProjectionRegistration` | Record | Describes a registered projection. | Returned by the registry. |
+| `ProjectionValidationReport` | Record | Contains projection validation findings. | Returned by the validator. |
+| `ProjectionValidationFinding` | Record | One projection validation finding with stable code. | Returned by validation reports. |
+| `ProjectionValidationMode` | Enum | Selects disabled, warning, or error projection validation. | Configure through `MappingOptions`. |
 | `QueryableProjectionExtensions` | Static class | Adds `ProjectWith` helpers to `IQueryable<T>`. | Use extension methods. |
 | `ISecureIdCodec` | Interface | Application-owned secure ID codec. | Yes, if using secure ID mapping. |
 | `SecureIdMapper` | Class | Mapper-friendly helper around `ISecureIdCodec`. | No, inject it into mapping rules. |
@@ -88,8 +97,17 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `ObjectMappingPair.ToString` | `string ToString()` | Returns `SourceType.FullName -> DestinationType.FullName`. | Used in diagnostics. |
 | `IObjectMappingValidator.Validate` | `void Validate(MappingOptions options)` | Validates declared rule ownership, duplicate pairs, missing rule acceptance, and declaration drift. | Throws `InvalidOperationException` for catalog problems. |
 | `IProjection.Expression` | `Expression<Func<TSource, TDestination>> Expression { get; }` | Supplies the projection expression. | Keep it provider-translatable; do not call services or `IMapper` inside it. |
+| `INamedProjection.Name` | `string Name { get; }` | Supplies the projection name. | Names are case-insensitive during lookup and must be unique per source/destination pair. |
+| `IProjectionRegistry.Registrations` | `IReadOnlyList<ProjectionRegistration> Registrations { get; }` | Lists resolved projection registrations. | Useful for diagnostics, tests, and release checks. |
+| `IProjectionRegistry.Get` | `IProjection<TSource, TDestination> Get<TSource, TDestination>()` | Resolves the only unnamed projection for a pair. | Throws if missing or ambiguous. |
+| `IProjectionRegistry.Get` | `IProjection<TSource, TDestination> Get<TSource, TDestination>(string name)` | Resolves a named projection for a pair. | Throws if missing or duplicated. |
+| `IProjectionRegistry.TryGet` | `bool TryGet<TSource, TDestination>(out IProjection<TSource, TDestination> projection)` | Attempts unnamed projection lookup. | Returns false for missing or ambiguous lookup. |
+| `IProjectionRegistry.TryGet` | `bool TryGet<TSource, TDestination>(string name, out IProjection<TSource, TDestination> projection)` | Attempts named projection lookup. | Returns false for missing or ambiguous lookup. |
+| `IProjectionValidator.Validate` | `ProjectionValidationReport Validate(MappingOptions options)` | Checks duplicates, invalid expressions, and high-risk expression patterns. | Does not print payload values. |
 | `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination>(this IQueryable<TSource> query, IProjection<TSource, TDestination> projection)` | Applies a projection object's expression to a query. | Throws for null query or projection. |
 | `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination>(this IQueryable<TSource> query, Expression<Func<TSource, TDestination>> projection)` | Applies an inline expression to a query. | Useful when a separate projection class is unnecessary. |
+| `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination>(this IQueryable<TSource> query, IProjectionRegistry registry)` | Resolves and applies the only unnamed registered projection. | Throws for missing or ambiguous projections. |
+| `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination>(this IQueryable<TSource> query, IProjectionRegistry registry, string name)` | Resolves and applies a named registered projection. | Throws for missing or duplicate names. |
 | `ISecureIdCodec.Encrypt` | `string Encrypt(Guid id)` | Converts a raw `Guid` into an encrypted/public string. | AstraFlow does not provide cryptography. |
 | `ISecureIdCodec.TryDecrypt` | `Guid? TryDecrypt(string? encryptedId)` | Converts an encrypted/public string back to a `Guid` when valid. | Return null for invalid input. |
 | `SecureIdMapper.Encrypt` | `string Encrypt(Guid id)` | Encrypts a required ID through the codec. | Throws only if the codec throws. |
@@ -103,6 +121,34 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `MappingOptions.SectionName` | `"Mapping"` | Suggested configuration section name for application hosts. |
 | `ValidateRuleCatalogOnStartup` | `true` | The hosted startup validator validates registered mapping rules when the app starts. |
 | `RequireDeclaredMappingRules` | `true` | Every mapping rule must implement `IDeclaredObjectMappingRule`. |
+| `ValidateProjectionCatalogOnStartup` | `true` | The hosted startup validator validates registered projections when the app starts. |
+| `ProjectionValidationMode` | `Warning` | Projection findings are warnings by default. Use `Error` to fail strict startup validation. |
+
+## Projection Finding Codes
+
+| Code | Meaning |
+| --- | --- |
+| `AFP001` | Multiple unnamed projections share the same source/destination pair. |
+| `AFP002` | Multiple named projections share the same source/destination pair and name, or a name is invalid. |
+| `AFP004` | A projection returned a null expression. |
+| `AFP101` | A projection calls `IMapper` inside the expression. |
+| `AFP102` | A projection calls a custom method that a query provider may not translate. |
+| `AFP103` | A projection uses non-deterministic values such as `DateTime.UtcNow` or `Guid.NewGuid()`. |
+| `AFP104` | A projection captures a complex closure object. |
+| `AFP105` | A projection contains an unsupported construction pattern. |
+
+## Entity Framework Core Methods
+
+| API | Signature | What Happens | Important Notes |
+| --- | --- | --- | --- |
+| `ValidateProjectionTranslation` | `string ValidateProjectionTranslation<TSource, TDestination>(this DbContext dbContext, IProjection<TSource, TDestination> projection) where TSource : class` | Builds a `DbSet<TSource>().Select(...)` query and asks EF Core for SQL. | Does not execute the query. Requires a relational provider. |
+| `ValidateProjectionTranslations` | `EfCoreProjectionValidationReport ValidateProjectionTranslations(this DbContext dbContext, IProjectionRegistry registry)` | Validates every registered projection against the supplied DbContext. | Returns `AFPEF...` findings for EF Core model/provider failures. |
+
+## Entity Framework Core Finding Codes
+
+| Code | Meaning |
+| --- | --- |
+| `AFPEF001` | EF Core could not translate or prepare the projection against the current `DbContext`. |
 
 ## Supported Collection Mapping Shapes
 
@@ -124,6 +170,8 @@ Each item is mapped through the same explicit rule lookup. Collection mapping do
 | Notification handlers | Scoped | Registered from scanned assemblies. |
 | `IMapper` | Scoped | Mapping rules may depend on scoped services such as `SecureIdMapper`. |
 | `IObjectMappingValidator` | Scoped | Validates scoped rule instances safely. |
+| `IProjectionRegistry` | Scoped | Resolves projection instances that may depend on scoped services. |
+| `IProjectionValidator` | Scoped | Validates scoped projection instances safely. |
 | `SecureIdMapper` | Scoped | Depends on application-provided `ISecureIdCodec`. |
 | Mapping startup validator | Hosted service | Runs once at host startup when enabled. |
 
@@ -161,3 +209,5 @@ Each item is mapped through the same explicit rule lookup. Collection mapping do
 | `AFD103` | `Error` | A scanned request type has no registered handler. |
 | `AFD201` | `Warning` | A handler, behavior, or mapping rule is registered as singleton. |
 | `AFD301` | `Error` | Mapper catalog validation failed. |
+| `AFD302` | `Error` | Projection validation failed unexpectedly while diagnostics were generated. |
+| `AFP...` | `Warning` or `Error` | Projection validation finding surfaced through diagnostics. |

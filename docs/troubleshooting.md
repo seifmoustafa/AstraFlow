@@ -107,14 +107,20 @@ Publishing with zero handlers is valid. Confirm:
 
 ### Query Provider Cannot Translate Projection
 
-AstraFlow v1.1.0 applies the expression but does not validate provider translation. If EF Core or another provider cannot translate it:
+AstraFlow v1.2.0 validates projection registrations and high-risk expression patterns. If EF Core or another provider cannot translate a projection:
 
 - remove service calls from the expression,
 - avoid runtime mapper calls inside `Select`,
 - use simple member access and object construction,
-- test projections against the real provider.
+- run `IProjectionValidator` and fix `AFP...` findings,
+- test projections against the real provider,
+- use `AstraFlow.Mapper.EntityFrameworkCore` for EF Core relational translation checks.
 
-Provider-aware validation is planned for a later package.
+EF Core can allow some client-side work in the final projection while still generating SQL. Static AstraFlow validation remains the main guard for custom method calls and runtime mapper calls.
+
+### Projection Registry Is Ambiguous
+
+If `IProjectionRegistry.Get<TSource, TDestination>()` throws because multiple unnamed projections exist, convert each projection to `INamedProjection<TSource, TDestination>` and resolve by name.
 
 ## Secure ID Problems
 

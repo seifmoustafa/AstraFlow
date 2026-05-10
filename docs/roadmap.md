@@ -221,15 +221,16 @@ Do not delete `packages/AstraFlow` from the NEXORA monorepo until the published 
 In NEXORA backend projects that currently reference local AstraFlow projects, replace project references with package references:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.1.0" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.1.0" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.1.0" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.2.0" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.2.0" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.0" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.0" />
 ```
 
 Use the meta-package only where both are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.1.0" />
+<PackageReference Include="AstraFlow" Version="1.2.0" />
 ```
 
 ### Step 2: Restore And Build
@@ -373,31 +374,27 @@ Acceptance gates:
 
 ## v1.2 Roadmap: Safer Projection Layer
 
+Implemented in `AstraFlow.Mapper` and `AstraFlow.Mapper.EntityFrameworkCore` v1.2.0.
+
 Goal:
 
 Make query projection explicit, reusable, and provider-aware without converting object mappers into hidden SQL translators.
 
-Planned package:
+Packages:
 
-- `AstraFlow.Mapper.Projection`
+- `AstraFlow.Mapper`
+- `AstraFlow.Mapper.EntityFrameworkCore`
 
 Features:
 
 - projection registry,
 - named projections,
-- composed projection expressions,
-- provider-translatable validation hooks,
-- EF Core integration tests,
+- warning-by-default projection validation,
+- EF Core relational validation helpers,
+- SQLite EF Core integration tests,
 - projection warnings for unsupported methods,
-- projection warnings for client-side evaluation risks,
-- projection profiles that declare:
-  - source type,
-  - destination type,
-  - expression,
-  - supported providers,
-  - known non-translatable members,
+- projection warnings for non-deterministic expression values,
 - `IQueryable<TSource>.ProjectWith<TSource, TDestination>(...)`,
-- `IEnumerable<TSource>.ProjectWith(...)` for in-memory fallback,
 - diagnostics integration.
 
 Acceptance gates:
@@ -405,7 +402,7 @@ Acceptance gates:
 - projection expressions remain explicit,
 - unsupported expressions fail clearly when validation is enabled,
 - NEXORA read models can use projections without leaking raw IDs,
-- EF Core tests cover SQL Server, PostgreSQL, and provider-neutral behavior where possible.
+- SQLite EF Core tests cover provider translation behavior without Docker or external database services.
 
 ## v1.3 Roadmap: Testing Support
 

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace AstraFlow.Mapper.Tests;
@@ -154,9 +155,118 @@ public sealed class AstraFlowObjectMapperTests
         result.Select(x => x.Name).Should().Equal("One", "Two");
     }
 
+    [Fact]
+    public void ProjectionRegistry_WithSingleProjection_ReturnsUnnamedProjection()
+    {
+        using var provider = CreateServices(typeof(SampleProjection)).BuildServiceProvider();
+        var registry = provider.GetRequiredService<IProjectionRegistry>();
+
+        var projection = registry.Get<SampleEntity, SampleResponse>();
+
+        projection.Should().BeOfType<SampleProjection>();
+    }
+
+    [Fact]
+    public void ProjectionRegistry_WithNamedProjection_ReturnsProjectionByName()
+    {
+        using var provider = CreateServices(typeof(NamedSampleProjection)).BuildServiceProvider();
+        var registry = provider.GetRequiredService<IProjectionRegistry>();
+
+        var projection = registry.Get<SampleEntity, SampleResponse>("LIST");
+
+        projection.Should().BeOfType<NamedSampleProjection>();
+    }
+
+    [Fact]
+    public void ProjectionRegistry_WithMissingProjection_TryGetReturnsFalse()
+    {
+        using var provider = CreateServices(typeof(AstraFlowObjectMapperTests)).BuildServiceProvider();
+        var registry = provider.GetRequiredService<IProjectionRegistry>();
+
+        var found = registry.TryGet<SampleEntity, SampleResponse>(out var projection);
+
+        found.Should().BeFalse();
+        projection.Should().BeNull();
+    }
+
+    [Fact]
+    public void ProjectionRegistry_WithDuplicateUnnamedProjections_FailsClearly()
+    {
+        using var provider = CreateServices(typeof(SampleProjection), typeof(DuplicateUnnamedProjection)).BuildServiceProvider();
+        var registry = provider.GetRequiredService<IProjectionRegistry>();
+
+        var act = () => registry.Get<SampleEntity, SampleResponse>();
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Multiple unnamed projection*SampleEntity*SampleResponse*");
+    }
+
+    [Fact]
+    public void ProjectionValidator_WithDuplicateNamedProjection_ReportsFinding()
+    {
+        using var provider = CreateServices(typeof(NamedSampleProjection), typeof(DuplicateNamedProjection)).BuildServiceProvider();
+        var validator = provider.GetRequiredService<IProjectionValidator>();
+
+        var report = validator.Validate(new MappingOptions());
+
+        report.Findings.Should().Contain(finding => finding.Code == "AFP002");
+    }
+
+    [Fact]
+    public void ProjectionValidator_WithHighRiskExpression_ReportsFindings()
+    {
+        using var provider = CreateServices(typeof(RiskyProjection)).BuildServiceProvider();
+        var validator = provider.GetRequiredService<IProjectionValidator>();
+
+        var report = validator.Validate(new MappingOptions());
+
+        report.Findings.Select(finding => finding.Code).Should().Contain(["AFP102", "AFP103"]);
+    }
+
+    [Fact]
+    public void ProjectWith_UsesProjectionRegistry()
+    {
+        using var provider = CreateServices(typeof(NamedSampleProjection)).BuildServiceProvider();
+        var registry = provider.GetRequiredService<IProjectionRegistry>();
+        var source = new[]
+        {
+            new SampleEntity(Guid.NewGuid(), "One"),
+            new SampleEntity(Guid.NewGuid(), "Two"),
+        }.AsQueryable();
+
+        var result = source.ProjectWith<SampleEntity, SampleResponse>(registry, "list").ToList();
+
+        result.Select(x => x.Name).Should().Equal("One", "Two");
+    }
+
     private static AstraFlowObjectMapper CreateMapper(params IObjectMappingRule[] rules)
     {
         return new AstraFlowObjectMapper(rules);
+    }
+
+    private static ServiceCollection CreateServices(params Type[] markerTypes)
+    {
+        var services = new ServiceCollection();
+        services.AddAstraFlowMapper(Array.Empty<Type>());
+        foreach (var projectionType in markerTypes)
+        {
+            foreach (var serviceType in projectionType.GetInterfaces()
+                         .Where(type => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IProjection<,>)))
+            {
+                var arguments = serviceType.GetGenericArguments();
+                services.AddScoped(projectionType);
+                services.AddScoped(serviceType, provider => provider.GetRequiredService(projectionType));
+                services.AddSingleton(new ProjectionDescriptor(
+                    arguments[0],
+                    arguments[1],
+                    serviceType,
+                    projectionType,
+                    ServiceLifetime.Scoped));
+            }
+        }
+
+        return services;
     }
 
     private sealed record SampleEntity(Guid Id, string Name);
@@ -223,4 +333,35 @@ public sealed class AstraFlowObjectMapperTests
         public System.Linq.Expressions.Expression<Func<SampleEntity, SampleResponse>> Expression =>
             entity => new SampleResponse(entity.Id, entity.Name);
     }
+
+    private sealed class NamedSampleProjection : INamedProjection<SampleEntity, SampleResponse>
+    {
+        public string Name => "list";
+
+        public System.Linq.Expressions.Expression<Func<SampleEntity, SampleResponse>> Expression =>
+            entity => new SampleResponse(entity.Id, entity.Name);
+    }
+
+    private sealed class DuplicateUnnamedProjection : IProjection<SampleEntity, SampleResponse>
+    {
+        public System.Linq.Expressions.Expression<Func<SampleEntity, SampleResponse>> Expression =>
+            entity => new SampleResponse(entity.Id, entity.Name);
+    }
+
+    private sealed class DuplicateNamedProjection : INamedProjection<SampleEntity, SampleResponse>
+    {
+        public string Name => "list";
+
+        public System.Linq.Expressions.Expression<Func<SampleEntity, SampleResponse>> Expression =>
+            entity => new SampleResponse(entity.Id, entity.Name);
+    }
+
+    private sealed class RiskyProjection : IProjection<SampleEntity, SampleResponse>
+    {
+        public System.Linq.Expressions.Expression<Func<SampleEntity, SampleResponse>> Expression =>
+            entity => new SampleResponse(Guid.NewGuid(), Normalize(entity.Name + DateTime.UtcNow.Year));
+
+        private static string Normalize(string value) => value.Trim();
+    }
+
 }

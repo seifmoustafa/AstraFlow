@@ -22,4 +22,16 @@ public sealed class MappingOptions
     /// Enabled by default to keep module DTO mapping auditable and testable.
     /// </summary>
     public bool RequireDeclaredMappingRules { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether registered projections are validated when the application starts.
+    /// Enabled by default so projection ambiguity and high-risk expressions are visible early.
+    /// </summary>
+    public bool ValidateProjectionCatalogOnStartup { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets how projection validation findings are reported.
+    /// Warning mode is the default so existing applications can adopt projection diagnostics without startup failures.
+    /// </summary>
+    public ProjectionValidationMode ProjectionValidationMode { get; set; } = ProjectionValidationMode.Warning;
 }

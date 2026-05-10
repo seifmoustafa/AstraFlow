@@ -119,7 +119,7 @@ Expected behavior:
 - Missing item rules fail with the same missing-rule error.
 - Strings are not treated as collections.
 
-Supported destination shapes in v1.1.0:
+Supported destination shapes in v1.2.0:
 
 - arrays
 - `List<T>`
@@ -195,9 +195,10 @@ Expected behavior:
 
 - `ProjectWith` applies the expression to the query.
 - The LINQ provider receives the expression.
-- AstraFlow does not validate provider translation in v1.1.0.
+- AstraFlow v1.2.0 validates projection registrations and high-risk expression patterns through `IProjectionValidator`.
+- The optional `AstraFlow.Mapper.EntityFrameworkCore` package can ask EF Core to generate SQL for registered projections without executing the query.
 
-Provider-aware projection validation is planned for a later package.
+For named projection and EF Core cases, see [Projection Scenarios](projection-scenarios.md) and [Entity Framework Core](entity-framework-core.md).
 
 ## Secure ID Mapping
 

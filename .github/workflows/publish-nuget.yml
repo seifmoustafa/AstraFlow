@@ -47,6 +47,9 @@ jobs:
       - name: Pack mapper
         run: dotnet pack src/AstraFlow.Mapper/AstraFlow.Mapper.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Pack mapper EF Core
+        run: dotnet pack src/AstraFlow.Mapper.EntityFrameworkCore/AstraFlow.Mapper.EntityFrameworkCore.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
       - name: Pack diagnostics
         run: dotnet pack src/AstraFlow.Diagnostics/AstraFlow.Diagnostics.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 

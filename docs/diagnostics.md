@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.1.0
+dotnet add package AstraFlow.Diagnostics --version 1.2.0
 ```
 
 The package references `AstraFlow.Mediator` and `AstraFlow.Mapper` so it can understand the core public contracts.
@@ -49,7 +49,7 @@ Use `CreateReport()` for application decisions or tests. Use JSON for tooling an
 | Notification handlers | Service type, implementation type, and DI lifetime. |
 | Pipeline behaviors | Open or closed behavior registration and lifetime. |
 | Mapping rules | Registered `IObjectMappingRule` implementations and lifetimes. |
-| Projections | Registered `IProjection<TSource, TDestination>` implementations and lifetimes. |
+| Projections | Registered `IProjection<TSource, TDestination>` implementations, optional names, and lifetimes. |
 
 The summary has `HasErrors`, which is suitable for health-check-style decisions without requiring an ASP.NET Core health check dependency.
 
@@ -72,6 +72,8 @@ The summary has `HasErrors`, which is suitable for health-check-style decisions 
 | `AFD103` | `Error` | A scanned request has no registered handler. | Add the handler or include the handler assembly marker. |
 | `AFD201` | `Warning` | Handler, behavior, or mapping rule is singleton. | Prefer scoped lifetime unless singleton is deliberate and dependency-safe. |
 | `AFD301` | `Error` | Mapper catalog validation failed. | Fix declared mapping ownership, duplicate pairs, or undeclared rules. |
+| `AFD302` | `Error` | Projection validation failed unexpectedly while diagnostics were generated. | Fix the thrown validation error or DI configuration. |
+| `AFP...` | `Warning` or `Error` | Projection registry or expression validation finding. | See [Projections](projections.md). |
 
 ## JSON Output
 
@@ -105,6 +107,8 @@ Markdown includes:
 - pipeline behavior table,
 - mapping rule table,
 - projection table.
+
+Named projections are shown in the projection service column as `[name: value]`.
 
 ## Security Model
 
@@ -141,4 +145,3 @@ report.Summary.HasErrors.Should().BeFalse();
 ```
 
 For CI, write JSON or Markdown as an artifact. Do not fail CI on warnings until the team agrees on warning policy.
-

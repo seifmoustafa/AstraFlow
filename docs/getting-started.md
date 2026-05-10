@@ -9,17 +9,19 @@ For complete reference tables, see [API Reference](api-reference.md). For expect
 Install the package that matches the surface you need:
 
 - `AstraFlow.Mediator` for CQRS dispatch and notifications.
-- `AstraFlow.Mapper` for explicit object mapping and projections.
+- `AstraFlow.Mapper` for explicit object mapping, projection registry, named projections, and projection validation.
 - `AstraFlow.Diagnostics` for registration and validation reports.
+- `AstraFlow.Mapper.EntityFrameworkCore` for optional EF Core projection translation checks.
 - `AstraFlow` for both.
 
 AstraFlow currently targets `net10.0`. .NET 10 is an active LTS release supported by Microsoft until November 14, 2028.
 
 ```powershell
-dotnet add package AstraFlow.Mediator --version 1.1.0
-dotnet add package AstraFlow.Mapper --version 1.1.0
-dotnet add package AstraFlow.Diagnostics --version 1.1.0
-dotnet add package AstraFlow --version 1.1.0
+dotnet add package AstraFlow.Mediator --version 1.2.0
+dotnet add package AstraFlow.Mapper --version 1.2.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.0
+dotnet add package AstraFlow.Diagnostics --version 1.2.0
+dotnet add package AstraFlow --version 1.2.0
 ```
 
 Use only the package you need. If a project only sends requests, install `AstraFlow.Mediator`. If a project only maps DTOs, install `AstraFlow.Mapper`. Use the meta-package when both are intentionally part of the same project.

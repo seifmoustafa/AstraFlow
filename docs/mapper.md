@@ -2,7 +2,7 @@
 
 `AstraFlow.Mapper` is explicit by default. It maps only when an `IObjectMappingRule` says it can map a source and destination type.
 
-For every method and option, see [API Reference](api-reference.md). For expected behavior across object, collection, validation, projection, and secure-ID cases, see [Mapper Scenarios](mapper-scenarios.md) and [Troubleshooting](troubleshooting.md).
+For every method and option, see [API Reference](api-reference.md). For expected behavior across object, collection, validation, projection, and secure-ID cases, see [Mapper Scenarios](mapper-scenarios.md), [Projection Scenarios](projection-scenarios.md), and [Troubleshooting](troubleshooting.md).
 
 For production use, prefer `IDeclaredObjectMappingRule`:
 
@@ -40,6 +40,15 @@ Projection is explicit:
 query.ProjectWith(new InvoiceProjection());
 ```
 
+Projection registry lookup is explicit too:
+
+```csharp
+var registry = provider.GetRequiredService<IProjectionRegistry>();
+var query = db.Invoices.ProjectWith<Invoice, InvoiceResponse>(registry, "list");
+```
+
+Use [Projections](projections.md) for named projections, validation options, and diagnostics behavior. Use [Entity Framework Core](entity-framework-core.md) when you need optional EF Core translation checks.
+
 The secure ID abstraction is intentionally narrow:
 
 - `ISecureIdCodec` encrypts and decrypts IDs.
@@ -65,7 +74,7 @@ Avoid broad checks such as `destinationType.Name.EndsWith("Response")`; broad ch
 - It will not infer property matches by name.
 - It will not flatten nested objects automatically.
 - It will not create reverse maps.
-- It will not call query providers for you.
+- It will not turn object mapping rules into query-provider projections.
 - It will not encrypt IDs unless your rule asks `SecureIdMapper` to do so.
 
 Those boundaries are intentional. They keep v1 behavior reviewable.
