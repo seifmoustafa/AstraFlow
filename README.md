@@ -34,6 +34,7 @@ It was built to keep production applications free from runtime license checks, h
 | [Troubleshooting](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/troubleshooting.md) | You hit an exception and want the likely cause and fix. |
 | [Community Release Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/community-release-guide.md) | You are preparing the repo push, tag, package verification, and community-facing release notes. |
 | [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | You want the completed v1.2 projection safety scope and the future testing, mediator-parity, mapping-parity, analyzer, generator, and ecosystem roadmap. |
+| [Future Ideas Bank](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/future-ideas.md) | You want the broader candidate backlog for future features, integrations, platform tooling, and research ideas. |
 | [Publishing](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/publishing.md) | You are preparing or verifying a NuGet release. |
 
 ## Target Framework
@@ -292,7 +293,7 @@ AstraFlow v1 intentionally does not include convention mapping, flattening, reve
 
 ## Roadmap
 
-The long-term plan is to continue improving projection safety, then add testing support, mediator parity features, optional convention mapping, advanced mapping parity, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, broader EF Core provider checks, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
+The long-term plan is to continue improving projection safety, then add target-framework compatibility work, testing support, mediator parity features, optional convention mapping, advanced mapping parity, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, validation integration, CLI/templates, broader EF Core provider checks, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
 
 ## Branding
 

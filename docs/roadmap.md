@@ -2,6 +2,8 @@
 
 This file is the long-form planning artifact for AstraFlow after the v1 package extraction. It should be used as the starting context for future package work, public repository setup, and the later NEXORA migration from local project references to published NuGet packages.
 
+For the broader speculative backlog, see [Future Ideas Bank](future-ideas.md). The roadmap is the committed planning document; the ideas bank is where candidates and research topics live before they are promoted.
+
 ## Product Positioning
 
 AstraFlow is a MIT-licensed .NET package family for explicit application flow:
@@ -40,6 +42,30 @@ The strategy is:
 - keep the explicit core first-class forever.
 
 Parity does not mean copying API names. It means a user should be able to solve the same application problems with AstraFlow, with clearer failures and safer defaults.
+
+## Roadmap Operating Principles
+
+The roadmap is intentionally ambitious, but it must stay disciplined. Every new feature must fit at least one of these product goals:
+
+- make application flow easier to understand,
+- make runtime behavior safer,
+- make mapping and projection behavior more auditable,
+- reduce repetitive test setup,
+- improve compatibility and adoption,
+- improve diagnostics before failures reach production,
+- move correctness checks earlier through analyzers or generators,
+- provide opt-in productivity without weakening explicit defaults.
+
+Feature rules:
+
+- Core packages stay small.
+- Optional packages carry optional dependencies.
+- Compatibility work must be proven by build and test matrices.
+- Public APIs must be stable, boring, and easy to explain.
+- Advanced convenience APIs must produce diagnostics or inspection output.
+- Security-sensitive automation must be opt-in and deny-by-default.
+- Any feature that logs, serializes, or reports user data must redact by default.
+- Any feature that touches database, web, validation, telemetry, cache, or authorization frameworks belongs in an integration package unless it is only an abstraction.
 
 ## Release Notes Policy
 
@@ -349,6 +375,169 @@ These were not explicit enough before and are now promoted into planned roadmap 
 - projection parameterization,
 - provider-specific projection validation matrix.
 
+## Expanded Feature Opportunity Inventory
+
+This section is deliberately broad. It exists so future work can be compared against a known opportunity list instead of being rediscovered every few months.
+
+### Compatibility And Adoption
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| Multi-targeting | Planned | Add modern and compatibility targets where tests prove the API works. |
+| Contracts-only package | Planned | Let shared projects reference request/notification contracts without runtime DI packages. |
+| API compatibility checks | Planned | Compare public APIs against a baseline before release. |
+| Version support policy | Planned | Document which package versions get patches. |
+| Migration guides | Planned | Explain migration from established mediator and mapper libraries without making public docs competitor-centered. |
+| Compatibility samples | Planned | Add console, worker, ASP.NET Core, class library, and test-project examples. |
+| NativeAOT/trimming validation | Planned | Make reflection-heavy paths explicit and generator-backed where needed. |
+| Package split guidance | Planned | Document when to install meta package versus focused packages. |
+
+### Mediator Feature Surface
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| Void requests | Planned | Commands that return no value without forcing application-specific result types. |
+| Stream requests | Planned | `IAsyncEnumerable<T>` request/response flows. |
+| Stream behaviors | Planned | Pipeline behavior model for streamed responses. |
+| Pre/post processors | Planned | Lightweight extension points around handlers. |
+| Exception handlers/actions | Planned | Explicit exception recovery and side-effect hooks. |
+| Rich registration builder | Planned | Discoverable registration methods with deterministic behavior order. |
+| Publish strategies | Planned | Sequential default, parallel and bounded-parallel opt-in. |
+| Cancellation diagnostics | Planned | Report handlers/processors that ignore cancellation tokens where detectable. |
+| Timeout behavior package | Candidate | Likely an optional pipeline helper, not core. |
+| Idempotency behavior package | Candidate | Useful for command handling, but requires application persistence policy. |
+| Retry/resilience behavior package | Candidate | Should integrate with established resilience primitives rather than inventing policy engines. |
+| Transaction behavior package | Candidate | Belongs in EF/database integration package. |
+| Outbox/inbox integration | Candidate | Valuable for domain events; should remain infrastructure-specific and opt-in. |
+| Domain event bridge | Candidate | Bridge domain events to notifications without forcing a domain model. |
+| Request envelopes | Candidate | Add correlation, causation, tenant, and user context without logging payloads. |
+| Ordered notifications | Candidate | Only if diagnostics make coupling obvious. |
+| Handler decorators | Candidate | Pipeline behaviors may already cover most cases. |
+
+### Mapper Feature Surface
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| Safe convention mapping | Planned | Disabled by default and fully inspectable. |
+| Mapping profiles/catalogs | Planned | Organize mapping configuration at scale. |
+| Fluent member config | Planned | Member-specific include, ignore, source, destination, null, converter, and condition rules. |
+| Flattening/unflattening | Planned | Explicit, diagnostic-heavy, and sensitive-field-aware. |
+| Reverse mapping | Planned | Explicit only; never auto-generated silently. |
+| Existing destination mapping | Planned | Support update/patch flows without forcing entity tracking assumptions. |
+| Value converters/resolvers | Planned | DI-aware, lifetime-diagnosed, and inspectable. |
+| Value transformers | Candidate | Useful but risky because global transforms can hide behavior. |
+| Before/after map hooks | Candidate | Useful but must be diagnostics-visible. |
+| Polymorphic mapping | Candidate | Add after profiles and strict validation exist. |
+| Inheritance mapping | Candidate | Add after profiles and strict validation exist. |
+| Enum mapping helpers | Planned | Explicit enum-to-enum and enum-to-string support with validation. |
+| Nullable compatibility diagnostics | Planned | Warn when nullable source/destination shapes are unsafe. |
+| Numeric conversion diagnostics | Planned | Warn about narrowing conversions and precision loss. |
+| Record/constructor binding | Planned | Opt-in binding with ambiguity diagnostics. |
+| Dictionary/dynamic mapping | Candidate | Useful for integrations but risky; keep out of core until justified. |
+| DataReader mapping | Candidate | Likely belongs in data integration packages. |
+| JSON mapping helpers | Candidate | Useful for APIs but should not replace serializers. |
+| Mapping plan export | Planned | Export inspected member maps for docs, CI, and review. |
+
+### Projection And Query Safety
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| Projection registry | Done | Current v1.2 feature. |
+| Named projections | Done | Current v1.2 feature. |
+| Static projection validation | Done | Current v1.2 feature. |
+| EF Core relational validation | Done | Current v1.2 optional package. |
+| Projection parameters | Planned | Safe tenant/user/current-time parameters without complex closure capture. |
+| Provider matrix | Planned | SQLite, SQL Server, PostgreSQL, MySQL where practical. |
+| Provider-specific warnings | Planned | Stable codes for provider/model translation risks. |
+| Query tagging helpers | Candidate | Useful in EF integrations. |
+| Projection plan export | Planned | List source/destination members and high-risk expression nodes. |
+| Projection diffing | Candidate | Useful in CLI to show read-model shape changes across commits. |
+| Async projection helpers | Candidate | Usually provider-owned; avoid hiding `IQueryable` behavior. |
+
+### Diagnostics, Reports, And Tooling
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| JSON diagnostics | Done | Current v1.1 feature. |
+| Markdown diagnostics | Done | Current v1.1 feature. |
+| HTML diagnostics report | Candidate | Useful for humans, but keep JSON/Markdown first. |
+| SARIF output | Planned | Enables code-scanning style reports for analyzers/CLI. |
+| Diagnostics baseline/diff | Planned | Compare registration/mapping/projection changes in CI. |
+| Redaction policy diagnostics | Planned | Report what can be emitted and what is redacted. |
+| Health-check integration | Planned | ASP.NET Core package should expose development-safe summaries. |
+| Diagnostics endpoint | Planned | Development-only ASP.NET Core endpoint with redaction. |
+| Visual graph export | Planned | DOT/Mermaid/JSON graph of requests, handlers, mappings, and projections. |
+
+### Testing And Verification
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| Fake sender/publisher/mediator | Planned | No mocking framework dependency. |
+| Handler harness | Planned | Test handlers without full DI host. |
+| Pipeline harness | Planned | Test order and short-circuit behavior. |
+| Notification harness | Planned | Test multi-handler behavior and failure policies. |
+| Mapper assertions | Planned | Assert mapping rule ownership and output. |
+| Projection assertions | Planned | Assert expression shape, validation findings, and provider checks. |
+| Secure ID test codec | Planned | Stable round-trip test helper without real secrets. |
+| Golden diagnostics snapshots | Planned | Deterministic diagnostics snapshot testing. |
+| Fixture builders | Candidate | Useful if they do not become a test framework. |
+
+### Observability And Operations
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| ActivitySource tracing | Planned | Trace request dispatch, notification fan-out, and mapping/projection validation. |
+| Metrics | Planned | Durations, counts, failure rates, validation findings. |
+| Logging hooks | Planned | Redacted by default and logger-framework-neutral where possible. |
+| Correlation/causation propagation | Candidate | Useful if it stays payload-free. |
+| Sampling controls | Candidate | Avoid high-cardinality metric and trace output. |
+| Production diagnostics command | Candidate | CLI can generate reports from an app host. |
+
+### Security And Policy
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| Secure ID abstraction | Done | Current core feature. |
+| Sensitive-field deny lists | Planned | Required for convention mapping and analyzers. |
+| Public DTO raw-ID analyzer | Planned | Warn or fail when secure ID policy is enabled. |
+| Secret field mapping analyzer | Planned | Flag password/token/key/secret-style members. |
+| Redaction policy | Planned | Central policy for diagnostics and reports. |
+| Threat model doc | Planned | Explain what AstraFlow protects and what apps must own. |
+| Secure defaults test suite | Planned | Tests proving risky automation is off by default. |
+| Security advisory process | Planned | Private reporting path and release procedure. |
+
+### Developer Experience And Documentation
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| API reference | Done | Current docs have public API tables. |
+| Scenario guides | Done | Current mediator/mapper/projection scenarios exist. |
+| Migration guides | Planned | From manual dispatch, established mediator libraries, and established mapper libraries. |
+| Recipe gallery | Planned | Focused examples for common application patterns. |
+| Package selection guide | Planned | Tell users which package to install and why. |
+| Compatibility guide | Planned | Document target frameworks and supported dependency versions. |
+| Analyzer rule catalog | Planned | Required when analyzers ship. |
+| Generator design docs | Planned | Required when generators ship. |
+| Benchmark methodology | Planned | Required before performance claims. |
+| Documentation website | Planned | Later platform milestone. |
+
+### Integrations And Ecosystem
+
+| Opportunity | Status | Direction |
+| --- | --- | --- |
+| ASP.NET Core helpers | Planned | Minimal API/controller helpers, problem details, diagnostics endpoint. |
+| FluentValidation integration | Planned | Validation behavior, result adapter, localization hooks. |
+| EF Core integration | Planned | Projection checks, query tags, outbox/transaction candidates. |
+| OpenTelemetry integration | Planned | Dedicated package if core hooks are not enough. |
+| Caching integration | Candidate | Pipeline helpers with explicit cache keys and invalidation contracts. |
+| Authorization integration | Candidate | Pipeline helpers without forcing one permission model. |
+| Idempotency integration | Candidate | Requires persistence and operation-key policies. |
+| Resilience integration | Candidate | Timeout/retry/circuit-breaker helpers in optional package. |
+| Background job integration | Candidate | Dispatch requests from worker/job systems without owning the scheduler. |
+| Webhook integration | Candidate | Event publication helpers with signing and redaction policy. |
+| CLI tooling | Planned | Inspect, validate, diff, scaffold, release-check, migrate. |
+| Templates | Planned | `dotnet new` templates for console, worker, ASP.NET Core, modular monolith. |
+
 ## v1.0 Acceptance Gates
 
 Before first public publish:
@@ -580,6 +769,73 @@ Acceptance gates:
 - unsupported expressions fail clearly when validation is enabled,
 - NEXORA read models can use projections without leaking raw IDs,
 - SQLite EF Core tests cover provider translation behavior without Docker or external database services.
+
+## v1.2.1 Roadmap: Compatibility And Adoption Hardening
+
+Status: `Planned`.
+
+Goal:
+
+Make AstraFlow easier to adopt in more real applications without changing the current public behavior.
+
+This is the compatibility gate before the larger feature roadmap. It should be a patch or minor release depending on how much public metadata and package layout changes.
+
+Planned packages:
+
+- `AstraFlow`
+- `AstraFlow.Mediator`
+- `AstraFlow.Mapper`
+- `AstraFlow.Diagnostics`
+- `AstraFlow.Mapper.EntityFrameworkCore`
+
+Target framework strategy:
+
+| Package | Candidate targets | Notes |
+| --- | --- | --- |
+| `AstraFlow.Mediator` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Direct `net462`/`net471` targets are candidates only after test proof. |
+| `AstraFlow.Mapper` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Requires replacing APIs unavailable on older targets or conditional compilation. |
+| `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | JSON support must be dependency-compatible on older targets. |
+| `AstraFlow` | same as mediator/mapper intersection | Meta package should not force a narrower target than its dependencies. |
+| `AstraFlow.Mapper.EntityFrameworkCore` | `net8.0`, `net9.0`, `net10.0` candidate | May require conditional EF Core package versions per target. No `netstandard2.0` promise until EF support is proven. |
+| Future `AstraFlow.Contracts` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Contracts should have the broadest practical reach. |
+| Future analyzers/generators | `netstandard2.0` where required by Roslyn packaging | Analyzer package conventions differ from runtime packages. |
+
+Compatibility work items:
+
+- audit all public APIs for target-framework-specific types,
+- remove or conditionally polyfill APIs unavailable on older targets,
+- decide whether direct .NET Framework targets add value beyond `netstandard2.0`,
+- add CI matrix for every supported TFM,
+- run tests for every supported TFM,
+- run pack inspection for every supported TFM,
+- document dependency versions per TFM,
+- document which targets are first-class and which are compatibility targets,
+- add API compatibility baseline checks,
+- add package compatibility smoke tests with clean sample apps,
+- keep `net10.0` as the newest optimized target.
+
+Design rules:
+
+- do not add old target support if it forces insecure or unreliable behavior,
+- do not broaden EF Core targets by pinning users to mismatched EF versions silently,
+- if an integration package cannot support an older TFM honestly, document that instead of pretending,
+- no feature should require users on modern .NET to accept legacy compromises.
+
+Acceptance gates:
+
+- Release build passes for every supported TFM,
+- tests pass for every supported TFM where tests are applicable,
+- packages include correct framework folders,
+- README and docs show target framework support accurately,
+- CI blocks unsupported target regressions,
+- clean install succeeds for each supported package combination,
+- no public API is removed.
+
+Patch candidates:
+
+- `v1.2.1`: metadata, docs, API compatibility baseline, and compatibility feasibility report,
+- `v1.2.2`: first multi-target support if no API risk appears,
+- `v1.2.3`: direct legacy framework target if proven valuable and safe.
 
 ## v1.3 Roadmap: Testing Support
 
@@ -891,7 +1147,208 @@ Acceptance gates:
 - telemetry can be disabled globally,
 - NEXORA can trace request dispatch and notification fan-out in development.
 
+## v1.9 Roadmap: Web And Validation Integration
+
+Status: `Planned`.
+
+Goal:
+
+Provide first-class application integration for common web and validation scenarios while keeping core packages framework-neutral.
+
+Planned packages:
+
+- `AstraFlow.AspNetCore`
+- `AstraFlow.FluentValidation`
+
+`AstraFlow.AspNetCore` features:
+
+- minimal API request dispatch helpers,
+- controller request dispatch helpers,
+- problem-details mapping for known AstraFlow failures,
+- development-only diagnostics endpoint,
+- diagnostics health-check integration,
+- request/notification registration summary endpoint for local development,
+- endpoint filters that dispatch requests without hiding model binding,
+- safe examples for result mapping without forcing a specific result type,
+- OpenAPI example guidance without taking ownership of API documentation.
+
+`AstraFlow.FluentValidation` features:
+
+- validation pipeline behavior,
+- fail-fast validation mode,
+- aggregate-error validation mode,
+- validation result adapter,
+- localization hook,
+- severity mapping,
+- validation diagnostics that list validators without printing request payloads,
+- test helpers through `AstraFlow.Testing` once both packages exist.
+
+Design rules:
+
+- ASP.NET Core helpers must not force MVC, minimal APIs, or a specific result wrapper,
+- validation integration must not make FluentValidation a core dependency,
+- diagnostics endpoints must be disabled or development-only by default,
+- no HTTP helper logs request bodies by default.
+
+Acceptance gates:
+
+- ASP.NET Core sample app covers minimal APIs and controllers,
+- validation sample covers success, fail-fast, aggregate errors, and localization hooks,
+- diagnostics endpoint redacts by default,
+- tests cover problem-details mapping and validation behavior ordering,
+- docs explain package boundaries clearly.
+
+## v1.10 Roadmap: CLI, Templates, And Migration Tooling
+
+Status: `Planned`.
+
+Goal:
+
+Make AstraFlow easy to inspect, adopt, and maintain from the command line.
+
+Planned packages/tools:
+
+- `AstraFlow.Cli`
+- `AstraFlow.Templates`
+
+CLI features:
+
+- inspect registered handlers,
+- inspect notification handlers,
+- inspect pipeline behaviors,
+- inspect mapping rules,
+- inspect projections,
+- validate mapping catalogs,
+- validate projection catalogs,
+- generate diagnostics reports,
+- output JSON, Markdown, SARIF, and Mermaid/DOT graph formats,
+- diff diagnostics reports between commits,
+- check package references and target-framework support,
+- prepare release checklist,
+- inspect `.nupkg` contents,
+- validate README links for package publishing,
+- scaffold request/handler pairs,
+- scaffold mapping rules,
+- scaffold projections,
+- scaffold test harnesses,
+- candidate migration scanner from established mediator libraries,
+- candidate migration scanner from established mapper libraries.
+
+Template features:
+
+- console app template,
+- worker service template,
+- ASP.NET Core minimal API template,
+- ASP.NET Core controller template,
+- modular monolith template,
+- package authoring sample,
+- diagnostics sample,
+- projection/EF Core sample,
+- secure ID mapping sample.
+
+Design rules:
+
+- CLI must never require app secrets,
+- CLI must support offline analysis where possible,
+- generated code must be explicit and readable,
+- migration scanners should report suggestions, not silently rewrite application behavior.
+
+Acceptance gates:
+
+- CLI commands have deterministic output,
+- CLI can run in CI,
+- templates build immediately after creation,
+- generated samples use current package versions,
+- docs include copy-paste commands for every CLI command.
+
+## v1.11 Roadmap: Reliability, Caching, Authorization, And Resilience Integrations
+
+Status: `Candidate`.
+
+Goal:
+
+Provide optional building blocks for common pipeline concerns without forcing one application architecture.
+
+Candidate packages:
+
+- `AstraFlow.Caching`
+- `AstraFlow.Authorization`
+- `AstraFlow.Idempotency`
+- `AstraFlow.Resilience`
+- `AstraFlow.EntityFrameworkCore`
+
+Candidate features:
+
+- cache behavior with explicit cache-key contract,
+- cache invalidation notification helpers,
+- authorization behavior with pluggable policy evaluator,
+- idempotency behavior with pluggable operation store,
+- timeout behavior,
+- retry behavior,
+- circuit-breaker behavior,
+- EF Core transaction behavior,
+- EF Core outbox candidate,
+- EF Core inbox candidate,
+- query tagging helpers,
+- domain event dispatch bridge candidate.
+
+Design rules:
+
+- no package may assume a tenant, user, permission, cache, database, or result model,
+- caching must require explicit cache keys,
+- authorization must not hide failed policy details from diagnostics,
+- idempotency must not store request payloads by default,
+- resilience helpers should integrate with established .NET primitives where practical.
+
+Acceptance gates:
+
+- each integration package has narrow dependencies,
+- each package has sample apps,
+- each package has failure-mode docs,
+- each package works independently of the meta package,
+- every helper can be disabled or replaced.
+
+## v1.12 Roadmap: Documentation Website And Recipe Gallery
+
+Status: `Planned`.
+
+Goal:
+
+Make AstraFlow understandable without requiring users to read source code or long roadmap files.
+
+Features:
+
+- documentation website,
+- install/package decision guide,
+- quick-start paths by app type,
+- request/handler recipes,
+- notification recipes,
+- pipeline behavior recipes,
+- mapping recipes,
+- projection recipes,
+- EF Core projection recipes,
+- testing recipes,
+- diagnostics recipes,
+- secure ID recipes,
+- migration recipes,
+- compatibility matrix page,
+- release notes page,
+- analyzer rule catalog page,
+- generator design page,
+- benchmark methodology page,
+- security model page.
+
+Acceptance gates:
+
+- docs site can be built in CI,
+- README links to the docs site when available,
+- docs site does not replace packed Markdown docs,
+- examples compile against published packages,
+- docs clearly separate stable APIs from candidate roadmap items.
+
 ## v2 Roadmap: Compile-Time Superiority
+
+Status: `Planned`.
 
 Goal:
 
@@ -911,10 +1368,14 @@ Planned packages:
 - generated notification handler registration,
 - generated void request registration,
 - generated stream request registration,
+- generated pre/post processor registration,
+- generated exception handler/action registration,
 - generated mapping dispatch tables,
 - generated convention mapping plans,
 - generated collection mapping fast paths,
 - generated projection registry metadata,
+- generated diagnostics metadata,
+- generated service registration extension candidate,
 - trimming-friendly registration,
 - AOT-friendly registration,
 - compile-time request metadata,
@@ -946,14 +1407,35 @@ Planned packages:
 - rule catches broad `Exception` and hides mapping failure details,
 - package consumer uses service locator inside mapping rules.
 
+Generator design rules:
+
+- generated code must be deterministic,
+- generated code must be readable enough for debugging,
+- generator output must not depend on build-machine paths except SourceLink metadata,
+- generator features must have runtime fallback unless the package explicitly documents generator-only behavior,
+- generated mapping plans must match diagnostics output.
+
+Analyzer severity strategy:
+
+- new analyzer rules start as `Info` or `Warning`,
+- security-sensitive rules may offer `Error` mode,
+- docs must explain how to suppress a rule responsibly,
+- suppressions should require an explicit reason where possible,
+- analyzer IDs must be stable and documented.
+
 Acceptance gates:
 
 - analyzers produce actionable messages and code locations,
 - generators are deterministic,
 - generated code is readable enough for debugging,
+- generator output is covered by snapshot tests,
+- analyzers have code-fix candidates where safe,
+- AOT/trimming sample builds with generator-backed registration,
 - NEXORA can enable analyzers in warning mode first, then error mode.
 
 ## v2.1 Roadmap: Performance And Benchmarks
+
+Status: `Planned`.
 
 Goal:
 
@@ -986,7 +1468,17 @@ Rules:
 - keep manual baseline in every benchmark group,
 - track performance regressions in CI once stable.
 
+Acceptance gates:
+
+- benchmark project runs locally and in CI on demand,
+- benchmark output is committed or published as release artifact,
+- benchmark docs explain hardware/runtime settings,
+- regressions are tracked by category,
+- performance optimizations do not weaken diagnostics or safety defaults.
+
 ## v2.2 Roadmap: Enterprise Supply Chain
+
+Status: `Planned`.
 
 Goal:
 
@@ -1015,7 +1507,64 @@ Acceptance gates:
 - security reports have a documented private path,
 - package signing does not block local development.
 
+## v2.3 Roadmap: Public API Governance
+
+Status: `Planned`.
+
+Goal:
+
+Prevent accidental breaking changes and make long-term package support credible.
+
+Features:
+
+- public API baseline files,
+- automated API diff in CI,
+- SemVer classification guidance,
+- obsolete API policy,
+- compatibility test suite for old package versions,
+- package deprecation guidance,
+- release branch strategy,
+- support window policy,
+- docs for adding new public APIs.
+
+Acceptance gates:
+
+- CI fails on unreviewed public API changes,
+- changelog labels breaking, added, changed, fixed, deprecated, removed, and security items,
+- obsolete APIs include replacement guidance,
+- release checklist includes API compatibility review.
+
+## v2.4 Roadmap: Security Policy And DTO Governance
+
+Status: `Planned`.
+
+Goal:
+
+Make AstraFlow safer for public API DTOs, secure identifiers, diagnostics, and generated/convention behavior.
+
+Features:
+
+- secure DTO policy abstraction,
+- public raw-ID analyzer,
+- sensitive member analyzer,
+- secure ID mapping diagnostics,
+- convention mapping sensitive-field gates,
+- redaction policy shared by diagnostics, CLI, and observability,
+- security threat model document,
+- secure defaults verification tests,
+- private security advisory workflow,
+- package vulnerability response guide.
+
+Acceptance gates:
+
+- sensitive member rules are documented,
+- secure DTO policy can be enabled without forcing one ID codec,
+- diagnostics and CLI use the same redaction policy,
+- tests prove payload values are not emitted by default.
+
 ## v3 Roadmap: Ecosystem Packages
+
+Status: `Planned`.
 
 Goal:
 
@@ -1031,6 +1580,11 @@ Planned packages:
 - `AstraFlow.Authorization`
 - `AstraFlow.Webhooks`
 - `AstraFlow.Cli`
+- `AstraFlow.Templates`
+- `AstraFlow.Idempotency`
+- `AstraFlow.Resilience`
+- `AstraFlow.BackgroundJobs`
+- `AstraFlow.DomainEvents`
 
 ### `AstraFlow.AspNetCore`
 
@@ -1042,7 +1596,10 @@ Features:
 - minimal API examples,
 - controller examples,
 - health-check integration for diagnostics,
-- development-only diagnostics endpoint.
+- development-only diagnostics endpoint,
+- endpoint filter helpers,
+- safe response mapping examples,
+- OpenAPI guidance.
 
 ### `AstraFlow.EntityFrameworkCore`
 
@@ -1052,7 +1609,11 @@ Features:
 - provider-specific test matrix,
 - query tagging helpers,
 - projection translation diagnostics,
-- safe ID projection examples.
+- safe ID projection examples,
+- transaction behavior candidate,
+- outbox candidate,
+- inbox candidate,
+- domain-event dispatch bridge candidate.
 
 ### `AstraFlow.FluentValidation`
 
@@ -1064,6 +1625,64 @@ Features:
 - aggregate-errors option,
 - localization hook.
 
+### `AstraFlow.Caching`
+
+Features:
+
+- cache behavior,
+- explicit cache-key contract,
+- cache invalidation notification helpers,
+- cache diagnostics,
+- cache test helpers.
+
+### `AstraFlow.Authorization`
+
+Features:
+
+- authorization behavior,
+- pluggable policy evaluator,
+- diagnostics for missing policies,
+- test helpers for allowed/denied flows.
+
+### `AstraFlow.Idempotency`
+
+Features:
+
+- idempotency behavior,
+- pluggable operation store,
+- explicit idempotency key contract,
+- duplicate command behavior tests,
+- no payload storage by default.
+
+### `AstraFlow.Resilience`
+
+Features:
+
+- timeout behavior,
+- retry behavior candidate,
+- circuit-breaker behavior candidate,
+- cancellation diagnostics,
+- integration with established .NET resilience primitives where practical.
+
+### `AstraFlow.BackgroundJobs`
+
+Features:
+
+- dispatch requests from worker/job systems,
+- serialize only explicit job contracts,
+- avoid scheduler lock-in,
+- diagnostics for missing handlers at worker startup.
+
+### `AstraFlow.DomainEvents`
+
+Features:
+
+- domain event collection abstraction candidate,
+- domain event to notification bridge,
+- transactional dispatch guidance,
+- outbox integration hooks,
+- no forced domain base class.
+
 ### `AstraFlow.Cli`
 
 Features:
@@ -1074,9 +1693,15 @@ Features:
 - generate diagnostics report,
 - check package references,
 - validate public API docs,
-- prepare release checklist.
+- prepare release checklist,
+- generate graph output,
+- scaffold request/handler/mapping/projection/test files,
+- inspect package artifacts,
+- validate release metadata.
 
 ## v4 Roadmap: Platform-Level Tooling
+
+Status: `Planned`.
 
 Goal:
 
@@ -1087,6 +1712,8 @@ Features:
 - visual request flow graph,
 - visual pipeline graph,
 - visual mapping graph,
+- visual projection graph,
+- diagnostics diff viewer,
 - modular architecture scanner,
 - package migration assistant,
 - analyzer suppression management,
@@ -1097,7 +1724,10 @@ Features:
 - enterprise templates,
 - sample modular monolith,
 - sample microservice deployment,
-- sample serverless worker deployment.
+- sample serverless worker deployment,
+- IDE extension candidate,
+- interactive diagnostics explorer candidate,
+- release health dashboard candidate.
 
 ## Design Guardrails For Every Version
 
@@ -1140,8 +1770,9 @@ Add or expand these docs before broader public promotion:
 
 This matrix describes feature classes AstraFlow should cover over time. It avoids naming any competitor in package documentation and instead tracks product capability categories.
 
-| Capability | Now `v1.2` | Planned `v1.3-v1.8` | Planned `v2` | Planned `v3+` |
+| Capability | Now `v1.2` | Planned `v1.2.1-v1.12` | Planned `v2` | Planned `v3+` |
 | --- | --- | --- | --- | --- |
+| Target frameworks | `net10.0` only | Multi-target compatibility evaluation and rollout | API compatibility governance | Enterprise compatibility policy |
 | Request dispatch | Done | Void requests, richer registration | Generated registration, analyzer checks | Visual request graph |
 | Stream requests | Not included | Stream request and stream behavior support | Stream analyzers | Streaming templates |
 | Notification publish | Done | Parallel and bounded parallel strategies | Handler-risk analyzers | Observability dashboards |
@@ -1161,10 +1792,25 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 | Startup diagnostics | Done | Expanded finding coverage | Analyzer metadata | Health endpoints |
 | Testing support | Not included | `AstraFlow.Testing` | Analyzer-friendly test helpers | Test templates |
 | Observability | Not included | OpenTelemetry/logging hooks | Metrics tests | Dashboards |
+| ASP.NET Core integration | Sample only | Dedicated helper package | Analyzer hints | Templates and diagnostics endpoint |
+| Validation integration | Not included | Dedicated validation package | Analyzer hints | Recipe gallery |
+| CLI/templates | Not included | CLI and templates | Analyzer/generator integration | Migration assistant |
 | AOT/trimming | Basic-friendly design | Registration diagnostics | Generator support | Templates |
 | Enterprise supply chain | Basic metadata | Release hardening | SBOM/signing | Compliance reports |
 
 ## Detailed Parity Backlog
+
+### Compatibility Backlog
+
+| Item | Priority | Target | Notes |
+| --- | --- | --- | --- |
+| Multi-target feasibility audit | High | `v1.2.1` | Identify API/dependency blockers before changing package targets. |
+| `netstandard2.0` candidate support | High | `v1.2.x` | Enables broad class library and older app adoption if tests pass. |
+| `net8.0`/`net9.0`/`net10.0` targets | High | `v1.2.x` | Modern supported runtime coverage. |
+| Direct legacy framework target | Medium | Candidate | Only add if direct target provides value beyond `netstandard2.0`. |
+| EF Core conditional targets | Medium | `v1.7` | Requires matching EF Core major versions per TFM. |
+| API compatibility baseline | High | `v2.3` | Blocks accidental breaking public API changes. |
+| Compatibility docs | High | `v1.2.1` | Must explain supported TFMs accurately. |
 
 ### Mediator Backlog
 
@@ -1181,6 +1827,10 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 | Contracts-only package | High | `v1.4` | Important for shared API contracts, Blazor, clients, and modular boundaries. |
 | Fluent registration builder | High | `v1.4` | Needed for predictable behavior registration and discoverability. |
 | Parallel notification strategy | Medium | `v1.4` | Opt-in because ordering and scoped state can be risky. |
+| Cancellation diagnostics | Medium | `v1.4`/`v2` | Runtime docs first, analyzer later. |
+| Request envelope/correlation support | Low | Candidate | Useful for observability but must not log payloads. |
+| Timeout/idempotency/resilience behaviors | Medium | `v1.11` candidate | Optional packages only. |
+| Transaction/outbox bridge | Medium | `v1.11`/`v3` candidate | Integration package only. |
 | Notification ordering metadata | Low | Candidate | Avoid unless real apps need it. |
 
 ### Mapper Backlog
@@ -1196,11 +1846,15 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 | Value converters | Medium | `v1.5` | Prefer explicit converter classes. |
 | Conditional member mapping | Medium | `v1.5` | Useful for update/patch flows. |
 | Existing destination mapping | Medium | `v1.5` | Useful for tracked entities and command updates. |
+| Enum mapping validation | Medium | `v1.5` | Useful and low-risk if explicit. |
+| Nullable/numeric conversion diagnostics | Medium | `v1.5` | Prevents silent lossy mappings. |
+| Record/constructor binding | Medium | `v1.5` | Must be ambiguity-checked. |
 | Flattening | High | `v1.6` | Must be opt-in and diagnostic-heavy. |
 | Reverse mapping | High | `v1.6` | Must never be implicit. |
 | Unflattening | High | `v1.6` | Must protect domain-owned nested objects. |
 | Include members | Medium | `v1.6` | Needed for controlled composition mapping. |
 | Value resolvers | Medium | `v1.6` | Add lifetime diagnostics. |
+| Mapping plan export | High | `v1.5`/`v1.6` | Key AstraFlow differentiator for auditability. |
 | Value transformers | Low | Candidate | Can hide global behavior, needs careful design. |
 | Polymorphic mapping | Low | Candidate | Add only after core conventions stabilize. |
 | Inheritance mapping | Low | Candidate | Add only after profile/catalog model is stable. |
@@ -1215,7 +1869,10 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 | EF Core translation checks | Done | `v1.2` | Validates provider/model translation without executing queries. |
 | Secure ID abstraction | Done | `v1.0` | Keeps raw IDs and encryption policy explicit. |
 | Safe convention diagnostics | High | `v1.5` | Makes automatic mapping auditable. |
+| Diagnostics diffing | High | `v1.10` | Lets teams review flow/mapping/projection changes in CI. |
+| SARIF output | Medium | `v1.10`/`v2` | Helps code scanning and enterprise review. |
 | Sensitive DTO policy analyzers | High | `v2` | Prevents accidental public raw IDs and secret-field leaks. |
+| Secure DTO policy | High | `v2.4` | Turns secure ID guidance into enforceable package behavior. |
 | Visual request/mapping graph | Medium | `v4` | Helps large teams understand flow without reading all source. |
 
 ## Next Chat Bootstrap
