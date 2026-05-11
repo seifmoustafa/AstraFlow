@@ -181,4 +181,4 @@ Use this positioning consistently:
 - It is not a convention-mapping package in v1.
 - It is not tied to a web framework, validation framework, ORM, result type, or application-specific encryption.
 - It prioritizes clear startup/runtime failures over hidden behavior.
-- Future packages may add testing support, optional convention mapping, analyzers, broader provider checks, and observability, but the explicit core remains first-class.
+- Future packages may add testing support, mediator parity features, optional convention mapping, advanced mapping parity, analyzers, broader provider checks, and observability, but the explicit core remains first-class.

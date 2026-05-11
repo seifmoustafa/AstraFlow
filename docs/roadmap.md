@@ -16,6 +16,45 @@ AstraFlow is a MIT-licensed .NET package family for explicit application flow:
 
 The product direction is not to become a clone of older runtime-magic libraries. AstraFlow should win by being safer, more explicit, easier to audit, easier to validate at startup and build time, and better suited for modular enterprise systems.
 
+## Status Legend
+
+This roadmap uses these labels:
+
+- `Done`: implemented, tested, documented, and intended for release or already released.
+- `Patch`: SemVer-safe hardening for a released feature.
+- `Planned`: approved direction, not implemented yet.
+- `Candidate`: worth considering, but must still pass design review.
+- `Rejected`: deliberately not planned because it conflicts with AstraFlow's design.
+
+## Competitive Parity Strategy
+
+AstraFlow should cover the practical capabilities developers expect from established mediator and object-mapping libraries, but it should not inherit their risk profile blindly.
+
+The strategy is:
+
+- cover the common mediator surface first,
+- cover the common object-mapping surface next,
+- make convention behavior opt-in and inspectable,
+- make sensitive-field handling safer than default convention mapping,
+- make diagnostics, analyzers, and generators part of the product rather than afterthoughts,
+- keep the explicit core first-class forever.
+
+Parity does not mean copying API names. It means a user should be able to solve the same application problems with AstraFlow, with clearer failures and safer defaults.
+
+## Release Notes Policy
+
+NuGet's `PackageReleaseNotes` field is usually short plain text. It is normal for the NuGet tab to look minimal because it renders package metadata, not the full changelog.
+
+For every release:
+
+- `PackageReleaseNotes` should contain a concise public summary,
+- `CHANGELOG.md` should contain the detailed release notes,
+- `docs/community-release-guide.md` should contain the announcement copy,
+- README should link users to the detailed docs for new features,
+- release tags should point to the changelog section.
+
+For major feature releases, the package release notes should still be more useful than one vague sentence. Prefer a compact list of the main feature groups.
+
 ## Package Family
 
 ### `AstraFlow.Mediator`
@@ -63,10 +102,32 @@ Current v1 public concepts:
 - `IObjectMappingValidator`
 - `MappingOptions`
 - `IProjection<TSource, TDestination>`
+- `INamedProjection<TSource, TDestination>`
+- `IProjectionRegistry`
+- `IProjectionValidator`
+- `ProjectionRegistration`
+- `ProjectionValidationReport`
+- `ProjectionValidationFinding`
+- `ProjectionValidationMode`
 - `ProjectWith(...)`
 - `ISecureIdCodec`
 - `SecureIdMapper`
 - `AddAstraFlowMapper(...)`
+
+### `AstraFlow.Mapper.EntityFrameworkCore`
+
+Purpose:
+
+- Validate registered AstraFlow projections against EF Core relational query translation.
+- Keep EF Core dependencies out of `AstraFlow.Mapper`.
+- Report provider/model translation failures without executing application queries.
+
+Current v1.2 public concepts:
+
+- `ValidateProjectionTranslation(...)`
+- `ValidateProjectionTranslations(...)`
+- `EfCoreProjectionValidationReport`
+- `EfCoreProjectionValidationFinding`
 
 ### `AstraFlow`
 
@@ -102,14 +163,16 @@ Current v1.1 public concepts:
 
 ## v1 Status
 
-v1 is the stable explicit core. The implementation is intentionally focused and production-oriented.
+v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.2.0`.
 
 ### v1 Mediator Features
 
+- Status: `Done` for the current explicit mediator core.
 - Request/response dispatch.
 - Exactly one request handler per request type.
 - Clear error for missing request handlers.
 - Clear error for duplicate request handlers.
+- Clear error for request types that implement multiple response contracts.
 - Sequential notification publishing by default.
 - Configurable notification failure policies:
   - `FailFast`
@@ -124,6 +187,7 @@ v1 is the stable explicit core. The implementation is intentionally focused and 
 
 ### v1 Mapper Features
 
+- Status: `Done` for explicit object mapping and `Done` for v1.2 projection safety.
 - Explicit rule-based mapping.
 - Declared mapping pairs.
 - Startup validation.
@@ -133,6 +197,9 @@ v1 is the stable explicit core. The implementation is intentionally focused and 
 - Null source mapping.
 - Collection mapping for common collection shapes.
 - Explicit projection registration and execution.
+- Named projection registration and lookup.
+- Projection validation with warning and error modes.
+- EF Core relational projection validation through the optional EF Core package.
 - Secure ID codec abstraction.
 - Secure ID helper service.
 - Clear errors for missing mappings and duplicate mappings.
@@ -140,6 +207,7 @@ v1 is the stable explicit core. The implementation is intentionally focused and 
 
 ### v1 Package Quality
 
+- Status: `Done` for the published package baseline; continue improving in patch releases.
 - MIT license.
 - NuGet metadata.
 - XML documentation for public APIs.
@@ -177,6 +245,109 @@ These are deliberately excluded from v1:
 Reason:
 
 v1 must first be stable, auditable, secure, and proven in NEXORA. Advanced behavior should be opt-in and separately testable.
+
+These are not rejected forever. They move into later roadmap phases only after the explicit core, diagnostics, projection safety, and testing support are proven.
+
+## Competitive Parity Inventory
+
+This inventory tracks capabilities common in mature mediator and mapper libraries. It is deliberately capability-based so public docs do not become competitor marketing.
+
+### Mediator Capability Inventory
+
+| Capability | Status | AstraFlow Direction |
+| --- | --- | --- |
+| Request/response dispatch | Done | Keep core API small and clear. |
+| Command/query modeling through request contracts | Done | Continue documenting CQRS and non-CQRS usage. |
+| Single handler per request | Done | Keep duplicate-handler failures explicit. |
+| Runtime object send | Done | Keep ambiguous request-contract detection. |
+| Notifications/events | Done | Keep zero-handler publish behavior valid. |
+| Multiple notification handlers | Done | Keep failure policy configurable. |
+| Pipeline behaviors | Done | Add richer registration and order diagnostics later. |
+| Pipeline short-circuiting | Done | Keep behavior contract simple. |
+| Assembly scanning | Done | Improve AOT/trimming through generators later. |
+| Handler coverage validation | Done | Add analyzer version later. |
+| Diagnostics report | Done | Expand findings as features grow. |
+| Void requests | Planned | Add non-response request contracts without forcing `Unit` into user code unless the user wants it. |
+| Stream requests | Planned | Add `IAsyncEnumerable<T>` request handling with cancellation-safe streaming. |
+| Stream pipeline behaviors | Planned | Add stream-specific pipeline behaviors around stream execution. |
+| Request pre-processors | Planned | Add explicit pre-processor contracts and registration helpers. |
+| Request post-processors | Planned | Add explicit post-processor contracts and registration helpers. |
+| Request exception handlers | Planned | Add typed exception handlers that can mark exceptions handled. |
+| Request exception actions | Planned | Add typed exception actions for logging/metrics side effects that rethrow. |
+| Contracts-only package | Planned | Add `AstraFlow.Contracts` for shared request/notification/projection contracts without runtime packages. |
+| Fluent registration builder | Planned | Add `AddBehavior`, `AddOpenBehavior`, `AddStreamBehavior`, pre/post processor helpers, and explicit assembly registration. |
+| Parallel notification publishing | Planned | Add opt-in publish strategies with deterministic error aggregation. |
+| Notification ordering policy | Candidate | Consider explicit ordering metadata only if it does not hide coupling. |
+| Retry/circuit-breaker pipeline helpers | Candidate | Likely belongs in integration packages rather than core. |
+| License-key runtime behavior | Rejected | Keep MIT package behavior free from runtime license checks. |
+
+### Mapper Capability Inventory
+
+| Capability | Status | AstraFlow Direction |
+| --- | --- | --- |
+| Explicit object mapping | Done | Keep as the recommended enterprise default. |
+| Declared mapping ownership | Done | Keep startup validation strict and actionable. |
+| Runtime mapping by destination type | Done | Keep clear missing/duplicate rule errors. |
+| Collection mapping | Done | Expand shape coverage and benchmark later. |
+| Null source behavior | Done | Keep documented and predictable. |
+| Nested mapping | Done | Supported only when rules explicitly call the mapper. |
+| Secure ID abstraction | Done | Expand into policy diagnostics and analyzers later. |
+| Explicit query projections | Done | Keep projection expressions separate from runtime object mapping. |
+| Named projections | Done | Keep multiple read models deterministic. |
+| Projection registry | Done | Expand with generated metadata later. |
+| Projection validation | Done | Add more expression-risk rules over time. |
+| EF Core projection validation | Done | Add provider matrix later. |
+| Convention mapping | Planned | Add optional package, disabled by default. |
+| Exact property-name matching | Planned | First convention mode; safest productivity layer. |
+| Case-insensitive matching | Planned | Opt-in only. |
+| Include/ignore member rules | Planned | Required before convention mapping is useful. |
+| Sensitive-field deny list | Planned | Mandatory for convention mapping. |
+| Convention diagnostics | Planned | Every convention-mapped member must be inspectable. |
+| Mapping profiles/catalogs | Planned | Organize large apps without hiding behavior. |
+| Fluent member configuration | Planned | Add explicit member options without making reflection magic the default. |
+| Flattening | Planned | Opt-in with diagnostics and sensitive-field checks. |
+| Reverse mapping | Planned | Opt-in; never assume public DTO-to-domain updates are safe. |
+| Unflattening | Planned | Opt-in and validation-heavy. |
+| Constructor parameter binding | Planned | Opt-in with ambiguity diagnostics. |
+| Null substitution | Planned | Add per-member rules and diagnostics. |
+| Value converters | Planned | Prefer explicit converter objects registered through DI. |
+| Value resolvers | Planned | Add only with clear lifetime and payload-safety rules. |
+| Value transformers | Candidate | Useful but can hide global behavior; design later. |
+| Conditional member mapping | Planned | Useful for patch/update flows. |
+| Existing destination mapping | Planned | Required for update commands and tracked entities. |
+| Polymorphic mapping | Candidate | Add after convention mapping is stable. |
+| Inheritance mapping | Candidate | Add after profiles/catalogs exist. |
+| Max-depth/circular-reference controls | Candidate | Only if deep graph mapping becomes a supported scenario. |
+| Projection parameterization | Planned | Support tenant/user/request parameters without unsafe closure captures. |
+| Query-provider-specific projection warnings | Planned | Expand beyond the initial EF Core relational checks. |
+| Source-generated fast paths | Planned | v2 generator work. |
+| Analyzer rule catalog | Planned | v2 analyzer work. |
+
+### Capability Gaps That Must Be Added To The Roadmap
+
+These were not explicit enough before and are now promoted into planned roadmap items:
+
+- void requests,
+- stream requests,
+- stream pipeline behaviors,
+- request pre-processors,
+- request post-processors,
+- request exception handlers,
+- request exception actions,
+- contracts-only package,
+- fluent mediator registration builder,
+- parallel notification publishing strategy,
+- mapping profiles/catalogs,
+- fluent member mapping configuration,
+- reverse mapping,
+- unflattening,
+- null substitution,
+- value converters,
+- value resolvers,
+- conditional member mapping,
+- existing destination mapping,
+- projection parameterization,
+- provider-specific projection validation matrix.
 
 ## v1.0 Acceptance Gates
 
@@ -296,6 +467,8 @@ git commit -m "Use published AstraFlow packages"
 
 ## v1.0.1 Roadmap: Patch Hardening
 
+Status: `Done`.
+
 Goal:
 
 Ship a SemVer-safe patch release before new packages are added.
@@ -319,6 +492,8 @@ Acceptance gates:
 - package artifacts contain README, LICENSE, icon, XML docs, DLL, PDB, `.nuspec`, `.nupkg`, and `.snupkg`.
 
 ## v1.1 Roadmap: Diagnostics And Production Ergonomics
+
+Status: `Done`.
 
 Goal:
 
@@ -374,6 +549,8 @@ Acceptance gates:
 
 ## v1.2 Roadmap: Safer Projection Layer
 
+Status: `Done`.
+
 Implemented in `AstraFlow.Mapper` and `AstraFlow.Mapper.EntityFrameworkCore` v1.2.0.
 
 Goal:
@@ -406,9 +583,11 @@ Acceptance gates:
 
 ## v1.3 Roadmap: Testing Support
 
+Status: `Planned`.
+
 Goal:
 
-Make request handlers, notification handlers, pipeline behaviors, and mapping rules easier to test.
+Make request handlers, notification handlers, pipeline behaviors, mapping rules, projections, diagnostics, and secure-ID flows easy to test without a full application host.
 
 Planned package:
 
@@ -421,12 +600,23 @@ Features:
 - fake mediator,
 - request recording,
 - notification recording,
+- request assertion helpers,
+- notification assertion helpers,
 - handler test harness,
 - pipeline test harness,
+- notification handler harness,
+- behavior order assertion helper,
+- behavior short-circuit assertion helper,
+- exception-flow assertion helper for current mediator behavior,
 - mapper validation assertions,
+- mapper rule assertion helper,
 - mapping snapshot helper,
+- collection mapping assertion helper,
 - projection assertion helper,
+- projection validation assertion helper,
+- EF Core projection validation test helpers,
 - secure ID test codec,
+- secure ID round-trip assertion helper,
 - duplicate handler fixture helper,
 - missing handler fixture helper.
 
@@ -434,9 +624,95 @@ Acceptance gates:
 
 - no mocking framework dependency,
 - easy integration with xUnit, NUnit, and MSTest,
+- deterministic assertion messages,
+- no test helper logs request or DTO payload values by default,
+- tests cover mediator, mapper, projection, diagnostics, and secure ID helpers,
+- docs show CQRS, non-CQRS, mapping, projection, and pipeline testing patterns,
 - NEXORA handler tests can remove repetitive test setup.
 
-## v1.4 Roadmap: Optional Convention Mapping
+## v1.4 Roadmap: Mediator Parity And Ergonomics
+
+Status: `Planned`.
+
+Goal:
+
+Cover the common mediator features users expect while preserving AstraFlow's clearer errors, explicit registration, and no-license-check positioning.
+
+Planned packages:
+
+- `AstraFlow.Mediator`
+- `AstraFlow.Contracts`
+
+Features:
+
+- contracts-only package with request, notification, stream request, sender/publisher abstractions where appropriate,
+- void request contract for commands that do not return a value,
+- void request handler contract,
+- stream request contract based on `IAsyncEnumerable<TResponse>`,
+- stream request handler contract,
+- stream sender API,
+- stream pipeline behavior contract,
+- request pre-processor contract,
+- request post-processor contract,
+- request exception handler contract,
+- request exception action contract,
+- explicit registration builder for:
+  - request handlers,
+  - notification handlers,
+  - stream handlers,
+  - pipeline behaviors,
+  - stream pipeline behaviors,
+  - pre-processors,
+  - post-processors,
+  - exception handlers,
+  - exception actions,
+- open-generic behavior registration helpers,
+- closed behavior registration helpers,
+- deterministic behavior order diagnostics,
+- object-based send support for void requests,
+- object-based stream send support where type discovery is unambiguous,
+- startup validation for stream handlers,
+- diagnostics for missing stream handlers,
+- diagnostics for duplicate stream handlers,
+- diagnostics for ambiguous void/response/stream request contracts.
+
+Notification publishing enhancements:
+
+- sequential publish remains default,
+- opt-in parallel publish strategy,
+- opt-in bounded-parallel publish strategy,
+- deterministic aggregate exception behavior,
+- diagnostics show configured publish strategy,
+- docs explain when parallel publish is unsafe because handlers depend on ordering or shared scoped state.
+
+Design rules:
+
+- void requests must not force users to reference an application-specific `Unit` type,
+- streams must preserve cancellation and disposal behavior,
+- exception handlers must not hide failures unless the handler explicitly marks the exception handled,
+- exception actions must always rethrow,
+- registration order must be deterministic and inspectable,
+- contracts-only package must not depend on Microsoft.Extensions.DependencyInjection.
+
+Acceptance gates:
+
+- full test coverage for void request success, missing handler, duplicate handler, object send, and pipeline behavior,
+- full test coverage for stream request success, cancellation, duplicate handlers, missing handlers, and stream behaviors,
+- full test coverage for pre/post processors and order,
+- full test coverage for exception handlers and exception actions,
+- diagnostics report all new mediator registrations and findings,
+- docs include migration notes for users coming from established mediator libraries,
+- no runtime license checks.
+
+Patch candidates after v1.4:
+
+- `v1.4.1`: registration builder polish and docs fixes,
+- `v1.4.2`: stream cancellation edge-case hardening,
+- `v1.4.3`: diagnostics finding expansion for processor and exception-handler ordering.
+
+## v1.5 Roadmap: Safe Convention Mapping And Profiles
+
+Status: `Planned`.
 
 Goal:
 
@@ -449,19 +725,32 @@ Planned package:
 Features:
 
 - convention mapping disabled by default,
-- opt-in per rule/profile,
+- opt-in per mapping profile/catalog,
+- exact source/destination type-pair registration,
+- mapping profile abstraction,
+- mapping catalog abstraction,
 - exact property-name matching,
 - case-insensitive option,
 - explicit ignore rules,
 - explicit include rules,
+- explicit required destination member rules,
+- unmapped destination member diagnostics,
+- unmapped source member diagnostics,
 - sensitive-field deny list,
 - sensitive-field require-allow option,
 - ambiguity detection,
+- nullable member compatibility checks,
+- numeric conversion checks,
+- enum conversion checks,
 - nested object mapping only when explicitly enabled,
 - collection property mapping only when explicitly enabled,
-- flattening only when explicitly enabled,
 - constructor parameter binding only when explicitly enabled,
+- null substitution per destination member,
+- value converter hook per member,
+- conditional member mapping per member,
+- existing destination mapping for update scenarios,
 - diagnostics for fields mapped by convention,
+- generated preview report for convention output,
 - strict mode that rejects undeclared convention output.
 
 Security rules:
@@ -474,9 +763,104 @@ Acceptance gates:
 
 - explicit rules continue to be the recommended enterprise default,
 - convention mapping is opt-in and auditable,
+- every convention-created member mapping appears in diagnostics,
+- strict mode can fail startup when convention output changes,
+- docs show safe internal DTO conventions and unsafe public DTO examples,
+- tests cover exact names, case-insensitive names, ignored members, included members, sensitive fields, null substitution, converters, conditions, constructor binding, and existing destination mapping,
 - NEXORA uses convention mapping only for internal non-sensitive DTOs if at all.
 
-## v1.5 Roadmap: Observability Hooks
+Patch candidates after v1.5:
+
+- `v1.5.1`: convention diagnostics polish,
+- `v1.5.2`: additional safe conversion coverage,
+- `v1.5.3`: profile organization helpers.
+
+## v1.6 Roadmap: Advanced Mapping Parity
+
+Status: `Planned`.
+
+Goal:
+
+Cover advanced mapper productivity features without compromising explicit auditability.
+
+Planned package:
+
+- `AstraFlow.Mapper.Conventions`
+
+Features:
+
+- flattening with explicit enablement,
+- include-member mapping from nested source objects,
+- reverse mapping with explicit enablement,
+- unflattening with explicit enablement,
+- reverse-map diagnostics that show every reversed member path,
+- reverse-map deny rules for domain-owned or security-sensitive members,
+- per-member custom source expressions,
+- per-member custom destination path configuration,
+- value resolver objects with DI lifetime diagnostics,
+- value transformer pipeline with opt-in scope,
+- conditional mapping for patch/update DTOs,
+- before-map and after-map hooks only when explicitly enabled,
+- polymorphic mapping candidate support,
+- inheritance mapping candidate support,
+- collection element polymorphism candidate support,
+- max-depth and circular-reference candidate support for deep graph scenarios.
+
+Design rules:
+
+- reverse mapping must never be generated implicitly,
+- unflattening into domain entities must be opt-in and diagnostics-heavy,
+- public DTO input should not update sensitive domain members without explicit allow rules,
+- hooks and resolvers must be visible in diagnostics,
+- convention and advanced mapping must not change explicit rule behavior.
+
+Acceptance gates:
+
+- tests cover flattening, reverse mapping, unflattening, include members, custom member source, custom destination path, value resolvers, value transformers, and conditional mapping,
+- strict diagnostics identify every advanced mapping decision,
+- docs separate safe read DTO mapping from risky write DTO/domain update mapping,
+- analyzers have planned rules for suspicious reverse-map and sensitive-field output.
+
+Patch candidates after v1.6:
+
+- `v1.6.1`: reverse-map edge cases,
+- `v1.6.2`: inheritance/polymorphism hardening if accepted,
+- `v1.6.3`: deep graph safety controls if accepted.
+
+## v1.7 Roadmap: Projection Provider Matrix
+
+Status: `Planned`.
+
+Goal:
+
+Make projection safety stronger across real query providers while keeping expression projections explicit.
+
+Planned packages:
+
+- `AstraFlow.Mapper.EntityFrameworkCore`
+- provider-specific test packages if needed
+
+Features:
+
+- projection parameterization without unsafe closure capture,
+- tenant/user/current-time parameter examples,
+- provider matrix tests for SQLite, SQL Server, PostgreSQL, and MySQL where practical,
+- query tagging helper candidate,
+- provider-specific warning codes,
+- stricter expression analyzer for non-translatable calls,
+- projection registry metadata export,
+- CI-friendly projection report command candidate.
+
+Acceptance gates:
+
+- projection parameters do not leak secrets in diagnostics,
+- validation does not execute queries,
+- provider test matrix is documented and repeatable,
+- docs explain static validation versus provider translation validation.
+
+## v1.8 Roadmap: Observability Hooks
+
+Status: `Planned`.
 
 Goal:
 
@@ -525,7 +909,10 @@ Planned packages:
 
 - generated handler registration,
 - generated notification handler registration,
+- generated void request registration,
+- generated stream request registration,
 - generated mapping dispatch tables,
+- generated convention mapping plans,
 - generated collection mapping fast paths,
 - generated projection registry metadata,
 - trimming-friendly registration,
@@ -537,16 +924,25 @@ Planned packages:
 
 - request has no handler,
 - request has multiple handlers,
+- request implements ambiguous void/response/stream contracts,
+- stream request has no stream handler,
+- stream handler performs suspicious blocking work,
 - notification handler has suspicious blocking call,
 - controller injects full mediator but only sends requests,
 - pipeline behavior order violates configured policy,
 - pipeline behavior registered with unsafe lifetime,
+- request pre/post processor order is ambiguous,
+- exception handler swallows failures without explicit handled state,
 - mapping rule declares pair but does not implement it,
 - mapping rule implements pair but does not declare it,
 - mapping rule maps suspicious sensitive field,
+- convention profile maps a sensitive field without explicit allow,
+- reverse map writes into a sensitive destination member,
+- unflattening writes into a domain-owned nested object without explicit allow,
 - public DTO exposes raw `Guid` when secure ID policy is enabled,
 - mapper call is used inside `IQueryable.Select` where expression projection is required,
 - projection expression uses likely non-translatable members,
+- projection captures complex runtime state instead of explicit parameters,
 - rule catches broad `Exception` and hides mapping failure details,
 - package consumer uses service locator inside mapping rules.
 
@@ -744,21 +1140,83 @@ Add or expand these docs before broader public promotion:
 
 This matrix describes feature classes AstraFlow should cover over time. It avoids naming any competitor in package documentation and instead tracks product capability categories.
 
-| Capability | v1 | v1.x | v2 | v3+ |
+| Capability | Now `v1.2` | Planned `v1.3-v1.8` | Planned `v2` | Planned `v3+` |
 | --- | --- | --- | --- | --- |
-| Request dispatch | Complete | Improve diagnostics | Generate registration | Visualize flows |
-| Notification publish | Complete | Improve diagnostics | Analyze handler risks | Observability dashboards |
-| Pipeline behaviors | Complete | Order diagnostics | Order analyzers | Visual pipeline graph |
-| Explicit object mapping | Complete | More validation | Generate fast paths | Visual mapping graph |
-| Collection mapping | Complete | Improve coverage | Generate fast paths | Benchmark dashboard |
-| Secure ID abstraction | Complete | Policy diagnostics | DTO raw ID analyzer | Secure DTO policy tooling |
-| Projections | Basic explicit | Provider-aware registry | Projection analyzers | EF helper package |
+| Request dispatch | Done | Void requests, richer registration | Generated registration, analyzer checks | Visual request graph |
+| Stream requests | Not included | Stream request and stream behavior support | Stream analyzers | Streaming templates |
+| Notification publish | Done | Parallel and bounded parallel strategies | Handler-risk analyzers | Observability dashboards |
+| Pipeline behaviors | Done | Pre/post processors, exception handlers/actions | Order analyzers | Visual pipeline graph |
+| Contracts-only package | Not included | `AstraFlow.Contracts` | API compatibility checks | Shared contract templates |
+| Explicit object mapping | Done | More assertions and diagnostics | Generated fast paths | Visual mapping graph |
+| Collection mapping | Done | More shape coverage | Generated collection fast paths | Benchmark dashboard |
+| Secure ID abstraction | Done | Test codec and policy diagnostics | DTO raw ID analyzer | Secure DTO policy tooling |
+| Projections | Done | Parameters and provider matrix | Projection analyzers, generated metadata | Query diagnostics tooling |
+| EF Core projection validation | Done | Provider matrix expansion | Provider-specific analyzer hints | EF helper ecosystem package |
 | Convention mapping | Not included | Opt-in package | Analyzer guarded | Visual diagnostics |
-| Flattening | Not included | Opt-in package | Analyzer guarded | Visual diagnostics |
-| Startup diagnostics | Basic validation | Dedicated package | Analyzer metadata | Health endpoints |
-| Observability | Not included | Hooks package | Metrics tests | Dashboards |
-| AOT/trimming | Basic-friendly design | Diagnostics | Generator support | Templates |
+| Mapping profiles/catalogs | Not included | Opt-in profile/catalog package | Compile-time metadata | Mapping design tools |
+| Flattening | Not included | Opt-in advanced mapping | Analyzer guarded | Visual diagnostics |
+| Reverse mapping | Not included | Opt-in advanced mapping | Sensitive-write analyzers | DTO policy tooling |
+| Unflattening | Not included | Opt-in advanced mapping | Domain-write analyzers | Visual mapping graph |
+| Existing destination mapping | Not included | Update/patch mapping support | Analyzer guarded | Entity update recipes |
+| Startup diagnostics | Done | Expanded finding coverage | Analyzer metadata | Health endpoints |
+| Testing support | Not included | `AstraFlow.Testing` | Analyzer-friendly test helpers | Test templates |
+| Observability | Not included | OpenTelemetry/logging hooks | Metrics tests | Dashboards |
+| AOT/trimming | Basic-friendly design | Registration diagnostics | Generator support | Templates |
 | Enterprise supply chain | Basic metadata | Release hardening | SBOM/signing | Compliance reports |
+
+## Detailed Parity Backlog
+
+### Mediator Backlog
+
+| Item | Priority | Target | Notes |
+| --- | --- | --- | --- |
+| Void request contract | High | `v1.4` | Needed for command handlers with no response. |
+| Void request object dispatch | High | `v1.4` | Must preserve clear ambiguous-contract errors. |
+| Stream request contract | High | `v1.4` | Use `IAsyncEnumerable<T>` and cancellation-safe execution. |
+| Stream pipeline behavior | High | `v1.4` | Separate contract from normal request pipeline. |
+| Pre-processors | Medium | `v1.4` | Useful for validation/logging setup; behavior remains more powerful. |
+| Post-processors | Medium | `v1.4` | Useful for auditing/cleanup after handlers. |
+| Exception handlers | High | `v1.4` | Must require explicit handled state. |
+| Exception actions | High | `v1.4` | Must always rethrow after side effects. |
+| Contracts-only package | High | `v1.4` | Important for shared API contracts, Blazor, clients, and modular boundaries. |
+| Fluent registration builder | High | `v1.4` | Needed for predictable behavior registration and discoverability. |
+| Parallel notification strategy | Medium | `v1.4` | Opt-in because ordering and scoped state can be risky. |
+| Notification ordering metadata | Low | Candidate | Avoid unless real apps need it. |
+
+### Mapper Backlog
+
+| Item | Priority | Target | Notes |
+| --- | --- | --- | --- |
+| Mapping profiles/catalogs | High | `v1.5` | Organizes convention and explicit config for large apps. |
+| Exact convention mapping | High | `v1.5` | First convention feature because it is easiest to audit. |
+| Ignore/include rules | High | `v1.5` | Required for safe convention mapping. |
+| Sensitive-field deny list | High | `v1.5` | Non-negotiable security gate. |
+| Unmapped member validation | High | `v1.5` | Equivalent practical value to configuration validation. |
+| Null substitution | Medium | `v1.5` | Common DTO cleanup feature. |
+| Value converters | Medium | `v1.5` | Prefer explicit converter classes. |
+| Conditional member mapping | Medium | `v1.5` | Useful for update/patch flows. |
+| Existing destination mapping | Medium | `v1.5` | Useful for tracked entities and command updates. |
+| Flattening | High | `v1.6` | Must be opt-in and diagnostic-heavy. |
+| Reverse mapping | High | `v1.6` | Must never be implicit. |
+| Unflattening | High | `v1.6` | Must protect domain-owned nested objects. |
+| Include members | Medium | `v1.6` | Needed for controlled composition mapping. |
+| Value resolvers | Medium | `v1.6` | Add lifetime diagnostics. |
+| Value transformers | Low | Candidate | Can hide global behavior, needs careful design. |
+| Polymorphic mapping | Low | Candidate | Add only after core conventions stabilize. |
+| Inheritance mapping | Low | Candidate | Add only after profile/catalog model is stable. |
+| Circular reference controls | Low | Candidate | Only if deep graph mapping becomes a supported scenario. |
+
+### AstraFlow-Only Advantage Backlog
+
+| Item | Priority | Target | Why It Makes AstraFlow Stronger |
+| --- | --- | --- | --- |
+| Diagnostics-first registration report | Done | `v1.1` | Makes app wiring inspectable. |
+| Projection validation findings | Done | `v1.2` | Catches query risks before production. |
+| EF Core translation checks | Done | `v1.2` | Validates provider/model translation without executing queries. |
+| Secure ID abstraction | Done | `v1.0` | Keeps raw IDs and encryption policy explicit. |
+| Safe convention diagnostics | High | `v1.5` | Makes automatic mapping auditable. |
+| Sensitive DTO policy analyzers | High | `v2` | Prevents accidental public raw IDs and secret-field leaks. |
+| Visual request/mapping graph | Medium | `v4` | Helps large teams understand flow without reading all source. |
 
 ## Next Chat Bootstrap
 

@@ -19,7 +19,7 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>Adds projection registry, named projections, projection validation, diagnostics findings, and optional EF Core projection translation helpers.</PackageReleaseNotes>
+    <PackageReleaseNotes>AstraFlow 1.2.0 adds projection safety: named projection registry, warning/error projection validation, diagnostics findings, and optional EF Core relational translation checks. It also expands docs and tests for projection scenarios, EF Core validation, and package release verification.</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <Deterministic>true</Deterministic>
