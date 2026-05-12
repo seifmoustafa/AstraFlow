@@ -21,6 +21,8 @@ It was built to keep production applications free from runtime license checks, h
 | Document | Read When |
 | --- | --- |
 | [Getting Started](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/getting-started.md) | You want the shortest path from install to working mediator and mapper usage. |
+| [Package Selection](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/package-selection.md) | You want to choose the smallest package set for an app, library, test project, or EF Core project. |
+| [Compatibility](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/compatibility.md) | You want current target framework support and the future multi-target audit plan. |
 | [API Reference](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/api-reference.md) | You need every public type, method, option, and expected behavior in one table-driven reference. |
 | [Architecture](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/architecture.md) | You want to understand the package design, runtime flow, dependency boundaries, and non-goals. |
 | [Mediator Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator.md) | You are using requests, handlers, notifications, or pipeline behaviors. |
@@ -218,7 +220,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.1
 ```
 
 Then ask EF Core to translate registered projections without executing the query:

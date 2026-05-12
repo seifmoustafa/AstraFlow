@@ -2,26 +2,25 @@
 
 This guide is for preparing AstraFlow releases for a public repository push and community consumption.
 
-## Current Release: v1.2.0
+## Current Release: v1.2.1
 
-v1.2.0 adds projection safety: registry lookup, named projections, static projection validation, diagnostics findings, and optional EF Core translation checks without adding EF Core to the mapper core.
+v1.2.1 is a compatibility and adoption hardening release. It keeps the v1.2 projection safety behavior and adds clearer compatibility guidance, package selection guidance, release checklist hardening, and a documented audit path for future multi-target support.
 
 Key message:
 
 ```text
-AstraFlow v1.2.0 makes query projections explicit, discoverable, named, validated, and EF Core-ready while keeping the mapper core framework-neutral.
+AstraFlow v1.2.1 makes the v1.2 projection safety release easier to adopt and verify by documenting target support, package selection, clean install checks, and future compatibility gates.
 ```
 
-## What Changed Since v1.1.0
+## What Changed Since v1.2.0
 
 | Area | Change | Why It Matters |
 | --- | --- | --- |
-| Projection registry | Added deterministic projection lookup. | Users can resolve projections without scanning source. |
-| Named projections | Added `INamedProjection<TSource, TDestination>`. | Multiple read-model shapes no longer rely on registration order. |
-| Projection validation | Added `AFP...` findings. | Risky expressions are visible before production query failures. |
-| EF Core package | Added `AstraFlow.Mapper.EntityFrameworkCore`. | EF users get translation checks without coupling the core mapper to EF. |
-| Diagnostics | Projection names and projection validation findings are reported. | CI and issue reports show projection health. |
-| Tests | Added registry, validation, and SQLite EF Core tests. | Locks the new projection behavior. |
+| Compatibility docs | Added `docs/compatibility.md`. | Users can see current `net10.0` support and the future multi-target audit plan. |
+| Package selection docs | Added `docs/package-selection.md`. | Users can choose focused packages instead of defaulting to the meta package. |
+| Release checklist | Added compatibility and clean install gates. | Future target support cannot be claimed without package assets and tests. |
+| Package metadata | Updated version and release notes to `1.2.1`. | NuGet release notes describe the adoption-hardening scope. |
+| Runtime behavior | No behavior changes. | Existing `1.2.0` users can update without code changes. |
 
 ## Pre-Push Checklist
 
@@ -59,25 +58,25 @@ dotnet pack src\AstraFlow\AstraFlow.csproj -c Release --no-build --no-restore -v
 
 Expected artifacts:
 
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.0.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.0.snupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.0.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.0.snupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.0.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.0.snupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.0.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.0.snupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.2.0.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.2.0.snupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.1.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.1.snupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.1.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.1.snupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.1.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.1.snupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.1.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.1.snupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.2.1.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.2.1.snupkg`
 
 Inspect package contents:
 
 ```powershell
-tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.2.0.nupkg
-tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.2.0.nupkg
-tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.2.0.nupkg
-tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.2.0.nupkg
-tar -tf src\AstraFlow\bin\Release\AstraFlow.1.2.0.nupkg
+tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.2.1.nupkg
+tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.2.1.nupkg
+tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.2.1.nupkg
+tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.2.1.nupkg
+tar -tf src\AstraFlow\bin\Release\AstraFlow.1.2.1.nupkg
 ```
 
 Each `.nupkg` should include:
@@ -101,15 +100,38 @@ Each `.snupkg` should include:
 Create a temporary `net10.0` console project and install the local packages:
 
 ```powershell
+$root = Resolve-Path '.'
+$localSource = Join-Path $root '.dotnet-cli-home\local-packages'
+New-Item -ItemType Directory -Force -Path $localSource | Out-Null
+
+Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.2.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.2.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.2.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.2.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.2.1.nupkg' -Destination $localSource -Force
+
+$config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
+@"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="local" value="$localSource" />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+  </packageSources>
+</configuration>
+"@ | Set-Content -LiteralPath $config -Encoding UTF8
+
 $sample = Join-Path '.dotnet-cli-home' ('AstraFlowInstallCheck-' + [guid]::NewGuid().ToString('N'))
 dotnet new console --framework net10.0 --output $sample --no-restore
 $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-dotnet add $project.FullName package AstraFlow.Mediator --version 1.2.0 --source '.\src\AstraFlow.Mediator\bin\Release'
-dotnet add $project.FullName package AstraFlow.Mapper --version 1.2.0 --source '.\src\AstraFlow.Mapper\bin\Release'
-dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.0 --source '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release'
-dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.2.0 --source '.\src\AstraFlow.Diagnostics\bin\Release'
-dotnet add $project.FullName package AstraFlow --version 1.2.0 --source '.\src\AstraFlow\bin\Release'
-dotnet build $project.FullName
+dotnet add $project.FullName package AstraFlow.Mediator --version 1.2.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper --version 1.2.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.2.1 --no-restore
+dotnet add $project.FullName package AstraFlow --version 1.2.1 --no-restore
+dotnet restore $project.FullName --configfile $config
+dotnet build $project.FullName --no-restore
 ```
 
 Expected result:
@@ -122,7 +144,7 @@ Expected result:
 
 ```powershell
 git add .
-git commit -m "Prepare AstraFlow v1.2.0 projection safety"
+git commit -m "Prepare AstraFlow v1.2.1 compatibility hardening"
 ```
 
 Before committing, confirm no package artifacts are staged:
@@ -143,9 +165,9 @@ Do not commit:
 ## Suggested Tag
 
 ```powershell
-git tag v1.2.0
+git tag v1.2.1
 git push origin main
-git push origin v1.2.0
+git push origin v1.2.1
 ```
 
 Only tag after local verification passes.
@@ -153,23 +175,23 @@ Only tag after local verification passes.
 ## Suggested GitHub Release Notes
 
 ```markdown
-## AstraFlow v1.2.0
+## AstraFlow v1.2.1
 
-This release adds projection safety for the AstraFlow package family.
+This release hardens AstraFlow compatibility and adoption guidance after the v1.2 projection safety release.
 
 ### Changed
 
-- Add projection registry and named projection support.
-- Add warning-by-default projection validation with stable `AFP...` finding codes.
-- Add projection findings to diagnostics reports.
-- Add optional `AstraFlow.Mapper.EntityFrameworkCore` package with EF Core relational translation checks.
-- Add SQLite EF Core integration tests.
+- Add compatibility guidance for current `net10.0` support and future multi-target expansion.
+- Add package selection guidance for choosing focused packages or the meta package.
+- Add release checklist gates for target framework verification and clean install checks.
+- Document compatibility audit findings for future target expansion.
+- Keep runtime behavior unchanged from v1.2.0.
 
 ### Verification
 
 - Release build passed.
 - Full test suite passed.
-- All five packages packed as `1.2.0`.
+- All five packages packed as `1.2.1`.
 - Package contents include README, LICENSE, icon, XML docs, DLLs, nuspec files, and symbol packages.
 ```
 

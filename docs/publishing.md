@@ -77,7 +77,7 @@ Use the exact secret name `NUGET_API_KEY`.
 1. Update `Version`, `AssemblyVersion`, and `FileVersion` in `Directory.Build.props`.
 2. Update `CHANGELOG.md`.
 3. Run `docs/release-checklist.md`.
-4. Create and push a release tag such as `v1.2.0`.
+4. Create and push a release tag such as `v1.2.1`.
 5. Open GitHub Actions.
 6. Run `Publish AstraFlow Packages`.
 7. Type `PUBLISH` when prompted.
@@ -116,11 +116,11 @@ Use local packing only to verify artifacts before release:
 
 Expected package artifacts:
 
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.0.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.0.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.0.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.0.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.2.0.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.1.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.1.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.1.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.1.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.2.1.nupkg`
 
 Do not commit `bin/`, `obj/`, `.nupkg`, or `.snupkg` files.
 
@@ -137,16 +137,16 @@ Do not save the key in shell profiles, `.env` files, source files, or documentat
 After NuGet shows all five packages, update NEXORA to consume published packages:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.2.0" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.2.0" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.0" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.0" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.2.1" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.2.1" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.1" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.1" />
 ```
 
 Use the meta-package only where both mediator and mapper are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.2.0" />
+<PackageReference Include="AstraFlow" Version="1.2.1" />
 ```
 
 Then run:

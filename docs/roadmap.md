@@ -23,6 +23,7 @@ The product direction is not to become a clone of older runtime-magic libraries.
 This roadmap uses these labels:
 
 - `Done`: implemented, tested, documented, and intended for release or already released.
+- `Active`: the current planned release scope.
 - `Patch`: SemVer-safe hardening for a released feature.
 - `Planned`: approved direction, not implemented yet.
 - `Candidate`: worth considering, but must still pass design review.
@@ -189,7 +190,7 @@ Current v1.1 public concepts:
 
 ## v1 Status
 
-v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.2.0`.
+v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.2.1`.
 
 ### v1 Mediator Features
 
@@ -581,16 +582,16 @@ Do not delete `packages/AstraFlow` from the NEXORA monorepo until the published 
 In NEXORA backend projects that currently reference local AstraFlow projects, replace project references with package references:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.2.0" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.2.0" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.0" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.0" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.2.1" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.2.1" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.1" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.1" />
 ```
 
 Use the meta-package only where both are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.2.0" />
+<PackageReference Include="AstraFlow" Version="1.2.1" />
 ```
 
 ### Step 2: Restore And Build
@@ -772,7 +773,7 @@ Acceptance gates:
 
 ## v1.2.1 Roadmap: Compatibility And Adoption Hardening
 
-Status: `Planned`.
+Status: `Active`.
 
 Goal:
 
