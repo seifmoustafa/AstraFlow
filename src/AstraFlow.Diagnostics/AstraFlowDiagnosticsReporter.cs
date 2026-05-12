@@ -32,18 +32,20 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         var notificationHandlers = GetRegistrations(descriptors, "Notification handler", typeof(INotificationHandler<>));
         var pipelineBehaviors = GetRegistrations(descriptors, "Pipeline behavior", typeof(IPipelineBehavior<,>));
         var mappingRules = GetRegistrations(descriptors, "Mapping rule", typeof(IObjectMappingRule));
-        var projections = GetRegistrations(descriptors, "Projection", typeof(IProjection<,>));
+        var projections = GetProjectionRegistrations(descriptors);
 
         var findings = new List<AstraFlowDiagnosticFinding>();
         AddInfoFindings(findings, requestHandlers, notificationHandlers, pipelineBehaviors, mappingRules, projections);
         AddDuplicateRequestHandlerFindings(findings, descriptors);
-        AddUnsafeLifetimeFindings(findings, requestHandlers, notificationHandlers, pipelineBehaviors, mappingRules);
+        AddUnsafeLifetimeFindings(findings, requestHandlers, notificationHandlers, pipelineBehaviors, mappingRules, projections);
 
         if (_options.ValidateRequestCoverage)
             AddRequestCoverageFindings(findings, descriptors);
 
         if (_options.ValidateMappingCatalog)
             AddMappingValidationFindings(findings);
+
+        AddProjectionValidationFindings(findings);
 
         var orderedFindings = findings
             .OrderByDescending(f => f.Severity)
@@ -134,6 +136,37 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
             .ThenBy(r => r.ImplementationType, StringComparer.Ordinal)
             .ThenBy(r => r.Lifetime)
             .ToArray();
+    }
+
+    private IReadOnlyList<AstraFlowDiagnosticRegistration> GetProjectionRegistrations(
+        IReadOnlyCollection<ServiceDescriptor> descriptors)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var registry = scope.ServiceProvider.GetService<IProjectionRegistry>();
+            if (registry is not null)
+            {
+                return registry.Registrations
+                    .Select(registration => new AstraFlowDiagnosticRegistration(
+                        "Projection",
+                        registration.Name is null
+                            ? GetDisplayName(registration.ServiceType)
+                            : $"{GetDisplayName(registration.ServiceType)} [name: {registration.Name}]",
+                        GetDisplayName(registration.ImplementationType),
+                        registration.Lifetime))
+                    .OrderBy(r => r.ServiceType, StringComparer.Ordinal)
+                    .ThenBy(r => r.ImplementationType, StringComparer.Ordinal)
+                    .ThenBy(r => r.Lifetime)
+                    .ToArray();
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            // Fall back to raw DI descriptors when the mapper registry cannot be resolved.
+        }
+
+        return GetRegistrations(descriptors, "Projection", typeof(IProjection<,>));
     }
 
     private void AddInfoFindings(
@@ -273,6 +306,39 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         }
     }
 
+    private void AddProjectionValidationFindings(ICollection<AstraFlowDiagnosticFinding> findings)
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var validator = scope.ServiceProvider.GetService<IProjectionValidator>();
+            if (validator is null)
+                return;
+
+            var options = scope.ServiceProvider.GetService<IOptions<MappingOptions>>()?.Value
+                ?? new MappingOptions();
+            var report = validator.Validate(options);
+            foreach (var finding in report.Findings)
+            {
+                findings.Add(new AstraFlowDiagnosticFinding(
+                    finding.Severity == ProjectionValidationMode.Error
+                        ? DiagnosticSeverity.Error
+                        : DiagnosticSeverity.Warning,
+                    finding.Code,
+                    finding.Message,
+                    GetProjectionSubject(finding)));
+            }
+        }
+        catch (Exception ex)
+        {
+            findings.Add(new AstraFlowDiagnosticFinding(
+                DiagnosticSeverity.Error,
+                "AFD302",
+                $"Projection validation failed: {ex.Message}",
+                ex.GetType().FullName));
+        }
+    }
+
     private IReadOnlyCollection<Assembly> GetDiagnosticAssemblies(IEnumerable<ServiceDescriptor> descriptors)
     {
         return _options.AssemblyMarkerTypes
@@ -327,6 +393,14 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
 
         var arguments = string.Join(", ", type.GetGenericArguments().Select(GetDisplayName));
         return $"{genericName}<{arguments}>";
+    }
+
+    private static string GetProjectionSubject(ProjectionValidationFinding finding)
+    {
+        var source = finding.SourceType is null ? "unknown" : GetDisplayName(finding.SourceType);
+        var destination = finding.DestinationType is null ? "unknown" : GetDisplayName(finding.DestinationType);
+        var name = string.IsNullOrWhiteSpace(finding.ProjectionName) ? "" : $" [{finding.ProjectionName}]";
+        return $"{source} -> {destination}{name}";
     }
 
     private static void AppendFindings(

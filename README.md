@@ -11,7 +11,8 @@ It was built to keep production applications free from runtime license checks, h
 | Package | Purpose |
 | --- | --- |
 | `AstraFlow.Mediator` | Request/response dispatch, notification publishing, pipeline behaviors, handler scanning, duplicate handler detection, and optional handler coverage validation. |
-| `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, explicit LINQ projections, and secure ID mapping abstractions. |
+| `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named projection registry, projection validation, and secure ID mapping abstractions. |
+| `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
 | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
 | `AstraFlow` | Convenience package referencing both mediator and mapper with one registration method. |
 
@@ -26,10 +27,14 @@ It was built to keep production applications free from runtime license checks, h
 | [Mediator Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator-scenarios.md) | You want expected behavior for success cases, missing handlers, duplicate handlers, ambiguous requests, pipeline order, and notification failures. |
 | [Mapper Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mapper.md) | You are writing mapping rules, projections, validation, or secure ID mapping. |
 | [Mapper Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mapper-scenarios.md) | You want expected behavior for object mapping, nulls, collections, validation failures, projections, and secure IDs. |
+| [Projection Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/projections.md) | You are registering, naming, validating, or resolving explicit projections. |
+| [Projection Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/projection-scenarios.md) | You want expected behavior for duplicate, missing, named, risky, and strict projection cases. |
+| [EF Core Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/entity-framework-core.md) | You want optional EF Core projection translation checks. |
 | [Diagnostics Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/diagnostics.md) | You want JSON or Markdown reports of handlers, behaviors, mappings, projections, and diagnostics findings. |
 | [Troubleshooting](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/troubleshooting.md) | You hit an exception and want the likely cause and fix. |
 | [Community Release Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/community-release-guide.md) | You are preparing the repo push, tag, package verification, and community-facing release notes. |
-| [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | You want the completed v1.1 diagnostics scope and the future projection/testing roadmap. |
+| [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | You want the completed v1.2 projection safety scope and the future testing, mediator-parity, mapping-parity, analyzer, generator, and ecosystem roadmap. |
+| [Future Ideas Bank](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/future-ideas.md) | You want the broader candidate backlog for future features, integrations, platform tooling, and research ideas. |
 | [Publishing](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/publishing.md) | You are preparing or verifying a NuGet release. |
 
 ## Target Framework
@@ -44,7 +49,8 @@ AstraFlow currently targets `net10.0`. Per Microsoft's .NET support policy, .NET
 | --- | --- | --- | --- |
 | `services.AddAstraFlowMediator(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and scan marker assemblies without request coverage validation. | `IMediator`, `ISender`, `IPublisher`, request handlers, and notification handlers are available from DI. |
 | `services.AddAstraFlowMediator(bool validateRequestCoverage, params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and optionally fail startup when scanned requests have no handler or ambiguous contracts. | Same registration as above, with extra validation when enabled. |
-| `services.AddAstraFlowMapper(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mapper` | Register mapper services and scan marker assemblies for mapping rules. | `IMapper`, `IObjectMappingValidator`, `SecureIdMapper`, and startup validation are registered. |
+| `services.AddAstraFlowMapper(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mapper` | Register mapper services and scan marker assemblies for mapping rules and projections. | `IMapper`, `IObjectMappingValidator`, `IProjectionRegistry`, `IProjectionValidator`, `SecureIdMapper`, and startup validation are registered. |
+| `services.AddAstraFlowMapper(IEnumerable<Type>, Action<MappingOptions>?)` | `AstraFlow.Mapper` | Register mapper services with explicit mapper/projection validation options. | Mapping and projection validation behavior is configured without adding new overloads for every option. |
 | `services.AddAstraFlowDiagnostics(Action<AstraFlowDiagnosticsOptions>?)` | `AstraFlow.Diagnostics` | Register diagnostics after mediator/mapper services so it can snapshot registrations. | `IAstraFlowDiagnosticsReporter` can create in-memory, JSON, and Markdown reports. |
 | `services.AddAstraFlow(bool validateRequestCoverage = false, params Type[] assemblyMarkerTypes)` | `AstraFlow` | Register mediator and mapper together. | Combined setup for applications that intentionally use both packages. |
 
@@ -74,7 +80,11 @@ AstraFlow currently targets `net10.0`. Per Microsoft's .NET support policy, .NET
 | `ObjectMappingPair.Create<TSource, TDestination>()` | Declare an owned mapping pair without repeating `typeof(...)`. | Produces a pair used by validation and diagnostics. |
 | `IObjectMappingValidator.Validate(MappingOptions)` | Validate registered mapping rules manually. | Throws clear errors for invalid mapping catalogs. |
 | `IProjection<TSource, TDestination>.Expression` | Define provider-translatable query projection. | Used by `ProjectWith` to keep query DTO shape explicit. |
-| `query.ProjectWith(...)` | Apply an explicit LINQ projection. | Returns `IQueryable<TDestination>` using the supplied expression. |
+| `INamedProjection<TSource, TDestination>.Name` | Give a projection an explicit name. | Multiple projections can safely share the same source/destination pair. |
+| `IProjectionRegistry.Get<TSource, TDestination>()` | Resolve the only unnamed projection for a pair. | Returns the projection or throws clearly for missing/ambiguous registrations. |
+| `IProjectionRegistry.Get<TSource, TDestination>(string name)` | Resolve a named projection. | Returns the named projection or throws clearly for missing/duplicate names. |
+| `IProjectionValidator.Validate(MappingOptions)` | Validate registered projections manually. | Returns stable `AFP...` findings for duplicates and high-risk expressions. |
+| `query.ProjectWith(...)` | Apply an explicit LINQ projection directly or through the registry. | Returns `IQueryable<TDestination>` using the supplied/resolved expression. |
 | `ISecureIdCodec` | Plug in application-owned ID encryption/decryption. | AstraFlow stays decoupled from secrets and algorithms. |
 | `SecureIdMapper` | Use secure ID conversion inside mapping rules. | Converts required or optional `Guid` values to encrypted strings and attempts decryption. |
 
@@ -87,6 +97,13 @@ AstraFlow currently targets `net10.0`. Per Microsoft's .NET support policy, .NET
 | `IAstraFlowDiagnosticsReporter.CreateJsonReport()` | Export diagnostics for tools or CI. | Returns deterministic camelCase JSON. |
 | `IAstraFlowDiagnosticsReporter.CreateMarkdownReport()` | Export human-readable diagnostics. | Returns a Markdown report with summary, findings, and registration tables. |
 | `DiagnosticSeverity` | Classify findings. | Uses `Info`, `Warning`, `Error`, and `Fatal`. |
+
+### Entity Framework Core
+
+| API | Use It For | Expected Result |
+| --- | --- | --- |
+| `dbContext.ValidateProjectionTranslation(projection)` | Validate one projection against EF Core's relational translator. | Returns generated SQL or throws the EF Core translation/model error. |
+| `dbContext.ValidateProjectionTranslations(registry)` | Validate registered projections against an EF Core `DbContext`. | Returns `AFPEF...` findings without executing the query. |
 
 ## Design Principles
 
@@ -169,6 +186,51 @@ public sealed class UserMappingRule : IDeclaredObjectMappingRule
 }
 ```
 
+## Quick Start: Projections
+
+Register projections with the mapper marker assembly, then resolve them through the registry:
+
+```csharp
+public sealed class UserListProjection : INamedProjection<User, UserListItem>
+{
+    public string Name => "list";
+
+    public Expression<Func<User, UserListItem>> Expression =>
+        user => new UserListItem(user.Id, user.UserName);
+}
+
+services.AddAstraFlowMapper(
+    [typeof(UserListProjection)],
+    options =>
+    {
+        options.ValidateProjectionCatalogOnStartup = true;
+        options.ProjectionValidationMode = ProjectionValidationMode.Warning;
+    });
+
+var registry = provider.GetRequiredService<IProjectionRegistry>();
+var query = db.Users.ProjectWith<User, UserListItem>(registry, "list");
+```
+
+Projection validation reports warnings by default. Set `ProjectionValidationMode.Error` in CI or strict startup validation when projection findings should fail the build or application startup.
+
+## Quick Start: EF Core Projection Checks
+
+Install the optional package only in projects that need EF Core validation:
+
+```powershell
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.0
+```
+
+Then ask EF Core to translate registered projections without executing the query:
+
+```csharp
+using AstraFlow.Mapper.EntityFrameworkCore;
+
+var efReport = dbContext.ValidateProjectionTranslations(registry);
+```
+
+Static projection validation catches high-risk expression patterns such as custom method calls. EF Core validation proves the source entity is mapped and the provider can generate SQL for the projection shape.
+
 ## Secure ID Mapping
 
 `AstraFlow.Mapper` provides the abstraction, not the cryptography. Applications own the encryption implementation.
@@ -231,7 +293,7 @@ AstraFlow v1 intentionally does not include convention mapping, flattening, reve
 
 ## Roadmap
 
-The long-term plan is to continue improving diagnostics, then add projection validation, testing support, optional convention mapping, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, EF Core helpers, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
+The long-term plan is to continue improving projection safety, then add target-framework compatibility work, testing support, mediator parity features, optional convention mapping, advanced mapping parity, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, validation integration, CLI/templates, broader EF Core provider checks, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
 
 ## Branding
 

@@ -7,7 +7,7 @@
 - Samples compile.
 - Tests pass in Release configuration.
 - README, changelog, roadmap, security policy, and publishing docs are current.
-- API reference, architecture guide, diagnostics guide, mediator scenarios, mapper scenarios, troubleshooting docs, and community release guide are current.
+- API reference, architecture guide, diagnostics guide, mediator scenarios, mapper scenarios, projection guides, EF Core guide, troubleshooting docs, and community release guide are current.
 - No competitor migration pages or retired package references exist in AstraFlow docs.
 
 ## Package
@@ -46,6 +46,7 @@
 
 - A clean sample project can install `AstraFlow`, `AstraFlow.Mediator`, and `AstraFlow.Mapper`.
 - A clean sample project can install `AstraFlow.Diagnostics`.
+- A clean sample project can install `AstraFlow.Mapper.EntityFrameworkCore`.
 - NEXORA project references to local AstraFlow source are replaced with NuGet package references.
 - NEXORA restore succeeds from NuGet.
 - NEXORA backend build succeeds.

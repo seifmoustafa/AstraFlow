@@ -4,7 +4,7 @@ AstraFlow is a small explicit application-flow package family. The core idea is 
 
 ## Design Goals
 
-| Goal | What It Means In v1.1.0 |
+| Goal | What It Means In v1.2.0 |
 | --- | --- |
 | Explicit flow | Requests declare response types. Handlers are concrete classes. Mapping rules are code, not naming magic. |
 | Clear failure modes | Missing handlers, duplicate handlers, ambiguous request contracts, missing mappings, duplicate mappings, and invalid mapping catalogs throw actionable exceptions. |
@@ -17,7 +17,9 @@ AstraFlow is a small explicit application-flow package family. The core idea is 
 
 `AstraFlow.Mediator` owns in-process dispatch. It knows about requests, handlers, notifications, notification handlers, pipeline behaviors, DI registration, and notification failure policy. It does not know about validation frameworks, web endpoints, database transactions, authorization policies, or result wrappers.
 
-`AstraFlow.Mapper` owns explicit runtime mapping and basic projection helpers. It knows about mapping rules, declared mapping catalogs, collection mapping, startup validation, query projection expressions, and secure ID abstraction. It does not know about application encryption keys, provider-specific SQL translation, convention mapping, or DTO security policies.
+`AstraFlow.Mapper` owns explicit runtime mapping, projection registration, named projection lookup, projection validation, and query projection helpers. It knows about mapping rules, declared mapping catalogs, collection mapping, startup validation, query projection expressions, and secure ID abstraction. It does not know about application encryption keys, EF Core, convention mapping, or DTO security policies.
+
+`AstraFlow.Mapper.EntityFrameworkCore` owns optional EF Core relational projection translation checks. It references EF Core so the core mapper package does not have to.
 
 `AstraFlow.Diagnostics` owns framework-neutral reporting. It inspects service registrations, reports findings with stable severity codes, and renders in-memory, JSON, or Markdown reports. It does not own web health endpoints, telemetry export, payload logging, or remediation.
 
@@ -99,7 +101,7 @@ The package also avoids request payload logging. Future diagnostics and observab
 
 Diagnostics reports include type names, service categories, lifetimes, counts, and exception messages from validation. They do not inspect request payloads, DTO payloads, encrypted ID values, connection strings, tokens, or secret configuration values.
 
-## Non-Goals In v1.1.0
+## Non-Goals In v1.2.0
 
 - No automatic convention mapping.
 - No automatic flattening.
@@ -107,7 +109,7 @@ Diagnostics reports include type names, service categories, lifetimes, counts, a
 - No source generators.
 - No analyzers.
 - No ASP.NET Core-specific runtime behavior.
-- No EF Core-specific projection validation.
+- No EF Core dependency in `AstraFlow.Mapper`.
 - No built-in ID encryption.
 - No result type, tenant, permission, or validation framework coupling.
 

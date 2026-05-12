@@ -33,12 +33,29 @@ public sealed class AstraFlowObjectMappingStartupValidator : IHostedService
     /// <returns>A completed task after validation finishes.</returns>
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        if (!_options.Value.ValidateRuleCatalogOnStartup)
+        if (!_options.Value.ValidateRuleCatalogOnStartup &&
+            !_options.Value.ValidateProjectionCatalogOnStartup)
+        {
             return Task.CompletedTask;
+        }
 
         using var scope = _scopeFactory.CreateScope();
-        var validator = scope.ServiceProvider.GetRequiredService<IObjectMappingValidator>();
-        validator.Validate(_options.Value);
+        if (_options.Value.ValidateRuleCatalogOnStartup)
+        {
+            var validator = scope.ServiceProvider.GetRequiredService<IObjectMappingValidator>();
+            validator.Validate(_options.Value);
+        }
+
+        if (_options.Value.ValidateProjectionCatalogOnStartup)
+        {
+            var validator = scope.ServiceProvider.GetRequiredService<IProjectionValidator>();
+            var report = validator.Validate(_options.Value);
+            if (_options.Value.ProjectionValidationMode == ProjectionValidationMode.Error && report.HasFindings)
+            {
+                var messages = string.Join("; ", report.Findings.Select(finding => $"{finding.Code}: {finding.Message}"));
+                throw new InvalidOperationException($"Projection validation failed: {messages}");
+            }
+        }
 
         return Task.CompletedTask;
     }

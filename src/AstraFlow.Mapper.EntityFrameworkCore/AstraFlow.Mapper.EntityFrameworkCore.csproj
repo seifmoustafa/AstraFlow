@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>AstraFlow.Mapper.EntityFrameworkCore</PackageId>
+    <Title>AstraFlow Mapper Entity Framework Core</Title>
+    <Description>Optional EF Core projection validation helpers for AstraFlow.Mapper projection registries.</Description>
+    <PackageTags>mapper;mapping;projection;entity-framework-core;efcore;dotnet</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AstraFlow.Mapper\AstraFlow.Mapper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

@@ -159,6 +159,27 @@ public sealed class AstraFlowDiagnosticsTests
         markdown.Should().Contain(nameof(PingHandler));
     }
 
+    [Fact]
+    public void CreateReport_WithProjectionValidationFinding_ReportsProjectionFinding()
+    {
+        var services = new ServiceCollection();
+        services.AddAstraFlowMapper([typeof(AstraFlowDiagnosticsTests)]);
+        services.AddAstraFlowDiagnostics(options =>
+        {
+            options.ValidateRequestCoverage = false;
+            options.ValidateMappingCatalog = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var reporter = provider.GetRequiredService<IAstraFlowDiagnosticsReporter>();
+
+        var report = reporter.CreateReport();
+
+        report.Findings.Should().Contain(f =>
+            f.Code == "AFP103" &&
+            f.Severity == DiagnosticSeverity.Warning);
+    }
+
     private static ServiceCollection CreateBaseServices()
     {
         var services = new ServiceCollection();
@@ -255,5 +276,11 @@ public sealed class AstraFlowDiagnosticsTests
     {
         public Expression<Func<SampleEntity, SampleResponse>> Expression =>
             entity => new SampleResponse(entity.Id, entity.Name);
+    }
+
+    public sealed class RiskyProjection : IProjection<SampleEntity, SampleResponse>
+    {
+        public Expression<Func<SampleEntity, SampleResponse>> Expression =>
+            entity => new SampleResponse(Guid.NewGuid(), entity.Name);
     }
 }

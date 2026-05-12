@@ -2,7 +2,7 @@
   <PropertyGroup>
     <PackageId>AstraFlow.Mapper</PackageId>
     <Title>AstraFlow Mapper</Title>
-    <Description>Explicit object mapping for .NET with declared mapping catalogs, startup validation, secure ID abstractions, and query projection helpers.</Description>
+    <Description>Explicit object mapping for .NET with declared mapping catalogs, startup validation, secure ID abstractions, named projection registry, and projection validation.</Description>
     <PackageTags>mapper;mapping;dto;projection;dotnet</PackageTags>
   </PropertyGroup>
 
