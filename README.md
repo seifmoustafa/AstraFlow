@@ -1,4 +1,4 @@
-﻿# AstraFlow
+# AstraFlow
 
 ![AstraFlow package icon](https://raw.githubusercontent.com/seifmoustafa/AstraFlow/main/assets/branding/astraflow-icon.png)
 
@@ -14,6 +14,7 @@ It was built to keep production applications free from runtime license checks, h
 | `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named projection registry, projection validation, and secure ID mapping abstractions. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
 | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
+| `AstraFlow.Testing` | Framework-neutral test helpers for fake mediator flows, handler harnesses, mapper/projection assertions, diagnostics assertions, and test secure IDs. |
 | `AstraFlow` | Convenience package referencing both mediator and mapper with one registration method. |
 
 ## Documentation Map
@@ -33,6 +34,7 @@ It was built to keep production applications free from runtime license checks, h
 | [Projection Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/projection-scenarios.md) | You want expected behavior for duplicate, missing, named, risky, and strict projection cases. |
 | [EF Core Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/entity-framework-core.md) | You want optional EF Core projection translation checks. |
 | [Diagnostics Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/diagnostics.md) | You want JSON or Markdown reports of handlers, behaviors, mappings, projections, and diagnostics findings. |
+| [Testing Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/testing.md) | You want fake sender/publisher/mediator helpers, handler harnesses, and assertion helpers for tests. |
 | [Troubleshooting](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/troubleshooting.md) | You hit an exception and want the likely cause and fix. |
 | [Community Release Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/community-release-guide.md) | You are preparing the repo push, tag, package verification, and community-facing release notes. |
 | [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | You want the completed v1.2 projection safety scope and the future testing, mediator-parity, mapping-parity, analyzer, generator, and ecosystem roadmap. |
@@ -42,7 +44,7 @@ It was built to keep production applications free from runtime license checks, h
 
 ## Target Framework
 
-Since `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, and `AstraFlow.Diagnostics` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line. Version `1.2.3` adds automated clean-install verification for those package assets.
+Since `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, and `AstraFlow.Diagnostics` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. `AstraFlow.Testing` ships the same target framework set starting in `1.3.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line.
 
 ## Public API At A Glance
 
@@ -100,6 +102,18 @@ Since `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.M
 | `IAstraFlowDiagnosticsReporter.CreateJsonReport()` | Export diagnostics for tools or CI. | Returns deterministic camelCase JSON. |
 | `IAstraFlowDiagnosticsReporter.CreateMarkdownReport()` | Export human-readable diagnostics. | Returns a Markdown report with summary, findings, and registration tables. |
 | `DiagnosticSeverity` | Classify findings. | Uses `Info`, `Warning`, `Error`, and `Fatal`. |
+
+### Testing
+
+| API | Use It For | Expected Result |
+| --- | --- | --- |
+| `FakeSender` | Record sent requests and return configured responses without a DI container. | Tests can assert request dispatch through `RecordedRequest` entries. |
+| `FakePublisher` | Record published notifications and optionally run fake handlers. | Tests can assert notification fan-out without a real mediator. |
+| `FakeMediator` | Combine fake sender and publisher behavior. | Units depending on `IMediator`, `ISender`, or `IPublisher` can be tested without mocking frameworks. |
+| `HandlerTestHarness<TRequest, TResponse>` | Execute one request handler directly. | Handler tests stay small and do not require a host. |
+| `PipelineTestHarness<TRequest, TResponse>` | Execute pipeline behaviors around a terminal delegate. | Tests can verify order, short-circuiting, and exception flow. |
+| `NotificationHandlerTestHarness<TNotification>` | Execute one notification handler directly. | Notification handler tests stay focused. |
+| `TestSecureIdCodec` | Deterministic test-only secure ID codec. | Secure ID mapping tests can round-trip IDs without real keys. |
 
 ### Entity Framework Core
 
@@ -221,7 +235,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.3
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.3.0
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -290,13 +304,34 @@ var markdown = reporter.CreateMarkdownReport();
 
 Diagnostics are framework-neutral and do not expose request payloads, DTO payloads, secrets, tokens, or connection strings.
 
+## Quick Start: Testing
+
+Install the optional testing package in test projects:
+
+```powershell
+dotnet add package AstraFlow.Testing --version 1.3.0
+```
+
+Use the fake mediator to record requests and notifications:
+
+```csharp
+var mediator = new FakeMediator()
+    .RespondWith<CreateInvoiceCommand, Guid>(Guid.NewGuid());
+
+var id = await mediator.Send(new CreateInvoiceCommand("INV-1001"));
+
+mediator.Requests.SingleSent<CreateInvoiceCommand>();
+```
+
+The testing package is framework-neutral and does not depend on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework.
+
 ## v1 Non-Goals
 
 AstraFlow v1 intentionally does not include convention mapping, flattening, reverse-map generation, compatibility shims, source generators, or analyzers. Those belong in optional packages after the explicit core is stable in real production use.
 
 ## Roadmap
 
-The long-term plan is to continue improving projection safety, then add target-framework compatibility work, testing support, mediator parity features, optional convention mapping, advanced mapping parity, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, validation integration, CLI/templates, broader EF Core provider checks, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
+The long-term plan is to continue improving projection safety and testing support, then add mediator parity features, optional convention mapping, advanced mapping parity, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, validation integration, CLI/templates, broader EF Core provider checks, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
 
 ## Branding
 

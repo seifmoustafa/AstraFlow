@@ -289,9 +289,39 @@ Current v1.1 public concepts:
 - `DiagnosticSeverity`
 - `AddAstraFlowDiagnostics(...)`
 
+### `AstraFlow.Testing`
+
+Purpose:
+
+- Provide fake sender, publisher, and mediator implementations for unit tests.
+- Record requests and notifications without a mocking framework.
+- Execute handlers, notification handlers, and pipeline behaviors without a full application host.
+- Provide framework-neutral assertions for mediator, mapper, projection, diagnostics, exception, mapping-rule, and secure ID tests.
+- Provide a deterministic test-only secure ID codec.
+
+Current v1.3 public concepts:
+
+- `FakeSender`
+- `FakePublisher`
+- `FakeMediator`
+- `RecordedRequest`
+- `RecordedNotification`
+- `HandlerTestHarness<TRequest, TResponse>`
+- `PipelineTestHarness<TRequest, TResponse>`
+- `NotificationHandlerTestHarness<TNotification>`
+- `AstraFlowAssertionException`
+- `MediatorAssertions`
+- `MapperAssertions`
+- `MappingRuleAssertions`
+- `ProjectionAssertions`
+- `DiagnosticsAssertions`
+- `ExceptionAssertions`
+- `SecureIdAssertions`
+- `TestSecureIdCodec`
+
 ## v1 Status
 
-v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.2.3`.
+v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.3.0`.
 
 ### v1 Mediator Features
 
@@ -728,16 +758,16 @@ Do not delete `packages/AstraFlow` from the NEXORA monorepo until the published 
 In NEXORA backend projects that currently reference local AstraFlow projects, replace project references with package references:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.2.3" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.2.3" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.3" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.3" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.3.0" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.3.0" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.3.0" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.3.0" />
 ```
 
 Use the meta-package only where both are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.2.3" />
+<PackageReference Include="AstraFlow" Version="1.3.0" />
 ```
 
 ### Step 2: Restore And Build
@@ -1048,13 +1078,13 @@ Acceptance gates:
 
 ## v1.3 Roadmap: Testing Support
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
 Make request handlers, notification handlers, pipeline behaviors, mapping rules, projections, diagnostics, and secure-ID flows easy to test without a full application host.
 
-Planned package:
+Implemented package:
 
 - `AstraFlow.Testing`
 
@@ -1070,20 +1100,15 @@ Features:
 - handler test harness,
 - pipeline test harness,
 - notification handler harness,
-- behavior order assertion helper,
-- behavior short-circuit assertion helper,
-- exception-flow assertion helper for current mediator behavior,
+- pipeline behavior order and short-circuit support through the pipeline harness,
+- exception-flow assertion helper,
 - mapper validation assertions,
 - mapper rule assertion helper,
-- mapping snapshot helper,
-- collection mapping assertion helper,
 - projection assertion helper,
 - projection validation assertion helper,
-- EF Core projection validation test helpers,
+- diagnostics assertion helper,
 - secure ID test codec,
-- secure ID round-trip assertion helper,
-- duplicate handler fixture helper,
-- missing handler fixture helper.
+- secure ID round-trip assertion helper.
 
 Acceptance gates:
 
@@ -1092,8 +1117,8 @@ Acceptance gates:
 - deterministic assertion messages,
 - no test helper logs request or DTO payload values by default,
 - tests cover mediator, mapper, projection, diagnostics, and secure ID helpers,
-- docs show CQRS, non-CQRS, mapping, projection, and pipeline testing patterns,
-- NEXORA handler tests can remove repetitive test setup.
+- docs show CQRS, mapping, projection, diagnostics, secure ID, and pipeline testing patterns,
+- clean package install verification includes `AstraFlow.Testing`.
 
 ## v1.4 Roadmap: Mediator Parity And Ergonomics
 
@@ -2028,9 +2053,9 @@ Add or expand these docs before broader public promotion:
 
 This matrix describes feature classes AstraFlow should cover over time. It avoids naming any competitor in package documentation and instead tracks product capability categories.
 
-| Capability | Now `v1.2.3` | Planned `v1.3-v1.13` | Planned `v2` | Planned `v3+` |
+| Capability | Now `v1.3.0` | Planned `v1.4-v1.13` | Planned `v2` | Planned `v3+` |
 | --- | --- | --- | --- | --- |
-| Target frameworks | Core packages multi-target; EF Core package `net10.0` | Direct legacy target research and EF provider target expansion | API compatibility governance | Enterprise compatibility policy |
+| Target frameworks | Core packages and testing package multi-target; EF Core package `net10.0` | Direct legacy target research and EF provider target expansion | API compatibility governance | Enterprise compatibility policy |
 | Request dispatch | Done | Void requests, richer registration | Generated registration, analyzer checks | Visual request graph |
 | Stream requests | Not included | Stream request and stream behavior support | Stream analyzers | Streaming templates |
 | Notification publish | Done | Parallel and bounded parallel strategies | Handler-risk analyzers | Observability dashboards |
@@ -2048,7 +2073,7 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 | Unflattening | Not included | Opt-in advanced mapping | Domain-write analyzers | Visual mapping graph |
 | Existing destination mapping | Not included | Update/patch mapping support | Analyzer guarded | Entity update recipes |
 | Startup diagnostics | Done | Expanded finding coverage | Analyzer metadata | Health endpoints |
-| Testing support | Not included | `AstraFlow.Testing` | Analyzer-friendly test helpers | Test templates |
+| Testing support | `AstraFlow.Testing` done | More harnesses as new mediator/mapping features ship | Analyzer-friendly test helpers | Test templates |
 | Observability | Not included | OpenTelemetry/logging hooks | Metrics tests | Dashboards |
 | ASP.NET Core integration | Sample only | Dedicated helper package | Analyzer hints | Templates and diagnostics endpoint |
 | Validation integration | Not included | Dedicated validation package | Analyzer hints | Recipe gallery |

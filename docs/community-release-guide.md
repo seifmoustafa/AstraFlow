@@ -1,26 +1,26 @@
-﻿# Community Release Guide
+# Community Release Guide
 
 This guide is for preparing AstraFlow releases for a public repository push and community consumption.
 
-## Current Release: v1.2.3
+## Current Release: v1.3.0
 
-v1.2.3 is a compatibility verification hardening release. It keeps the v1.2.2 target framework support and adds automated clean-install checks for the packed packages.
+v1.3.0 is the testing-support release. It adds `AstraFlow.Testing` while keeping the v1.2 target framework support and clean package install verification.
 
 Key message:
 
 ```text
-AstraFlow v1.2.3 locks in the v1.2.2 multi-target promise by verifying clean external installs for `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` consumers before publish.
+AstraFlow v1.3.0 adds framework-neutral testing helpers for fake mediator flows, handler and pipeline harnesses, mapper/projection/diagnostics assertions, and deterministic secure ID tests.
 ```
 
-## What Changed Since v1.2.2
+## What Changed Since v1.2.3
 
 | Area | Change | Why It Matters |
 | --- | --- | --- |
-| Install verification script | Added `scripts/verify-package-install.ps1`. | Release owners can prove packed packages install in clean consumer projects. |
-| CI verification | CI now runs clean package install checks after packing. | Target support cannot drift silently. |
-| Publish verification | The publish workflow runs clean package install checks before pushing to NuGet. | Broken packages are blocked before publication. |
-| Local pack verification | `scripts/pack.ps1` now runs package install verification. | Local release checks match CI/publish behavior. |
-| Package metadata | Updated version and release notes to `1.2.3`. | NuGet release notes describe the verification hardening scope. |
+| New package | Added `AstraFlow.Testing`. | Test projects can use AstraFlow helpers without a mocking framework or full host. |
+| Mediator testing | Added fake sender, fake publisher, fake mediator, and request/notification recording. | Unit tests can assert dispatch behavior directly. |
+| Harnesses | Added handler, notification handler, and pipeline harnesses. | Handler and behavior tests stay small and deterministic. |
+| Assertions | Added mapper, projection, diagnostics, exception, mapping-rule, and secure ID assertions. | Common package scenarios have clear assertion messages. |
+| Release verification | CI, publish, pack, and install verification now include `AstraFlow.Testing`. | The new package is checked across supported targets before publish. |
 
 ## Pre-Push Checklist
 
@@ -43,6 +43,7 @@ Expected result:
 - mediator tests include 14 passing tests,
 - mapper tests include 19 passing tests,
 - integration tests include 1 passing test.
+- testing package tests include 11 passing tests.
 
 ## Package Verification
 
@@ -53,30 +54,34 @@ dotnet pack src\AstraFlow.Mediator\AstraFlow.Mediator.csproj -c Release --no-bui
 dotnet pack src\AstraFlow.Mapper\AstraFlow.Mapper.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet pack src\AstraFlow.Mapper.EntityFrameworkCore\AstraFlow.Mapper.EntityFrameworkCore.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet pack src\AstraFlow.Diagnostics\AstraFlow.Diagnostics.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
+dotnet pack src\AstraFlow.Testing\AstraFlow.Testing.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet pack src\AstraFlow\AstraFlow.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 ```
 
 Expected artifacts:
 
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.3.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.3.snupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.3.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.3.snupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.3.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.3.snupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.3.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.3.snupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.2.3.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.2.3.snupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.3.0.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.3.0.snupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.3.0.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.3.0.snupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.3.0.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.3.0.snupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.3.0.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.3.0.snupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.3.0.nupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.3.0.snupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.3.0.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.3.0.snupkg`
 
 Inspect package contents:
 
 ```powershell
-tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.2.3.nupkg
-tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.2.3.nupkg
-tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.2.3.nupkg
-tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.2.3.nupkg
-tar -tf src\AstraFlow\bin\Release\AstraFlow.1.2.3.nupkg
+tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.3.0.nupkg
+tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.3.0.nupkg
+tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.3.0.nupkg
+tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.3.0.nupkg
+tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.3.0.nupkg
+tar -tf src\AstraFlow\bin\Release\AstraFlow.1.3.0.nupkg
 ```
 
 Each `.nupkg` should include:
@@ -115,11 +120,12 @@ $root = Resolve-Path '.'
 $localSource = Join-Path $root '.dotnet-cli-home\local-packages'
 New-Item -ItemType Directory -Force -Path $localSource | Out-Null
 
-Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.2.3.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.2.3.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.2.3.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.2.3.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.2.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.3.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.3.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.3.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.3.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.3.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.3.0.nupkg' -Destination $localSource -Force
 
 $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 @"
@@ -133,23 +139,24 @@ $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 </configuration>
 "@ | Set-Content -LiteralPath $config -Encoding UTF8
 
-$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.2.3'
+$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.3.0'
 New-Item -ItemType Directory -Force -Path $sampleRoot | Out-Null
 $sample = Join-Path $sampleRoot ('AstraFlowInstallCheck-' + [guid]::NewGuid().ToString('N'))
 dotnet new console --framework net10.0 --output $sample --no-restore
 $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-dotnet add $project.FullName package AstraFlow.Mediator --version 1.2.3 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper --version 1.2.3 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.3 --no-restore
-dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.2.3 --no-restore
-dotnet add $project.FullName package AstraFlow --version 1.2.3 --no-restore
+dotnet add $project.FullName package AstraFlow.Mediator --version 1.3.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper --version 1.3.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.3.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.3.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Testing --version 1.3.0 --no-restore
+dotnet add $project.FullName package AstraFlow --version 1.3.0 --no-restore
 dotnet restore $project.FullName --configfile $config
 dotnet build $project.FullName --no-restore
 ```
 
 Expected result:
 
-- all five packages install,
+- all six packages install,
 - the project restores,
 - the project builds.
 
@@ -161,10 +168,11 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
     $template = if ($framework -eq 'netstandard2.0') { 'classlib' } else { 'console' }
     dotnet new $template --framework $framework --output $sample --no-restore
     $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-    dotnet add $project.FullName package AstraFlow.Mediator --version 1.2.3 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper --version 1.2.3 --no-restore
-    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.2.3 --no-restore
-    dotnet add $project.FullName package AstraFlow --version 1.2.3 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mediator --version 1.3.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper --version 1.3.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.3.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Testing --version 1.3.0 --no-restore
+    dotnet add $project.FullName package AstraFlow --version 1.3.0 --no-restore
     dotnet restore $project.FullName --configfile $config
     dotnet build $project.FullName --no-restore
 }
@@ -174,7 +182,7 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
 
 ```powershell
 git add .
-git commit -m "Prepare AstraFlow v1.2.3 install verification"
+git commit -m "Release AstraFlow v1.3.0 testing support"
 ```
 
 Before committing, confirm no package artifacts are staged:
@@ -195,9 +203,9 @@ Do not commit:
 ## Suggested Tag
 
 ```powershell
-git tag v1.2.3
+git tag v1.3.0
 git push origin main
-git push origin v1.2.3
+git push origin v1.3.0
 ```
 
 Only tag after local verification passes.
@@ -205,23 +213,24 @@ Only tag after local verification passes.
 ## Suggested GitHub Release Notes
 
 ```markdown
-## AstraFlow v1.2.3
+## AstraFlow v1.3.0
 
-This release adds automated clean-install verification for the package target support introduced in v1.2.2.
+This release adds `AstraFlow.Testing`, a framework-neutral test-helper package for mediator, mapper, projection, diagnostics, and secure ID flows.
 
 ### Changed
 
-- Add `scripts/verify-package-install.ps1`.
-- Verify core packages in clean `netstandard2.0`, `net8.0`, and `net9.0` consumer projects.
-- Verify all packages, including `AstraFlow.Mapper.EntityFrameworkCore`, in a clean `net10.0` consumer project.
-- Run clean install verification from local packing, CI, and the publish workflow.
-- Update compatibility, release, publishing, and package-selection docs.
+- Add fake sender, fake publisher, and fake mediator helpers.
+- Add request and notification recording assertions.
+- Add handler, notification handler, and pipeline harnesses.
+- Add mapper, projection, diagnostics, exception, mapping-rule, and secure ID assertions.
+- Add deterministic `TestSecureIdCodec`.
+- Keep the testing package independent of test frameworks and mocking frameworks.
 
 ### Verification
 
 - Release build passed.
 - Full test suite passed.
-- All five packages packed as `1.2.3`.
+- All six packages packed as `1.3.0`.
 - Package contents include README, CHANGELOG, LICENSE, icon, XML docs, DLLs for expected target frameworks, nuspec files, and symbol packages.
 ```
 

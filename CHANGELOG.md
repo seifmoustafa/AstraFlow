@@ -2,6 +2,17 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.3.0
+
+- Added `AstraFlow.Testing` as a framework-neutral testing package.
+- Added fake sender, fake publisher, and fake mediator helpers with request and notification recording.
+- Added handler, notification handler, and pipeline test harnesses.
+- Added mediator, mapper, projection, diagnostics, exception, mapping-rule, and secure ID assertion helpers.
+- Added deterministic `TestSecureIdCodec` for test-only secure ID round trips.
+- Kept the testing package free from xUnit, NUnit, MSTest, FluentAssertions, and mocking-framework dependencies.
+- Shipped `AstraFlow.Testing` assets for `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`.
+- Updated CI, publish, pack, and clean-install verification to include `AstraFlow.Testing`.
+
 ## 1.2.3
 
 - Added `scripts/verify-package-install.ps1` to install packed packages into clean external consumer projects.
