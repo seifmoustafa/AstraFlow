@@ -50,7 +50,7 @@ The core promise remains: users can understand what happens in their app without
 | Migration guides from popular mediator/mapping approaches | Planned | Keep public docs capability-focused rather than competitor-centered. |
 | Package selector guide | Planned | Help users choose focused packages instead of always using meta package. |
 | Offline package verification script | Candidate | Validate `.nupkg` contents, README, icon, docs, symbols, and dependencies. |
-| Local install smoke-test template | Candidate | Create clean sample app and install packed packages. |
+| Local install smoke-test template | Done | Shipped as `scripts/verify-package-install.ps1` in `1.2.3`. |
 
 ## Mediator Ideas
 
@@ -173,7 +173,7 @@ The core promise remains: users can understand what happens in their app without
 | Secure ID test codec | Planned | Stable tests without real keys. |
 | Diagnostics snapshot helper | Candidate | Golden report tests. |
 | Test fixture builders | Candidate | Useful if minimal and optional. |
-| Compatibility smoke-test harness | Candidate | Install packed packages into clean sample apps. |
+| Compatibility smoke-test harness | Done | `scripts/verify-package-install.ps1` verifies supported target combinations before release. |
 
 ## Analyzer Ideas
 

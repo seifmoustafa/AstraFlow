@@ -190,7 +190,7 @@ Current v1.1 public concepts:
 
 ## v1 Status
 
-v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.2.2`.
+v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.2.3`.
 
 ### v1 Mediator Features
 
@@ -582,16 +582,16 @@ Do not delete `packages/AstraFlow` from the NEXORA monorepo until the published 
 In NEXORA backend projects that currently reference local AstraFlow projects, replace project references with package references:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.2.2" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.2.2" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.2" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.2" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.2.3" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.2.3" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.3" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.3" />
 ```
 
 Use the meta-package only where both are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.2.2" />
+<PackageReference Include="AstraFlow" Version="1.2.3" />
 ```
 
 ### Step 2: Restore And Build
@@ -836,7 +836,8 @@ Patch sequence:
 
 - `v1.2.1`: metadata, docs, API compatibility baseline, and compatibility feasibility report,
 - `v1.2.2`: first real multi-target support for core packages,
-- `v1.2.3`: direct legacy framework target if proven valuable and safe.
+- `v1.2.3`: automated clean-install verification for supported package targets,
+- `v1.2.4`: direct legacy framework target if proven valuable and safe.
 
 ## v1.2.2 Roadmap: Core Multi-Target Support
 
@@ -871,6 +872,33 @@ Acceptance gates:
 - core `.nupkg` files include `lib/netstandard2.0`, `lib/net8.0`, `lib/net9.0`, and `lib/net10.0`,
 - EF Core `.nupkg` includes `lib/net10.0`,
 - docs accurately separate core package target support from EF Core package target support.
+
+## v1.2.3 Roadmap: Package Install Verification
+
+Status: `Done`.
+
+Goal:
+
+Make the package target support from v1.2.2 mechanically verifiable before every release.
+
+Implemented:
+
+- added `scripts/verify-package-install.ps1`,
+- installs packed core packages into a clean external `netstandard2.0` class library,
+- installs packed core packages into clean external `net8.0` and `net9.0` console apps,
+- installs all packed packages, including `AstraFlow.Mapper.EntityFrameworkCore`, into a clean external `net10.0` console app,
+- uses a local package source plus NuGet.org for dependencies,
+- runs outside the repo tree so sample projects do not inherit repository `Directory.Build.props`,
+- local `scripts/pack.ps1` runs install verification after packing,
+- CI and publish workflows run install verification before uploading or publishing artifacts.
+
+Acceptance gates:
+
+- Release build passes,
+- package tests pass,
+- all package projects pack,
+- package target assets are inspected,
+- clean install verification passes for all supported target combinations.
 
 ## v1.3 Roadmap: Testing Support
 
@@ -1805,7 +1833,7 @@ Add or expand these docs before broader public promotion:
 
 This matrix describes feature classes AstraFlow should cover over time. It avoids naming any competitor in package documentation and instead tracks product capability categories.
 
-| Capability | Now `v1.2.2` | Planned `v1.3-v1.12` | Planned `v2` | Planned `v3+` |
+| Capability | Now `v1.2.3` | Planned `v1.3-v1.12` | Planned `v2` | Planned `v3+` |
 | --- | --- | --- | --- | --- |
 | Target frameworks | Core packages multi-target; EF Core package `net10.0` | Direct legacy target research and EF provider target expansion | API compatibility governance | Enterprise compatibility policy |
 | Request dispatch | Done | Void requests, richer registration | Generated registration, analyzer checks | Visual request graph |

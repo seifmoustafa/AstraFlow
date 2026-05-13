@@ -1,4 +1,4 @@
-name: Publish AstraFlow Packages
+﻿name: Publish AstraFlow Packages
 
 on:
   workflow_dispatch:
@@ -63,10 +63,10 @@ jobs:
         shell: pwsh
         run: |
           $corePackages = @(
-            "src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.2.nupkg",
-            "src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.2.nupkg",
-            "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.2.nupkg",
-            "src/AstraFlow/bin/Release/AstraFlow.1.2.2.nupkg"
+            "src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.3.nupkg",
+            "src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.3.nupkg",
+            "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.3.nupkg",
+            "src/AstraFlow/bin/Release/AstraFlow.1.2.3.nupkg"
           )
           foreach ($package in $corePackages) {
             $entries = tar -tf $package
@@ -80,13 +80,17 @@ jobs:
             }
           }
 
-          $efEntries = tar -tf "src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.2.nupkg"
+          $efEntries = tar -tf "src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.3.nupkg"
           if (-not ($efEntries -match "^lib/net10.0/.*\.dll$")) {
             throw "AstraFlow.Mapper.EntityFrameworkCore is missing lib/net10.0 DLL assets."
           }
           if ($efEntries -match "^lib/(netstandard2.0|net8.0|net9.0)/") {
-            throw "AstraFlow.Mapper.EntityFrameworkCore should remain net10.0-only in 1.2.2."
+            throw "AstraFlow.Mapper.EntityFrameworkCore should remain net10.0-only in 1.2.3."
           }
+
+      - name: Verify clean package install
+        shell: pwsh
+        run: ./scripts/verify-package-install.ps1 -Version 1.2.3
 
       - name: Publish
         shell: pwsh

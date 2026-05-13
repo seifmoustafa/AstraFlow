@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.2.2</Version>
-    <AssemblyVersion>1.2.2.0</AssemblyVersion>
-    <FileVersion>1.2.2.0</FileVersion>
+    <Version>1.2.3</Version>
+    <AssemblyVersion>1.2.3.0</AssemblyVersion>
+    <FileVersion>1.2.3.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,11 +18,11 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.2.2:
-      - Adds real multi-target support for AstraFlow, AstraFlow.Mediator, AstraFlow.Mapper, and AstraFlow.Diagnostics.
-      - Core packages now ship netstandard2.0, net8.0, net9.0, and net10.0 assets.
-      - AstraFlow.Mapper.EntityFrameworkCore remains net10.0 because it follows EF Core 10.
-      - Includes compatibility-safe source changes for older target reference assemblies.
+    <PackageReleaseNotes>AstraFlow 1.2.3:
+      - Adds an automated clean-install package verification script for supported target frameworks.
+      - Verifies core packages in netstandard2.0, net8.0, and net9.0 consumer projects.
+      - Verifies all packages, including AstraFlow.Mapper.EntityFrameworkCore, in a net10.0 consumer project.
+      - Wires package install verification into local packing, CI, and the publish workflow.
       - See CHANGELOG.md for the full release history.</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

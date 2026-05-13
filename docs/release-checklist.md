@@ -16,7 +16,7 @@
 
 - `PackageId`, title, description, tags, license, repository URL, symbols, and README metadata are present.
 - `.nupkg` and `.snupkg` files are produced for every package.
-- Package contents include `README.md`, `LICENSE`, package icon, repository docs, `.nuspec`, library DLL, PDB, and XML docs.
+- Package contents include `README.md`, `CHANGELOG.md`, `LICENSE`, package icon, repository docs, `.nuspec`, library DLL, PDB, and XML docs.
 - Package contents include `docs/compatibility.md`, `docs/package-selection.md`, and `docs/future-ideas.md`.
 - Package dependency groups match the supported target frameworks.
 - No `bin/`, `obj/`, temporary logs, local SDK cache folders, `.nupkg`, or `.snupkg` files are committed.
@@ -29,6 +29,7 @@
 - Any new target framework has a clean install smoke test.
 - EF Core package target support is verified separately from core mapper target support.
 - No package advertises direct .NET Framework or `netstandard2.0` support until package assets exist for that target.
+- `scripts/verify-package-install.ps1` passes for the release version.
 
 ## Consumer Validation
 

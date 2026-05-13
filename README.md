@@ -1,4 +1,4 @@
-# AstraFlow
+﻿# AstraFlow
 
 ![AstraFlow package icon](https://raw.githubusercontent.com/seifmoustafa/AstraFlow/main/assets/branding/astraflow-icon.png)
 
@@ -42,7 +42,7 @@ It was built to keep production applications free from runtime license checks, h
 
 ## Target Framework
 
-Starting in `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, and `AstraFlow.Diagnostics` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line.
+Since `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, and `AstraFlow.Diagnostics` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line. Version `1.2.3` adds automated clean-install verification for those package assets.
 
 ## Public API At A Glance
 
@@ -221,7 +221,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.2
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.3
 ```
 
 Then ask EF Core to translate registered projections without executing the query:

@@ -14,7 +14,7 @@ This guide explains which AstraFlow package to install.
 
 Prefer focused packages when a project needs only one concern. Use the meta package when a project intentionally uses both mediator and mapper.
 
-Target support in `1.2.2`: the core packages support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows EF Core 10.
+Target support in `1.2.3`: the core packages support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows EF Core 10.
 
 ## `AstraFlow.Mediator`
 
@@ -31,7 +31,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mediator --version 1.2.2
+dotnet add package AstraFlow.Mediator --version 1.2.3
 ```
 
 Use this in application layers, worker services, APIs, and modular monolith modules that own request handling.
@@ -51,7 +51,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.2.2
+dotnet add package AstraFlow.Mapper --version 1.2.3
 ```
 
 Use this in application or contract-mapping layers that need auditable DTO conversion.
@@ -63,7 +63,7 @@ Install this package only when you need EF Core relational projection validation
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.2
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.3
 ```
 
 This package references EF Core. Keep it out of projects that do not use EF Core.
@@ -75,7 +75,7 @@ Install this package when you want registration and validation reports.
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.2.2
+dotnet add package AstraFlow.Diagnostics --version 1.2.3
 ```
 
 Register diagnostics after mediator and mapper registrations so the reporter can inspect those service descriptors.
@@ -87,7 +87,7 @@ Install the meta package when a project intentionally uses mediator and mapper t
 Example:
 
 ```powershell
-dotnet add package AstraFlow --version 1.2.2
+dotnet add package AstraFlow --version 1.2.3
 ```
 
 The meta package is convenient, but focused packages keep dependency intent clearer in shared libraries and smaller projects.
