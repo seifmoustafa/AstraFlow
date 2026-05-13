@@ -2,6 +2,15 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.2.1
+
+- Added compatibility guidance for current `net10.0` support and future multi-target expansion.
+- Added package selection guidance for choosing the meta package or focused packages.
+- Added release checklist gates for target framework verification, package dependency review, and clean install smoke tests.
+- Documented compatibility audit findings for future `netstandard2.0`, `net8.0`, `net9.0`, and direct legacy framework support.
+- Updated package release notes for the compatibility and adoption hardening release.
+- No runtime behavior changes.
+
 ## 1.2.0
 
 - Added projection registry support with deterministic unnamed and named projection lookup.

@@ -7,15 +7,28 @@
 - Samples compile.
 - Tests pass in Release configuration.
 - README, changelog, roadmap, security policy, and publishing docs are current.
-- API reference, architecture guide, diagnostics guide, mediator scenarios, mapper scenarios, projection guides, EF Core guide, troubleshooting docs, and community release guide are current.
+- API reference, architecture guide, package selection guide, compatibility guide, diagnostics guide, mediator scenarios, mapper scenarios, projection guides, EF Core guide, troubleshooting docs, and community release guide are current.
 - No competitor migration pages or retired package references exist in AstraFlow docs.
+- Current target framework support is documented accurately.
+- Candidate target framework support is not described as published support.
 
 ## Package
 
 - `PackageId`, title, description, tags, license, repository URL, symbols, and README metadata are present.
 - `.nupkg` and `.snupkg` files are produced for every package.
 - Package contents include `README.md`, `LICENSE`, package icon, repository docs, `.nuspec`, library DLL, PDB, and XML docs.
+- Package contents include `docs/compatibility.md`, `docs/package-selection.md`, and `docs/future-ideas.md`.
+- Package dependency groups match the supported target frameworks.
 - No `bin/`, `obj/`, temporary logs, local SDK cache folders, `.nupkg`, or `.snupkg` files are committed.
+
+## Compatibility
+
+- Current supported target frameworks are listed in README and `docs/compatibility.md`.
+- Any new target framework has a passing build.
+- Any new target framework has relevant passing tests.
+- Any new target framework has a clean install smoke test.
+- EF Core package target support is verified separately from core mapper target support.
+- No package advertises direct .NET Framework or `netstandard2.0` support until package assets exist for that target.
 
 ## Consumer Validation
 
@@ -47,6 +60,8 @@
 - A clean sample project can install `AstraFlow`, `AstraFlow.Mediator`, and `AstraFlow.Mapper`.
 - A clean sample project can install `AstraFlow.Diagnostics`.
 - A clean sample project can install `AstraFlow.Mapper.EntityFrameworkCore`.
+- A clean sample project can restore each package using the documented package versions.
+- A clean sample project can build after installing the focused package set recommended in `docs/package-selection.md`.
 - NEXORA project references to local AstraFlow source are replaced with NuGet package references.
 - NEXORA restore succeeds from NuGet.
 - NEXORA backend build succeeds.
