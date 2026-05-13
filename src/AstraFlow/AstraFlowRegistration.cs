@@ -21,7 +21,8 @@ public static class AstraFlowRegistration
         bool validateRequestCoverage = false,
         params Type[] assemblyMarkerTypes)
     {
-        ArgumentNullException.ThrowIfNull(services);
+        if (services is null)
+            throw new ArgumentNullException(nameof(services));
 
         services.AddAstraFlowMediator(validateRequestCoverage, assemblyMarkerTypes);
         services.AddAstraFlowMapper(assemblyMarkerTypes);

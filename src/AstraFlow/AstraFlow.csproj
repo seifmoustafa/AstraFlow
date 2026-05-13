@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0;net9.0;net10.0</TargetFrameworks>
     <PackageId>AstraFlow</PackageId>
     <Title>AstraFlow</Title>
     <Description>Convenience package for AstraFlow.Mediator and AstraFlow.Mapper.</Description>

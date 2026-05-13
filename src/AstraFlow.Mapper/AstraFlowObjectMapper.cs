@@ -30,7 +30,8 @@ public sealed class AstraFlowObjectMapper : IMapper
     /// <inheritdoc />
     public object? Map(object? source, Type destinationType)
     {
-        ArgumentNullException.ThrowIfNull(destinationType);
+        if (destinationType is null)
+            throw new ArgumentNullException(nameof(destinationType));
 
         if (source is null)
             return null;

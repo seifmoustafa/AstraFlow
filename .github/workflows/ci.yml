@@ -21,7 +21,10 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
 
       - name: Restore
         run: dotnet restore AstraFlow.slnx --configfile NuGet.Config --disable-parallel
@@ -46,6 +49,35 @@ jobs:
 
       - name: Pack meta package
         run: dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Verify package target assets
+        shell: pwsh
+        run: |
+          $corePackages = @(
+            "src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.2.2.nupkg",
+            "src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.2.2.nupkg",
+            "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.2.2.nupkg",
+            "src/AstraFlow/bin/Release/AstraFlow.1.2.2.nupkg"
+          )
+          foreach ($package in $corePackages) {
+            $entries = tar -tf $package
+            foreach ($tfm in @("netstandard2.0", "net8.0", "net9.0", "net10.0")) {
+              if (-not ($entries -match "^lib/$tfm/.*\.dll$")) {
+                throw "$package is missing lib/$tfm DLL assets."
+              }
+              if (-not ($entries -match "^lib/$tfm/.*\.xml$")) {
+                throw "$package is missing lib/$tfm XML documentation assets."
+              }
+            }
+          }
+
+          $efEntries = tar -tf "src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.2.2.nupkg"
+          if (-not ($efEntries -match "^lib/net10.0/.*\.dll$")) {
+            throw "AstraFlow.Mapper.EntityFrameworkCore is missing lib/net10.0 DLL assets."
+          }
+          if ($efEntries -match "^lib/(netstandard2.0|net8.0|net9.0)/") {
+            throw "AstraFlow.Mapper.EntityFrameworkCore should remain net10.0-only in 1.2.2."
+          }
 
       - name: Upload packages
         uses: actions/upload-artifact@v7

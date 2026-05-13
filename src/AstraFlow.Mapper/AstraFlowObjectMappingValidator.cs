@@ -20,7 +20,8 @@ public sealed class AstraFlowObjectMappingValidator : IObjectMappingValidator
     /// <inheritdoc />
     public void Validate(MappingOptions options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options is null)
+            throw new ArgumentNullException(nameof(options));
 
         var declaredRules = _rules
             .OfType<IDeclaredObjectMappingRule>()

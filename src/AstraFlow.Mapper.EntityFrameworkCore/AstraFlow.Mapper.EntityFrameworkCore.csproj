@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
     <PackageId>AstraFlow.Mapper.EntityFrameworkCore</PackageId>
     <Title>AstraFlow Mapper Entity Framework Core</Title>
     <Description>Optional EF Core projection validation helpers for AstraFlow.Mapper projection registries.</Description>

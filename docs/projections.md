@@ -1,11 +1,11 @@
-# Projections
+﻿# Projections
 
 AstraFlow projections are explicit LINQ expressions used to shape query results into DTOs. They are not runtime object mappings and they do not call `IMapper`.
 
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.2.1
+dotnet add package AstraFlow.Mapper --version 1.2.2
 ```
 
 ## Basic Projection

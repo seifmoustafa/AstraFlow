@@ -22,7 +22,7 @@ It was built to keep production applications free from runtime license checks, h
 | --- | --- |
 | [Getting Started](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/getting-started.md) | You want the shortest path from install to working mediator and mapper usage. |
 | [Package Selection](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/package-selection.md) | You want to choose the smallest package set for an app, library, test project, or EF Core project. |
-| [Compatibility](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/compatibility.md) | You want current target framework support and the future multi-target audit plan. |
+| [Compatibility](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/compatibility.md) | You want current target framework support and target-expansion rules. |
 | [API Reference](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/api-reference.md) | You need every public type, method, option, and expected behavior in one table-driven reference. |
 | [Architecture](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/architecture.md) | You want to understand the package design, runtime flow, dependency boundaries, and non-goals. |
 | [Mediator Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator.md) | You are using requests, handlers, notifications, or pipeline behaviors. |
@@ -37,11 +37,12 @@ It was built to keep production applications free from runtime license checks, h
 | [Community Release Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/community-release-guide.md) | You are preparing the repo push, tag, package verification, and community-facing release notes. |
 | [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | You want the completed v1.2 projection safety scope and the future testing, mediator-parity, mapping-parity, analyzer, generator, and ecosystem roadmap. |
 | [Future Ideas Bank](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/future-ideas.md) | You want the broader candidate backlog for future features, integrations, platform tooling, and research ideas. |
+| [Changelog](https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md) | You want the release-by-release history shown in GitHub and linked from the NuGet README. |
 | [Publishing](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/publishing.md) | You are preparing or verifying a NuGet release. |
 
 ## Target Framework
 
-AstraFlow currently targets `net10.0`. Per Microsoft's .NET support policy, .NET 10 is an active LTS release supported until November 14, 2028; .NET 8 and .NET 9 are supported until November 10, 2026.
+Starting in `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, and `AstraFlow.Diagnostics` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line.
 
 ## Public API At A Glance
 
@@ -220,7 +221,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.1
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.2
 ```
 
 Then ask EF Core to translate registered projections without executing the query:

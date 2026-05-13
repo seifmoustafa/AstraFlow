@@ -42,7 +42,8 @@ public sealed class AstraFlowMediator : IMediator
         IRequest<TResponse> request,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        if (request is null)
+            throw new ArgumentNullException(nameof(request));
 
         var sender = SendCache.GetOrAdd(request.GetType(), CreateSendDelegate);
         var response = await sender(this, request, cancellationToken);
@@ -52,7 +53,8 @@ public sealed class AstraFlowMediator : IMediator
     /// <inheritdoc />
     public Task<object?> Send(object request, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(request);
+        if (request is null)
+            throw new ArgumentNullException(nameof(request));
 
         var requestType = request.GetType();
         var sender = SendCache.GetOrAdd(requestType, CreateSendDelegate);
@@ -65,7 +67,8 @@ public sealed class AstraFlowMediator : IMediator
         CancellationToken cancellationToken = default)
         where TNotification : INotification
     {
-        ArgumentNullException.ThrowIfNull(notification);
+        if (notification is null)
+            throw new ArgumentNullException(nameof(notification));
 
         var handlers = _serviceProvider
             .GetServices<INotificationHandler<TNotification>>()
@@ -110,7 +113,8 @@ public sealed class AstraFlowMediator : IMediator
     /// <inheritdoc />
     public Task Publish(object notification, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(notification);
+        if (notification is null)
+            throw new ArgumentNullException(nameof(notification));
 
         if (notification is not INotification)
         {
@@ -208,7 +212,8 @@ public sealed class AstraFlowMediator : IMediator
             .GetMethod(nameof(SendTypedCore), BindingFlags.Instance | BindingFlags.NonPublic)!
             .MakeGenericMethod(requestType, responseType);
 
-        return method.CreateDelegate<Func<AstraFlowMediator, object, CancellationToken, Task<object?>>>();
+        return (Func<AstraFlowMediator, object, CancellationToken, Task<object?>>)method.CreateDelegate(
+            typeof(Func<AstraFlowMediator, object, CancellationToken, Task<object?>>));
     }
 
     /// <summary>
@@ -222,7 +227,8 @@ public sealed class AstraFlowMediator : IMediator
             .GetMethod(nameof(PublishObjectCore), BindingFlags.Instance | BindingFlags.NonPublic)!
             .MakeGenericMethod(notificationType);
 
-        return method.CreateDelegate<Func<AstraFlowMediator, object, CancellationToken, Task>>();
+        return (Func<AstraFlowMediator, object, CancellationToken, Task>)method.CreateDelegate(
+            typeof(Func<AstraFlowMediator, object, CancellationToken, Task>));
     }
 
     /// <summary>

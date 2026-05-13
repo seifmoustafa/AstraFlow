@@ -34,8 +34,10 @@ public static class AstraFlowMapperRegistration
         IEnumerable<Type> assemblyMarkerTypes,
         Action<MappingOptions>? configure = null)
     {
-        ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(assemblyMarkerTypes);
+        if (services is null)
+            throw new ArgumentNullException(nameof(services));
+        if (assemblyMarkerTypes is null)
+            throw new ArgumentNullException(nameof(assemblyMarkerTypes));
 
         var markerTypes = assemblyMarkerTypes
             .Where(type => type is not null)

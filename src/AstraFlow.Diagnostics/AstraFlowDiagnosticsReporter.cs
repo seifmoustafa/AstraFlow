@@ -236,10 +236,9 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         ICollection<AstraFlowDiagnosticFinding> findings,
         IReadOnlyCollection<ServiceDescriptor> descriptors)
     {
-        var handlerServiceTypes = descriptors
+        var handlerServiceTypes = new HashSet<Type>(descriptors
             .Where(d => IsServiceMatch(d.ServiceType, typeof(IRequestHandler<,>)))
-            .Select(d => d.ServiceType)
-            .ToHashSet();
+            .Select(d => d.ServiceType));
 
         var assemblies = GetDiagnosticAssemblies(descriptors);
         var requestTypes = assemblies
@@ -259,7 +258,7 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
 
         foreach (var request in requestTypes.Where(r => r.RequestInterfaces.Length > 1))
         {
-            var contracts = string.Join(", ", request.RequestInterfaces.Select(GetDisplayName).Order(StringComparer.Ordinal));
+            var contracts = string.Join(", ", request.RequestInterfaces.Select(GetDisplayName).OrderBy(value => value, StringComparer.Ordinal));
             findings.Add(new AstraFlowDiagnosticFinding(
                 DiagnosticSeverity.Error,
                 "AFD102",
@@ -387,9 +386,9 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
             return type.FullName ?? type.Name;
 
         var genericName = type.GetGenericTypeDefinition().FullName ?? type.Name;
-        var tickIndex = genericName.IndexOf('`', StringComparison.Ordinal);
+        var tickIndex = genericName.IndexOf('`');
         if (tickIndex >= 0)
-            genericName = genericName[..tickIndex];
+            genericName = genericName.Substring(0, tickIndex);
 
         var arguments = string.Join(", ", type.GetGenericArguments().Select(GetDisplayName));
         return $"{genericName}<{arguments}>";
@@ -454,8 +453,9 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
 
     private static string EscapeMarkdown(string? value)
     {
-        return string.IsNullOrWhiteSpace(value)
-            ? ""
-            : value.Replace("|", "\\|", StringComparison.Ordinal);
+        if (value is null || string.IsNullOrWhiteSpace(value))
+            return "";
+
+        return value.Replace("|", "\\|");
     }
 }
