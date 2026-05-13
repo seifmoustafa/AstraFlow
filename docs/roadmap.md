@@ -68,6 +68,107 @@ Feature rules:
 - Any feature that logs, serializes, or reports user data must redact by default.
 - Any feature that touches database, web, validation, telemetry, cache, or authorization frameworks belongs in an integration package unless it is only an abstraction.
 
+## Release Classification Policy
+
+This section decides where future work belongs before implementation starts. It exists to prevent roadmap drift and accidental feature work in patch releases.
+
+### Patch Releases
+
+Patch releases are SemVer-safe hardening releases for already-shipped behavior.
+
+Patch work may include:
+
+- bug fixes,
+- clearer exception messages,
+- documentation corrections,
+- package metadata fixes,
+- CI and publishing hardening,
+- compatibility smoke tests,
+- dependency vulnerability updates that do not change public behavior,
+- additional tests for existing behavior,
+- diagnostics finding polish for existing features,
+- analyzer false-positive fixes once analyzers exist.
+
+Patch work must not include:
+
+- new required package dependencies,
+- new required user code changes,
+- behavior changes that make previously-valid applications fail unless the previous behavior was a bug,
+- new major public API areas,
+- broad feature parity work.
+
+Patch candidates currently worth tracking:
+
+| Candidate | Target | Why |
+| --- | --- | --- |
+| Direct legacy framework target research result | `v1.2.4` candidate | Only if direct `net462`/`net471` assets prove value beyond `netstandard2.0`. |
+| Additional clean-install matrix cases | `v1.2.x` | Add console, class library, test project, and publish-style consumers as needed. |
+| Package artifact validation expansion | `v1.2.x` | Verify README, CHANGELOG, icon, XML docs, symbols, dependencies, and target folders consistently. |
+| Documentation link validation | `v1.2.x` | Prevent broken GitHub/NuGet docs links. |
+| Diagnostics code/message polish | `v1.1.x`/`v1.2.x` | Improve clarity without changing runtime contracts. |
+| Projection warning rule polish | `v1.2.x` | Improve existing validation without adding broad new projection features. |
+
+### Minor Releases
+
+Minor releases add optional capabilities without breaking existing applications.
+
+Minor work may include:
+
+- new optional packages,
+- new public APIs that are additive,
+- new diagnostics/report formats,
+- new test helpers,
+- new integrations that live outside core packages,
+- new convention behavior when disabled by default,
+- new analyzers initially shipped as warning/info guidance,
+- new generators that preserve runtime fallback unless explicitly documented otherwise.
+
+Minor work must include:
+
+- focused tests,
+- API docs,
+- scenario docs,
+- package selection docs,
+- changelog and community release notes,
+- acceptance gates in this roadmap.
+
+### Major Releases
+
+Major releases are reserved for breaking changes or large platform shifts.
+
+Major work may include:
+
+- removing obsolete APIs after documented deprecation windows,
+- changing defaults that intentionally break unsafe behavior,
+- restructuring package boundaries,
+- requiring newer runtime baselines,
+- generator-first APIs that cannot reasonably preserve old runtime behavior,
+- broad public API simplification after migration tooling exists.
+
+Major work must include:
+
+- migration guide,
+- analyzer/code-fix support where practical,
+- API diff,
+- compatibility matrix,
+- old/new samples,
+- explicit package deprecation notes.
+
+### Future Platform Phases
+
+Platform phases are not single library features. They are ecosystems around AstraFlow:
+
+- visual flow graphs,
+- diagnostics explorers,
+- migration assistants,
+- IDE extensions,
+- documentation website,
+- benchmark dashboards,
+- compatibility dashboards,
+- enterprise compliance reports.
+
+These belong after the CLI, analyzers, generators, and diagnostics metadata are stable enough to feed them.
+
 ## Release Notes Policy
 
 NuGet's `PackageReleaseNotes` field is usually short plain text. It is normal for the NuGet tab to look minimal because it renders package metadata, not the full changelog.
@@ -388,10 +489,17 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Contracts-only package | Planned | Let shared projects reference request/notification contracts without runtime DI packages. |
 | API compatibility checks | Planned | Compare public APIs against a baseline before release. |
 | Version support policy | Planned | Document which package versions get patches. |
+| Public API baseline files | Planned | Store reviewed public API snapshots for CI comparison. |
+| Old-version upgrade tests | Planned | Verify representative apps can upgrade from previous package versions without source changes when SemVer requires it. |
 | Migration guides | Planned | Explain migration from established mediator and mapper libraries without making public docs competitor-centered. |
+| Migration scanner | Planned | Detect common mediator/mapper usage patterns and report suggested AstraFlow replacements. |
 | Compatibility samples | Planned | Add console, worker, ASP.NET Core, class library, and test-project examples. |
+| DI container compatibility tests | Candidate | Verify behavior against common Microsoft.Extensions.DependencyInjection-compatible containers where practical. |
+| Host compatibility samples | Candidate | Console, worker, ASP.NET Core, test project, Blazor/shared contract, and library-only consumers. |
 | NativeAOT/trimming validation | Planned | Make reflection-heavy paths explicit and generator-backed where needed. |
 | Package split guidance | Planned | Document when to install meta package versus focused packages. |
+| Package deprecation process | Planned | Define how old packages or APIs are deprecated without surprising consumers. |
+| Versioned documentation | Planned | Keep docs for older package versions once the API surface grows. |
 
 ### Mediator Feature Surface
 
@@ -412,6 +520,11 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Outbox/inbox integration | Candidate | Valuable for domain events; should remain infrastructure-specific and opt-in. |
 | Domain event bridge | Candidate | Bridge domain events to notifications without forcing a domain model. |
 | Request envelopes | Candidate | Add correlation, causation, tenant, and user context without logging payloads. |
+| Request context accessor | Candidate | Payload-free metadata for correlation, causation, tenant, user, clock, and locale concerns. |
+| Command idempotency contract | Candidate | Explicit operation keys for command retry safety without storing payloads. |
+| Request result adapters | Candidate | Optional adapters only; core must not own application result types. |
+| Handler lifetime diagnostics | Planned | Detect singleton/scoped/transient risks for handlers, behaviors, processors, and exception handlers. |
+| Open generic notification handlers | Candidate | Support only if duplicate invocation behavior remains deterministic and diagnosable. |
 | Ordered notifications | Candidate | Only if diagnostics make coupling obvious. |
 | Handler decorators | Candidate | Pipeline behaviors may already cover most cases. |
 
@@ -438,6 +551,13 @@ This section is deliberately broad. It exists so future work can be compared aga
 | DataReader mapping | Candidate | Likely belongs in data integration packages. |
 | JSON mapping helpers | Candidate | Useful for APIs but should not replace serializers. |
 | Mapping plan export | Planned | Export inspected member maps for docs, CI, and review. |
+| Mapping plan diff | Planned | Compare member-level mapping decisions between commits or package versions. |
+| Safe update mapping policy | Planned | Separate create, update, patch, and public-input DTO rules. |
+| Sensitive destination write policy | Planned | Block or warn on writes into password/token/key/secret-style members. |
+| Collection update strategy | Candidate | Explicit replace, merge, preserve, and key-based update behavior for existing destinations. |
+| Immutable destination support | Planned | Constructor/record mapping with clear ambiguity and required-member diagnostics. |
+| Required member validation | Planned | Detect destination required members that cannot be populated safely. |
+| Naming convention profiles | Candidate | Optional source/destination naming rules with diagnostics-visible output. |
 
 ### Projection And Query Safety
 
@@ -453,6 +573,10 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Query tagging helpers | Candidate | Useful in EF integrations. |
 | Projection plan export | Planned | List source/destination members and high-risk expression nodes. |
 | Projection diffing | Candidate | Useful in CLI to show read-model shape changes across commits. |
+| Projection parameter object model | Planned | Pass explicit query parameters without capturing complex runtime state. |
+| Projection raw-ID policy checks | Planned | Warn when public read models expose raw IDs while secure ID policy is enabled. |
+| Projection provider baseline tests | Planned | Store expected provider validation outcomes for common providers. |
+| Projection SQL snapshot helper | Candidate | Review generated SQL shape without executing queries. |
 | Async projection helpers | Candidate | Usually provider-owned; avoid hiding `IQueryable` behavior. |
 
 ### Diagnostics, Reports, And Tooling
@@ -468,6 +592,10 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Health-check integration | Planned | ASP.NET Core package should expose development-safe summaries. |
 | Diagnostics endpoint | Planned | Development-only ASP.NET Core endpoint with redaction. |
 | Visual graph export | Planned | DOT/Mermaid/JSON graph of requests, handlers, mappings, and projections. |
+| Report baseline approval | Planned | CI can fail when flow/mapping/projection shape changes without approval. |
+| Report redaction audit | Planned | Show which categories are emitted, summarized, or redacted. |
+| Module ownership metadata | Candidate | Attribute or configuration model for teams/modules that own handlers, mappings, and projections. |
+| Dependency graph report | Candidate | Show service lifetimes and known unsafe dependency chains without resolving request payloads. |
 
 ### Testing And Verification
 
@@ -481,6 +609,10 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Projection assertions | Planned | Assert expression shape, validation findings, and provider checks. |
 | Secure ID test codec | Planned | Stable round-trip test helper without real secrets. |
 | Golden diagnostics snapshots | Planned | Deterministic diagnostics snapshot testing. |
+| Upgrade smoke-test harness | Planned | Restore previous packages, upgrade, and verify build/test behavior. |
+| Package install verification harness | Done | `scripts/verify-package-install.ps1` verifies supported target combinations before release. |
+| Public API approval tests | Planned | Detect accidental public API changes before publish. |
+| Analyzer/generator snapshot helpers | Planned | Required once compile-time packages exist. |
 | Fixture builders | Candidate | Useful if they do not become a test framework. |
 
 ### Observability And Operations
@@ -493,6 +625,9 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Correlation/causation propagation | Candidate | Useful if it stays payload-free. |
 | Sampling controls | Candidate | Avoid high-cardinality metric and trace output. |
 | Production diagnostics command | Candidate | CLI can generate reports from an app host. |
+| Slow handler diagnostics | Candidate | Observability package can report timings without logging payloads. |
+| Notification fan-out topology metrics | Candidate | Count handler fan-out and failures without exposing notification values. |
+| Projection validation metrics | Candidate | Count provider validation failures by code and projection name. |
 
 ### Security And Policy
 
@@ -506,6 +641,10 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Threat model doc | Planned | Explain what AstraFlow protects and what apps must own. |
 | Secure defaults test suite | Planned | Tests proving risky automation is off by default. |
 | Security advisory process | Planned | Private reporting path and release procedure. |
+| Secret scanning release gate | Planned | Prevent publishing package artifacts or screenshots that contain tokens or keys. |
+| Dependency vulnerability gate | Planned | Fail release workflow on known high-severity dependency advisories where practical. |
+| Secure analyzer suppression policy | Planned | Require documented reasons for suppressing sensitive-field or raw-ID findings. |
+| Redaction test fixtures | Planned | Shared tests proving diagnostics, CLI, and observability do not emit payload values. |
 
 ### Developer Experience And Documentation
 
@@ -521,6 +660,10 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Generator design docs | Planned | Required when generators ship. |
 | Benchmark methodology | Planned | Required before performance claims. |
 | Documentation website | Planned | Later platform milestone. |
+| Versioned docs | Planned | Keep docs aligned with package versions after public API growth. |
+| Migration cookbook | Planned | Show before/after examples for manual dispatch, mediator usage, and mapper usage. |
+| Failure message catalog | Planned | Map known exceptions and diagnostic codes to causes and fixes. |
+| API compatibility policy | Planned | Explain what is stable, experimental, obsolete, or candidate. |
 
 ### Integrations And Ecosystem
 
@@ -538,6 +681,9 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Webhook integration | Candidate | Event publication helpers with signing and redaction policy. |
 | CLI tooling | Planned | Inspect, validate, diff, scaffold, release-check, migrate. |
 | Templates | Planned | `dotnet new` templates for console, worker, ASP.NET Core, modular monolith. |
+| Blazor/shared-contract guidance | Planned | Use contracts-only package without pulling runtime DI into client projects. |
+| Worker/background service guidance | Planned | Safe dispatch, cancellation, and diagnostics in hosted services. |
+| Modular monolith guidance | Planned | Module ownership, boundaries, and diagnostics reports. |
 
 ## v1.0 Acceptance Gates
 
@@ -1409,6 +1555,54 @@ Acceptance gates:
 - examples compile against published packages,
 - docs clearly separate stable APIs from candidate roadmap items.
 
+## v1.13 Roadmap: Compatibility, Migration, And Consumer Confidence
+
+Status: `Planned`.
+
+Goal:
+
+Make upgrades, adoption, and ecosystem compatibility credible before the v2 compile-time packages expand the public surface.
+
+Planned work:
+
+- public API baseline files,
+- API diff report in CI,
+- old-version upgrade smoke tests,
+- package compatibility matrix,
+- DI container compatibility tests where practical,
+- host compatibility samples:
+  - console,
+  - worker service,
+  - ASP.NET Core,
+  - class library,
+  - test project,
+  - shared contracts/client project once `AstraFlow.Contracts` exists,
+- migration cookbook from manual dispatch patterns,
+- migration cookbook from established mediator patterns,
+- migration cookbook from established mapper patterns,
+- migration scanner report in `AstraFlow.Cli`,
+- package deprecation guidance,
+- version support policy,
+- versioned documentation strategy,
+- release branch strategy.
+
+Design rules:
+
+- migration tools report suggestions before they ever rewrite code,
+- compatibility samples must use published packages, not local project references,
+- public API changes must be classified as added, changed, deprecated, removed, or breaking,
+- docs must be honest about supported target frameworks and integration package dependency versions,
+- direct .NET Framework targets remain optional and evidence-driven.
+
+Acceptance gates:
+
+- CI can produce a public API diff,
+- representative old-version upgrade tests pass,
+- compatibility matrix is linked from README,
+- migration cookbook examples compile,
+- package deprecation policy is documented,
+- release checklist includes API compatibility and upgrade verification.
+
 ## v2 Roadmap: Compile-Time Superiority
 
 Status: `Planned`.
@@ -1576,18 +1770,19 @@ Status: `Planned`.
 
 Goal:
 
-Prevent accidental breaking changes and make long-term package support credible.
+Expand the v1.13 compatibility foundation into enforceable long-term API governance after analyzers, generators, and ecosystem packages increase the public surface.
 
 Features:
 
-- public API baseline files,
-- automated API diff in CI,
-- SemVer classification guidance,
+- required public API baseline approvals,
+- automated API diff enforcement in CI,
+- SemVer classification guidance for runtime, analyzer, generator, CLI, and template packages,
 - obsolete API policy,
-- compatibility test suite for old package versions,
+- compatibility test suite for old package versions and older release branches,
 - package deprecation guidance,
 - release branch strategy,
 - support window policy,
+- package ownership and API review rules,
 - docs for adding new public APIs.
 
 Acceptance gates:
@@ -1833,7 +2028,7 @@ Add or expand these docs before broader public promotion:
 
 This matrix describes feature classes AstraFlow should cover over time. It avoids naming any competitor in package documentation and instead tracks product capability categories.
 
-| Capability | Now `v1.2.3` | Planned `v1.3-v1.12` | Planned `v2` | Planned `v3+` |
+| Capability | Now `v1.2.3` | Planned `v1.3-v1.13` | Planned `v2` | Planned `v3+` |
 | --- | --- | --- | --- | --- |
 | Target frameworks | Core packages multi-target; EF Core package `net10.0` | Direct legacy target research and EF provider target expansion | API compatibility governance | Enterprise compatibility policy |
 | Request dispatch | Done | Void requests, richer registration | Generated registration, analyzer checks | Visual request graph |
@@ -1858,6 +2053,7 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 | ASP.NET Core integration | Sample only | Dedicated helper package | Analyzer hints | Templates and diagnostics endpoint |
 | Validation integration | Not included | Dedicated validation package | Analyzer hints | Recipe gallery |
 | CLI/templates | Not included | CLI and templates | Analyzer/generator integration | Migration assistant |
+| Migration and upgrade confidence | Basic docs | API diff, old-version smoke tests, migration cookbook, compatibility matrix | Analyzer/code-fix assisted migration | Platform migration assistant |
 | AOT/trimming | Basic-friendly design | Registration diagnostics | Generator support | Templates |
 | Enterprise supply chain | Basic metadata | Release hardening | SBOM/signing | Compliance reports |
 
@@ -1873,6 +2069,12 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 | Direct legacy framework target | Medium | Candidate | Only add if direct target provides value beyond `netstandard2.0`. |
 | EF Core conditional targets | Medium | `v1.7` | Requires matching EF Core major versions per TFM. |
 | API compatibility baseline | High | `v2.3` | Blocks accidental breaking public API changes. |
+| Public API diff in CI | High | `v1.13` | Gives immediate review signal before v2 expands the surface. |
+| Old-version upgrade smoke tests | High | `v1.13` | Proves SemVer-safe releases are actually upgradeable. |
+| DI container compatibility matrix | Medium | `v1.13` | Verifies common container behavior where practical without owning every DI provider. |
+| Host compatibility sample matrix | Medium | `v1.13` | Shows package use in console, worker, ASP.NET Core, class library, and test projects. |
+| Versioned docs strategy | Medium | `v1.13` | Prevents docs for latest APIs from confusing older package consumers. |
+| Package deprecation policy | Medium | `v1.13` | Defines how packages or APIs are retired responsibly. |
 | Compatibility docs | Done | `v1.2.1` and `v1.2.2` | Explains supported TFMs accurately and separates core package support from EF Core support. |
 
 ### Mediator Backlog
