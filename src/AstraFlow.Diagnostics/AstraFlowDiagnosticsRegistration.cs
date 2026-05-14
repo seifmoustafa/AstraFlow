@@ -18,7 +18,8 @@ public static class AstraFlowDiagnosticsRegistration
         this IServiceCollection services,
         Action<AstraFlowDiagnosticsOptions>? configure = null)
     {
-        ArgumentNullException.ThrowIfNull(services);
+        if (services is null)
+            throw new ArgumentNullException(nameof(services));
 
         var options = new AstraFlowDiagnosticsOptions();
         configure?.Invoke(options);

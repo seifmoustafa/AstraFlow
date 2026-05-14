@@ -1,14 +1,13 @@
 <Project>
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.2.1</Version>
-    <AssemblyVersion>1.2.1.0</AssemblyVersion>
-    <FileVersion>1.2.1.0</FileVersion>
+    <Version>1.2.2</Version>
+    <AssemblyVersion>1.2.2.0</AssemblyVersion>
+    <FileVersion>1.2.2.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -19,7 +18,12 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.2.1 is a compatibility and adoption hardening release. It adds compatibility guidance, package selection guidance, release checklist hardening, and an explicit audit path for future multi-target support without changing runtime behavior.</PackageReleaseNotes>
+    <PackageReleaseNotes>AstraFlow 1.2.2:
+      - Adds real multi-target support for AstraFlow, AstraFlow.Mediator, AstraFlow.Mapper, and AstraFlow.Diagnostics.
+      - Core packages now ship netstandard2.0, net8.0, net9.0, and net10.0 assets.
+      - AstraFlow.Mapper.EntityFrameworkCore remains net10.0 because it follows EF Core 10.
+      - Includes compatibility-safe source changes for older target reference assemblies.
+      - See CHANGELOG.md for the full release history.</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <Deterministic>true</Deterministic>
@@ -29,10 +33,19 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>assets/branding/astraflow-icon.png</PackageIcon>
   </PropertyGroup>
-
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="" />
-    <None Include="$(MSBuildThisFileDirectory)assets\branding\astraflow-icon.png" Pack="true" PackagePath="assets\branding\" />
+    <None Include="$(MSBuildThisFileDirectory)CHANGELOG.md" Pack="true" PackagePath="" />
+    <None
+      Include="$(MSBuildThisFileDirectory)assets\branding\astraflow-icon.png"
+      Pack="true"
+      PackagePath="assets\branding\"
+    />
     <None Include="$(MSBuildThisFileDirectory)docs\*.md" Pack="true" PackagePath="docs\" />
+    <Compile
+      Include="$(MSBuildThisFileDirectory)src\Shared\IsExternalInit.cs"
+      Link="Compatibility\IsExternalInit.cs"
+      Condition="'$(TargetFramework)' == 'netstandard2.0'"
+    />
   </ItemGroup>
 </Project>

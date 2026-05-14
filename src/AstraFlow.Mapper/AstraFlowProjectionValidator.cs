@@ -13,7 +13,8 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
 
     public ProjectionValidationReport Validate(MappingOptions options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options is null)
+            throw new ArgumentNullException(nameof(options));
 
         if (options.ProjectionValidationMode == ProjectionValidationMode.Disabled)
             return new ProjectionValidationReport([]);
@@ -150,9 +151,9 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
             return type.FullName ?? type.Name;
 
         var genericName = type.GetGenericTypeDefinition().FullName ?? type.Name;
-        var tickIndex = genericName.IndexOf('`', StringComparison.Ordinal);
+        var tickIndex = genericName.IndexOf('`');
         if (tickIndex >= 0)
-            genericName = genericName[..tickIndex];
+            genericName = genericName.Substring(0, tickIndex);
 
         var arguments = string.Join(", ", type.GetGenericArguments().Select(GetDisplayName));
         return $"{genericName}<{arguments}>";

@@ -41,7 +41,7 @@ The core promise remains: users can understand what happens in their app without
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| Multi-target support for `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` | Planned | Add only after compatibility audit and test matrix. |
+| Multi-target support for core packages on `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` | Done | Shipped in `1.2.2`; EF Core remains version-aligned with EF Core 10. |
 | Direct .NET Framework target such as `net462` or `net471` | Research | Add only if it gives value beyond `netstandard2.0`. |
 | `AstraFlow.Contracts` | Planned | Shared contracts without DI/runtime packages. |
 | Package compatibility matrix | Planned | Document package, TFM, dependency, and integration support. |
@@ -330,4 +330,3 @@ Move an idea from this file into `roadmap.md` only when:
 - compatibility impact is documented,
 - acceptance gates can be written,
 - it does not weaken the explicit core by default.
-

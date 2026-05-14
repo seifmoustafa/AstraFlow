@@ -39,7 +39,8 @@ public static class AstraFlowMediatorRegistration
         bool validateRequestCoverage,
         params Type[] assemblyMarkerTypes)
     {
-        ArgumentNullException.ThrowIfNull(services);
+        if (services is null)
+            throw new ArgumentNullException(nameof(services));
 
         var assemblies = (assemblyMarkerTypes ?? [])
             .Where(t => t is not null)
@@ -131,9 +132,8 @@ public static class AstraFlowMediatorRegistration
         IReadOnlyCollection<Assembly> assemblies,
         IReadOnlyCollection<ServiceRegistration> requestHandlers)
     {
-        var handlerServiceTypes = requestHandlers
-            .Select(r => r.ServiceType)
-            .ToHashSet();
+        var handlerServiceTypes = new HashSet<Type>(
+            requestHandlers.Select(r => r.ServiceType));
 
         var requestContracts = assemblies
             .SelectMany(GetLoadableTypes)

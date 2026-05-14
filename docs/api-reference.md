@@ -1,6 +1,6 @@
-# API Reference
+﻿# API Reference
 
-This reference describes the public AstraFlow v1.2.1 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow v1.2.2 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 

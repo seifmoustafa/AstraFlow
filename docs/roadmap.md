@@ -190,7 +190,7 @@ Current v1.1 public concepts:
 
 ## v1 Status
 
-v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.2.1`.
+v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.2.2`.
 
 ### v1 Mediator Features
 
@@ -384,7 +384,7 @@ This section is deliberately broad. It exists so future work can be compared aga
 
 | Opportunity | Status | Direction |
 | --- | --- | --- |
-| Multi-targeting | Planned | Add modern and compatibility targets where tests prove the API works. |
+| Multi-targeting | Done | Core packages ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; EF Core remains `net10.0`. |
 | Contracts-only package | Planned | Let shared projects reference request/notification contracts without runtime DI packages. |
 | API compatibility checks | Planned | Compare public APIs against a baseline before release. |
 | Version support policy | Planned | Document which package versions get patches. |
@@ -582,16 +582,16 @@ Do not delete `packages/AstraFlow` from the NEXORA monorepo until the published 
 In NEXORA backend projects that currently reference local AstraFlow projects, replace project references with package references:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.2.1" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.2.1" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.1" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.1" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.2.2" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.2.2" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.2.2" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.2.2" />
 ```
 
 Use the meta-package only where both are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.2.1" />
+<PackageReference Include="AstraFlow" Version="1.2.2" />
 ```
 
 ### Step 2: Restore And Build
@@ -773,13 +773,13 @@ Acceptance gates:
 
 ## v1.2.1 Roadmap: Compatibility And Adoption Hardening
 
-Status: `Active`.
+Status: `Done`.
 
 Goal:
 
 Make AstraFlow easier to adopt in more real applications without changing the current public behavior.
 
-This is the compatibility gate before the larger feature roadmap. It should be a patch or minor release depending on how much public metadata and package layout changes.
+This was the compatibility audit gate before changing package target frameworks.
 
 Planned packages:
 
@@ -832,11 +832,45 @@ Acceptance gates:
 - clean install succeeds for each supported package combination,
 - no public API is removed.
 
-Patch candidates:
+Patch sequence:
 
 - `v1.2.1`: metadata, docs, API compatibility baseline, and compatibility feasibility report,
-- `v1.2.2`: first multi-target support if no API risk appears,
+- `v1.2.2`: first real multi-target support for core packages,
 - `v1.2.3`: direct legacy framework target if proven valuable and safe.
+
+## v1.2.2 Roadmap: Core Multi-Target Support
+
+Status: `Done`.
+
+Goal:
+
+Ship actual package assets for broader consumers after the v1.2.1 compatibility audit.
+
+Implemented package target support:
+
+| Package | Targets |
+| --- | --- |
+| `AstraFlow` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Mediator` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Mapper` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Mapper.EntityFrameworkCore` | `net10.0` |
+
+Implementation notes:
+
+- core package project files multi-target the supported TFMs,
+- `IsExternalInit` is linked only for `netstandard2.0`,
+- newer guard/helper APIs were replaced with compatibility-safe equivalents,
+- diagnostics adds `System.Text.Json` only for the `netstandard2.0` asset,
+- EF Core projection validation stays `net10.0` because the package references EF Core 10.
+
+Acceptance gates:
+
+- Release build passes for all projects,
+- package tests pass,
+- core `.nupkg` files include `lib/netstandard2.0`, `lib/net8.0`, `lib/net9.0`, and `lib/net10.0`,
+- EF Core `.nupkg` includes `lib/net10.0`,
+- docs accurately separate core package target support from EF Core package target support.
 
 ## v1.3 Roadmap: Testing Support
 
@@ -1771,9 +1805,9 @@ Add or expand these docs before broader public promotion:
 
 This matrix describes feature classes AstraFlow should cover over time. It avoids naming any competitor in package documentation and instead tracks product capability categories.
 
-| Capability | Now `v1.2` | Planned `v1.2.1-v1.12` | Planned `v2` | Planned `v3+` |
+| Capability | Now `v1.2.2` | Planned `v1.3-v1.12` | Planned `v2` | Planned `v3+` |
 | --- | --- | --- | --- | --- |
-| Target frameworks | `net10.0` only | Multi-target compatibility evaluation and rollout | API compatibility governance | Enterprise compatibility policy |
+| Target frameworks | Core packages multi-target; EF Core package `net10.0` | Direct legacy target research and EF provider target expansion | API compatibility governance | Enterprise compatibility policy |
 | Request dispatch | Done | Void requests, richer registration | Generated registration, analyzer checks | Visual request graph |
 | Stream requests | Not included | Stream request and stream behavior support | Stream analyzers | Streaming templates |
 | Notification publish | Done | Parallel and bounded parallel strategies | Handler-risk analyzers | Observability dashboards |
@@ -1805,13 +1839,13 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 
 | Item | Priority | Target | Notes |
 | --- | --- | --- | --- |
-| Multi-target feasibility audit | High | `v1.2.1` | Identify API/dependency blockers before changing package targets. |
-| `netstandard2.0` candidate support | High | `v1.2.x` | Enables broad class library and older app adoption if tests pass. |
-| `net8.0`/`net9.0`/`net10.0` targets | High | `v1.2.x` | Modern supported runtime coverage. |
+| Multi-target feasibility audit | Done | `v1.2.1` | Identified API/dependency blockers before changing package targets. |
+| Core `netstandard2.0` support | Done | `v1.2.2` | Enables broad class library and older app adoption for core packages. |
+| Core `net8.0`/`net9.0`/`net10.0` targets | Done | `v1.2.2` | Modern supported runtime coverage for core packages. |
 | Direct legacy framework target | Medium | Candidate | Only add if direct target provides value beyond `netstandard2.0`. |
 | EF Core conditional targets | Medium | `v1.7` | Requires matching EF Core major versions per TFM. |
 | API compatibility baseline | High | `v2.3` | Blocks accidental breaking public API changes. |
-| Compatibility docs | High | `v1.2.1` | Must explain supported TFMs accurately. |
+| Compatibility docs | Done | `v1.2.1` and `v1.2.2` | Explains supported TFMs accurately and separates core package support from EF Core support. |
 
 ### Mediator Backlog
 

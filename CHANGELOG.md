@@ -2,6 +2,15 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.2.2
+
+- Added real multi-target support for `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, and `AstraFlow.Diagnostics`.
+- Core packages now ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets.
+- Kept `AstraFlow.Mapper.EntityFrameworkCore` on `net10.0` because it follows the EF Core 10 package line.
+- Replaced newer runtime helper APIs in core source with compatibility-safe equivalents where needed.
+- Added the `System.Text.Json` package dependency for the `netstandard2.0` diagnostics asset.
+- Updated compatibility, release, publishing, and package-selection docs for the actual published target frameworks.
+
 ## 1.2.1
 
 - Added compatibility guidance for current `net10.0` support and future multi-target expansion.

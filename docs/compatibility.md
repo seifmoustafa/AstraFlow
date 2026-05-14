@@ -1,48 +1,46 @@
 # Compatibility
 
-This guide documents AstraFlow target framework support, compatibility goals, and the audit path for future multi-target releases.
+This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion.
 
 ## Current Support
 
-AstraFlow `1.2.1` currently targets:
+AstraFlow `1.2.2` currently targets:
 
-| Package | Current target |
+| Package | Current targets |
 | --- | --- |
-| `AstraFlow` | `net10.0` |
-| `AstraFlow.Mediator` | `net10.0` |
-| `AstraFlow.Mapper` | `net10.0` |
-| `AstraFlow.Diagnostics` | `net10.0` |
+| `AstraFlow` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Mediator` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Mapper` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Mapper.EntityFrameworkCore` | `net10.0` |
 
-This means consuming applications must be able to reference `net10.0` packages today.
+This means applications and shared libraries on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the core packages. EF Core projection translation validation still requires a `net10.0` project.
 
 ## Compatibility Goal
 
 The roadmap goal is broader package reach without weakening the current explicit-core behavior.
 
-Candidate future targets:
+Current target policy:
 
-| Package | Candidate targets | Notes |
+| Package | Policy | Notes |
 | --- | --- | --- |
-| `AstraFlow.Mediator` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Core mediator contracts and runtime services are good candidates for broad support after API audit fixes. |
-| `AstraFlow.Mapper` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Explicit mapping and projection abstractions are good candidates after API audit fixes. |
-| `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Requires confirming `System.Text.Json` packaging for older targets. |
-| `AstraFlow` | intersection of mediator and mapper targets | The meta package should not be broader than its dependencies. |
-| `AstraFlow.Mapper.EntityFrameworkCore` | provider/version dependent | EF Core target support depends on EF Core package versions and should be validated separately. |
+| Core packages | Keep `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` while tests and dependencies remain healthy. | Core means mediator, mapper, diagnostics, and meta package. |
+| EF Core package | Keep target support aligned with the referenced EF Core major version. | Do not broaden EF support by silently pinning consumers to an incompatible EF Core line. |
+| Future contracts package | Prefer the broadest practical target set. | Shared contracts should be easy to use from clients and modular boundaries. |
 
 Direct .NET Framework targets such as `net462` or `net471` are candidates only after testing proves they add value beyond `netstandard2.0` consumption.
 
 ## Compatibility Audit Findings
 
-The current codebase has known items to resolve before true multi-targeting:
+The `1.2.1` audit found these items. `1.2.2` resolved the core package blockers and left EF Core target expansion separate:
 
 | Area | Finding | Impact |
 | --- | --- | --- |
-| Project targets | Source, tests, and samples currently use `net10.0`. | Multi-targeting requires project file changes and CI matrix updates. |
-| Guard APIs | Code uses `ArgumentNullException.ThrowIfNull` and `ArgumentException.ThrowIfNullOrWhiteSpace`. | Older target reference assemblies may require conditional helpers or direct guard code. |
-| Diagnostics JSON | Diagnostics uses `System.Text.Json`. | Older targets may need explicit package references and dependency review. |
-| EF Core package | EF validation package references EF Core `10.0.2`. | Older runtime targets may require conditional EF Core package versions or narrower support. |
-| Samples/tests | Samples and tests target `net10.0`. | Compatibility claims need target-specific test coverage. |
+| Project targets | Core packages now multi-target. | Done for `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. |
+| Guard APIs | Newer guard helpers were replaced in core code. | Done for supported core targets. |
+| Diagnostics JSON | `System.Text.Json` is added for the `netstandard2.0` diagnostics asset. | Done. |
+| EF Core package | EF validation package references EF Core `10.0.2`. | Still `net10.0`; broader EF Core support needs a separate versioning design. |
+| Samples/tests | Samples and tests target `net10.0`. | Clean-install smoke tests should cover every shipped package target before release promotion. |
 
 ## Release Rules For Target Expansion
 
@@ -58,9 +56,9 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Use AstraFlow `1.2.1` today when your application can consume `net10.0`.
+Use AstraFlow `1.2.2` core packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
 
-If your application targets `net8.0`, `net9.0`, .NET Framework, or a `netstandard2.0` shared library, wait for a future compatibility release that explicitly lists those targets.
+Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
 Do not rely on roadmap candidate targets as published package support.
 
@@ -82,5 +80,5 @@ dotnet test AstraFlow.slnx -c Release
 .\scripts\pack.ps1
 ```
 
-Future multi-target verification should add target-specific build and test commands once the targets are implemented.
+For `1.2.2`, inspect the `.nupkg` files and confirm the core packages include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` includes only `lib/net10.0/`.
 

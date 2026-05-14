@@ -20,8 +20,10 @@ public static class QueryableProjectionExtensions
         this IQueryable<TSource> query,
         IProjection<TSource, TDestination> projection)
     {
-        ArgumentNullException.ThrowIfNull(query);
-        ArgumentNullException.ThrowIfNull(projection);
+        if (query is null)
+            throw new ArgumentNullException(nameof(query));
+        if (projection is null)
+            throw new ArgumentNullException(nameof(projection));
 
         return query.Select(projection.Expression);
     }
@@ -38,8 +40,10 @@ public static class QueryableProjectionExtensions
         this IQueryable<TSource> query,
         Expression<Func<TSource, TDestination>> projection)
     {
-        ArgumentNullException.ThrowIfNull(query);
-        ArgumentNullException.ThrowIfNull(projection);
+        if (query is null)
+            throw new ArgumentNullException(nameof(query));
+        if (projection is null)
+            throw new ArgumentNullException(nameof(projection));
 
         return query.Select(projection);
     }
@@ -56,8 +60,10 @@ public static class QueryableProjectionExtensions
         this IQueryable<TSource> query,
         IProjectionRegistry registry)
     {
-        ArgumentNullException.ThrowIfNull(query);
-        ArgumentNullException.ThrowIfNull(registry);
+        if (query is null)
+            throw new ArgumentNullException(nameof(query));
+        if (registry is null)
+            throw new ArgumentNullException(nameof(registry));
 
         return query.ProjectWith(registry.Get<TSource, TDestination>());
     }
@@ -76,8 +82,10 @@ public static class QueryableProjectionExtensions
         IProjectionRegistry registry,
         string name)
     {
-        ArgumentNullException.ThrowIfNull(query);
-        ArgumentNullException.ThrowIfNull(registry);
+        if (query is null)
+            throw new ArgumentNullException(nameof(query));
+        if (registry is null)
+            throw new ArgumentNullException(nameof(registry));
 
         return query.ProjectWith(registry.Get<TSource, TDestination>(name));
     }

@@ -120,7 +120,13 @@ internal sealed class AstraFlowProjectionRegistry : IProjectionRegistry
             .GetProperty(nameof(INamedProjection<object, object>.Name))!
             .GetValue(instance) as string;
 
-        return string.IsNullOrWhiteSpace(name) ? name : name.Trim();
+        if (name is null)
+            return null;
+
+        if (string.IsNullOrWhiteSpace(name))
+            return name;
+
+        return name.Trim();
     }
 
     private static IProjection<TSource, TDestination> GetSingle<TSource, TDestination>(
@@ -140,7 +146,7 @@ internal sealed class AstraFlowProjectionRegistry : IProjectionRegistry
         var implementations = string.Join(
             ", ",
             matches
-                .Select(match => match.Registration.ImplementationType.FullName)
+                .Select(match => match.Registration.ImplementationType.FullName ?? match.Registration.ImplementationType.Name)
                 .OrderBy(value => value, StringComparer.Ordinal));
 
         throw new InvalidOperationException(
@@ -149,7 +155,9 @@ internal sealed class AstraFlowProjectionRegistry : IProjectionRegistry
 
     private static string NormalizeRequiredName(string name)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Projection name cannot be null or whitespace.", nameof(name));
+
         return name.Trim();
     }
 

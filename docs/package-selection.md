@@ -1,4 +1,4 @@
-# Package Selection
+﻿# Package Selection
 
 This guide explains which AstraFlow package to install.
 
@@ -13,6 +13,8 @@ This guide explains which AstraFlow package to install.
 | Mediator and mapper together through one convenience registration | `AstraFlow` |
 
 Prefer focused packages when a project needs only one concern. Use the meta package when a project intentionally uses both mediator and mapper.
+
+Target support in `1.2.2`: the core packages support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows EF Core 10.
 
 ## `AstraFlow.Mediator`
 
@@ -29,7 +31,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mediator --version 1.2.1
+dotnet add package AstraFlow.Mediator --version 1.2.2
 ```
 
 Use this in application layers, worker services, APIs, and modular monolith modules that own request handling.
@@ -49,7 +51,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.2.1
+dotnet add package AstraFlow.Mapper --version 1.2.2
 ```
 
 Use this in application or contract-mapping layers that need auditable DTO conversion.
@@ -61,7 +63,7 @@ Install this package only when you need EF Core relational projection validation
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.1
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.2
 ```
 
 This package references EF Core. Keep it out of projects that do not use EF Core.
@@ -73,7 +75,7 @@ Install this package when you want registration and validation reports.
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.2.1
+dotnet add package AstraFlow.Diagnostics --version 1.2.2
 ```
 
 Register diagnostics after mediator and mapper registrations so the reporter can inspect those service descriptors.
@@ -85,7 +87,7 @@ Install the meta package when a project intentionally uses mediator and mapper t
 Example:
 
 ```powershell
-dotnet add package AstraFlow --version 1.2.1
+dotnet add package AstraFlow --version 1.2.2
 ```
 
 The meta package is convenient, but focused packages keep dependency intent clearer in shared libraries and smaller projects.
@@ -107,4 +109,3 @@ The meta package is convenient, but focused packages keep dependency intent clea
 - Do not install the meta package in a shared contract project unless both mediator and mapper are intentionally needed.
 - Keep integration packages at application boundaries.
 - Keep domain projects free from runtime infrastructure packages when possible.
-
