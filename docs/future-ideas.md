@@ -64,7 +64,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | --- | --- | --- |
 | Multi-target support for core packages on `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` | Done | Shipped in `1.2.2`; EF Core remains version-aligned with EF Core 10. |
 | Direct .NET Framework target such as `net462` or `net471` | Research | Add only if it gives value beyond `netstandard2.0`. |
-| `AstraFlow.Contracts` | Planned | Shared contracts without DI/runtime packages. |
+| `AstraFlow.Contracts` | Done | Shared contracts without DI/runtime packages, shipped in `1.4.0`. |
 | Package compatibility matrix | Planned | Document package, TFM, dependency, and integration support. |
 | API compatibility baselines | Planned | Prevent accidental breaking changes. |
 | Public API diff in CI | Planned | Review API changes before publish. |

@@ -4,18 +4,19 @@ This guide documents AstraFlow target framework support, compatibility goals, an
 
 ## Current Support
 
-AstraFlow `1.3.0` currently targets:
+AstraFlow `1.4.0` currently targets:
 
 | Package | Current targets |
 | --- | --- |
 | `AstraFlow` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Contracts` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Mediator` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Mapper` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Testing` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Mapper.EntityFrameworkCore` | `net10.0` |
 
-This means applications, shared libraries, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the core packages and `AstraFlow.Testing`. EF Core projection translation validation still requires a `net10.0` project.
+This means applications, shared libraries, contracts projects, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the contracts package, core packages, and `AstraFlow.Testing`. EF Core projection translation validation still requires a `net10.0` project.
 
 ## Compatibility Goal
 
@@ -25,15 +26,14 @@ Current target policy:
 
 | Package | Policy | Notes |
 | --- | --- | --- |
-| Core and testing packages | Keep `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` while tests and dependencies remain healthy. | Core means mediator, mapper, diagnostics, testing, and meta package. |
+| Contracts, core, and testing packages | Keep `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` while tests and dependencies remain healthy. | Core means mediator, mapper, diagnostics, testing, and meta package. |
 | EF Core package | Keep target support aligned with the referenced EF Core major version. | Do not broaden EF support by silently pinning consumers to an incompatible EF Core line. |
-| Future contracts package | Prefer the broadest practical target set. | Shared contracts should be easy to use from clients and modular boundaries. |
 
 Direct .NET Framework targets such as `net462` or `net471` are candidates only after testing proves they add value beyond `netstandard2.0` consumption.
 
 ## Compatibility Audit Findings
 
-The `1.2.1` audit found these items. `1.2.2` resolved the core package blockers, `1.2.3` added automated clean-install verification, and `1.3.0` extended the matrix to `AstraFlow.Testing`.
+The `1.2.1` audit found these items. `1.2.2` resolved the core package blockers, `1.2.3` added automated clean-install verification, `1.3.0` extended the matrix to `AstraFlow.Testing`, and `1.4.0` extends it to `AstraFlow.Contracts`.
 
 | Area | Finding | Impact |
 | --- | --- | --- |
@@ -57,7 +57,7 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Use AstraFlow `1.3.0` core packages and `AstraFlow.Testing` from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
+Use AstraFlow `1.4.0` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
@@ -81,10 +81,10 @@ dotnet test AstraFlow.slnx -c Release
 .\scripts\pack.ps1
 ```
 
-For `1.3.0`, inspect the `.nupkg` files and confirm the core packages and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` includes only `lib/net10.0/`.
+For `1.4.0`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` includes only `lib/net10.0/`.
 
 Then run:
 
 ```powershell
-.\scripts\verify-package-install.ps1 -Version 1.3.0
+.\scripts\verify-package-install.ps1 -Version 1.4.0
 ```

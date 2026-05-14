@@ -7,10 +7,13 @@ This guide maps common exceptions and confusing behaviors to likely causes and f
 | Message Contains | Likely Cause | Fix |
 | --- | --- | --- |
 | `No request handler registered` | The request type has no matching `IRequestHandler<TRequest, TResponse>` in DI. | Add a handler, include the handler assembly marker, or register the handler manually. |
+| `No void request handler registered` | The request type implements `IRequest` but has no matching `IRequestHandler<TRequest>` in DI. | Add a void handler, include the handler assembly marker, or register the handler manually. |
+| `No stream request handler registered` | The request type implements `IStreamRequest<TResponse>` but has no matching `IStreamRequestHandler<TRequest, TResponse>` in DI. | Add a stream handler, include the handler assembly marker, or register the handler manually. |
 | `Multiple request handlers registered` | More than one handler is registered for the same request/response pair. | Keep exactly one handler for that request type. |
-| `must implement AstraFlow.Mediator.IRequest` | `Send(object)` received an object that is not a request. | Make the type implement `IRequest<TResponse>` or do not send it through mediator. |
-| `implements multiple ... IRequest ... contracts` | One request type implements more than one `IRequest<TResponse>`. | Split it into separate request types. |
-| `Ambiguous request contracts` | Coverage validation found a scanned request with multiple response contracts. | Split the request type before enabling validation. |
+| `must implement AstraFlow.Mediator.IRequest` | `Send(object)` received an object that is not a request. | Make the type implement `IRequest`, `IRequest<TResponse>`, or `IStreamRequest<TResponse>`, then call the matching send API. |
+| `Stream request ... must be dispatched with CreateStream` | A stream request was sent through `Send`. | Inject `IStreamSender` or `IMediator` and call `CreateStream(...)`. |
+| `implements multiple ... request contracts` | One request type implements more than one void, response, or stream contract. | Split it into separate request types. |
+| `Ambiguous request contracts` | Coverage validation found a scanned request with multiple request contracts. | Split the request type before enabling validation. |
 | `Notification ... must implement INotification` | `Publish(object)` received a non-notification object. | Make the type implement `INotification` or do not publish it. |
 
 ## Mapper Errors
@@ -107,7 +110,7 @@ Publishing with zero handlers is valid. Confirm:
 
 ### Query Provider Cannot Translate Projection
 
-AstraFlow v1.3.0 validates projection registrations and high-risk expression patterns. If EF Core or another provider cannot translate a projection:
+AstraFlow v1.4.0 validates projection registrations and high-risk expression patterns. If EF Core or another provider cannot translate a projection:
 
 - remove service calls from the expression,
 - avoid runtime mapper calls inside `Select`,

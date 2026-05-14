@@ -321,7 +321,7 @@ Current v1.3 public concepts:
 
 ## v1 Status
 
-v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.3.0`.
+v1 is the stable explicit core. The implementation is intentionally focused and production-oriented. The current active roadmap baseline is `v1.4.0`.
 
 ### v1 Mediator Features
 
@@ -432,7 +432,7 @@ This inventory tracks capabilities common in mature mediator and mapper librarie
 | Request post-processors | Planned | Add explicit post-processor contracts and registration helpers. |
 | Request exception handlers | Planned | Add typed exception handlers that can mark exceptions handled. |
 | Request exception actions | Planned | Add typed exception actions for logging/metrics side effects that rethrow. |
-| Contracts-only package | Planned | Add `AstraFlow.Contracts` for shared request/notification/projection contracts without runtime packages. |
+| Contracts-only package | Done | `AstraFlow.Contracts` provides shared mediator contracts without runtime packages. |
 | Fluent registration builder | Planned | Add `AddBehavior`, `AddOpenBehavior`, `AddStreamBehavior`, pre/post processor helpers, and explicit assembly registration. |
 | Parallel notification publishing | Planned | Add opt-in publish strategies with deterministic error aggregation. |
 | Notification ordering policy | Candidate | Consider explicit ordering metadata only if it does not hide coupling. |
@@ -758,16 +758,16 @@ Do not delete `packages/AstraFlow` from the NEXORA monorepo until the published 
 In NEXORA backend projects that currently reference local AstraFlow projects, replace project references with package references:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.3.0" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.3.0" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.3.0" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.3.0" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.4.0" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.4.0" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.4.0" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.4.0" />
 ```
 
 Use the meta-package only where both are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.3.0" />
+<PackageReference Include="AstraFlow" Version="1.4.0" />
 ```
 
 ### Step 2: Restore And Build
@@ -974,7 +974,7 @@ Target framework strategy:
 | `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | JSON support must be dependency-compatible on older targets. |
 | `AstraFlow` | same as mediator/mapper intersection | Meta package should not force a narrower target than its dependencies. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | `net8.0`, `net9.0`, `net10.0` candidate | May require conditional EF Core package versions per target. No `netstandard2.0` promise until EF support is proven. |
-| Future `AstraFlow.Contracts` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Contracts should have the broadest practical reach. |
+| `AstraFlow.Contracts` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Contracts should have the broadest practical reach. |
 | Future analyzers/generators | `netstandard2.0` where required by Roslyn packaging | Analyzer package conventions differ from runtime packages. |
 
 Compatibility work items:
@@ -1122,7 +1122,15 @@ Acceptance gates:
 
 ## v1.4 Roadmap: Mediator Parity And Ergonomics
 
-Status: `Planned`.
+Status: `Implemented candidate`.
+
+Verification note:
+
+The code, tests, package metadata, scripts, and docs have been updated for this milestone. Do not publish `1.4.0` until the release gate runs successfully:
+
+```powershell
+.\scripts\pack.ps1 -Configuration Release
+```
 
 Goal:
 
@@ -2053,14 +2061,14 @@ Add or expand these docs before broader public promotion:
 
 This matrix describes feature classes AstraFlow should cover over time. It avoids naming any competitor in package documentation and instead tracks product capability categories.
 
-| Capability | Now `v1.3.0` | Planned `v1.4-v1.13` | Planned `v2` | Planned `v3+` |
+| Capability | Now `v1.4.0` | Planned `v1.5-v1.13` | Planned `v2` | Planned `v3+` |
 | --- | --- | --- | --- | --- |
 | Target frameworks | Core packages and testing package multi-target; EF Core package `net10.0` | Direct legacy target research and EF provider target expansion | API compatibility governance | Enterprise compatibility policy |
 | Request dispatch | Done | Void requests, richer registration | Generated registration, analyzer checks | Visual request graph |
 | Stream requests | Not included | Stream request and stream behavior support | Stream analyzers | Streaming templates |
 | Notification publish | Done | Parallel and bounded parallel strategies | Handler-risk analyzers | Observability dashboards |
 | Pipeline behaviors | Done | Pre/post processors, exception handlers/actions | Order analyzers | Visual pipeline graph |
-| Contracts-only package | Not included | `AstraFlow.Contracts` | API compatibility checks | Shared contract templates |
+| Contracts-only package | `AstraFlow.Contracts` done | Compatibility polish | API compatibility checks | Shared contract templates |
 | Explicit object mapping | Done | More assertions and diagnostics | Generated fast paths | Visual mapping graph |
 | Collection mapping | Done | More shape coverage | Generated collection fast paths | Benchmark dashboard |
 | Secure ID abstraction | Done | Test codec and policy diagnostics | DTO raw ID analyzer | Secure DTO policy tooling |

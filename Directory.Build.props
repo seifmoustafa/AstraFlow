@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.3.0</Version>
-    <AssemblyVersion>1.3.0.0</AssemblyVersion>
-    <FileVersion>1.3.0.0</FileVersion>
+    <Version>1.4.0</Version>
+    <AssemblyVersion>1.4.0.0</AssemblyVersion>
+    <FileVersion>1.4.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,11 +18,11 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.3.0:
-      - Adds the AstraFlow.Testing package.
-      - Includes fake sender, fake publisher, fake mediator, request/notification recording, handler and pipeline harnesses, mapper/projection assertions, and a deterministic test secure ID codec.
-      - Keeps testing helpers framework-neutral with no xUnit, NUnit, MSTest, or mocking-framework dependency.
-      - Ships AstraFlow.Testing assets for netstandard2.0, net8.0, net9.0, and net10.0.
+    <PackageReleaseNotes>AstraFlow 1.4.0:
+      - Adds the AstraFlow.Contracts package for shared mediator contracts.
+      - Adds void requests, stream requests, stream pipeline behaviors, request pre/post processors, and request exception actions/handlers.
+      - Adds opt-in parallel and bounded-parallel notification publish strategies while keeping sequential publishing as the default.
+      - Adds mediator registration-builder helpers for explicit behavior and processor registration.
       - See CHANGELOG.md for the full release history.</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

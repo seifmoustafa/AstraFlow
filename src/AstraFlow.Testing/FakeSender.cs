@@ -9,6 +9,7 @@ public class FakeSender : ISender
 {
     private readonly List<RecordedRequest> requests = new();
     private readonly Dictionary<Type, Func<object, CancellationToken, Task<object?>>> handlers = new();
+    private readonly Dictionary<Type, Func<object, CancellationToken, Task>> voidHandlers = new();
 
     /// <summary>
     /// Gets the requests sent through this fake sender.
@@ -51,6 +52,41 @@ public class FakeSender : ISender
     }
 
     /// <summary>
+    /// Registers completion behavior for a void request type.
+    /// </summary>
+    public FakeSender CompleteWith<TRequest>(Func<TRequest, CancellationToken, Task> handler)
+        where TRequest : IRequest
+    {
+        if (handler is null)
+        {
+            throw new ArgumentNullException(nameof(handler));
+        }
+
+        voidHandlers[typeof(TRequest)] = (request, cancellationToken) =>
+            handler((TRequest)request, cancellationToken);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Sends a strongly typed void request and records it.
+    /// </summary>
+    public async Task Send(IRequest request, CancellationToken cancellationToken = default)
+    {
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
+
+        Record(request, typeof(void), cancellationToken);
+
+        if (voidHandlers.TryGetValue(request.GetType(), out var handler))
+        {
+            await handler(request, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
     /// Sends a strongly typed request, records it, and returns the configured fake response.
     /// </summary>
     public async Task<TResponse> Send<TResponse>(
@@ -79,8 +115,14 @@ public class FakeSender : ISender
     /// </summary>
     public async Task<object?> Send(object request, CancellationToken cancellationToken = default)
     {
+        if (RuntimeRequestContract.IsVoidRequest(request))
+        {
+            await Send((IRequest)request, cancellationToken).ConfigureAwait(false);
+            return null;
+        }
+
         var responseType = RuntimeRequestContract.GetSingleResponseType(request);
-        requests.Add(new RecordedRequest(request, request.GetType(), responseType, cancellationToken));
+        Record(request, responseType, cancellationToken);
 
         if (!handlers.TryGetValue(request.GetType(), out var handler))
         {
@@ -98,5 +140,11 @@ public class FakeSender : ISender
     {
         requests.Clear();
         handlers.Clear();
+        voidHandlers.Clear();
+    }
+
+    internal void Record(object request, Type responseType, CancellationToken cancellationToken)
+    {
+        requests.Add(new RecordedRequest(request, request.GetType(), responseType, cancellationToken));
     }
 }

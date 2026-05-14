@@ -6,6 +6,7 @@
     <Project Path="samples/ExplicitMapperSample/ExplicitMapperSample.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/AstraFlow.Contracts/AstraFlow.Contracts.csproj" />
     <Project Path="src/AstraFlow.Diagnostics/AstraFlow.Diagnostics.csproj" />
     <Project Path="src/AstraFlow.Mapper.EntityFrameworkCore/AstraFlow.Mapper.EntityFrameworkCore.csproj" />
     <Project Path="src/AstraFlow.Mapper/AstraFlow.Mapper.csproj" />

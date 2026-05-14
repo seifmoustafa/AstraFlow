@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\AstraFlow.Contracts\AstraFlow.Contracts.csproj" />
     <ProjectReference Include="..\..\src\AstraFlow.Mediator\AstraFlow.Mediator.csproj" />
   </ItemGroup>
 </Project>

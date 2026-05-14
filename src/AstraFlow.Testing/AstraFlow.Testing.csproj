@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AstraFlow.Contracts\AstraFlow.Contracts.csproj" />
     <ProjectReference Include="..\AstraFlow.Diagnostics\AstraFlow.Diagnostics.csproj" />
     <ProjectReference Include="..\AstraFlow.Mediator\AstraFlow.Mediator.csproj" />
     <ProjectReference Include="..\AstraFlow.Mapper\AstraFlow.Mapper.csproj" />
