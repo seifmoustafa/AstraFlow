@@ -20,6 +20,7 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
 
 $localSource = Join-Path $repoRoot ".dotnet-cli-home\local-packages\$Version"
 $checkRoot = Join-Path $WorkRoot $Version
+$restorePackages = Join-Path $checkRoot "packages"
 $config = Join-Path $checkRoot "nuget.config"
 
 function Invoke-DotNetStep {
@@ -53,13 +54,23 @@ function Copy-Package {
 }
 
 function Initialize-LocalSource {
+    if (Test-Path -LiteralPath $checkRoot) {
+        Remove-Item -LiteralPath $checkRoot -Recurse -Force
+    }
+
+    if (Test-Path -LiteralPath $localSource) {
+        Remove-Item -LiteralPath $localSource -Recurse -Force
+    }
+
     New-Item -ItemType Directory -Force -Path $localSource | Out-Null
     New-Item -ItemType Directory -Force -Path $checkRoot | Out-Null
+    New-Item -ItemType Directory -Force -Path $restorePackages | Out-Null
 
     Copy-Package "AstraFlow.Mediator"
     Copy-Package "AstraFlow.Mapper"
     Copy-Package "AstraFlow.Mapper.EntityFrameworkCore"
     Copy-Package "AstraFlow.Diagnostics"
+    Copy-Package "AstraFlow.Testing"
     Copy-Package "AstraFlow"
 
     $lines = @(
@@ -122,9 +133,10 @@ function Test-CoreConsumer {
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mediator"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mapper"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Diagnostics"
+    Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Testing"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow"
 
-    Invoke-DotNetStep "Restore $Framework core consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal")
+    Invoke-DotNetStep "Restore $Framework core consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
     Invoke-DotNetStep "Build $Framework core consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
 }
 
@@ -134,10 +146,11 @@ function Test-AllConsumer {
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mediator"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mapper"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Diagnostics"
+    Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Testing"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mapper.EntityFrameworkCore"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow"
 
-    Invoke-DotNetStep "Restore net10.0 all-package consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal")
+    Invoke-DotNetStep "Restore net10.0 all-package consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
     Invoke-DotNetStep "Build net10.0 all-package consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
 }
 

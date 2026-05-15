@@ -1,11 +1,11 @@
-﻿# Entity Framework Core
+# Entity Framework Core
 
 `AstraFlow.Mapper.EntityFrameworkCore` is an optional package for applications that want EF Core projection translation checks. It keeps EF Core dependencies out of `AstraFlow.Mapper`.
 
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.2.3
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.3.0
 ```
 
 ## Validate One Projection
@@ -33,7 +33,7 @@ if (report.HasFindings)
 }
 ```
 
-Findings use `AFPEF...` codes. In v1.2.3:
+Findings use `AFPEF...` codes. In v1.3.0:
 
 | Code | Meaning |
 | --- | --- |
@@ -79,4 +79,4 @@ var report = db.ValidateProjectionTranslations(registry);
 report.Findings.Should().BeEmpty();
 ```
 
-SQLite is the recommended v1.2.3 baseline because it exercises a real relational provider without Docker or external database services.
+SQLite is the recommended v1.3.0 baseline because it exercises a real relational provider without Docker or external database services.

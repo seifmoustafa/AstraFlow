@@ -205,18 +205,19 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| Fake sender/publisher/mediator | Planned | No mocking framework dependency. |
-| Request recording assertions | Planned | Verify requests sent in tests. |
-| Notification recording assertions | Planned | Verify events published in tests. |
-| Handler harness | Planned | Focused handler tests. |
-| Pipeline harness | Planned | Order and short-circuit tests. |
+| Fake sender/publisher/mediator | Done | Shipped in `1.3.0`; no mocking framework dependency. |
+| Request recording assertions | Done | Shipped in `1.3.0`; verifies requests sent in tests. |
+| Notification recording assertions | Done | Shipped in `1.3.0`; verifies events published in tests. |
+| Handler harness | Done | Shipped in `1.3.0`; focused handler tests. |
+| Pipeline harness | Done | Shipped in `1.3.0`; order and short-circuit tests. |
 | Stream handler harness | Planned | After stream support. |
 | Exception handler harness | Planned | After exception support. |
-| Mapper rule assertions | Planned | Verify rule ownership and output. |
-| Mapping snapshot helper | Planned | Deterministic output snapshots. |
-| Projection assertion helper | Planned | Expression/validation assertions. |
+| Mapper rule assertions | Done | Shipped in `1.3.0`; verifies rule ownership. |
+| Mapping snapshot helper | Candidate | Deterministic output snapshots. |
+| Projection assertion helper | Done | Shipped in `1.3.0`; expression/validation assertions. |
 | EF projection test helpers | Planned | Provider translation checks. |
-| Secure ID test codec | Planned | Stable tests without real keys. |
+| Secure ID test codec | Done | Shipped in `1.3.0`; stable tests without real keys. |
+| Diagnostics assertions | Done | Shipped in `1.3.0`; report error and finding assertions. |
 | Diagnostics snapshot helper | Candidate | Golden report tests. |
 | Upgrade smoke-test harness | Planned | Restore previous packages, upgrade, then build/test representative consumers. |
 | Public API approval tests | Planned | Detect accidental public API changes before publish. |

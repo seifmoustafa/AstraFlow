@@ -10,6 +10,7 @@
     <Project Path="src/AstraFlow.Mapper.EntityFrameworkCore/AstraFlow.Mapper.EntityFrameworkCore.csproj" />
     <Project Path="src/AstraFlow.Mapper/AstraFlow.Mapper.csproj" />
     <Project Path="src/AstraFlow.Mediator/AstraFlow.Mediator.csproj" />
+    <Project Path="src/AstraFlow.Testing/AstraFlow.Testing.csproj" />
     <Project Path="src/AstraFlow/AstraFlow.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -18,5 +19,6 @@
     <Project Path="tests/AstraFlow.Mapper.EntityFrameworkCore.Tests/AstraFlow.Mapper.EntityFrameworkCore.Tests.csproj" />
     <Project Path="tests/AstraFlow.Mapper.Tests/AstraFlow.Mapper.Tests.csproj" />
     <Project Path="tests/AstraFlow.Mediator.Tests/AstraFlow.Mediator.Tests.csproj" />
+    <Project Path="tests/AstraFlow.Testing.Tests/AstraFlow.Testing.Tests.csproj" />
   </Folder>
 </Solution>

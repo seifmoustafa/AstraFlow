@@ -1,6 +1,6 @@
-﻿# API Reference
+# API Reference
 
-This reference describes the public AstraFlow v1.2.3 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow v1.3.0 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
@@ -10,6 +10,7 @@ This reference describes the public AstraFlow v1.2.3 API surface. It is intentio
 | `AstraFlow.Mapper` | `AstraFlow.Mapper` | Explicit object mapping, mapping validation, projection registry, projection validation, and secure ID abstractions. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers. |
 | `AstraFlow.Diagnostics` | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reporting for AstraFlow registrations and validation findings. |
+| `AstraFlow.Testing` | `AstraFlow.Testing` | Framework-neutral fake dispatchers, harnesses, assertions, and test secure ID helpers. |
 | `AstraFlow` | `AstraFlow` | Convenience registration for mediator and mapper together. |
 
 ## Registration APIs
@@ -211,3 +212,42 @@ Each item is mapped through the same explicit rule lookup. Collection mapping do
 | `AFD301` | `Error` | Mapper catalog validation failed. |
 | `AFD302` | `Error` | Projection validation failed unexpectedly while diagnostics were generated. |
 | `AFP...` | `Warning` or `Error` | Projection validation finding surfaced through diagnostics. |
+
+## Testing Types
+
+| Type | Kind | Purpose |
+| --- | --- | --- |
+| `FakeSender` | Class | Records requests and returns configured fake responses. |
+| `FakePublisher` | Class | Records notifications and optionally runs configured fake handlers. |
+| `FakeMediator` | Class | Combines fake sender and fake publisher behavior for `IMediator`, `ISender`, and `IPublisher` tests. |
+| `RecordedRequest` | Record | Captures request object, request type, response type, and cancellation token. |
+| `RecordedNotification` | Record | Captures notification object, notification type, and cancellation token. |
+| `HandlerTestHarness<TRequest, TResponse>` | Class | Executes one request handler directly. |
+| `PipelineTestHarness<TRequest, TResponse>` | Class | Executes pipeline behaviors around a terminal delegate. |
+| `NotificationHandlerTestHarness<TNotification>` | Class | Executes one notification handler directly. |
+| `AstraFlowAssertionException` | Exception | Assertion failure type used by framework-neutral helpers. |
+| `TestSecureIdCodec` | Class | Deterministic test-only secure ID codec. |
+
+## Testing Assertion Helpers
+
+| API | What It Checks |
+| --- | --- |
+| `SingleSent<TRequest>()` | Exactly one recorded request of the requested type exists. |
+| `ShouldHaveSent<TRequest>()` | At least one recorded request of the requested type exists. |
+| `ShouldNotHaveSent<TRequest>()` | No recorded request of the requested type exists. |
+| `SinglePublished<TNotification>()` | Exactly one recorded notification of the requested type exists. |
+| `ShouldHavePublished<TNotification>()` | At least one recorded notification of the requested type exists. |
+| `ShouldNotHavePublished<TNotification>()` | No recorded notification of the requested type exists. |
+| `ShouldMapTo<TDestination>()` | Mapper can map the supplied source to the requested destination. |
+| `ShouldFailMappingTo<TDestination>()` | Mapper fails for the supplied source and destination. |
+| `ShouldValidateMappings()` | Mapper catalog validation succeeds. |
+| `ShouldDeclare<TSource, TDestination>()` | Mapping rule declares a source/destination pair. |
+| `ShouldOwnMapping<TSource, TDestination>()` | Mapping rule owns a source/destination pair. |
+| `ShouldResolveProjection<TSource, TDestination>()` | Projection registry can resolve an unnamed projection. |
+| `ShouldResolveProjection<TSource, TDestination>(name)` | Projection registry can resolve a named projection. |
+| `ShouldHaveNoProjectionFindings()` | Projection validator reports no findings. |
+| `ShouldHaveProjectionFinding(code)` | Projection validation report contains a finding code. |
+| `ShouldHaveNoDiagnosticErrors()` | Diagnostics report has no error or fatal findings. |
+| `ShouldHaveDiagnosticFinding(code)` | Diagnostics report contains a finding code. |
+| `ShouldThrowAsync<TException>()` | Async operation throws the expected exception type. |
+| `ShouldRoundTripSecureId()` | Secure ID codec encodes and decodes the supplied `Guid`. |

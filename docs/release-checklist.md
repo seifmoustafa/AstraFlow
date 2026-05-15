@@ -7,7 +7,7 @@
 - Samples compile.
 - Tests pass in Release configuration.
 - README, changelog, roadmap, security policy, and publishing docs are current.
-- API reference, architecture guide, package selection guide, compatibility guide, diagnostics guide, mediator scenarios, mapper scenarios, projection guides, EF Core guide, troubleshooting docs, and community release guide are current.
+- API reference, architecture guide, package selection guide, compatibility guide, diagnostics guide, testing guide, mediator scenarios, mapper scenarios, projection guides, EF Core guide, troubleshooting docs, and community release guide are current.
 - No competitor migration pages or retired package references exist in AstraFlow docs.
 - Current target framework support is documented accurately.
 - Candidate target framework support is not described as published support.
@@ -60,6 +60,7 @@
 
 - A clean sample project can install `AstraFlow`, `AstraFlow.Mediator`, and `AstraFlow.Mapper`.
 - A clean sample project can install `AstraFlow.Diagnostics`.
+- A clean sample project can install `AstraFlow.Testing`.
 - A clean sample project can install `AstraFlow.Mapper.EntityFrameworkCore`.
 - A clean sample project can restore each package using the documented package versions.
 - A clean sample project can build after installing the focused package set recommended in `docs/package-selection.md`.
