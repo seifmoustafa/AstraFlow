@@ -37,6 +37,27 @@ AstraFlow should become a package family for explicit, inspectable application f
 
 The core promise remains: users can understand what happens in their app without trusting hidden runtime magic.
 
+## Release Classification Ideas
+
+Use this section when deciding where an idea belongs before promoting it to `roadmap.md`.
+
+| Idea Type | Classification | Notes |
+| --- | --- | --- |
+| Bug fix for existing behavior | Patch | Must be SemVer-safe and covered by tests. |
+| Error message or diagnostics wording improvement | Patch | Safe when diagnostic codes and public contracts remain compatible. |
+| Package metadata, README, icon, changelog, release notes, or publishing fix | Patch | Useful for public credibility without changing runtime behavior. |
+| CI, pack, publish, or clean-install verification improvement | Patch | Should harden release confidence. |
+| Additional tests for existing behavior | Patch | No runtime contract change. |
+| New optional helper API | Minor | Additive only, documented, and tested. |
+| New optional package | Minor | Dependencies stay outside core packages. |
+| New convention behavior | Minor | Must be disabled by default and diagnostics-visible. |
+| New analyzer warning | Minor | Start as info/warning unless it protects security-sensitive behavior. |
+| New source generator with runtime fallback | Minor | Generated output must be deterministic and testable. |
+| Breaking API removal or default behavior change | Major | Requires migration guide and deprecation history. |
+| Runtime baseline increase | Major | Requires compatibility policy update. |
+| Package split or package boundary change | Major | Requires package deprecation and migration docs. |
+| Visual tooling, dashboards, IDE integration, or hosted docs platform | Future platform | Build after CLI/analyzer/generator metadata exists. |
+
 ## Adoption And Compatibility Ideas
 
 | Idea | Status | Notes |
@@ -46,11 +67,19 @@ The core promise remains: users can understand what happens in their app without
 | `AstraFlow.Contracts` | Planned | Shared contracts without DI/runtime packages. |
 | Package compatibility matrix | Planned | Document package, TFM, dependency, and integration support. |
 | API compatibility baselines | Planned | Prevent accidental breaking changes. |
+| Public API diff in CI | Planned | Review API changes before publish. |
 | Old-version compatibility test suite | Candidate | Restore previous package versions and verify upgrade paths. |
+| Old-version upgrade smoke tests | Planned | Prove patch/minor upgrades do not require source changes unless documented. |
 | Migration guides from popular mediator/mapping approaches | Planned | Keep public docs capability-focused rather than competitor-centered. |
+| Migration cookbook | Planned | Before/after examples for manual dispatch, mediator usage, mapper usage, and projection usage. |
+| Migration scanner report | Planned | CLI report that suggests replacements without rewriting code by default. |
 | Package selector guide | Planned | Help users choose focused packages instead of always using meta package. |
 | Offline package verification script | Candidate | Validate `.nupkg` contents, README, icon, docs, symbols, and dependencies. |
-| Local install smoke-test template | Candidate | Create clean sample app and install packed packages. |
+| Local install smoke-test template | Done | Shipped as `scripts/verify-package-install.ps1` in `1.2.3`. |
+| DI container compatibility matrix | Candidate | Test Microsoft.Extensions.DependencyInjection-compatible containers where practical. |
+| Host compatibility samples | Planned | Console, worker, ASP.NET Core, class library, test project, shared contracts/client project. |
+| Versioned documentation | Planned | Keep older package docs available after APIs expand. |
+| Package deprecation process | Planned | Define when and how packages/APIs are marked obsolete or deprecated. |
 
 ## Mediator Ideas
 
@@ -71,15 +100,19 @@ The core promise remains: users can understand what happens in their app without
 | Handler priority ordering | Candidate | Risky because it can hide architecture coupling. |
 | Request envelopes | Candidate | Correlation, causation, tenant, user context without payload logging. |
 | Correlation context abstraction | Candidate | Could support observability and logs. |
+| Request context accessor | Candidate | Payload-free metadata for correlation, causation, tenant, user, clock, and locale. |
 | Cancellation enforcement diagnostics | Candidate | Runtime docs first, analyzer later. |
 | Handler timeout behavior | Candidate | Optional package, not core. |
 | Retry behavior | Candidate | Integrate with established resilience primitives. |
 | Circuit breaker behavior | Candidate | Optional package. |
 | Idempotency behavior | Candidate | Requires pluggable persistence. |
+| Command idempotency contract | Candidate | Explicit operation keys without request payload storage. |
 | Transaction behavior | Candidate | Integration package only. |
 | Outbox bridge | Candidate | Infrastructure-specific. |
 | Inbox bridge | Candidate | Infrastructure-specific. |
 | Domain event to notification bridge | Candidate | No forced base entity. |
+| Open generic notification handler support | Candidate | Must avoid duplicate invocation and produce clear diagnostics. |
+| Handler lifetime diagnostics | Planned | Detect singleton/scoped/transient risks. |
 | Saga/process manager helpers | Research | Powerful but can become a workflow engine. |
 | Workflow orchestration package | Research | Probably out of core scope. |
 | Request batching | Research | Useful for some apps but can complicate semantics. |
@@ -111,7 +144,13 @@ The core promise remains: users can understand what happens in their app without
 | Unflattening | Planned | Protect domain-owned nested objects. |
 | Include members | Planned | Controlled composition mapping. |
 | Mapping plan export | Planned | Show every member decision. |
-| Mapping diff | Candidate | Compare mapping plan between commits. |
+| Mapping diff | Planned | Compare mapping plan between commits. |
+| Safe update mapping policy | Planned | Separate create, update, patch, and public-input DTO rules. |
+| Sensitive destination write policy | Planned | Block or warn on writes into password/token/key/secret-style members. |
+| Required member validation | Planned | Detect destination required members that cannot be populated safely. |
+| Immutable destination support | Planned | Constructor/record mapping with diagnostics. |
+| Collection update strategies | Candidate | Replace, merge, preserve, and key-based update behavior for existing destinations. |
+| Naming convention profiles | Candidate | Optional naming conventions with diagnostics-visible output. |
 | Value transformers | Candidate | Risky if global and hidden. |
 | Before/after map hooks | Candidate | Must be visible in diagnostics. |
 | Polymorphic mapping | Candidate | After profiles are stable. |
@@ -133,6 +172,10 @@ The core promise remains: users can understand what happens in their app without
 | Provider-specific warning codes | Planned | Stable diagnostics. |
 | Projection plan export | Planned | Source/destination member and expression-risk report. |
 | Projection diffing | Candidate | Review read-model changes in CI. |
+| Projection parameter object model | Planned | Pass explicit query parameters without complex closure captures. |
+| Projection raw-ID policy checks | Planned | Warn when public read models expose raw IDs while secure ID policy is enabled. |
+| Projection provider baseline tests | Planned | Store expected validation outcomes for common providers. |
+| Projection SQL snapshot helper | Candidate | Review generated SQL shape without executing queries. |
 | Query tagging helpers | Candidate | EF integration. |
 | Projection performance benchmarks | Candidate | Compare registry lookup and expression use. |
 | Projection analyzer code fixes | Candidate | Suggest replacing mapper calls or custom method calls. |
@@ -152,6 +195,9 @@ The core promise remains: users can understand what happens in their app without
 | Redaction policy report | Planned | Explain what is emitted and redacted. |
 | Dependency lifetime graph | Candidate | Show unsafe singleton/scoped patterns. |
 | Handler/mapping/projection ownership report | Candidate | Useful in large modular apps. |
+| Report baseline approval workflow | Planned | CI can require approval when diagnostics shape changes. |
+| Report redaction audit | Planned | Show emitted, summarized, and redacted categories. |
+| Module ownership metadata | Candidate | Attribute or configuration model for team/module ownership. |
 | Module boundary report | Candidate | Needs architecture metadata. |
 | Startup health summary | Planned | ASP.NET Core integration. |
 
@@ -172,8 +218,11 @@ The core promise remains: users can understand what happens in their app without
 | EF projection test helpers | Planned | Provider translation checks. |
 | Secure ID test codec | Planned | Stable tests without real keys. |
 | Diagnostics snapshot helper | Candidate | Golden report tests. |
+| Upgrade smoke-test harness | Planned | Restore previous packages, upgrade, then build/test representative consumers. |
+| Public API approval tests | Planned | Detect accidental public API changes before publish. |
+| Analyzer/generator snapshot helpers | Planned | Required once compile-time packages exist. |
 | Test fixture builders | Candidate | Useful if minimal and optional. |
-| Compatibility smoke-test harness | Candidate | Install packed packages into clean sample apps. |
+| Compatibility smoke-test harness | Done | `scripts/verify-package-install.ps1` verifies supported target combinations before release. |
 
 ## Analyzer Ideas
 
@@ -274,6 +323,9 @@ The core promise remains: users can understand what happens in their app without
 | Redacted logging hooks | Planned | No payload values by default. |
 | Correlation and causation IDs | Candidate | Needs payload-free context model. |
 | Sampling controls | Candidate | Avoid high-cardinality noise. |
+| Slow handler diagnostics | Candidate | Report timing without payload logging. |
+| Notification fan-out topology metrics | Candidate | Count fan-out and failures by handler type. |
+| Projection validation metrics | Candidate | Count provider validation failures by code and projection name. |
 | Development diagnostics endpoint | Planned | ASP.NET Core integration. |
 | Production-safe health summary | Candidate | Summary only, no secrets. |
 
@@ -287,6 +339,12 @@ The core promise remains: users can understand what happens in their app without
 | Signed tags | Planned | Release integrity. |
 | Branch protection guide | Planned | Contributor/release safety. |
 | Changelog automation | Planned | Consistent release notes. |
+| Versioned documentation strategy | Planned | Keep docs aligned to package versions. |
+| Release branch strategy | Planned | Support patching old release lines. |
+| Package deprecation process | Planned | Responsible retirement of APIs/packages. |
+| Secret scanning release gate | Planned | Prevent publishing tokens, keys, or secret screenshots. |
+| Dependency vulnerability gate | Planned | Block high-severity known vulnerable dependencies where practical. |
+| Secure analyzer suppression policy | Planned | Require reasons for suppressing sensitive findings. |
 | Release dashboard | Candidate | Later platform tooling. |
 | Benchmark dashboard | Candidate | Later platform tooling. |
 | Compatibility dashboard | Candidate | Later platform tooling. |
@@ -306,6 +364,9 @@ The core promise remains: users can understand what happens in their app without
 | IDE extension | Candidate | Only after CLI/analyzers stabilize. |
 | Interactive diagnostics explorer | Candidate | Useful for large teams. |
 | Documentation website | Planned | Public docs and recipes. |
+| Versioned docs site | Planned | Public documentation per major/minor release once API growth requires it. |
+| API compatibility dashboard | Candidate | Visualize API changes and support windows. |
+| Package health dashboard | Candidate | Release status, package contents, downloads, vulnerabilities, docs links. |
 
 ## Rejected Or Avoided Ideas
 

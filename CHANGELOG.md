@@ -2,6 +2,14 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.2.3
+
+- Added `scripts/verify-package-install.ps1` to install packed packages into clean external consumer projects.
+- Verified core packages in `netstandard2.0`, `net8.0`, and `net9.0` consumer projects.
+- Verified all packages, including `AstraFlow.Mapper.EntityFrameworkCore`, in a `net10.0` consumer project.
+- Wired clean package install verification into local packing, CI, and the publish workflow.
+- Updated release documentation so target-framework support must be proven by automated package install checks.
+
 ## 1.2.2
 
 - Added real multi-target support for `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, and `AstraFlow.Diagnostics`.

@@ -107,7 +107,7 @@ Publishing with zero handlers is valid. Confirm:
 
 ### Query Provider Cannot Translate Projection
 
-AstraFlow v1.2.2 validates projection registrations and high-risk expression patterns. If EF Core or another provider cannot translate a projection:
+AstraFlow v1.2.3 validates projection registrations and high-risk expression patterns. If EF Core or another provider cannot translate a projection:
 
 - remove service calls from the expression,
 - avoid runtime mapper calls inside `Select`,

@@ -34,8 +34,16 @@ try {
     Invoke-DotNetStep "Pack AstraFlow.Diagnostics" @("pack", ".\src\AstraFlow.Diagnostics\AstraFlow.Diagnostics.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow" @("pack", ".\src\AstraFlow\AstraFlow.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
 
+    Write-Host "==> Verify package install"
+    & .\scripts\verify-package-install.ps1 -Configuration $Configuration
+    if ($LASTEXITCODE -ne 0) {
+        throw "Verify package install failed with exit code $LASTEXITCODE."
+    }
+
     Write-Host "Packages created:"
-    Get-ChildItem .\src -Recurse -Filter "*.nupkg" | Select-Object -ExpandProperty FullName
+    [xml]$props = Get-Content -LiteralPath ".\Directory.Build.props"
+    $version = $props.Project.PropertyGroup.Version
+    Get-ChildItem .\src -Recurse -Filter "*.$version.nupkg" | Select-Object -ExpandProperty FullName
 }
 finally {
     Pop-Location
