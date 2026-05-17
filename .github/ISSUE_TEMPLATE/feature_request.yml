@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest a focused AstraFlow package improvement.
+title: "Feature: "
+labels:
+  - enhancement
+body:
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package area
+      options:
+        - AstraFlow.Mediator
+        - AstraFlow.Mapper
+        - AstraFlow.Mapper.EntityFrameworkCore
+        - AstraFlow.Diagnostics
+        - AstraFlow.Testing
+        - AstraFlow.Contracts
+        - Packaging or documentation
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the API, docs, package metadata, or workflow change you want.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false

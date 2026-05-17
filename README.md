@@ -6,6 +6,23 @@ AstraFlow is a MIT-licensed .NET package family for explicit CQRS dispatch and s
 
 It was built to keep production applications free from runtime license checks, hidden mapping behavior, and framework lock-in. The v1 design is deliberately small: secure defaults, clear errors, explicit extension points, and package-quality diagnostics before optional convention layers are added.
 
+## Release And Repository Links
+
+NuGet shows package history under the **Release Notes** tab. GitHub shows only selected community files as repository tabs, so the README is the main public hub for everything else.
+
+| Link | What It Shows |
+| --- | --- |
+| [Release Notes / Changelog](https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md) | Full release-by-release package history. |
+| [GitHub Releases](https://github.com/seifmoustafa/AstraFlow/releases) | Tagged releases and downloadable source archives. |
+| [Security Policy](https://github.com/seifmoustafa/AstraFlow/blob/main/SECURITY.md) | Supported versions and vulnerability reporting. |
+| [Contributing](https://github.com/seifmoustafa/AstraFlow/blob/main/CONTRIBUTING.md) | Local development, tests, and contribution rules. |
+| [Code of Conduct](https://github.com/seifmoustafa/AstraFlow/blob/main/CODE_OF_CONDUCT.md) | Expected community behavior. |
+| [Support](https://github.com/seifmoustafa/AstraFlow/blob/main/SUPPORT.md) | Where to ask usage questions or report package issues. |
+| [Buy Me a Coffee](https://buymeacoffee.com/seifmoustafa) | Optional support for ongoing maintenance. |
+| [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | Planned mediator, mapper, testing, analyzer, generator, and ecosystem work. |
+| [Publishing Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/publishing.md) | Release and NuGet publishing process. |
+| [MIT License](https://github.com/seifmoustafa/AstraFlow/blob/main/LICENSE) | Package license. |
+
 ## Packages
 
 | Package | Purpose |

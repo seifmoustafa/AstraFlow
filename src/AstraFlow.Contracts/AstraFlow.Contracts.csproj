@@ -4,7 +4,7 @@
     <PackageId>AstraFlow.Contracts</PackageId>
     <Title>AstraFlow Contracts</Title>
     <Description>Framework-neutral AstraFlow mediator contracts for shared request, notification, pipeline, processor, exception, and stream abstractions.</Description>
-    <PackageTags>mediator;cqrs;contracts;notifications;dotnet</PackageTags>
+    <PackageTags>astraflow;mediator;cqrs;contracts;notifications;dotnet</PackageTags>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">

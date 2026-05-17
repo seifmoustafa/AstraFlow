@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security reports
+    url: https://github.com/seifmoustafa/AstraFlow/blob/main/SECURITY.md
+    about: Please report suspected vulnerabilities privately.
+  - name: Release history
+    url: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
+    about: Check shipped changes before opening a duplicate issue.

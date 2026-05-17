@@ -146,6 +146,8 @@ That is expected for invalid input when your codec returns null. Treat null as "
 | Problem | Fix |
 | --- | --- |
 | Package does not show README on NuGet | Confirm `PackageReadmeFile` is set and `README.md` is packed at package root. |
+| Changelog does not show as a NuGet tab | NuGet shows package history as `Release Notes`, not `Changelog`. Confirm `PackageReleaseNotes` is set, and link the full `CHANGELOG.md` from both release notes and the README. If the package version is already published, release a new patch version because NuGet package metadata is immutable. |
+| GitHub does not show every Markdown file as a repository tab | GitHub only surfaces selected well-known files such as `README.md`, `CONTRIBUTING.md`, `LICENSE`, `SECURITY.md`, and `CODE_OF_CONDUCT.md`. Link other docs from `README.md`. |
 | Package icon missing | Confirm `PackageIcon` points to `assets/branding/astraflow-icon.png` and the file is packed. |
 | Symbols missing | Confirm `.snupkg` exists and contains PDB files. |
 | XML docs missing | Confirm `GenerateDocumentationFile` is true and the `.nupkg` contains `lib/net10.0/*.xml`. |

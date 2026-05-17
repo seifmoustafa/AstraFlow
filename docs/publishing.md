@@ -87,6 +87,8 @@ Use the exact secret name `NUGET_API_KEY`.
 9. Install the packages into a clean sample project.
 10. Verify a clean sample consumer can migrate from local AstraFlow project references to NuGet `PackageReference` entries after package verification succeeds.
 
+Published NuGet package versions are immutable. If a package is already visible on NuGet and its README, release notes, icon, tags, or repository metadata need to change, publish a new patch version with the corrected metadata instead of trying to replace the existing version.
+
 ## Listing Packages On NuGet
 
 After the first push, NuGet may show the packages under `Unlisted Packages`. Unlisted packages are published and installable by exact package ID and version, but they are hidden from search results.

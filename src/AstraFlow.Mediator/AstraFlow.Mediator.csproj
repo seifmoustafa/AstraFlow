@@ -4,7 +4,7 @@
     <PackageId>AstraFlow.Mediator</PackageId>
     <Title>AstraFlow Mediator</Title>
     <Description>Explicit mediator dispatch for .NET with request handlers, notifications, pipeline behaviors, scanning, and handler coverage validation.</Description>
-    <PackageTags>mediator;cqrs;pipeline;notifications;dotnet</PackageTags>
+    <PackageTags>astraflow;mediator;cqrs;pipeline;notifications;dotnet</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
