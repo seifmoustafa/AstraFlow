@@ -7,7 +7,7 @@ AstraFlow releases are gated and should be published from GitHub Actions, not fr
 Recommended flow:
 
 1. Create a dedicated public GitHub repository for AstraFlow.
-2. Copy the contents of `packages/AstraFlow` into that repository root.
+2. Place the AstraFlow package family at the repository root.
 3. Initialize and push the release repository:
 
 ```powershell
@@ -19,7 +19,7 @@ git remote add origin https://github.com/seifmoustafa/AstraFlow.git
 git push -u origin main
 ```
 
-Do not keep the release repository as a nested Git repository inside the NEXORA monorepo. A nested repository is easy to confuse with a submodule and can hide source changes from the parent repository.
+Do not keep the release repository as a nested Git repository inside another product repository. A nested repository is easy to confuse with a submodule and can hide source changes from the parent repository.
 
 ## Preferred Publish Method
 
@@ -85,7 +85,7 @@ Use the exact secret name `NUGET_API_KEY`.
 7. Type `PUBLISH` when prompted.
 8. Verify all packages on NuGet.
 9. Install the packages into a clean sample project.
-10. Migrate NEXORA from local project references to NuGet `PackageReference` entries only after package verification succeeds.
+10. Verify a clean sample consumer can migrate from local AstraFlow project references to NuGet `PackageReference` entries after package verification succeeds.
 
 ## Listing Packages On NuGet
 
@@ -144,9 +144,9 @@ If manual publishing is approved, use `scripts/publish-nuget.ps1` from a private
 
 Do not save the key in shell profiles, `.env` files, source files, or documentation.
 
-## After Publish: NEXORA Consumption
+## After Publish: Consumer Verification
 
-After NuGet shows all seven packages, update NEXORA production projects to consume published runtime packages:
+After NuGet shows all seven packages, verify clean consumer projects can consume the published runtime packages:
 
 ```xml
 <PackageReference Include="AstraFlow.Mediator" Version="1.4.0" />
@@ -176,9 +176,9 @@ Use the meta-package only where both mediator and mapper are intentionally neede
 Then run:
 
 ```powershell
-dotnet restore NEXORA-Backend/NEXORA-Backend.sln
-dotnet build NEXORA-Backend/NEXORA-Backend.sln --no-restore
-dotnet test NEXORA-Backend/NEXORA-Backend.sln --no-build --no-restore
+dotnet restore samples/AstraFlow.SampleConsumer/AstraFlow.SampleConsumer.sln
+dotnet build samples/AstraFlow.SampleConsumer/AstraFlow.SampleConsumer.sln --no-restore
+dotnet test samples/AstraFlow.SampleConsumer/AstraFlow.SampleConsumer.sln --no-build --no-restore
 ```
 
-Delete `packages/AstraFlow` from the NEXORA monorepo only after restore, build, tests, and package reference scans pass.
+Sample consumers that are meant to validate NuGet consumption should not keep local AstraFlow project references after package-reference migration is verified.

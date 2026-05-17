@@ -141,7 +141,7 @@ Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraF
 - Explicit by default: mapping rules must be code you can review.
 - Security first: sensitive fields are not mapped by naming convention unless a future optional package is explicitly enabled.
 - Clear failure modes: missing handlers, duplicate handlers, missing mappings, duplicate mappings, and undeclared mappings fail with actionable messages.
-- No application lock-in: AstraFlow does not depend on NEXORA, `Result`, ASP.NET Core MVC, FluentValidation, tenants, permissions, or a specific ID encryption implementation.
+- No application lock-in: AstraFlow does not depend on any private product, `Result`, ASP.NET Core MVC, FluentValidation, tenants, permissions, or a specific ID encryption implementation.
 - Extension-ready: pipelines, notification failure policies, projections, and secure ID codecs are designed as narrow public contracts.
 
 ## Quick Start: Mediator
@@ -370,7 +370,7 @@ Create a square app/package icon for a .NET library named AstraFlow. Use an abst
 The package folder includes CI, a gated publish workflow, security policy, contributing guide, changelog, samples, and release checklist. Publishing should happen only after:
 
 - package tests pass,
-- NEXORA consumes the package projects successfully,
+- representative consumer applications build against the package projects or packed packages successfully,
 - package artifacts build with XML docs and symbols,
 - the API surface is reviewed for v1 stability,
 - NuGet Trusted Publishing is configured, or a scoped GitHub Actions publishing secret is configured in the release repository.

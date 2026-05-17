@@ -12,6 +12,7 @@ Use this file when:
 
 Status labels:
 
+- `Done`: implemented, tested, documented, and intended for release or already released.
 - `Planned`: approved for the main roadmap.
 - `Candidate`: worth designing, not yet approved.
 - `Research`: needs technical or market validation.
@@ -85,17 +86,17 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| Void requests | Planned | Commands without response values. |
-| Stream requests | Planned | `IAsyncEnumerable<T>` responses. |
-| Stream pipeline behaviors | Planned | Dedicated behavior contract for streams. |
-| Request pre-processors | Planned | Lightweight before-handler hooks. |
-| Request post-processors | Planned | Lightweight after-handler hooks. |
-| Request exception handlers | Planned | Typed exception recovery with explicit handled state. |
-| Request exception actions | Planned | Side effects that rethrow. |
-| Fluent registration builder | Planned | Deterministic registration API. |
-| Open-generic behavior registration helpers | Planned | Cleaner behavior setup. |
-| Parallel notification publishing | Planned | Opt-in only. |
-| Bounded-parallel notification publishing | Planned | Safer fan-out for many handlers. |
+| Void requests | Done | Shipped in `1.4.0` for commands without response values. |
+| Stream requests | Done | Shipped in `1.4.0` for `IAsyncEnumerable<T>` responses. |
+| Stream pipeline behaviors | Done | Shipped in `1.4.0` through a dedicated stream behavior contract. |
+| Request pre-processors | Done | Shipped in `1.4.0` as lightweight before-handler hooks. |
+| Request post-processors | Done | Shipped in `1.4.0` as lightweight after-handler hooks. |
+| Request exception handlers | Done | Shipped in `1.4.0` with explicit handled state. |
+| Request exception actions | Done | Shipped in `1.4.0`; actions run side effects and rethrow. |
+| Fluent registration builder | Done | Shipped in `1.4.0` for deterministic registration. |
+| Open-generic behavior registration helpers | Done | Shipped in `1.4.0` for cleaner behavior setup. |
+| Parallel notification publishing | Done | Shipped in `1.4.0`; opt-in only. |
+| Bounded-parallel notification publishing | Done | Shipped in `1.4.0` for safer fan-out with a maximum degree of parallelism. |
 | Notification ordering metadata | Candidate | Use only if diagnostics reveal coupling. |
 | Handler priority ordering | Candidate | Risky because it can hide architecture coupling. |
 | Request envelopes | Candidate | Correlation, causation, tenant, user context without payload logging. |
