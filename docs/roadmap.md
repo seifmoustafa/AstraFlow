@@ -425,16 +425,16 @@ This inventory tracks capabilities common in mature mediator and mapper librarie
 | Assembly scanning | Done | Improve AOT/trimming through generators later. |
 | Handler coverage validation | Done | Add analyzer version later. |
 | Diagnostics report | Done | Expand findings as features grow. |
-| Void requests | Planned | Add non-response request contracts without forcing `Unit` into user code unless the user wants it. |
-| Stream requests | Planned | Add `IAsyncEnumerable<T>` request handling with cancellation-safe streaming. |
-| Stream pipeline behaviors | Planned | Add stream-specific pipeline behaviors around stream execution. |
-| Request pre-processors | Planned | Add explicit pre-processor contracts and registration helpers. |
-| Request post-processors | Planned | Add explicit post-processor contracts and registration helpers. |
-| Request exception handlers | Planned | Add typed exception handlers that can mark exceptions handled. |
-| Request exception actions | Planned | Add typed exception actions for logging/metrics side effects that rethrow. |
+| Void requests | Done | Non-response request contracts are supported without forcing `Unit` into user code. |
+| Stream requests | Done | `IAsyncEnumerable<T>` request handling is supported through stream sender APIs. |
+| Stream pipeline behaviors | Done | Stream-specific pipeline behaviors wrap stream execution. |
+| Request pre-processors | Done | Explicit pre-processor contracts and registration helpers exist. |
+| Request post-processors | Done | Explicit post-processor contracts and registration helpers exist. |
+| Request exception handlers | Done | Typed exception handlers can mark exceptions handled. |
+| Request exception actions | Done | Typed exception actions run side effects and rethrow. |
 | Contracts-only package | Done | `AstraFlow.Contracts` provides shared mediator contracts without runtime packages. |
-| Fluent registration builder | Planned | Add `AddBehavior`, `AddOpenBehavior`, `AddStreamBehavior`, pre/post processor helpers, and explicit assembly registration. |
-| Parallel notification publishing | Planned | Add opt-in publish strategies with deterministic error aggregation. |
+| Fluent registration builder | Done | `AstraFlowMediatorBuilder` exposes behavior, stream behavior, processor, and exception-flow registration helpers. |
+| Parallel notification publishing | Done | Opt-in parallel and bounded-parallel publish strategies are available with aggregate failure handling. |
 | Notification ordering policy | Candidate | Consider explicit ordering metadata only if it does not hide coupling. |
 | Retry/circuit-breaker pipeline helpers | Candidate | Likely belongs in integration packages rather than core. |
 | License-key runtime behavior | Rejected | Keep MIT package behavior free from runtime license checks. |
@@ -516,7 +516,7 @@ This section is deliberately broad. It exists so future work can be compared aga
 | Opportunity | Status | Direction |
 | --- | --- | --- |
 | Multi-targeting | Done | Core packages ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; EF Core remains `net10.0`. |
-| Contracts-only package | Planned | Let shared projects reference request/notification contracts without runtime DI packages. |
+| Contracts-only package | Done | Shared projects can reference mediator contracts without runtime DI packages. |
 | API compatibility checks | Planned | Compare public APIs against a baseline before release. |
 | Version support policy | Planned | Document which package versions get patches. |
 | Public API baseline files | Planned | Store reviewed public API snapshots for CI comparison. |
@@ -535,13 +535,13 @@ This section is deliberately broad. It exists so future work can be compared aga
 
 | Opportunity | Status | Direction |
 | --- | --- | --- |
-| Void requests | Planned | Commands that return no value without forcing application-specific result types. |
-| Stream requests | Planned | `IAsyncEnumerable<T>` request/response flows. |
-| Stream behaviors | Planned | Pipeline behavior model for streamed responses. |
-| Pre/post processors | Planned | Lightweight extension points around handlers. |
-| Exception handlers/actions | Planned | Explicit exception recovery and side-effect hooks. |
-| Rich registration builder | Planned | Discoverable registration methods with deterministic behavior order. |
-| Publish strategies | Planned | Sequential default, parallel and bounded-parallel opt-in. |
+| Void requests | Done | Commands that return no value without forcing application-specific result types. |
+| Stream requests | Done | `IAsyncEnumerable<T>` request/response flows. |
+| Stream behaviors | Done | Pipeline behavior model for streamed responses. |
+| Pre/post processors | Done | Lightweight extension points around handlers. |
+| Exception handlers/actions | Done | Explicit exception recovery and side-effect hooks. |
+| Rich registration builder | Done | Discoverable registration methods with deterministic behavior order. |
+| Publish strategies | Done | Sequential default, parallel and bounded-parallel opt-in. |
 | Cancellation diagnostics | Planned | Report handlers/processors that ignore cancellation tokens where detectable. |
 | Timeout behavior package | Candidate | Likely an optional pipeline helper, not core. |
 | Idempotency behavior package | Candidate | Useful for command handling, but requires application persistence policy. |
@@ -1122,11 +1122,11 @@ Acceptance gates:
 
 ## v1.4 Roadmap: Mediator Parity And Ergonomics
 
-Status: `Implemented candidate`.
+Status: `Done`.
 
 Verification note:
 
-The code, tests, package metadata, scripts, and docs have been updated for this milestone. Do not publish `1.4.0` until the release gate runs successfully:
+The code, tests, package metadata, scripts, and docs have been updated for this milestone. The release gate must pass before publishing:
 
 ```powershell
 .\scripts\pack.ps1 -Configuration Release
@@ -2064,10 +2064,10 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 | Capability | Now `v1.4.0` | Planned `v1.5-v1.13` | Planned `v2` | Planned `v3+` |
 | --- | --- | --- | --- | --- |
 | Target frameworks | Core packages and testing package multi-target; EF Core package `net10.0` | Direct legacy target research and EF provider target expansion | API compatibility governance | Enterprise compatibility policy |
-| Request dispatch | Done | Void requests, richer registration | Generated registration, analyzer checks | Visual request graph |
-| Stream requests | Not included | Stream request and stream behavior support | Stream analyzers | Streaming templates |
-| Notification publish | Done | Parallel and bounded parallel strategies | Handler-risk analyzers | Observability dashboards |
-| Pipeline behaviors | Done | Pre/post processors, exception handlers/actions | Order analyzers | Visual pipeline graph |
+| Request dispatch | Done, including void requests and object dispatch | More ergonomics and diagnostics | Generated registration, analyzer checks | Visual request graph |
+| Stream requests | Stream request and stream behavior support done | Cancellation and diagnostics polish | Stream analyzers | Streaming templates |
+| Notification publish | Sequential, parallel, and bounded-parallel strategies done | Ordering diagnostics and strategy polish | Handler-risk analyzers | Observability dashboards |
+| Pipeline behaviors | Response, void, stream, pre/post, exception actions/handlers done | Order diagnostics and helper polish | Order analyzers | Visual pipeline graph |
 | Contracts-only package | `AstraFlow.Contracts` done | Compatibility polish | API compatibility checks | Shared contract templates |
 | Explicit object mapping | Done | More assertions and diagnostics | Generated fast paths | Visual mapping graph |
 | Collection mapping | Done | More shape coverage | Generated collection fast paths | Benchmark dashboard |
@@ -2114,17 +2114,17 @@ This matrix describes feature classes AstraFlow should cover over time. It avoid
 
 | Item | Priority | Target | Notes |
 | --- | --- | --- | --- |
-| Void request contract | High | `v1.4` | Needed for command handlers with no response. |
-| Void request object dispatch | High | `v1.4` | Must preserve clear ambiguous-contract errors. |
-| Stream request contract | High | `v1.4` | Use `IAsyncEnumerable<T>` and cancellation-safe execution. |
-| Stream pipeline behavior | High | `v1.4` | Separate contract from normal request pipeline. |
-| Pre-processors | Medium | `v1.4` | Useful for validation/logging setup; behavior remains more powerful. |
-| Post-processors | Medium | `v1.4` | Useful for auditing/cleanup after handlers. |
-| Exception handlers | High | `v1.4` | Must require explicit handled state. |
-| Exception actions | High | `v1.4` | Must always rethrow after side effects. |
-| Contracts-only package | High | `v1.4` | Important for shared API contracts, Blazor, clients, and modular boundaries. |
-| Fluent registration builder | High | `v1.4` | Needed for predictable behavior registration and discoverability. |
-| Parallel notification strategy | Medium | `v1.4` | Opt-in because ordering and scoped state can be risky. |
+| Void request contract | Done | `v1.4` | Needed for command handlers with no response. |
+| Void request object dispatch | Done | `v1.4` | Must preserve clear ambiguous-contract errors. |
+| Stream request contract | Done | `v1.4` | Use `IAsyncEnumerable<T>` and cancellation-safe execution. |
+| Stream pipeline behavior | Done | `v1.4` | Separate contract from normal request pipeline. |
+| Pre-processors | Done | `v1.4` | Useful for validation/logging setup; behavior remains more powerful. |
+| Post-processors | Done | `v1.4` | Useful for auditing/cleanup after handlers. |
+| Exception handlers | Done | `v1.4` | Must require explicit handled state. |
+| Exception actions | Done | `v1.4` | Must always rethrow after side effects. |
+| Contracts-only package | Done | `v1.4` | Important for shared API contracts, Blazor, clients, and modular boundaries. |
+| Fluent registration builder | Done | `v1.4` | Needed for predictable behavior registration and discoverability. |
+| Parallel notification strategy | Done | `v1.4` | Opt-in because ordering and scoped state can be risky. |
 | Cancellation diagnostics | Medium | `v1.4`/`v2` | Runtime docs first, analyzer later. |
 | Request envelope/correlation support | Low | Candidate | Useful for observability but must not log payloads. |
 | Timeout/idempotency/resilience behaviors | Medium | `v1.11` candidate | Optional packages only. |

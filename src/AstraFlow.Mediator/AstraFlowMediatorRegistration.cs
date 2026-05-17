@@ -158,6 +158,8 @@ public static class AstraFlowMediatorRegistration
     /// </summary>
     /// <param name="assemblies">Assemblies scanned for request contracts.</param>
     /// <param name="requestHandlers">Closed request handler registrations discovered for the same assemblies.</param>
+    /// <param name="voidRequestHandlers">Closed void request handler registrations discovered for the same assemblies.</param>
+    /// <param name="streamRequestHandlers">Closed stream request handler registrations discovered for the same assemblies.</param>
     /// <exception cref="InvalidOperationException">Thrown when a concrete request is missing its handler.</exception>
     private static void ValidateRequestCoverage(
         IReadOnlyCollection<Assembly> assemblies,

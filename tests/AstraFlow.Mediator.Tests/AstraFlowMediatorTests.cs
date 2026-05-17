@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace AstraFlow.Mediator.Tests;
@@ -65,6 +66,19 @@ public sealed class AstraFlowMediatorTests
     }
 
     [Fact]
+    public async Task Send_WithMissingVoidHandler_FailsClearly()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+
+        var act = () => sender.Send(new MissingVoidRequest());
+
+        await act.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*No void request handler registered*MissingVoidRequest*");
+    }
+
+    [Fact]
     public async Task Send_WithMultipleHandlers_FailsClearly()
     {
         var services = CreateServices();
@@ -81,6 +95,22 @@ public sealed class AstraFlowMediatorTests
     }
 
     [Fact]
+    public async Task Send_WithMultipleVoidHandlers_FailsClearly()
+    {
+        var services = CreateServices();
+        services.AddScoped<IRequestHandler<VoidPingRequest>, VoidPingRequestHandler>();
+
+        using var provider = services.BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+
+        var act = () => sender.Send(new VoidPingRequest("duplicate-void"));
+
+        await act.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Multiple void request handlers registered*VoidPingRequest*");
+    }
+
+    [Fact]
     public async Task Send_WithMultipleRequestContracts_FailsClearly()
     {
         using var provider = CreateServices().BuildServiceProvider();
@@ -90,7 +120,7 @@ public sealed class AstraFlowMediatorTests
 
         await act.Should()
             .ThrowAsync<InvalidOperationException>()
-            .WithMessage("*AmbiguousRequest*implements multiple*IRequest*contracts*");
+            .WithMessage("*AmbiguousRequest*implements multiple AstraFlow request contracts*");
     }
 
     [Fact]
@@ -103,7 +133,7 @@ public sealed class AstraFlowMediatorTests
 
         await act.Should()
             .ThrowAsync<InvalidOperationException>()
-            .WithMessage("*AmbiguousRequest*implements multiple*IRequest*contracts*");
+            .WithMessage("*AmbiguousRequest*implements multiple AstraFlow request contracts*");
     }
 
     [Fact]
@@ -253,6 +283,37 @@ public sealed class AstraFlowMediatorTests
     }
 
     [Fact]
+    public async Task Send_WithVoidExceptionAction_RethrowsOriginalFailure()
+    {
+        var services = CreateServices();
+        services.AddScoped<IRequestExceptionAction<ThrowingVoidRequest, InvalidOperationException>, ThrowingVoidExceptionAction>();
+
+        using var provider = services.BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+        var log = provider.GetRequiredService<ExecutionLog>();
+
+        var act = () => sender.Send(new ThrowingVoidRequest("void-action"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("void-boom:void-action");
+        log.Items.Should().Equal("void-exception-action:void-boom:void-action");
+    }
+
+    [Fact]
+    public async Task Send_WithVoidExceptionHandler_CompletesWhenHandled()
+    {
+        var services = CreateServices();
+        services.AddScoped<IRequestExceptionHandler<ThrowingVoidRequest, InvalidOperationException>, ThrowingVoidExceptionHandler>();
+
+        using var provider = services.BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+        var log = provider.GetRequiredService<ExecutionLog>();
+
+        await sender.Send(new ThrowingVoidRequest("void-handled"));
+
+        log.Items.Should().Equal("void-exception-handled:void-handled");
+    }
+
+    [Fact]
     public async Task CreateStream_WithRegisteredHandler_DispatchesStreamThroughBehavior()
     {
         var services = CreateServices();
@@ -281,6 +342,69 @@ public sealed class AstraFlowMediatorTests
             values.Add(value);
 
         values.Should().Equal(0, 1);
+    }
+
+    [Fact]
+    public async Task CreateStream_WithoutRegisteredHandler_FailsClearly()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+        var streamSender = provider.GetRequiredService<IStreamSender>();
+
+        var act = () => streamSender.CreateStream(new MissingStreamRequest());
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*No stream request handler registered*MissingStreamRequest*");
+        await Task.CompletedTask;
+    }
+
+    [Fact]
+    public async Task CreateStream_WithMultipleHandlers_FailsClearly()
+    {
+        var services = CreateServices();
+        services.AddScoped<IStreamRequestHandler<CountStreamRequest, int>, CountStreamRequestHandler>();
+
+        using var provider = services.BuildServiceProvider();
+        var streamSender = provider.GetRequiredService<IStreamSender>();
+
+        var act = () => streamSender.CreateStream(new CountStreamRequest(1));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*Multiple stream request handlers registered*CountStreamRequest*");
+        await Task.CompletedTask;
+    }
+
+    [Fact]
+    public async Task CreateStream_WithCancellation_StopsEnumeration()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+        var streamSender = provider.GetRequiredService<IStreamSender>();
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        var stream = streamSender.CreateStream(new CountStreamRequest(3), cancellation.Token);
+        var act = async () =>
+        {
+            await foreach (var _ in stream.WithCancellation(cancellation.Token))
+            {
+            }
+        };
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task Send_WithStreamRequest_FailsClearly()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+
+        var act = () => sender.Send((object)new CountStreamRequest(1));
+
+        await act.Should()
+            .ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Stream request*CountStreamRequest*CreateStream*");
     }
 
     [Fact]
@@ -357,7 +481,13 @@ public sealed class AstraFlowMediatorTests
 
     public sealed record VoidPingRequest(string Message) : IRequest;
 
+    public sealed record MissingVoidRequest : IRequest;
+
+    public sealed record ThrowingVoidRequest(string Message) : IRequest;
+
     public sealed record CountStreamRequest(int Count) : IStreamRequest<int>;
+
+    public sealed record MissingStreamRequest : IStreamRequest<int>;
 
     public sealed record ThrowingRequest(string Message) : IRequest<string>;
 
@@ -387,9 +517,19 @@ public sealed class AstraFlowMediatorTests
         }
     }
 
+    public sealed class ThrowingVoidRequestHandler : IRequestHandler<ThrowingVoidRequest>
+    {
+        public Task Handle(ThrowingVoidRequest request, CancellationToken cancellationToken)
+        {
+            throw new InvalidOperationException($"void-boom:{request.Message}");
+        }
+    }
+
     public sealed class CountStreamRequestHandler : IStreamRequestHandler<CountStreamRequest, int>
     {
-        public async IAsyncEnumerable<int> Handle(CountStreamRequest request, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<int> Handle(
+            CountStreamRequest request,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             for (var i = 0; i < request.Count; i++)
             {
@@ -558,13 +698,38 @@ public sealed class AstraFlowMediatorTests
         }
     }
 
+    public sealed class ThrowingVoidExceptionAction(ExecutionLog log)
+        : IRequestExceptionAction<ThrowingVoidRequest, InvalidOperationException>
+    {
+        public Task Execute(ThrowingVoidRequest request, InvalidOperationException exception, CancellationToken cancellationToken)
+        {
+            log.Items.Add($"void-exception-action:{exception.Message}");
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class ThrowingVoidExceptionHandler(ExecutionLog log)
+        : IRequestExceptionHandler<ThrowingVoidRequest, InvalidOperationException>
+    {
+        public Task Handle(
+            ThrowingVoidRequest request,
+            InvalidOperationException exception,
+            RequestExceptionHandlerState state,
+            CancellationToken cancellationToken)
+        {
+            log.Items.Add($"void-exception-handled:{request.Message}");
+            state.SetHandled();
+            return Task.CompletedTask;
+        }
+    }
+
     public sealed class CountStreamBehavior(ExecutionLog log)
         : IStreamPipelineBehavior<CountStreamRequest, int>
     {
         public async IAsyncEnumerable<int> Handle(
             CountStreamRequest request,
             StreamHandlerDelegate<int> next,
-            CancellationToken cancellationToken)
+            [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             log.Items.Add("stream:before");
             await foreach (var value in next().WithCancellation(cancellationToken))
