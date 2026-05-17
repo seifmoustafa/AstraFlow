@@ -1,4 +1,4 @@
-# AstraFlow Product Roadmap
+﻿# AstraFlow Product Roadmap
 
 ## Executive Summary
 
@@ -16,7 +16,7 @@ This revised plan starts after `v1.4.0` and moves practical MediatR-style and Au
 
 AstraFlow is not a code fork, API clone, documentation clone, or branding clone of any competitor. Capability parity means solving the same developer problems with AstraFlow's own package architecture, APIs, implementation, diagnostics, tests, and documentation.
 
-NEXORA-specific references are removed or rewritten as generic package-consumer validation. AstraFlow must stand on its own through clean sample consumers, package install verification, public tests, compatibility matrices, sample applications, and documented release gates.
+Private-product-specific references are removed or rewritten as generic package-consumer validation. AstraFlow must stand on its own through clean sample consumers, package install verification, public tests, compatibility matrices, sample applications, and documented release gates.
 
 ## Standalone Package Cleanup Report
 
@@ -27,17 +27,17 @@ The cleanup target is every private-project-specific reference in public package
 Search terms:
 
 ```powershell
-rg -n "NEXORA|Nexora|nexora|NEXORA-Backend|NEXORA-Frontend|nexora-cli|tools/nexora-cli"
+rg -n "<PRIVATE_PRODUCT_NAME>|<PRIVATE_PRODUCT_NAME_LOWER>|<PRIVATE_PRODUCT_NAME_MIXED>|<PRIVATE_PRODUCT_NAME>-Backend|<PRIVATE_PRODUCT_NAME>-Frontend|<PRIVATE_PRODUCT_NAME>-cli|tools/<PRIVATE_PRODUCT_NAME>-cli"
 rg -n "private product|internal application|monorepo|host system|project-specific"
-rg -n "packages/AstraFlow|E:\\Projects|local project references"
+rg -n "<LEGACY_PACKAGE_PATH>|<PRIVATE_WORKSPACE_PATH>|local project references"
 ```
 
 Files found before cleanup:
 
 | File | References found | Classification | Required action |
 | --- | --- | --- | --- |
-| `CONTRIBUTING.md` | Private local `DOTNET_CLI_HOME` path and nested `packages/AstraFlow` commands. | Rewrite generically. | Use repository-root commands and a local workspace cache path. |
-| `README.md` | NEXORA non-lock-in example and release validation gate. | Rewrite generically. | Say no private product lock-in and require representative consumer validation. |
+| `CONTRIBUTING.md` | Private local `DOTNET_CLI_HOME` path and nested package-root commands. | Rewrite generically. | Use repository-root commands and a local workspace cache path. |
+| `README.md` | Private-product non-lock-in example and release validation gate. | Rewrite generically. | Say no private product lock-in and require representative consumer validation. |
 | `docs/roadmap.md` | Private migration, private build/test commands, private validation gates, and private bootstrap prompt. | Rewrite or remove. | Replace with standalone roadmap and generic sample-consumer gates. |
 | `docs/release-checklist.md` | Private consumer validation and post-publish migration section. | Rewrite generically. | Validate clean sample consumers and package references only. |
 | `docs/publishing.md` | Private release repository warning, private migration step, private consumption commands. | Rewrite generically. | Publish from standalone repository and validate clean consumers. |
@@ -46,17 +46,17 @@ Rewrite examples:
 
 | Before | After |
 | --- | --- |
-| "NEXORA backend tests pass." | "Representative consumer application tests pass." |
-| "NEXORA builds against the package projects." | "Clean sample consumer applications build against package projects or packed packages." |
-| "Migrate NEXORA from local project references." | "Verify migration from local project references to published NuGet `PackageReference` entries in a clean sample consumer." |
-| "NEXORA can generate a startup flow report." | "A sample consumer application can generate a startup flow report." |
-| "NEXORA read models." | "Consumer application read models." |
-| `tools/nexora-cli` | `AstraFlow.Cli` |
-| `NEXORA-Backend/...` | `samples/...`, `tests/...`, or `sample-consumer/...` |
+| "private product backend tests pass." | "Representative consumer application tests pass." |
+| "private product builds against the package projects." | "Clean sample consumer applications build against package projects or packed packages." |
+| "Migrate private product from local project references." | "Verify migration from local project references to published NuGet `PackageReference` entries in a clean sample consumer." |
+| "private product can generate a startup flow report." | "A sample consumer application can generate a startup flow report." |
+| "private product read models." | "Consumer application read models." |
+| `tools/private product-cli` | `AstraFlow.Cli` |
+| `private product-Backend/...` | `samples/...`, `tests/...`, or `sample-consumer/...` |
 
 Cleanup acceptance gates:
 
-- `rg -n -i "nexora" .` returns no operational references outside this cleanup report, policy language, and scan-command examples.
+- `rg -n -i "<PRIVATE_PRODUCT_NAME>" .` returns no matches when the placeholder is replaced locally during release verification.
 - No package metadata, README, docs, samples, tests, scripts, templates, or workflows require knowledge of a private product.
 - Public release validation uses clean sample consumers, package install checks, and public test projects.
 - Migration guidance uses generic local project reference to NuGet `PackageReference` flows.
@@ -68,7 +68,7 @@ Status: `Implemented candidate`.
 
 AstraFlow is not tied to any private product, internal system, monorepo, or host application.
 
-No package may require NEXORA or any application-specific dependency.
+No package may require a private product or application-specific dependency.
 
 No public documentation may say or imply that AstraFlow depends on a private product for validation, testing, migration, or adoption.
 
@@ -84,7 +84,19 @@ Public validation must be demonstrated through:
 
 Project-specific migration notes must not appear in the public roadmap.
 
-Private product references must stay out of public docs, package metadata, samples, release notes, tests, scripts, templates, and CI workflows.
+Private product references must stay out of:
+
+- public docs,
+- package metadata,
+- samples,
+- release notes,
+- tests,
+- scripts,
+- templates,
+- comments,
+- XML docs,
+- CI workflows,
+- cleanup reports.
 
 Any private adoption story must be kept outside the public package repository.
 
@@ -2085,7 +2097,7 @@ Status: `Planned`.
 1. Cleanup first.
    - Run repository scans for private-product references.
    - Rewrite public docs to standalone package language.
-   - Verify `rg -n -i "nexora" .` returns no operational references outside cleanup report, policy language, and scan-command examples.
+   - Verify `rg -n -i "<PRIVATE_PRODUCT_NAME>" .` returns no matches when the placeholder is replaced locally during release verification.
 
 2. Baseline verification first.
    - Restore, build, test, pack, and run package install verification.
@@ -2135,10 +2147,10 @@ Status: `Planned`.
 Run these scans before every public release:
 
 ```powershell
-rg -n "NEXORA|Nexora|nexora|NEXORA-Backend|NEXORA-Frontend|nexora-cli|tools/nexora-cli"
-rg -n -i "nexora" .
+rg -n "<PRIVATE_PRODUCT_NAME>|<PRIVATE_PRODUCT_NAME_LOWER>|<PRIVATE_PRODUCT_NAME_MIXED>|<PRIVATE_PRODUCT_NAME>-Backend|<PRIVATE_PRODUCT_NAME>-Frontend|<PRIVATE_PRODUCT_NAME>-cli|tools/<PRIVATE_PRODUCT_NAME>-cli"
+rg -n -i "<PRIVATE_PRODUCT_NAME>" .
 rg -n "private product|internal application|host system|project-specific" README.md docs src tests samples scripts .github
-rg -n "packages/AstraFlow|E:\\Projects|local project references" README.md docs scripts .github CONTRIBUTING.md
+rg -n "<LEGACY_PACKAGE_PATH>|<PRIVATE_WORKSPACE_PATH>|local project references" README.md docs scripts .github CONTRIBUTING.md
 ```
 
 Inspect:
@@ -2158,7 +2170,7 @@ Inspect:
 
 Acceptance:
 
-- No operational NEXORA references outside cleanup report, policy language, and scan-command examples.
+- No private product references outside policy language and generic cleanup guidance.
 - No private product references.
 - No public docs require a private app.
 - Package metadata says AstraFlow is standalone.
@@ -2173,7 +2185,7 @@ Status: `Planned`.
 - Package builds pass.
 - Tests pass.
 - Clean install verification passes.
-- No operational NEXORA references outside cleanup report, policy language, and scan-command examples.
+- No operational private product references outside cleanup report, policy language, and scan-command examples.
 - No private product references.
 - Docs updated.
 - Package metadata updated.
