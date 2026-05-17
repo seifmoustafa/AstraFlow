@@ -33,8 +33,8 @@
 
 ## Consumer Validation
 
-- NEXORA builds against the package projects.
-- NEXORA focused backend tests pass.
+- Representative consumer applications build against the package projects or packed packages.
+- Representative consumer application tests pass.
 - CLI templates generate AstraFlow namespaces.
 - Docs portal has been synced for all supported languages.
 
@@ -56,7 +56,7 @@
 - Packages are verified on NuGet after publishing.
 - Any exposed key is revoked immediately.
 
-## Post-Publish NEXORA Migration
+## Post-Publish Consumer Verification
 
 - A clean sample project can install `AstraFlow`, `AstraFlow.Mediator`, and `AstraFlow.Mapper`.
 - A clean sample project can install `AstraFlow.Diagnostics`.
@@ -64,9 +64,8 @@
 - A clean sample project can install `AstraFlow.Mapper.EntityFrameworkCore`.
 - A clean sample project can restore each package using the documented package versions.
 - A clean sample project can build after installing the focused package set recommended in `docs/package-selection.md`.
-- NEXORA project references to local AstraFlow source are replaced with NuGet package references.
-- NEXORA restore succeeds from NuGet.
-- NEXORA backend build succeeds.
-- NEXORA backend tests pass.
-- Scans show no active local `packages/AstraFlow` project references.
-- `packages/AstraFlow` is deleted from the NEXORA monorepo only after the migration is verified.
+- A clean sample consumer can migrate from local AstraFlow project references to NuGet package references.
+- Sample consumer restore succeeds from NuGet.
+- Sample consumer build succeeds.
+- Sample consumer tests pass.
+- Scans show no active local AstraFlow project references in sample consumers that should use NuGet packages.

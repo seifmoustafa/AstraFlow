@@ -1,14 +1,41 @@
 namespace AstraFlow.Mediator;
 
 /// <summary>
-/// Represents the next stage in the request pipeline.
+/// Represents the next stage in a void request pipeline.
+/// </summary>
+/// <returns>A task that completes when the next behavior or final handler completes.</returns>
+public delegate Task RequestHandlerDelegate();
+
+/// <summary>
+/// Represents the next stage in a response request pipeline.
 /// </summary>
 /// <typeparam name="TResponse">The response type produced by the pipeline.</typeparam>
 /// <returns>The response from the next behavior or final handler.</returns>
 public delegate Task<TResponse> RequestHandlerDelegate<TResponse>();
 
 /// <summary>
-/// Wraps request handling with cross-cutting behavior such as logging,
+/// Wraps void request handling with cross-cutting behavior such as logging,
+/// validation, feature gating, caching, or webhook dispatch.
+/// </summary>
+/// <typeparam name="TRequest">The request type being handled.</typeparam>
+public interface IRequestPipelineBehavior<in TRequest>
+    where TRequest : IRequest
+{
+    /// <summary>
+    /// Handles a request before and/or after the next pipeline stage.
+    /// A behavior may short-circuit by returning without calling <paramref name="next"/>.
+    /// </summary>
+    /// <param name="request">The request being processed.</param>
+    /// <param name="next">Delegate for the next behavior or final handler.</param>
+    /// <param name="cancellationToken">Cancellation token for the pipeline operation.</param>
+    Task Handle(
+        TRequest request,
+        RequestHandlerDelegate next,
+        CancellationToken cancellationToken);
+}
+
+/// <summary>
+/// Wraps response request handling with cross-cutting behavior such as logging,
 /// validation, feature gating, caching, or webhook dispatch.
 /// </summary>
 /// <typeparam name="TRequest">The request type being handled.</typeparam>

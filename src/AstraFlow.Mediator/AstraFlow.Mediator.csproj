@@ -4,10 +4,11 @@
     <PackageId>AstraFlow.Mediator</PackageId>
     <Title>AstraFlow Mediator</Title>
     <Description>Explicit mediator dispatch for .NET with request handlers, notifications, pipeline behaviors, scanning, and handler coverage validation.</Description>
-    <PackageTags>mediator;cqrs;pipeline;notifications;dotnet</PackageTags>
+    <PackageTags>astraflow;mediator;cqrs;pipeline;notifications;dotnet</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AstraFlow.Contracts\AstraFlow.Contracts.csproj" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.2" />

@@ -4,10 +4,11 @@
     <PackageId>AstraFlow.Diagnostics</PackageId>
     <Title>AstraFlow Diagnostics</Title>
     <Description>Framework-neutral diagnostics reporting for AstraFlow mediator, mapper, pipeline, projection, and mapping registrations.</Description>
-    <PackageTags>diagnostics;mediator;mapper;cqrs;mapping;dotnet</PackageTags>
+    <PackageTags>astraflow;diagnostics;mediator;mapper;cqrs;mapping;dotnet</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AstraFlow.Contracts\AstraFlow.Contracts.csproj" />
     <ProjectReference Include="..\AstraFlow.Mediator\AstraFlow.Mediator.csproj" />
     <ProjectReference Include="..\AstraFlow.Mapper\AstraFlow.Mapper.csproj" />
   </ItemGroup>

@@ -1,12 +1,13 @@
 # API Reference
 
-This reference describes the public AstraFlow v1.3.0 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow v1.4.0 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
 | Package | Namespace | Main Responsibility |
 | --- | --- | --- |
-| `AstraFlow.Mediator` | `AstraFlow.Mediator` | Request dispatch, notifications, pipeline behaviors, handler scanning, and mediator options. |
+| `AstraFlow.Contracts` | `AstraFlow.Mediator` | Shared request, notification, stream, sender, publisher, processor, and exception-flow contracts. |
+| `AstraFlow.Mediator` | `AstraFlow.Mediator` | Request dispatch, void requests, stream requests, notifications, pipeline behaviors, processors, exception flow, handler scanning, and mediator options. |
 | `AstraFlow.Mapper` | `AstraFlow.Mapper` | Explicit object mapping, mapping validation, projection registry, projection validation, and secure ID abstractions. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers. |
 | `AstraFlow.Diagnostics` | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reporting for AstraFlow registrations and validation findings. |
@@ -17,8 +18,9 @@ This reference describes the public AstraFlow v1.3.0 API surface. It is intentio
 
 | API | Signature | What It Registers | Failure Cases |
 | --- | --- | --- | --- |
-| `AddAstraFlowMediator` | `IServiceCollection AddAstraFlowMediator(this IServiceCollection services, params Type[] assemblyMarkerTypes)` | Logging, notification options, scoped `IMediator`, scoped `ISender`, scoped `IPublisher`, closed request handlers, and notification handlers from marker assemblies. | Throws `ArgumentNullException` when `services` is null. Throws for duplicate request handlers discovered during scanning. |
-| `AddAstraFlowMediator` | `IServiceCollection AddAstraFlowMediator(this IServiceCollection services, bool validateRequestCoverage, params Type[] assemblyMarkerTypes)` | Same as above, with optional request coverage validation. | When validation is true, throws if a concrete scanned request has no handler or implements multiple request contracts. |
+| `AddAstraFlowMediator` | `IServiceCollection AddAstraFlowMediator(this IServiceCollection services, params Type[] assemblyMarkerTypes)` | Logging, notification options, scoped `IMediator`, scoped `ISender`, scoped `IStreamSender`, scoped `IPublisher`, closed request handlers, stream request handlers, and notification handlers from marker assemblies. | Throws `ArgumentNullException` when `services` is null. Throws for duplicate request handlers discovered during scanning. |
+| `AddAstraFlowMediator` | `IServiceCollection AddAstraFlowMediator(this IServiceCollection services, bool validateRequestCoverage, params Type[] assemblyMarkerTypes)` | Same as above, with optional request and stream coverage validation. | When validation is true, throws if a concrete scanned request has no handler or implements multiple request contracts. |
+| `AddAstraFlowMediator` | `IServiceCollection AddAstraFlowMediator(this IServiceCollection services, Action<AstraFlowMediatorBuilder> configure, params Type[] assemblyMarkerTypes)` | Same as above, then applies explicit builder registrations for behaviors, stream behaviors, processors, and exception flow. | Throws `ArgumentNullException` when `configure` is null. |
 | `AddAstraFlowMapper` | `IServiceCollection AddAstraFlowMapper(this IServiceCollection services, params Type[] assemblyMarkerTypes)` | Mapper options, scoped `SecureIdMapper`, scoped `IMapper`, scoped `IObjectMappingValidator`, scoped `IProjectionRegistry`, scoped `IProjectionValidator`, startup validator hosted service, mapping rules, and projections from marker assemblies. | Throws `ArgumentNullException` when `services` is null. Startup validation may later throw mapping or strict projection catalog errors. |
 | `AddAstraFlowMapper` | `IServiceCollection AddAstraFlowMapper(this IServiceCollection services, IEnumerable<Type> assemblyMarkerTypes, Action<MappingOptions>? configure = null)` | Same as above, with options configuration. | Throws `ArgumentNullException` when `services` or marker collection is null. |
 | `AddAstraFlowDiagnostics` | `IServiceCollection AddAstraFlowDiagnostics(this IServiceCollection services, Action<AstraFlowDiagnosticsOptions>? configure = null)` | Diagnostics options, a captured service descriptor snapshot, and `IAstraFlowDiagnosticsReporter`. | Throws `ArgumentNullException` when `services` is null. Call after core AstraFlow registration for a complete report. |
@@ -30,27 +32,37 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 
 | Type | Kind | Purpose | Consumer Implements? |
 | --- | --- | --- | --- |
+| `IRequest` | Interface | Marks a command/query/request with no response value. | Yes, usually on records. |
 | `IRequest<TResponse>` | Interface | Marks a command/query/request and declares its response type. | Yes, usually on records. |
+| `IRequestHandler<TRequest>` | Interface | Handles exactly one void request shape. | Yes. |
 | `IRequestHandler<TRequest, TResponse>` | Interface | Handles exactly one request shape and returns the response. | Yes. |
 | `ISender` | Interface | Sends requests only. | No, inject it. |
+| `IStreamSender` | Interface | Sends stream requests only. | No, inject it. |
 | `IPublisher` | Interface | Publishes notifications only. | No, inject it. |
-| `IMediator` | Interface | Combines `ISender` and `IPublisher`. | No, inject it only when both roles are needed. |
+| `IMediator` | Interface | Combines `ISender`, `IStreamSender`, and `IPublisher`. | No, inject it only when multiple roles are needed. |
+| `IStreamRequest<TResponse>` | Interface | Marks a request that returns an async stream. | Yes, usually on records. |
+| `IStreamRequestHandler<TRequest, TResponse>` | Interface | Handles one stream request shape. | Yes. |
 | `INotification` | Interface | Marks an in-process event/notification. | Yes, usually on records. |
 | `INotificationHandler<TNotification>` | Interface | Handles a notification. Multiple handlers are allowed. | Yes. |
 | `IPipelineBehavior<TRequest, TResponse>` | Interface | Wraps request handling with cross-cutting logic. | Yes, when needed. |
+| `IRequestPipelineBehavior<TRequest>` | Interface | Wraps void request handling with cross-cutting logic. | Yes, when needed. |
+| `IStreamPipelineBehavior<TRequest, TResponse>` | Interface | Wraps stream request handling with cross-cutting logic. | Yes, when needed. |
 | `RequestHandlerDelegate<TResponse>` | Delegate | Represents the next request pipeline step. | Used by pipeline behaviors. |
 | `NotificationPublishOptions` | Class | Configures notification failure handling. | Configure through options. |
 | `NotificationFailurePolicy` | Enum | Selects fail-fast, continue, or aggregate failure behavior. | Use in options. |
+| `NotificationPublishStrategy` | Enum | Selects sequential, parallel, or bounded-parallel notification scheduling. | Use in options. |
 | `MediatorOptions` | Class | Application composition helper for mediator coverage preference. | Optional; v1 registration accepts the flag directly. |
 
 ## Mediator Methods
 
 | API | Signature | What Happens | Important Notes |
 | --- | --- | --- | --- |
+| `ISender.Send` | `Task Send(IRequest request, CancellationToken cancellationToken = default)` | Resolves a cached runtime delegate, validates the request contract, resolves exactly one void handler, wraps it with void behaviors, and completes. | Throws for null request, missing handler, duplicate handlers, or ambiguous request contracts. |
 | `ISender.Send<TResponse>` | `Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)` | Resolves a cached runtime delegate, validates the request contract, resolves exactly one handler, wraps it with behaviors, and returns the handler result. | Throws for null request, missing handler, duplicate handlers, or request types with multiple `IRequest<T>` contracts. |
-| `ISender.Send` | `Task<object?> Send(object request, CancellationToken cancellationToken = default)` | Same dispatch path as generic send, but the request type is discovered at runtime. | The object must implement exactly one `IRequest<TResponse>`. |
+| `ISender.Send` | `Task<object?> Send(object request, CancellationToken cancellationToken = default)` | Same dispatch path as typed send, but the request type is discovered at runtime. | The object must implement exactly one void or response request contract. Void requests return `null`. |
 | `IRequestHandler.Handle` | `Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken)` | Runs the application request logic. | The handler is resolved from the active DI scope. |
 | `IPipelineBehavior.Handle` | `Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)` | Runs before and/or after the next behavior or handler. | A behavior can short-circuit by returning without calling `next`. |
+| `IStreamSender.CreateStream` | `IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default)` | Resolves exactly one stream handler, wraps it with stream behaviors, and returns the stream. | Stream requests must be sent through stream APIs, not `Send`. |
 | `IPublisher.Publish<TNotification>` | `Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default) where TNotification : INotification` | Resolves all handlers for the notification type and runs them sequentially. | Zero handlers is valid and completes successfully. |
 | `IPublisher.Publish` | `Task Publish(object notification, CancellationToken cancellationToken = default)` | Validates the object implements `INotification`, then publishes through the typed path. | Throws when the object is not an `INotification`. |
 | `INotificationHandler.Handle` | `Task Handle(TNotification notification, CancellationToken cancellationToken)` | Runs side-effect handling for a notification. | Exceptions are handled according to `NotificationFailurePolicy`. |
@@ -62,6 +74,14 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `FailFast` | `0` | Stops at the first failing handler and rethrows that exception. | The default. Use when later handlers should not run after a failure. |
 | `Continue` | `1` | Logs handler exceptions and continues with remaining handlers. Does not throw after publish completes. | Use when notification handlers are best-effort side effects. |
 | `Aggregate` | `2` | Runs all handlers, logs failures, then throws one `AggregateException` if any failed. | Use when every handler should be attempted but callers must know that failures occurred. |
+
+## Notification Publish Strategies
+
+| Strategy | Value | Behavior | Use When |
+| --- | --- | --- | --- |
+| `Sequential` | `0` | Runs handlers one at a time in DI registration order. | The default and safest strategy. |
+| `Parallel` | `1` | Runs all handlers concurrently. | Use only when handlers do not rely on order or shared mutable scoped state. |
+| `BoundedParallel` | `2` | Runs handlers concurrently behind `MaxDegreeOfParallelism`. | Use for many independent side effects when unbounded fan-out is too aggressive. |
 
 ## Mapper Types
 

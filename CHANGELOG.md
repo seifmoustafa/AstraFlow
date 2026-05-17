@@ -2,6 +2,20 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.4.0
+
+- Added `AstraFlow.Contracts` as a shared contracts package for request, notification, stream, sender, publisher, and mediator abstractions.
+- Moved mediator contracts into `AstraFlow.Contracts` while keeping the `AstraFlow.Mediator` namespace for source compatibility.
+- Added void request support through `IRequest`, `IRequestHandler<TRequest>`, `ISender.Send(IRequest, ...)`, and runtime `Send(object)` returning `null` for void requests.
+- Added stream request support through `IStreamRequest<TResponse>`, `IStreamRequestHandler<TRequest, TResponse>`, `IStreamSender`, and `IMediator.CreateStream(...)`.
+- Added stream pipeline behaviors through `IStreamPipelineBehavior<TRequest, TResponse>`.
+- Added void request pipeline behaviors through `IRequestPipelineBehavior<TRequest>`.
+- Added request pre-processors and post-processors for response and void request flows.
+- Added request exception actions that run side effects and rethrow, plus request exception handlers that must explicitly mark failures as handled.
+- Added opt-in `Parallel` and `BoundedParallel` notification publish strategies while keeping sequential publishing as the default.
+- Added `AstraFlowMediatorBuilder` registration helpers for explicit behavior, processor, stream behavior, and exception-flow registration.
+- Updated pack, publish, CI, and clean-install verification scripts to include `AstraFlow.Contracts`.
+
 ## 1.3.0
 
 - Added `AstraFlow.Testing` as a framework-neutral testing package.

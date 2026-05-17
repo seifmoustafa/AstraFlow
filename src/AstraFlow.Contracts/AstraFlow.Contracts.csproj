@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <PackageId>AstraFlow.Contracts</PackageId>
+    <Title>AstraFlow Contracts</Title>
+    <Description>Framework-neutral AstraFlow mediator contracts for shared request, notification, pipeline, processor, exception, and stream abstractions.</Description>
+    <PackageTags>astraflow;mediator;cqrs;contracts;notifications;dotnet</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

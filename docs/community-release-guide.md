@@ -2,25 +2,27 @@
 
 This guide is for preparing AstraFlow releases for a public repository push and community consumption.
 
-## Current Release: v1.3.0
+## Current Release: v1.4.0
 
-v1.3.0 is the testing-support release. It adds `AstraFlow.Testing` while keeping the v1.2 target framework support and clean package install verification.
+v1.4.0 is the mediator parity and ergonomics release. It adds `AstraFlow.Contracts`, void requests, stream requests, request processors, request exception flow, and opt-in parallel notification publishing while keeping sequential behavior as the default.
 
 Key message:
 
 ```text
-AstraFlow v1.3.0 adds framework-neutral testing helpers for fake mediator flows, handler and pipeline harnesses, mapper/projection/diagnostics assertions, and deterministic secure ID tests.
+AstraFlow v1.4.0 adds a contracts-only package plus richer mediator flows: void commands, async stream requests, pre/post processors, explicit exception actions/handlers, and opt-in parallel notification strategies.
 ```
 
-## What Changed Since v1.2.3
+## What Changed Since v1.3.0
 
 | Area | Change | Why It Matters |
 | --- | --- | --- |
-| New package | Added `AstraFlow.Testing`. | Test projects can use AstraFlow helpers without a mocking framework or full host. |
-| Mediator testing | Added fake sender, fake publisher, fake mediator, and request/notification recording. | Unit tests can assert dispatch behavior directly. |
-| Harnesses | Added handler, notification handler, and pipeline harnesses. | Handler and behavior tests stay small and deterministic. |
-| Assertions | Added mapper, projection, diagnostics, exception, mapping-rule, and secure ID assertions. | Common package scenarios have clear assertion messages. |
-| Release verification | CI, publish, pack, and install verification now include `AstraFlow.Testing`. | The new package is checked across supported targets before publish. |
+| New package | Added `AstraFlow.Contracts`. | Shared contract projects can reference request/notification/stream abstractions without the mediator runtime. |
+| Void requests | Added `IRequest`, `IRequestHandler<TRequest>`, and void send support. | Commands that do not return values no longer need artificial response wrappers. |
+| Stream requests | Added stream request contracts, handlers, sender APIs, and stream behaviors. | Export and read-model flows can stream results without buffering. |
+| Processor flow | Added request pre-processors and post-processors. | Simple before/after cross-cutting work no longer needs full pipeline behavior code. |
+| Exception flow | Added exception actions and handlers with explicit handled state. | Failure policies are inspectable and do not silently swallow exceptions. |
+| Notification publishing | Added `Parallel` and `BoundedParallel` strategies. | Independent notification handlers can opt into concurrency without changing the safe sequential default. |
+| Release verification | CI, publish, pack, and install verification now include `AstraFlow.Contracts`. | The new package is checked across supported targets before publish. |
 
 ## Pre-Push Checklist
 
@@ -50,6 +52,7 @@ Expected result:
 Pack all package projects:
 
 ```powershell
+dotnet pack src\AstraFlow.Contracts\AstraFlow.Contracts.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet pack src\AstraFlow.Mediator\AstraFlow.Mediator.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet pack src\AstraFlow.Mapper\AstraFlow.Mapper.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet pack src\AstraFlow.Mapper.EntityFrameworkCore\AstraFlow.Mapper.EntityFrameworkCore.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
@@ -60,28 +63,31 @@ dotnet pack src\AstraFlow\AstraFlow.csproj -c Release --no-build --no-restore -v
 
 Expected artifacts:
 
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.3.0.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.3.0.snupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.3.0.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.3.0.snupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.3.0.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.3.0.snupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.3.0.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.3.0.snupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.3.0.nupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.3.0.snupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.3.0.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.3.0.snupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.4.0.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.4.0.snupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.4.0.nupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.4.0.snupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.4.0.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.4.0.snupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.4.0.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.4.0.snupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.4.0.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.4.0.snupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.4.0.nupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.4.0.snupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.4.0.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.4.0.snupkg`
 
 Inspect package contents:
 
 ```powershell
-tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.3.0.nupkg
-tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.3.0.nupkg
-tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.3.0.nupkg
-tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.3.0.nupkg
-tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.3.0.nupkg
-tar -tf src\AstraFlow\bin\Release\AstraFlow.1.3.0.nupkg
+tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.4.0.nupkg
+tar -tf src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.4.0.nupkg
+tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.4.0.nupkg
+tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.4.0.nupkg
+tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.4.0.nupkg
+tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.4.0.nupkg
+tar -tf src\AstraFlow\bin\Release\AstraFlow.1.4.0.nupkg
 ```
 
 Each `.nupkg` should include:
@@ -120,12 +126,13 @@ $root = Resolve-Path '.'
 $localSource = Join-Path $root '.dotnet-cli-home\local-packages'
 New-Item -ItemType Directory -Force -Path $localSource | Out-Null
 
-Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.3.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.3.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.3.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.3.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.3.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.3.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.4.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.4.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.4.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.4.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.4.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.4.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.4.0.nupkg' -Destination $localSource -Force
 
 $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 @"
@@ -139,24 +146,25 @@ $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 </configuration>
 "@ | Set-Content -LiteralPath $config -Encoding UTF8
 
-$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.3.0'
+$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.4.0'
 New-Item -ItemType Directory -Force -Path $sampleRoot | Out-Null
 $sample = Join-Path $sampleRoot ('AstraFlowInstallCheck-' + [guid]::NewGuid().ToString('N'))
 dotnet new console --framework net10.0 --output $sample --no-restore
 $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-dotnet add $project.FullName package AstraFlow.Mediator --version 1.3.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper --version 1.3.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.3.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.3.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Testing --version 1.3.0 --no-restore
-dotnet add $project.FullName package AstraFlow --version 1.3.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Contracts --version 1.4.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Mediator --version 1.4.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper --version 1.4.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.4.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Testing --version 1.4.0 --no-restore
+dotnet add $project.FullName package AstraFlow --version 1.4.0 --no-restore
 dotnet restore $project.FullName --configfile $config
 dotnet build $project.FullName --no-restore
 ```
 
 Expected result:
 
-- all six packages install,
+- All seven packages install,
 - the project restores,
 - the project builds.
 
@@ -168,11 +176,12 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
     $template = if ($framework -eq 'netstandard2.0') { 'classlib' } else { 'console' }
     dotnet new $template --framework $framework --output $sample --no-restore
     $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-    dotnet add $project.FullName package AstraFlow.Mediator --version 1.3.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper --version 1.3.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.3.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Testing --version 1.3.0 --no-restore
-    dotnet add $project.FullName package AstraFlow --version 1.3.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Contracts --version 1.4.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mediator --version 1.4.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper --version 1.4.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.4.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Testing --version 1.4.0 --no-restore
+    dotnet add $project.FullName package AstraFlow --version 1.4.0 --no-restore
     dotnet restore $project.FullName --configfile $config
     dotnet build $project.FullName --no-restore
 }
@@ -182,7 +191,7 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
 
 ```powershell
 git add .
-git commit -m "Release AstraFlow v1.3.0 testing support"
+git commit -m "Release AstraFlow v1.4.0 mediator parity"
 ```
 
 Before committing, confirm no package artifacts are staged:
@@ -203,9 +212,9 @@ Do not commit:
 ## Suggested Tag
 
 ```powershell
-git tag v1.3.0
+git tag v1.4.0
 git push origin main
-git push origin v1.3.0
+git push origin v1.4.0
 ```
 
 Only tag after local verification passes.
@@ -213,24 +222,25 @@ Only tag after local verification passes.
 ## Suggested GitHub Release Notes
 
 ```markdown
-## AstraFlow v1.3.0
+## AstraFlow v1.4.0
 
-This release adds `AstraFlow.Testing`, a framework-neutral test-helper package for mediator, mapper, projection, diagnostics, and secure ID flows.
+This release adds `AstraFlow.Contracts` and expands mediator ergonomics with void requests, stream requests, processors, exception flow, and opt-in parallel notification publishing.
 
 ### Changed
 
-- Add fake sender, fake publisher, and fake mediator helpers.
-- Add request and notification recording assertions.
-- Add handler, notification handler, and pipeline harnesses.
-- Add mapper, projection, diagnostics, exception, mapping-rule, and secure ID assertions.
-- Add deterministic `TestSecureIdCodec`.
-- Keep the testing package independent of test frameworks and mocking frameworks.
+- Add `AstraFlow.Contracts` for shared contracts without the mediator runtime.
+- Add void request dispatch through `IRequest` and `IRequestHandler<TRequest>`.
+- Add stream requests through `IStreamRequest<TResponse>`, `IStreamRequestHandler<TRequest, TResponse>`, and `IStreamSender`.
+- Add request pre/post processors.
+- Add exception actions and handlers with explicit handled state.
+- Add `Parallel` and `BoundedParallel` notification publish strategies while keeping sequential publishing as the default.
+- Update diagnostics, testing helpers, scripts, CI, publish workflow, and clean-install verification for the new contracts package.
 
 ### Verification
 
 - Release build passed.
 - Full test suite passed.
-- All six packages packed as `1.3.0`.
+- All seven packages packed as `1.4.0`.
 - Package contents include README, CHANGELOG, LICENSE, icon, XML docs, DLLs for expected target frameworks, nuspec files, and symbol packages.
 ```
 
@@ -243,3 +253,4 @@ Use this positioning consistently:
 - It is not tied to a web framework, validation framework, ORM, result type, or application-specific encryption.
 - It prioritizes clear startup/runtime failures over hidden behavior.
 - Future packages may add target-framework compatibility work, testing support, mediator parity features, optional convention mapping, advanced mapping parity, analyzers, CLI/templates, broader provider checks, integrations, and observability, but the explicit core remains first-class.
+

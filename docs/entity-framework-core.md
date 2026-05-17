@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.3.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.0
 ```
 
 ## Validate One Projection
@@ -33,7 +33,7 @@ if (report.HasFindings)
 }
 ```
 
-Findings use `AFPEF...` codes. In v1.3.0:
+Findings use `AFPEF...` codes. In v1.4.0:
 
 | Code | Meaning |
 | --- | --- |
@@ -79,4 +79,4 @@ var report = db.ValidateProjectionTranslations(registry);
 report.Findings.Should().BeEmpty();
 ```
 
-SQLite is the recommended v1.3.0 baseline because it exercises a real relational provider without Docker or external database services.
+SQLite is the recommended v1.4.0 baseline because it exercises a real relational provider without Docker or external database services.

@@ -66,6 +66,7 @@ function Initialize-LocalSource {
     New-Item -ItemType Directory -Force -Path $checkRoot | Out-Null
     New-Item -ItemType Directory -Force -Path $restorePackages | Out-Null
 
+    Copy-Package "AstraFlow.Contracts"
     Copy-Package "AstraFlow.Mediator"
     Copy-Package "AstraFlow.Mapper"
     Copy-Package "AstraFlow.Mapper.EntityFrameworkCore"
@@ -130,6 +131,7 @@ function Test-CoreConsumer {
 
     $project = New-ConsumerProject -Framework $Framework -Template $Template
 
+    Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Contracts"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mediator"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mapper"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Diagnostics"
@@ -143,6 +145,7 @@ function Test-CoreConsumer {
 function Test-AllConsumer {
     $project = New-ConsumerProject -Framework "net10.0" -Template "console"
 
+    Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Contracts"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mediator"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mapper"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Diagnostics"

@@ -4,7 +4,7 @@
     <PackageId>AstraFlow.Mapper.EntityFrameworkCore</PackageId>
     <Title>AstraFlow Mapper Entity Framework Core</Title>
     <Description>Optional EF Core projection validation helpers for AstraFlow.Mapper projection registries.</Description>
-    <PackageTags>mapper;mapping;projection;entity-framework-core;efcore;dotnet</PackageTags>
+    <PackageTags>astraflow;mapper;mapping;projection;entity-framework-core;efcore;dotnet</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

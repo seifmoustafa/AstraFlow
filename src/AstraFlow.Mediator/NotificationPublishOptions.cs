@@ -17,6 +17,20 @@ public sealed class NotificationPublishOptions
     /// </summary>
     public NotificationFailurePolicy FailurePolicy { get; set; } =
         NotificationFailurePolicy.FailFast;
+
+    /// <summary>
+    /// Controls how notification handlers are scheduled.
+    /// Sequential publishing remains the default because handler ordering and scoped state are often meaningful.
+    /// Override with <c>Mediator__Notifications__PublishStrategy</c>.
+    /// </summary>
+    public NotificationPublishStrategy PublishStrategy { get; set; } =
+        NotificationPublishStrategy.Sequential;
+
+    /// <summary>
+    /// Maximum number of handlers that may run concurrently when <see cref="PublishStrategy"/>
+    /// is <see cref="NotificationPublishStrategy.BoundedParallel"/>.
+    /// </summary>
+    public int MaxDegreeOfParallelism { get; set; } = Environment.ProcessorCount;
 }
 
 /// <summary>
@@ -38,4 +52,25 @@ public enum NotificationFailurePolicy
     /// Run all handlers, then throw an <see cref="AggregateException"/> when any handler failed.
     /// </summary>
     Aggregate = 2
+}
+
+/// <summary>
+/// Defines scheduling strategies for notification publishing.
+/// </summary>
+public enum NotificationPublishStrategy
+{
+    /// <summary>
+    /// Run handlers one after another in dependency-injection registration order.
+    /// </summary>
+    Sequential = 0,
+
+    /// <summary>
+    /// Run all handlers concurrently. Use only when handlers do not depend on ordering or shared mutable scoped state.
+    /// </summary>
+    Parallel = 1,
+
+    /// <summary>
+    /// Run handlers concurrently while limiting the maximum number of active handler operations.
+    /// </summary>
+    BoundedParallel = 2
 }

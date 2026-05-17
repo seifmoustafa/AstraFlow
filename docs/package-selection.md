@@ -6,7 +6,8 @@ This guide explains which AstraFlow package to install.
 
 | Need | Install |
 | --- | --- |
-| Request/response dispatch, notifications, pipeline behaviors | `AstraFlow.Mediator` |
+| Shared mediator contracts in a contracts-only project | `AstraFlow.Contracts` |
+| Request/response dispatch, void commands, stream requests, notifications, pipeline behaviors, processors, and exception flow | `AstraFlow.Mediator` |
 | Explicit object mapping, collection mapping, projections, secure ID abstraction | `AstraFlow.Mapper` |
 | EF Core projection translation checks | `AstraFlow.Mapper.EntityFrameworkCore` plus `AstraFlow.Mapper` |
 | JSON/Markdown registration and validation reports | `AstraFlow.Diagnostics` plus the packages you want to inspect |
@@ -15,16 +16,38 @@ This guide explains which AstraFlow package to install.
 
 Prefer focused packages when a project needs only one concern. Use the meta package when a project intentionally uses both mediator and mapper.
 
-Target support in `1.3.0`: the core packages and `AstraFlow.Testing` support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows EF Core 10.
+Target support in `1.4.0`: `AstraFlow.Contracts`, the core packages, and `AstraFlow.Testing` support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows EF Core 10.
+
+## `AstraFlow.Contracts`
+
+Install this package in projects that only need shared mediator contract types:
+
+- request contracts,
+- notification contracts,
+- stream request contracts,
+- sender/publisher/mediator abstractions,
+- pipeline, processor, and exception-flow contracts.
+
+Example:
+
+```powershell
+dotnet add package AstraFlow.Contracts --version 1.4.0
+```
+
+Use this in shared contracts, client contract assemblies, Blazor/shared projects, and modular boundaries that should not reference the mediator runtime.
 
 ## `AstraFlow.Mediator`
 
 Install this package when you need:
 
 - request/response dispatch,
+- void command handling,
+- stream request handling,
 - command/query handling,
 - notification publishing,
 - pipeline behaviors,
+- request pre/post processors,
+- request exception actions and handlers,
 - duplicate handler detection,
 - missing handler diagnostics,
 - optional handler coverage validation.
@@ -32,7 +55,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mediator --version 1.3.0
+dotnet add package AstraFlow.Mediator --version 1.4.0
 ```
 
 Use this in application layers, worker services, APIs, and modular monolith modules that own request handling.
@@ -52,7 +75,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.3.0
+dotnet add package AstraFlow.Mapper --version 1.4.0
 ```
 
 Use this in application or contract-mapping layers that need auditable DTO conversion.
@@ -64,7 +87,7 @@ Install this package only when you need EF Core relational projection validation
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.3.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.0
 ```
 
 This package references EF Core. Keep it out of projects that do not use EF Core.
@@ -76,7 +99,7 @@ Install this package when you want registration and validation reports.
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.3.0
+dotnet add package AstraFlow.Diagnostics --version 1.4.0
 ```
 
 Register diagnostics after mediator and mapper registrations so the reporter can inspect those service descriptors.
@@ -97,7 +120,7 @@ Install this package in test projects when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.3.0
+dotnet add package AstraFlow.Testing --version 1.4.0
 ```
 
 The package is test-framework-neutral. It does not depend on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework.
@@ -111,7 +134,7 @@ Install the meta package when a project intentionally uses mediator and mapper t
 Example:
 
 ```powershell
-dotnet add package AstraFlow --version 1.3.0
+dotnet add package AstraFlow --version 1.4.0
 ```
 
 The meta package is convenient, but focused packages keep dependency intent clearer in shared libraries and smaller projects.
@@ -123,7 +146,7 @@ The meta package is convenient, but focused packages keep dependency intent clea
 | API with CQRS handlers only | `AstraFlow.Mediator` |
 | API with handlers and DTO mapping | `AstraFlow` or `AstraFlow.Mediator` plus `AstraFlow.Mapper` |
 | Read-model project with EF Core projections | `AstraFlow.Mapper` plus `AstraFlow.Mapper.EntityFrameworkCore` |
-| Shared contracts project | Today: focused package only if needed. Future: `AstraFlow.Contracts` is planned. |
+| Shared contracts project | `AstraFlow.Contracts` |
 | Test project | `AstraFlow.Testing` plus the package under test. |
 | Diagnostics/reporting tool | `AstraFlow.Diagnostics` plus the packages being inspected. |
 

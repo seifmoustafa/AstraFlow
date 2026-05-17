@@ -4,7 +4,7 @@ AstraFlow is a small explicit application-flow package family. The core idea is 
 
 ## Design Goals
 
-| Goal | What It Means In v1.3.0 |
+| Goal | What It Means In v1.4.0 |
 | --- | --- |
 | Explicit flow | Requests declare response types. Handlers are concrete classes. Mapping rules are code, not naming magic. |
 | Clear failure modes | Missing handlers, duplicate handlers, ambiguous request contracts, missing mappings, duplicate mappings, and invalid mapping catalogs throw actionable exceptions. |
@@ -101,7 +101,7 @@ The package also avoids request payload logging. Future diagnostics and observab
 
 Diagnostics reports include type names, service categories, lifetimes, counts, and exception messages from validation. They do not inspect request payloads, DTO payloads, encrypted ID values, connection strings, tokens, or secret configuration values.
 
-## Non-Goals In v1.3.0
+## Non-Goals In v1.4.0
 
 - No automatic convention mapping.
 - No automatic flattening.

@@ -28,9 +28,17 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
     public AstraFlowDiagnosticReport CreateReport()
     {
         var descriptors = _snapshot.Descriptors;
-        var requestHandlers = GetRegistrations(descriptors, "Request handler", typeof(IRequestHandler<,>));
+        var requestHandlers = GetRegistrations(
+            descriptors,
+            ("Request handler", typeof(IRequestHandler<,>)),
+            ("Void request handler", typeof(IRequestHandler<>)),
+            ("Stream request handler", typeof(IStreamRequestHandler<,>)));
         var notificationHandlers = GetRegistrations(descriptors, "Notification handler", typeof(INotificationHandler<>));
-        var pipelineBehaviors = GetRegistrations(descriptors, "Pipeline behavior", typeof(IPipelineBehavior<,>));
+        var pipelineBehaviors = GetRegistrations(
+            descriptors,
+            ("Pipeline behavior", typeof(IPipelineBehavior<,>)),
+            ("Void pipeline behavior", typeof(IRequestPipelineBehavior<>)),
+            ("Stream pipeline behavior", typeof(IStreamPipelineBehavior<,>)));
         var mappingRules = GetRegistrations(descriptors, "Mapping rule", typeof(IObjectMappingRule));
         var projections = GetProjectionRegistrations(descriptors);
 
@@ -125,13 +133,21 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         string category,
         Type openServiceType)
     {
+        return GetRegistrations(descriptors, (category, openServiceType));
+    }
+
+    private static IReadOnlyList<AstraFlowDiagnosticRegistration> GetRegistrations(
+        IEnumerable<ServiceDescriptor> descriptors,
+        params (string Category, Type OpenServiceType)[] serviceTypes)
+    {
         return descriptors
-            .Where(d => IsServiceMatch(d.ServiceType, openServiceType))
-            .Select(d => new AstraFlowDiagnosticRegistration(
-                category,
-                GetDisplayName(d.ServiceType),
-                GetImplementationType(d) is { } implementationType ? GetDisplayName(implementationType) : null,
-                d.Lifetime))
+            .SelectMany(d => serviceTypes
+                .Where(serviceType => IsServiceMatch(d.ServiceType, serviceType.OpenServiceType))
+                .Select(serviceType => new AstraFlowDiagnosticRegistration(
+                    serviceType.Category,
+                    GetDisplayName(d.ServiceType),
+                    GetImplementationType(d) is { } implementationType ? GetDisplayName(implementationType) : null,
+                    d.Lifetime)))
             .OrderBy(r => r.ServiceType, StringComparer.Ordinal)
             .ThenBy(r => r.ImplementationType, StringComparer.Ordinal)
             .ThenBy(r => r.Lifetime)
@@ -191,7 +207,10 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         IEnumerable<ServiceDescriptor> descriptors)
     {
         var duplicates = descriptors
-            .Where(d => IsServiceMatch(d.ServiceType, typeof(IRequestHandler<,>)))
+            .Where(d =>
+                IsServiceMatch(d.ServiceType, typeof(IRequestHandler<,>)) ||
+                IsServiceMatch(d.ServiceType, typeof(IRequestHandler<>)) ||
+                IsServiceMatch(d.ServiceType, typeof(IStreamRequestHandler<,>)))
             .GroupBy(d => d.ServiceType)
             .Where(g => g.Select(GetImplementationType).Where(t => t is not null).Distinct().Skip(1).Any())
             .ToArray();
@@ -237,7 +256,10 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         IReadOnlyCollection<ServiceDescriptor> descriptors)
     {
         var handlerServiceTypes = new HashSet<Type>(descriptors
-            .Where(d => IsServiceMatch(d.ServiceType, typeof(IRequestHandler<,>)))
+            .Where(d =>
+                IsServiceMatch(d.ServiceType, typeof(IRequestHandler<,>)) ||
+                IsServiceMatch(d.ServiceType, typeof(IRequestHandler<>)) ||
+                IsServiceMatch(d.ServiceType, typeof(IStreamRequestHandler<,>)))
             .Select(d => d.ServiceType));
 
         var assemblies = GetDiagnosticAssemblies(descriptors);
@@ -250,15 +272,27 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
                 RequestInterfaces = t.GetInterfaces()
                     .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IRequest<>))
                     .Distinct()
-                    .ToArray()
+                    .ToArray(),
+                StreamInterfaces = t.GetInterfaces()
+                    .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IStreamRequest<>))
+                    .Distinct()
+                    .ToArray(),
+                HasVoidRequest = typeof(IRequest).IsAssignableFrom(t)
             })
-            .Where(r => r.RequestInterfaces.Length != 0)
+            .Where(r => r.RequestInterfaces.Length != 0 || r.StreamInterfaces.Length != 0 || r.HasVoidRequest)
             .OrderBy(r => r.RequestType.FullName, StringComparer.Ordinal)
             .ToArray();
 
-        foreach (var request in requestTypes.Where(r => r.RequestInterfaces.Length > 1))
+        foreach (var request in requestTypes.Where(r =>
+            r.RequestInterfaces.Length + r.StreamInterfaces.Length + (r.HasVoidRequest ? 1 : 0) > 1))
         {
-            var contracts = string.Join(", ", request.RequestInterfaces.Select(GetDisplayName).OrderBy(value => value, StringComparer.Ordinal));
+            var contracts = string.Join(
+                ", ",
+                request.RequestInterfaces
+                    .Concat(request.StreamInterfaces)
+                    .Select(GetDisplayName)
+                    .Concat(request.HasVoidRequest ? new[] { GetDisplayName(typeof(IRequest)) } : Array.Empty<string>())
+                    .OrderBy(value => value, StringComparer.Ordinal));
             findings.Add(new AstraFlowDiagnosticFinding(
                 DiagnosticSeverity.Error,
                 "AFD102",
@@ -266,18 +300,35 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
                 GetDisplayName(request.RequestType)));
         }
 
-        foreach (var request in requestTypes.Where(r => r.RequestInterfaces.Length == 1))
+        foreach (var request in requestTypes.Where(r =>
+            r.RequestInterfaces.Length + r.StreamInterfaces.Length + (r.HasVoidRequest ? 1 : 0) == 1))
         {
-            var responseType = request.RequestInterfaces[0].GetGenericArguments()[0];
-            var handlerType = typeof(IRequestHandler<,>).MakeGenericType(request.RequestType, responseType);
+            Type handlerType;
+            Type? responseType = null;
+
+            if (request.HasVoidRequest)
+            {
+                handlerType = typeof(IRequestHandler<>).MakeGenericType(request.RequestType);
+            }
+            else if (request.RequestInterfaces.Length == 1)
+            {
+                responseType = request.RequestInterfaces[0].GetGenericArguments()[0];
+                handlerType = typeof(IRequestHandler<,>).MakeGenericType(request.RequestType, responseType);
+            }
+            else
+            {
+                responseType = request.StreamInterfaces[0].GetGenericArguments()[0];
+                handlerType = typeof(IStreamRequestHandler<,>).MakeGenericType(request.RequestType, responseType);
+            }
 
             if (handlerServiceTypes.Contains(handlerType))
                 continue;
 
+            var responseMessage = responseType is null ? "" : $" returning {GetDisplayName(responseType)}";
             findings.Add(new AstraFlowDiagnosticFinding(
                 DiagnosticSeverity.Error,
                 "AFD103",
-                $"No request handler is registered for {GetDisplayName(request.RequestType)} returning {GetDisplayName(responseType)}.",
+                $"No request handler is registered for {GetDisplayName(request.RequestType)}{responseMessage}.",
                 GetDisplayName(request.RequestType)));
         }
     }

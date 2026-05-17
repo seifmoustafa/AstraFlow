@@ -32,6 +32,37 @@ public sealed class FakeMediatorTests
     }
 
     [Fact]
+    public async Task Fake_mediator_records_void_requests()
+    {
+        var completed = false;
+        var mediator = new FakeMediator()
+            .CompleteWith<RebuildIndex>((_, _) =>
+            {
+                completed = true;
+                return Task.CompletedTask;
+            });
+
+        await mediator.Send(new RebuildIndex());
+
+        completed.Should().BeTrue();
+        mediator.Requests.SingleSent<RebuildIndex>().ResponseType.Should().Be(typeof(void));
+    }
+
+    [Fact]
+    public async Task Fake_mediator_returns_configured_stream()
+    {
+        var mediator = new FakeMediator()
+            .StreamWith<ExportUsers, string>((_, _) => Stream("admin", "operator"));
+
+        var values = new List<string>();
+        await foreach (var value in mediator.CreateStream(new ExportUsers()))
+            values.Add(value);
+
+        values.Should().Equal("admin", "operator");
+        mediator.Requests.SingleSent<ExportUsers>().ResponseType.Should().Be(typeof(string));
+    }
+
+    [Fact]
     public async Task Fake_mediator_records_notifications_and_runs_configured_handlers()
     {
         var handled = false;
@@ -60,5 +91,18 @@ public sealed class FakeMediatorTests
 
     private sealed record CreateUser(string UserName) : IRequest<Guid>;
 
+    private sealed record RebuildIndex : IRequest;
+
+    private sealed record ExportUsers : IStreamRequest<string>;
+
     private sealed record UserCreated(string UserName) : INotification;
+
+    private static async IAsyncEnumerable<string> Stream(params string[] values)
+    {
+        foreach (var value in values)
+        {
+            await Task.Yield();
+            yield return value;
+        }
+    }
 }

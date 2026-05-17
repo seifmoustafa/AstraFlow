@@ -6,11 +6,29 @@ AstraFlow is a MIT-licensed .NET package family for explicit CQRS dispatch and s
 
 It was built to keep production applications free from runtime license checks, hidden mapping behavior, and framework lock-in. The v1 design is deliberately small: secure defaults, clear errors, explicit extension points, and package-quality diagnostics before optional convention layers are added.
 
+## Release And Repository Links
+
+NuGet shows package history under the **Release Notes** tab. GitHub shows only selected community files as repository tabs, so the README is the main public hub for everything else.
+
+| Link | What It Shows |
+| --- | --- |
+| [Release Notes / Changelog](https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md) | Full release-by-release package history. |
+| [GitHub Releases](https://github.com/seifmoustafa/AstraFlow/releases) | Tagged releases and downloadable source archives. |
+| [Security Policy](https://github.com/seifmoustafa/AstraFlow/blob/main/SECURITY.md) | Supported versions and vulnerability reporting. |
+| [Contributing](https://github.com/seifmoustafa/AstraFlow/blob/main/CONTRIBUTING.md) | Local development, tests, and contribution rules. |
+| [Code of Conduct](https://github.com/seifmoustafa/AstraFlow/blob/main/CODE_OF_CONDUCT.md) | Expected community behavior. |
+| [Support](https://github.com/seifmoustafa/AstraFlow/blob/main/SUPPORT.md) | Where to ask usage questions or report package issues. |
+| [Buy Me a Coffee](https://buymeacoffee.com/seifmoustafa) | Optional support for ongoing maintenance. |
+| [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | Planned mediator, mapper, testing, analyzer, generator, and ecosystem work. |
+| [Publishing Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/publishing.md) | Release and NuGet publishing process. |
+| [MIT License](https://github.com/seifmoustafa/AstraFlow/blob/main/LICENSE) | Package license. |
+
 ## Packages
 
 | Package | Purpose |
 | --- | --- |
-| `AstraFlow.Mediator` | Request/response dispatch, notification publishing, pipeline behaviors, handler scanning, duplicate handler detection, and optional handler coverage validation. |
+| `AstraFlow.Contracts` | Shared mediator contracts for requests, notifications, streams, senders, publishers, processors, and exception flow. |
+| `AstraFlow.Mediator` | Request/response dispatch, void commands, stream requests, notification publishing, pipeline behaviors, processors, exception flow, handler scanning, duplicate handler detection, and optional handler coverage validation. |
 | `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named projection registry, projection validation, and secure ID mapping abstractions. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
 | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
@@ -44,7 +62,7 @@ It was built to keep production applications free from runtime license checks, h
 
 ## Target Framework
 
-Since `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, and `AstraFlow.Diagnostics` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. `AstraFlow.Testing` ships the same target framework set starting in `1.3.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line.
+Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line.
 
 ## Public API At A Glance
 
@@ -54,6 +72,7 @@ Since `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.M
 | --- | --- | --- | --- |
 | `services.AddAstraFlowMediator(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and scan marker assemblies without request coverage validation. | `IMediator`, `ISender`, `IPublisher`, request handlers, and notification handlers are available from DI. |
 | `services.AddAstraFlowMediator(bool validateRequestCoverage, params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and optionally fail startup when scanned requests have no handler or ambiguous contracts. | Same registration as above, with extra validation when enabled. |
+| `services.AddAstraFlowMediator(builder => ..., params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and add explicit behaviors, processors, stream behaviors, and exception-flow components. | Core handlers are scanned and cross-cutting components are registered in a readable place. |
 | `services.AddAstraFlowMapper(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mapper` | Register mapper services and scan marker assemblies for mapping rules and projections. | `IMapper`, `IObjectMappingValidator`, `IProjectionRegistry`, `IProjectionValidator`, `SecureIdMapper`, and startup validation are registered. |
 | `services.AddAstraFlowMapper(IEnumerable<Type>, Action<MappingOptions>?)` | `AstraFlow.Mapper` | Register mapper services with explicit mapper/projection validation options. | Mapping and projection validation behavior is configured without adding new overloads for every option. |
 | `services.AddAstraFlowDiagnostics(Action<AstraFlowDiagnosticsOptions>?)` | `AstraFlow.Diagnostics` | Register diagnostics after mediator/mapper services so it can snapshot registrations. | `IAstraFlowDiagnosticsReporter` can create in-memory, JSON, and Markdown reports. |
@@ -63,11 +82,23 @@ Since `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.M
 
 | API | Use It For | Expected Result |
 | --- | --- | --- |
+| `IRequest` | Mark a command/request that completes without a response value. | The request can be sent through `ISender.Send(IRequest)` or runtime `Send(object)` if exactly one void handler exists. |
 | `IRequest<TResponse>` | Mark a request/command/query and declare its response type. | The request can be sent through `ISender` if exactly one matching handler exists. |
+| `IRequestHandler<TRequest>.Handle(...)` | Implement void request handling. | The handler completes without returning an application value. |
 | `IRequestHandler<TRequest, TResponse>.Handle(...)` | Implement request handling. | The handler produces the response for one request type. |
+| `ISender.Send(IRequest, CancellationToken)` | Send a strongly typed void request. | Void pipeline behaviors run, then the single void handler runs. |
 | `ISender.Send<TResponse>(IRequest<TResponse>, CancellationToken)` | Send a strongly typed request. | Pipeline behaviors run, then the single handler runs, then the response is returned. |
-| `ISender.Send(object, CancellationToken)` | Send when the request type is known only at runtime. | Same behavior as typed send after AstraFlow verifies the object implements exactly one `IRequest<TResponse>`. |
+| `ISender.Send(object, CancellationToken)` | Send when the request type is known only at runtime. | Same behavior as typed send after AstraFlow verifies the object implements exactly one void or response request contract. |
 | `IPipelineBehavior<TRequest, TResponse>.Handle(...)` | Wrap request handling with validation, logging, authorization, caching, or feature gates. | Behaviors run in DI registration order and may short-circuit. |
+| `IRequestPipelineBehavior<TRequest>.Handle(...)` | Wrap void request handling. | Behaviors run in DI registration order and may short-circuit completion. |
+| `IRequestPreProcessor<TRequest>.Process(...)` | Run logic before a request pipeline. | Pre-processors run before the handler pipeline. |
+| `IRequestPostProcessor<TRequest, TResponse>.Process(...)` | Run logic after a response request succeeds. | Post-processors see the request and response after successful handling. |
+| `IRequestExceptionAction<...>.Execute(...)` | Observe request exceptions for logging/metrics. | Actions run side effects and the original exception is rethrown. |
+| `IRequestExceptionHandler<...>.Handle(...)` | Convert selected request exceptions into handled results. | Handlers must explicitly call `SetHandled(...)` to suppress the exception. |
+| `IStreamRequest<TResponse>` | Mark a request that returns `IAsyncEnumerable<TResponse>`. | The request can be dispatched through `IStreamSender`. |
+| `IStreamRequestHandler<TRequest, TResponse>.Handle(...)` | Implement stream handling. | The handler returns an async stream without buffering the whole result. |
+| `IStreamSender.CreateStream(...)` | Dispatch a stream request. | Stream behaviors run, then the single stream handler returns the stream. |
+| `IStreamPipelineBehavior<TRequest, TResponse>.Handle(...)` | Wrap stream request handling. | Behaviors can shape or observe the async stream. |
 | `INotification` | Mark an in-process event. | The notification can be published to zero or more handlers. |
 | `INotificationHandler<TNotification>.Handle(...)` | React to a notification. | All handlers for the notification type are invoked sequentially. |
 | `IPublisher.Publish<TNotification>(...)` | Publish a strongly typed notification. | Handlers run according to `NotificationFailurePolicy`. |
@@ -127,7 +158,7 @@ Since `1.2.2`, the core packages `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.M
 - Explicit by default: mapping rules must be code you can review.
 - Security first: sensitive fields are not mapped by naming convention unless a future optional package is explicitly enabled.
 - Clear failure modes: missing handlers, duplicate handlers, missing mappings, duplicate mappings, and undeclared mappings fail with actionable messages.
-- No application lock-in: AstraFlow does not depend on NEXORA, `Result`, ASP.NET Core MVC, FluentValidation, tenants, permissions, or a specific ID encryption implementation.
+- No application lock-in: AstraFlow does not depend on any private product, `Result`, ASP.NET Core MVC, FluentValidation, tenants, permissions, or a specific ID encryption implementation.
 - Extension-ready: pipelines, notification failure policies, projections, and secure ID codecs are designed as narrow public contracts.
 
 ## Quick Start: Mediator
@@ -235,7 +266,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.3.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.0
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -267,6 +298,8 @@ Notifications are sequential by default. Configure how failures are handled:
 services.Configure<NotificationPublishOptions>(options =>
 {
     options.FailurePolicy = NotificationFailurePolicy.Aggregate;
+    options.PublishStrategy = NotificationPublishStrategy.BoundedParallel;
+    options.MaxDegreeOfParallelism = 4;
 });
 ```
 
@@ -275,6 +308,12 @@ Policies:
 - `FailFast`: stop at the first failing handler.
 - `Continue`: log failures and run remaining handlers.
 - `Aggregate`: run all handlers, then throw one `AggregateException`.
+
+Publish strategies:
+
+- `Sequential`: default and safest for ordered handlers or shared scoped state.
+- `Parallel`: run all handlers concurrently.
+- `BoundedParallel`: run handlers concurrently with a maximum degree of parallelism.
 
 ## Quick Start: Diagnostics
 
@@ -309,7 +348,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.3.0
+dotnet add package AstraFlow.Testing --version 1.4.0
 ```
 
 Use the fake mediator to record requests and notifications:
@@ -331,7 +370,7 @@ AstraFlow v1 intentionally does not include convention mapping, flattening, reve
 
 ## Roadmap
 
-The long-term plan is to continue improving projection safety and testing support, then add mediator parity features, optional convention mapping, advanced mapping parity, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, validation integration, CLI/templates, broader EF Core provider checks, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
+The long-term plan is to continue improving mediator ergonomics, optional convention mapping, advanced mapping parity, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, validation integration, CLI/templates, broader EF Core provider checks, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
 
 ## Branding
 
@@ -348,7 +387,7 @@ Create a square app/package icon for a .NET library named AstraFlow. Use an abst
 The package folder includes CI, a gated publish workflow, security policy, contributing guide, changelog, samples, and release checklist. Publishing should happen only after:
 
 - package tests pass,
-- NEXORA consumes the package projects successfully,
+- representative consumer applications build against the package projects or packed packages successfully,
 - package artifacts build with XML docs and symbols,
 - the API surface is reviewed for v1 stability,
 - NuGet Trusted Publishing is configured, or a scoped GitHub Actions publishing secret is configured in the release repository.
