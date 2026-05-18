@@ -2,6 +2,39 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.5.0
+
+### Added
+
+- Added optional `AstraFlow.Mapper.Conventions` for opt-in convention mapping.
+- Added convention mapping profiles, catalogs, exact source/destination pair registration, exact member matching, and opt-in case-insensitive member matching.
+- Added include rules, ignore rules, sensitive-member allow rules, strict mode, and deterministic mapping plan export.
+- Added mapper-level `IMappingPlanProvider` and `MappingPlan` diagnostics contracts.
+
+### Changed
+
+- Diagnostics reports now include mapping plan output when a package provides mapping plans.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Added convention mapping guidance covering registration, profiles, strict mode, sensitive fields, plan export, and troubleshooting.
+
+### Tests
+
+- Added convention mapping tests for opt-in behavior, exact matching, case-insensitive matching, include/ignore rules, unmapped diagnostics, ambiguity, sensitive fields, strict mode, plan export, and diagnostics output.
+
+### Packaging
+
+- Added `AstraFlow.Mapper.Conventions` to solution, CI, pack scripts, package asset verification, and clean install verification.
+
+### Breaking changes
+
+- None.
+
 ## 1.4.2
 
 ### Added

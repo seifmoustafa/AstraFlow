@@ -559,7 +559,7 @@ Risk level:
 
 #### v1.5.0 Convention Mapping Foundation
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -2333,10 +2333,10 @@ Moved later:
 | Collection mapping | Done | v1.0.0 | `AstraFlow.Mapper` | P1 | Collection diagnostics | Collection tests |
 | Explicit projections | Done | v1.2.0 | `AstraFlow.Mapper` | P0 | Projection report | Projection tests |
 | EF Core projection validation | Done | v1.2.0 | `AstraFlow.Mapper.EntityFrameworkCore` | P0 | Provider findings | Provider tests |
-| Convention mapping opt-in | Planned | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Every member reported | Convention tests |
-| Profiles/catalogs | Planned | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Profile report | Profile tests |
-| Include/ignore rules | Planned | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Include/ignore report | Rule tests |
-| Sensitive-field deny list | Planned | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Security finding | Sensitive tests |
+| Convention mapping opt-in | Done | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Every member reported | Convention tests |
+| Profiles/catalogs | Done | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Profile report | Profile tests |
+| Include/ignore rules | Done | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Include/ignore report | Rule tests |
+| Sensitive-field deny list | Done | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Security finding | Sensitive tests |
 | Member configuration | Planned | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Per-member diagnostics | Config tests |
 | Null substitution | Planned | v1.5.1 | `AstraFlow.Mapper.Conventions` | P1 | Member rule report | Null tests |
 | Value converters | Planned | v1.5.1 | `AstraFlow.Mapper.Conventions` | P1 | Converter report | Converter tests |
@@ -2380,7 +2380,7 @@ Moved later:
 | Notification fan-out | Done | v1.4.0 | P0 | `AstraFlow.Mediator` | MediatR-style | Failure policy report | Preserve |
 | Pipeline behaviors | Done | v1.4.0 | P0 | `AstraFlow.Mediator` | MediatR-style | Order report | Patch expand |
 | Explicit mapping | Done | v1.0.0 | P0 | `AstraFlow.Mapper` | AutoMapper-style problem domain | Missing/duplicate mapping diagnostics | Preserve |
-| Convention mapping | Planned | v1.5.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Opt-in and inspectable | Moved earlier |
+| Convention mapping | Done | v1.5.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Opt-in and inspectable | Moved earlier |
 | Member config | Planned | v1.5.1 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Per-member diagnostics | Moved earlier |
 | Destination/update mapping | Planned | v1.5.2 | P1 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Sensitive write diagnostics | Moved earlier |
 | Flattening/reverse/unflattening | Planned | v1.6.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Explicit and security-gated | Moved earlier |

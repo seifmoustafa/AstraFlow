@@ -7,6 +7,7 @@ namespace AstraFlow.Diagnostics;
 /// <param name="NotificationHandlerCount">Number of notification handler registrations.</param>
 /// <param name="PipelineBehaviorCount">Number of pipeline behavior registrations.</param>
 /// <param name="MappingRuleCount">Number of mapping rule registrations.</param>
+/// <param name="MappingPlanCount">Number of mapping plans.</param>
 /// <param name="ProjectionCount">Number of projection registrations.</param>
 /// <param name="InfoCount">Number of informational findings.</param>
 /// <param name="WarningCount">Number of warning findings.</param>
@@ -17,6 +18,7 @@ public sealed record AstraFlowDiagnosticsSummary(
     int NotificationHandlerCount,
     int PipelineBehaviorCount,
     int MappingRuleCount,
+    int MappingPlanCount,
     int ProjectionCount,
     int InfoCount,
     int WarningCount,
