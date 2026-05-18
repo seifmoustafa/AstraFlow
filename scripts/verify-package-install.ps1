@@ -120,6 +120,114 @@ function Add-AstraFlowPackage {
     Invoke-DotNetStep "Add $PackageId to $(Split-Path -Leaf $Project)" @("add", $Project, "package", $PackageId, "--version", $Version, "--no-restore")
 }
 
+function Add-NuGetPackage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Project,
+
+        [Parameter(Mandatory = $true)]
+        [string]$PackageId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$PackageVersion
+    )
+
+    Invoke-DotNetStep "Add $PackageId to $(Split-Path -Leaf $Project)" @("add", $Project, "package", $PackageId, "--version", $PackageVersion, "--no-restore")
+}
+
+function Set-MediatorSmokeProgram {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Project
+    )
+
+    $projectDirectory = Split-Path -Parent $Project
+    $programPath = Join-Path $projectDirectory "Program.cs"
+    $program = @'
+using AstraFlow.Mediator;
+using Microsoft.Extensions.DependencyInjection;
+using System.Runtime.CompilerServices;
+
+var services = new ServiceCollection();
+services.AddAstraFlowMediator(typeof(Program));
+using var provider = services.BuildServiceProvider();
+
+var mediator = provider.GetRequiredService<IMediator>();
+
+var response = await mediator.Send(new SmokeQuery("response"));
+if (response != "handled:response")
+{
+    throw new InvalidOperationException("Response request failed.");
+}
+
+await mediator.Send(new SmokeCommand("void"));
+
+var streamValues = new List<int>();
+await foreach (var value in mediator.CreateStream(new SmokeStream(3)))
+{
+    streamValues.Add(value);
+}
+
+if (!streamValues.SequenceEqual(new[] { 0, 1, 2 }))
+{
+    throw new InvalidOperationException("Stream request failed.");
+}
+
+await mediator.Publish(new SmokeNotification("notification"));
+
+Console.WriteLine("AstraFlow mediator package smoke passed.");
+
+public sealed record SmokeQuery(string Value) : IRequest<string>;
+
+public sealed class SmokeQueryHandler : IRequestHandler<SmokeQuery, string>
+{
+    public Task<string> Handle(SmokeQuery request, CancellationToken cancellationToken)
+    {
+        return Task.FromResult($"handled:{request.Value}");
+    }
+}
+
+public sealed record SmokeCommand(string Value) : IRequest;
+
+public sealed class SmokeCommandHandler : IRequestHandler<SmokeCommand>
+{
+    public Task Handle(SmokeCommand request, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+
+public sealed record SmokeStream(int Count) : IStreamRequest<int>;
+
+public sealed class SmokeStreamHandler : IStreamRequestHandler<SmokeStream, int>
+{
+    public async IAsyncEnumerable<int> Handle(
+        SmokeStream request,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        for (var i = 0; i < request.Count; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await Task.Yield();
+            yield return i;
+        }
+    }
+}
+
+public sealed record SmokeNotification(string Value) : INotification;
+
+public sealed class SmokeNotificationHandler : INotificationHandler<SmokeNotification>
+{
+    public Task Handle(SmokeNotification notification, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+}
+'@
+
+    Set-Content -LiteralPath $programPath -Value $program -Encoding UTF8
+}
+
 function Test-CoreConsumer {
     param(
         [Parameter(Mandatory = $true)]
@@ -152,9 +260,13 @@ function Test-AllConsumer {
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Testing"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mapper.EntityFrameworkCore"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow"
+    Add-NuGetPackage -Project $project -PackageId "Microsoft.Extensions.DependencyInjection" -PackageVersion "10.0.2"
+
+    Set-MediatorSmokeProgram -Project $project
 
     Invoke-DotNetStep "Restore net10.0 all-package consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
     Invoke-DotNetStep "Build net10.0 all-package consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Run net10.0 all-package consumer" @("run", "--project", $project, "--no-build")
 }
 
 if (-not $NoRestore) {

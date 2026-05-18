@@ -7,7 +7,7 @@ It has no dependency on xUnit, NUnit, MSTest, FluentAssertions, or a mocking fra
 Install:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.4.0
+dotnet add package AstraFlow.Testing --version 1.4.1
 ```
 
 ## Fake Mediator
@@ -70,6 +70,8 @@ var harness = new PipelineTestHarness<CreateUser, Guid>(
 
 var id = await harness.Execute(new CreateUser("admin"));
 ```
+
+For full mediator integration behavior, keep at least one DI-backed test that exercises the real mediator. This is especially useful for stream cancellation/disposal, processor ordering, exception handled-state behavior, and notification failure policy checks.
 
 ## Notification Handler Harness
 

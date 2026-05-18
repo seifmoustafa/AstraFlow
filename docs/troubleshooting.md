@@ -83,6 +83,22 @@ One behavior probably short-circuited by returning without calling `next`.
 
 This is valid for caching, feature gates, and authorization failures. If it is accidental, inspect each behavior for missing `await next()`.
 
+### Post-Processor Is Not Called
+
+Post-processors run only after the handler pipeline completes successfully. If a handler or behavior throws, use an exception action for observation or an exception handler for explicit recovery.
+
+### Exception Handler Does Not Suppress The Failure
+
+Exception handlers must call `state.SetHandled(...)`. Observing the exception is not enough; if no handler marks the state handled, AstraFlow rethrows the original exception.
+
+Exception actions always rethrow after they complete. Use actions for logging or metrics, not recovery.
+
+### Stream Stops Or Cancels Unexpectedly
+
+The cancellation token passed to `CreateStream(...)` is forwarded to the stream handler and stream behaviors. Also pass the same token during enumeration with `.WithCancellation(cancellationToken)` so cancellation is observed consistently by the async enumerator.
+
+If the caller stops enumeration early, async-iterator `finally` blocks in handlers and stream behaviors still run during enumerator disposal.
+
 ## Notification Problems
 
 ### One Handler Failure Stops Everything
@@ -105,6 +121,10 @@ Publishing with zero handlers is valid. Confirm:
 - the notification handler assembly is scanned,
 - the handler implements `INotificationHandler<TNotification>` for the exact notification type,
 - the handler class is concrete and not abstract.
+
+### Bounded Parallel Publish Throws AggregateException
+
+With `NotificationFailurePolicy.Aggregate`, AstraFlow attempts every handler and then throws one `AggregateException` if any handler failed. With `BoundedParallel`, handler scheduling is concurrent, but aggregate inner exceptions are reported in registration order.
 
 ## Projection Problems
 
@@ -162,3 +182,5 @@ That is expected for invalid input when your codec returns null. Treat null as "
 | `AFD103` | A scanned request has no registered handler. | Add the handler or include the handler assembly marker. |
 | `AFD201` | Handler, behavior, or mapping rule is singleton. | Prefer scoped lifetime unless singleton is deliberate. |
 | `AFD301` | Mapper catalog validation failed. | Fix declared mappings, duplicate pairs, undeclared rules, or `CanMap` drift. |
+
+In `1.4.1`, the diagnostics behavior table also includes existing mediator pre-processors, post-processors, exception actions, and exception handlers. Diagnostics report type names and lifetimes, not request, response, notification, or DTO payload values.

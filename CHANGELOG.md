@@ -2,6 +2,38 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.4.1
+
+### Added
+
+- Expanded diagnostics registration reporting for existing mediator cross-cutting components: request pre-processors, post-processors, exception actions, and exception handlers.
+- Expanded clean package install verification with a runnable consumer smoke test for response requests, void requests, stream requests, and notifications.
+
+### Changed
+
+- Updated package release notes for the `v1.4.x` stabilization scope.
+
+### Fixed
+
+- Added regression coverage for stream cancellation propagation, early stream enumeration disposal, exception action ordering, explicit exception handled-state behavior, and bounded-parallel aggregate notification failures.
+
+### Docs
+
+- Clarified mediator stream cancellation/disposal behavior, processor and exception-flow ordering, notification failure policies, and diagnostics payload safety.
+- Added troubleshooting guidance for stream enumeration, post-processor, notification, and exception-handler failure modes.
+
+### Tests
+
+- Added mediator and diagnostics tests for the `v1.4.x` stabilization acceptance gates.
+
+### Packaging
+
+- Clean package install verification now compiles and runs a generated `net10.0` mediator consumer against packed packages.
+
+### Breaking changes
+
+- None.
+
 ## 1.4.0
 
 - Added `AstraFlow.Contracts` as a shared contracts package for request, notification, stream, sender, publisher, and mediator abstractions.

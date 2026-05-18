@@ -269,6 +269,27 @@ public sealed class AstraFlowMediatorTests
     }
 
     [Fact]
+    public async Task Send_WithMultipleExceptionActions_RunsInExceptionSpecificThenRegistrationOrder()
+    {
+        var services = CreateServices();
+        services.AddScoped<IRequestExceptionAction<ThrowingRequest, string, InvalidOperationException>, ThrowingRequestExceptionAction>();
+        services.AddScoped<IRequestExceptionAction<ThrowingRequest, string, InvalidOperationException>, SecondThrowingRequestExceptionAction>();
+        services.AddScoped<IRequestExceptionAction<ThrowingRequest, string, Exception>, BaseThrowingRequestExceptionAction>();
+
+        using var provider = services.BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+        var log = provider.GetRequiredService<ExecutionLog>();
+
+        var act = () => sender.Send(new ThrowingRequest("ordered-actions"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("boom:ordered-actions");
+        log.Items.Should().Equal(
+            "exception-action:boom:ordered-actions",
+            "second-exception-action:boom:ordered-actions",
+            "base-exception-action:boom:ordered-actions");
+    }
+
+    [Fact]
     public async Task Send_WithExceptionHandler_ReturnsHandledResponse()
     {
         var services = CreateServices();
@@ -280,6 +301,39 @@ public sealed class AstraFlowMediatorTests
         var response = await sender.Send(new ThrowingRequest("handled"));
 
         response.Should().Be("recovered:handled");
+    }
+
+    [Fact]
+    public async Task Send_WithExceptionHandlerThatDoesNotHandle_RethrowsOriginalFailure()
+    {
+        var services = CreateServices();
+        services.AddScoped<IRequestExceptionHandler<ThrowingRequest, string, InvalidOperationException>, ObservingThrowingRequestExceptionHandler>();
+
+        using var provider = services.BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+        var log = provider.GetRequiredService<ExecutionLog>();
+
+        var act = () => sender.Send(new ThrowingRequest("unhandled"));
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("boom:unhandled");
+        log.Items.Should().Equal("exception-observed:boom:unhandled");
+    }
+
+    [Fact]
+    public async Task Send_WithExceptionHandlers_StopsAfterFirstHandledState()
+    {
+        var services = CreateServices();
+        services.AddScoped<IRequestExceptionHandler<ThrowingRequest, string, InvalidOperationException>, ThrowingRequestExceptionHandler>();
+        services.AddScoped<IRequestExceptionHandler<ThrowingRequest, string, InvalidOperationException>, SecondThrowingRequestExceptionHandler>();
+
+        using var provider = services.BuildServiceProvider();
+        var sender = provider.GetRequiredService<ISender>();
+        var log = provider.GetRequiredService<ExecutionLog>();
+
+        var response = await sender.Send(new ThrowingRequest("first-handled"));
+
+        response.Should().Be("recovered:first-handled");
+        log.Items.Should().BeEmpty();
     }
 
     [Fact]
@@ -395,6 +449,39 @@ public sealed class AstraFlowMediatorTests
     }
 
     [Fact]
+    public async Task CreateStream_WithCancellationDuringEnumeration_PropagatesTokenToHandler()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+        var streamSender = provider.GetRequiredService<IStreamSender>();
+        using var cancellation = new CancellationTokenSource();
+
+        var stream = streamSender.CreateStream(new CancellableStreamRequest(), cancellation.Token);
+        var act = async () =>
+        {
+            await foreach (var _ in stream.WithCancellation(cancellation.Token))
+            {
+                await cancellation.CancelAsync();
+            }
+        };
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Fact]
+    public async Task CreateStream_WhenEnumerationStopsEarly_DisposesHandlerIterator()
+    {
+        using var provider = CreateServices().BuildServiceProvider();
+        var streamSender = provider.GetRequiredService<IStreamSender>();
+        var log = provider.GetRequiredService<ExecutionLog>();
+
+        await foreach (var _ in streamSender.CreateStream(new DisposableStreamRequest()).Take(1))
+        {
+        }
+
+        log.Items.Should().Equal("disposable-stream:yield", "disposable-stream:disposed");
+    }
+
+    [Fact]
     public async Task Send_WithStreamRequest_FailsClearly()
     {
         using var provider = CreateServices().BuildServiceProvider();
@@ -461,6 +548,22 @@ public sealed class AstraFlowMediatorTests
         await act.Should().ThrowAsync<AggregateException>();
     }
 
+    [Fact]
+    public async Task Publish_WithBoundedParallelAggregatePolicy_PreservesRegistrationOrderForFailures()
+    {
+        var services = CreateServices(NotificationFailurePolicy.Aggregate, NotificationPublishStrategy.BoundedParallel);
+
+        using var provider = services.BuildServiceProvider();
+        var publisher = provider.GetRequiredService<IPublisher>();
+
+        var act = () => publisher.Publish(new BoundedFailureOrderNotification());
+
+        var exception = await act.Should().ThrowAsync<AggregateException>();
+        exception.Which.InnerExceptions.Select(e => e.Message).Should().Equal(
+            "first bounded failure",
+            "second bounded failure");
+    }
+
     private static ServiceCollection CreateServices(
         NotificationFailurePolicy failurePolicy = NotificationFailurePolicy.FailFast,
         NotificationPublishStrategy publishStrategy = NotificationPublishStrategy.Sequential)
@@ -487,6 +590,10 @@ public sealed class AstraFlowMediatorTests
 
     public sealed record CountStreamRequest(int Count) : IStreamRequest<int>;
 
+    public sealed record CancellableStreamRequest : IStreamRequest<int>;
+
+    public sealed record DisposableStreamRequest : IStreamRequest<int>;
+
     public sealed record MissingStreamRequest : IStreamRequest<int>;
 
     public sealed record ThrowingRequest(string Message) : IRequest<string>;
@@ -498,6 +605,8 @@ public sealed class AstraFlowMediatorTests
     public sealed record PingNotification : INotification;
 
     public sealed record FailurePolicyNotification : INotification;
+
+    public sealed record BoundedFailureOrderNotification : INotification;
 
     public sealed class PingRequestHandler(ExecutionLog log) : IRequestHandler<PingRequest, string>
     {
@@ -536,6 +645,38 @@ public sealed class AstraFlowMediatorTests
                 cancellationToken.ThrowIfCancellationRequested();
                 await Task.Yield();
                 yield return i;
+            }
+        }
+    }
+
+    public sealed class CancellableStreamRequestHandler : IStreamRequestHandler<CancellableStreamRequest, int>
+    {
+        public async IAsyncEnumerable<int> Handle(
+            CancellableStreamRequest request,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            yield return 1;
+            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+            yield return 2;
+        }
+    }
+
+    public sealed class DisposableStreamRequestHandler(ExecutionLog log)
+        : IStreamRequestHandler<DisposableStreamRequest, int>
+    {
+        public async IAsyncEnumerable<int> Handle(
+            DisposableStreamRequest request,
+            [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            try
+            {
+                log.Items.Add("disposable-stream:yield");
+                yield return 1;
+                await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+            }
+            finally
+            {
+                log.Items.Add("disposable-stream:disposed");
             }
         }
     }
@@ -599,6 +740,22 @@ public sealed class AstraFlowMediatorTests
         {
             log.Items.Add("notification:after-failure");
             return Task.CompletedTask;
+        }
+    }
+
+    public sealed class FirstBoundedFailureHandler : INotificationHandler<BoundedFailureOrderNotification>
+    {
+        public Task Handle(BoundedFailureOrderNotification notification, CancellationToken cancellationToken)
+        {
+            throw new InvalidOperationException("first bounded failure");
+        }
+    }
+
+    public sealed class SecondBoundedFailureHandler : INotificationHandler<BoundedFailureOrderNotification>
+    {
+        public Task Handle(BoundedFailureOrderNotification notification, CancellationToken cancellationToken)
+        {
+            throw new InvalidOperationException("second bounded failure");
         }
     }
 
@@ -684,6 +841,26 @@ public sealed class AstraFlowMediatorTests
         }
     }
 
+    public sealed class SecondThrowingRequestExceptionAction(ExecutionLog log)
+        : IRequestExceptionAction<ThrowingRequest, string, InvalidOperationException>
+    {
+        public Task Execute(ThrowingRequest request, InvalidOperationException exception, CancellationToken cancellationToken)
+        {
+            log.Items.Add($"second-exception-action:{exception.Message}");
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class BaseThrowingRequestExceptionAction(ExecutionLog log)
+        : IRequestExceptionAction<ThrowingRequest, string, Exception>
+    {
+        public Task Execute(ThrowingRequest request, Exception exception, CancellationToken cancellationToken)
+        {
+            log.Items.Add($"base-exception-action:{exception.Message}");
+            return Task.CompletedTask;
+        }
+    }
+
     public sealed class ThrowingRequestExceptionHandler
         : IRequestExceptionHandler<ThrowingRequest, string, InvalidOperationException>
     {
@@ -694,6 +871,35 @@ public sealed class AstraFlowMediatorTests
             CancellationToken cancellationToken)
         {
             state.SetHandled($"recovered:{request.Message}");
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class ObservingThrowingRequestExceptionHandler(ExecutionLog log)
+        : IRequestExceptionHandler<ThrowingRequest, string, InvalidOperationException>
+    {
+        public Task Handle(
+            ThrowingRequest request,
+            InvalidOperationException exception,
+            RequestExceptionHandlerState<string> state,
+            CancellationToken cancellationToken)
+        {
+            log.Items.Add($"exception-observed:{exception.Message}");
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class SecondThrowingRequestExceptionHandler(ExecutionLog log)
+        : IRequestExceptionHandler<ThrowingRequest, string, InvalidOperationException>
+    {
+        public Task Handle(
+            ThrowingRequest request,
+            InvalidOperationException exception,
+            RequestExceptionHandlerState<string> state,
+            CancellationToken cancellationToken)
+        {
+            log.Items.Add("second-exception-handler");
+            state.SetHandled("second");
             return Task.CompletedTask;
         }
     }

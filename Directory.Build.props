@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.4.0</Version>
-    <AssemblyVersion>1.4.0.0</AssemblyVersion>
-    <FileVersion>1.4.0.0</FileVersion>
+    <Version>1.4.1</Version>
+    <AssemblyVersion>1.4.1.0</AssemblyVersion>
+    <FileVersion>1.4.1.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,11 +18,11 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.4.0:
-      - Adds the AstraFlow.Contracts package for shared mediator contracts.
-      - Adds void requests, stream requests, stream pipeline behaviors, request pre/post processors, and request exception actions/handlers.
-      - Adds opt-in parallel and bounded-parallel notification publish strategies while keeping sequential publishing as the default.
-      - Adds mediator registration-builder helpers for explicit behavior and processor registration.
+    <PackageReleaseNotes>AstraFlow 1.4.1:
+      - Hardens the v1.4 mediator baseline with stream cancellation/disposal and exception-flow regression coverage.
+      - Expands diagnostics reporting for existing mediator processor and exception-flow registrations without logging payload values.
+      - Expands clean package install verification with a runnable mediator consumer smoke test.
+      - Includes documentation and troubleshooting polish for stream, notification, processor, and exception-flow behavior.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

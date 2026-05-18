@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.4.0
+dotnet add package AstraFlow.Diagnostics --version 1.4.1
 ```
 
 The package references `AstraFlow.Mediator` and `AstraFlow.Mapper` so it can understand the core public contracts.
@@ -43,7 +43,7 @@ Use `CreateReport()` for application decisions or tests. Use JSON for tooling an
 
 | Section | Contents |
 | --- | --- |
-| Summary | Counts for request handlers, notification handlers, pipeline behaviors, mapping rules, projections, and findings by severity. |
+| Summary | Counts for request handlers, notification handlers, mediator cross-cutting registrations, mapping rules, projections, and findings by severity. |
 | Findings | Stable diagnostic code, severity, subject, and message. |
 | Request handlers | Service type, implementation type, and DI lifetime. |
 | Notification handlers | Service type, implementation type, and DI lifetime. |
@@ -104,7 +104,7 @@ Markdown includes:
 - findings table,
 - request handler table,
 - notification handler table,
-- pipeline behavior table,
+- mediator cross-cutting table for pipeline behaviors, stream behaviors, processors, exception actions, and exception handlers,
 - mapping rule table,
 - projection table.
 
