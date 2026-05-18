@@ -266,7 +266,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.1
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.2
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -348,7 +348,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.4.1
+dotnet add package AstraFlow.Testing --version 1.4.2
 ```
 
 Use the fake mediator to record requests and notifications:

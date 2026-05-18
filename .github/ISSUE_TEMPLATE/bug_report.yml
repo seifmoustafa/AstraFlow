@@ -9,7 +9,7 @@ body:
     attributes:
       label: Package
       description: Which AstraFlow package is affected?
-      placeholder: AstraFlow.Mediator 1.4.1
+      placeholder: AstraFlow.Mediator 1.4.2
     validations:
       required: true
   - type: input

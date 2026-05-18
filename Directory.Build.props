@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.4.1</Version>
-    <AssemblyVersion>1.4.1.0</AssemblyVersion>
-    <FileVersion>1.4.1.0</FileVersion>
+    <Version>1.4.2</Version>
+    <AssemblyVersion>1.4.2.0</AssemblyVersion>
+    <FileVersion>1.4.2.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,11 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.4.1:
-      - Hardens the v1.4 mediator baseline with stream cancellation/disposal and exception-flow regression coverage.
-      - Expands diagnostics reporting for existing mediator processor and exception-flow registrations without logging payload values.
-      - Expands clean package install verification with a runnable mediator consumer smoke test.
-      - Includes documentation and troubleshooting polish for stream, notification, processor, and exception-flow behavior.
+    <PackageReleaseNotes>AstraFlow 1.4.2:
+      - Preserves DI registration order in diagnostics for order-sensitive mediator registrations.
+      - Keeps diagnostics payload-safe while making processor, behavior, exception-flow, and notification order easier to review.
+      - Adds regression coverage for diagnostics report and Markdown registration ordering.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
