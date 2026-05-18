@@ -1,4 +1,3 @@
-using System.Reflection;
 using AstraFlow.Mapper;
 using Microsoft.Extensions.Options;
 
@@ -43,8 +42,8 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
                 $"No convention mapping pair registered from '{sourceType.FullName}' to '{destinationType.FullName}'.");
         }
 
-        var plan = ConventionMappingPlanBuilder.Build(definition, _options);
-        ConventionMappingPlanBuilder.ThrowIfInvalid(plan, _options);
+        var resolvedPlan = ConventionMappingPlanBuilder.BuildResolvedPlan(definition, _options);
+        ConventionMappingPlanBuilder.ThrowIfInvalid(resolvedPlan.Plan, _options);
 
         var destination = Activator.CreateInstance(destinationType);
         if (destination is null)
@@ -53,32 +52,39 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
                 $"Destination type '{destinationType.FullName}' could not be created by convention mapping.");
         }
 
-        var sourceProperties = ConventionMappingPlanBuilder.GetReadableProperties(sourceType)
-            .ToDictionary(property => property.Name, StringComparer.Ordinal);
-        var destinationProperties = ConventionMappingPlanBuilder.GetWritableProperties(destinationType)
-            .ToDictionary(property => property.Name, StringComparer.Ordinal);
-
-        foreach (var member in plan.Members.Where(member => member.Decision == "Mapped"))
+        foreach (var member in resolvedPlan.Members.Where(member => member.CanMap))
         {
-            if (member.SourceMember is null)
+            if (member.Configuration?.HasCondition == true &&
+                member.Configuration.Condition is not null &&
+                !member.Configuration.Condition(source))
+            {
                 continue;
+            }
 
-            var sourceProperty = GetSourceProperty(sourceProperties, member.SourceMember);
-            var destinationProperty = destinationProperties[member.DestinationMember];
-            destinationProperty.SetValue(destination, sourceProperty.GetValue(source));
+            var value = member.SourceValueFactory is null
+                ? null
+                : member.SourceValueFactory(source);
+
+            if (value is null && member.Configuration?.HasNullSubstitute == true)
+            {
+                value = member.Configuration.NullSubstitute;
+            }
+            else if (value is not null && member.Configuration?.HasConverter == true && member.Configuration.Converter is not null)
+            {
+                value = member.Configuration.Converter(value);
+            }
+            else if (value is not null && member.RequiresEnumToString)
+            {
+                value = value.ToString();
+            }
+            else if (value is not null && member.RequiresEnumToEnum)
+            {
+                value = Enum.Parse(Nullable.GetUnderlyingType(member.DestinationProperty.PropertyType) ?? member.DestinationProperty.PropertyType, value.ToString()!);
+            }
+
+            member.DestinationProperty.SetValue(destination, value);
         }
 
         return destination;
-    }
-
-    private static PropertyInfo GetSourceProperty(
-        IReadOnlyDictionary<string, PropertyInfo> sourceProperties,
-        string sourceMember)
-    {
-        if (sourceProperties.TryGetValue(sourceMember, out var exact))
-            return exact;
-
-        return sourceProperties.Values.Single(property =>
-            string.Equals(property.Name, sourceMember, StringComparison.OrdinalIgnoreCase));
     }
 }

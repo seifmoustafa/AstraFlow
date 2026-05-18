@@ -158,7 +158,9 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `AddAstraFlowConventionMapping` | Extension method | Registers opt-in convention mapping catalog, rule, plan provider, and startup validator. | Call after `AddAstraFlowMapper`. |
 | `ConventionMappingCatalog` | Class | Holds profiles and exact pair registrations. | Use `AddProfile<TProfile>()` or `CreateMap<TSource, TDestination>()`. |
 | `ConventionMappingProfile` | Abstract class | Groups convention mapping pairs. | Derive and call `CreateMap` in the constructor. |
-| `ConventionMappingExpression<TSource, TDestination>` | Class | Configures one pair. | Supports case-insensitive matching, include, ignore, and sensitive-member allow rules. |
+| `ConventionMappingExpression<TSource, TDestination>` | Class | Configures one pair. | Supports case-insensitive matching, include, ignore, sensitive-member allow rules, and `ForMember`. |
+| `ForMember` | Method | Configures one destination member. | Supports explicit source members, converters, null substitution, conditions, and required destination rules. |
+| `ConventionMemberMappingExpression<TSource, TDestination, TDestinationMember>` | Class | Configures one destination member. | Use `MapFrom`, `ConvertUsing`, `NullSubstitute`, `Condition`, and `Required`. |
 | `ConventionMappingOptions` | Class | Controls convention matching, strict mode, and sensitive-field policy. | Strict mode and sensitive-field require-allow are enabled by default. |
 
 ## Convention Finding Codes
@@ -170,6 +172,10 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `AFC003` | Case-insensitive matching found ambiguous source members. |
 | `AFC004` | Sensitive member mapping requires an explicit allow rule. |
 | `AFC005` | Source and destination member types are incompatible. |
+| `AFC006` | Nullable source member may flow into a non-nullable destination member. |
+| `AFC007` | Numeric member conversion requires an explicit converter. |
+| `AFC008` | Source enum names do not exist on the destination enum. |
+| `AFC009` | Required destination member has no source or is excluded from mapping. |
 
 ## Projection Finding Codes
 
