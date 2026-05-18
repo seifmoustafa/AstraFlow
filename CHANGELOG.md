@@ -29,6 +29,7 @@ All notable AstraFlow changes are tracked here.
 ### Packaging
 
 - Clean package install verification now compiles and runs a generated `net10.0` mediator consumer against packed packages.
+- CI and publish package verification now resolve the package version from `Directory.Build.props` instead of hard-coding `1.4.0` package names.
 
 ### Breaking changes
 

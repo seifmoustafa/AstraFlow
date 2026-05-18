@@ -68,13 +68,19 @@ jobs:
       - name: Verify package target assets
         shell: pwsh
         run: |
+          [xml]$props = Get-Content Directory.Build.props -Raw
+          $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw "Directory.Build.props does not define a package Version."
+          }
+
           $corePackages = @(
-            "src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.4.0.nupkg",
-            "src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.4.0.nupkg",
-            "src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.4.0.nupkg",
-            "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.4.0.nupkg",
-            "src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.4.0.nupkg",
-            "src/AstraFlow/bin/Release/AstraFlow.1.4.0.nupkg"
+            "src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.$version.nupkg",
+            "src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.$version.nupkg",
+            "src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.$version.nupkg",
+            "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.$version.nupkg",
+            "src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.$version.nupkg",
+            "src/AstraFlow/bin/Release/AstraFlow.$version.nupkg"
           )
           foreach ($package in $corePackages) {
             $entries = tar -tf $package
@@ -88,17 +94,20 @@ jobs:
             }
           }
 
-          $efEntries = tar -tf "src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.4.0.nupkg"
+          $efEntries = tar -tf "src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.$version.nupkg"
           if (-not ($efEntries -match "^lib/net10.0/.*\.dll$")) {
             throw "AstraFlow.Mapper.EntityFrameworkCore is missing lib/net10.0 DLL assets."
           }
           if ($efEntries -match "^lib/(netstandard2.0|net8.0|net9.0)/") {
-            throw "AstraFlow.Mapper.EntityFrameworkCore should remain net10.0-only in 1.4.0."
+            throw "AstraFlow.Mapper.EntityFrameworkCore should remain net10.0-only in $version."
           }
 
       - name: Verify clean package install
         shell: pwsh
-        run: ./scripts/verify-package-install.ps1 -Version 1.4.0
+        run: |
+          [xml]$props = Get-Content Directory.Build.props -Raw
+          $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
+          ./scripts/verify-package-install.ps1 -Version $version
 
       - name: Publish
         shell: pwsh
