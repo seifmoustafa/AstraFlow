@@ -4,7 +4,7 @@ This guide documents AstraFlow target framework support, compatibility goals, an
 
 ## Current Support
 
-AstraFlow `1.4.0` currently targets:
+AstraFlow `1.4.1` currently targets:
 
 | Package | Current targets |
 | --- | --- |
@@ -57,7 +57,7 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Use AstraFlow `1.4.0` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
+Use AstraFlow `1.4.1` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
@@ -81,10 +81,10 @@ dotnet test AstraFlow.slnx -c Release
 .\scripts\pack.ps1
 ```
 
-For `1.4.0`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` includes only `lib/net10.0/`.
+For `1.4.1`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` includes only `lib/net10.0/`.
 
 Then run:
 
 ```powershell
-.\scripts\verify-package-install.ps1 -Version 1.4.0
+.\scripts\verify-package-install.ps1 -Version 1.4.1
 ```

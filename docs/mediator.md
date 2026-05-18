@@ -30,6 +30,8 @@ Pipeline behaviors execute in dependency-injection registration order. A behavio
 
 Notifications publish sequentially by default. Failure handling is controlled by `NotificationPublishOptions.FailurePolicy`: `FailFast`, `Continue`, or `Aggregate`. Scheduling is controlled by `NotificationPublishOptions.PublishStrategy`: `Sequential`, `Parallel`, or `BoundedParallel`.
 
+Diagnostics report handler, notification handler, pipeline behavior, stream behavior, processor, and exception-flow registration types and lifetimes. Reports do not inspect request, response, notification, or DTO payload values.
+
 Handler scanning is assembly-marker based:
 
 ```csharp
@@ -45,7 +47,7 @@ Coverage validation is optional because some applications register generated or 
 Use `AstraFlow.Contracts` in shared assemblies that define requests and notifications but should not reference the mediator runtime:
 
 ```powershell
-dotnet add package AstraFlow.Contracts --version 1.4.0
+dotnet add package AstraFlow.Contracts --version 1.4.1
 ```
 
 The contracts keep the `AstraFlow.Mediator` namespace so application code can use the same imports when it later references `AstraFlow.Mediator`.
@@ -108,11 +110,26 @@ public sealed class ExportInvoicesQueryHandler
 
 Inject `IStreamSender` or `IMediator` and call `CreateStream(...)`. Use `IStreamPipelineBehavior<TRequest, TResponse>` for stream-specific cross-cutting behavior.
 
+The `CancellationToken` passed to `CreateStream(...)` is forwarded to the handler and stream behaviors. Consumers should still enumerate with the same token when possible:
+
+```csharp
+await foreach (var row in streamSender
+    .CreateStream(new ExportInvoicesQuery(tenantId), cancellationToken)
+    .WithCancellation(cancellationToken))
+{
+    // Write the row to the caller.
+}
+```
+
+If enumeration stops early, normal async-iterator disposal runs for the handler and stream behaviors.
+
 ## Processors And Exception Flow
 
 Use pre/post processors for simple before/after work. Use pipeline behaviors when the component needs to wrap or short-circuit the handler.
 
-Exception actions observe failures and rethrow. Exception handlers must explicitly mark an exception handled through `RequestExceptionHandlerState` or `RequestExceptionHandlerState<TResponse>`.
+Pre-processors run before the handler pipeline. Post-processors run only after successful handler pipeline completion.
+
+Exception actions observe failures and rethrow. Exception handlers must explicitly mark an exception handled through `RequestExceptionHandlerState` or `RequestExceptionHandlerState<TResponse>`. When multiple exception actions or handlers are registered for the same exception type, they run in DI registration order. More specific exception types are evaluated before base exception types.
 
 ```csharp
 public sealed class RecoverCreateInvoiceFailure

@@ -30,6 +30,7 @@
 - EF Core package target support is verified separately from core mapper target support.
 - No package advertises direct .NET Framework or `netstandard2.0` support until package assets exist for that target.
 - `scripts/verify-package-install.ps1` passes for the release version.
+- Clean install verification compiles and runs a mediator consumer that sends a response request, a void request, a stream request, and a notification.
 
 ## Consumer Validation
 

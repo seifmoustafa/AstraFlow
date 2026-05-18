@@ -26,11 +26,35 @@ public sealed class AstraFlowDiagnosticsTests
 
         report.Summary.RequestHandlerCount.Should().Be(1);
         report.Summary.NotificationHandlerCount.Should().Be(1);
-        report.Summary.PipelineBehaviorCount.Should().Be(1);
+        report.Summary.PipelineBehaviorCount.Should().Be(7);
         report.Summary.MappingRuleCount.Should().Be(1);
         report.Summary.ProjectionCount.Should().Be(1);
         report.Summary.HasErrors.Should().BeFalse();
         report.Findings.Should().Contain(f => f.Code == "AFD000" && f.Severity == DiagnosticSeverity.Info);
+    }
+
+    [Fact]
+    public void CreateReport_WithMediatorCrossCuttingRegistrations_ReportsTypesWithoutPayloadValues()
+    {
+        var services = CreateBaseServices();
+        services.AddAstraFlowDiagnostics(options =>
+        {
+            options.ValidateRequestCoverage = false;
+            options.ValidateMappingCatalog = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var reporter = provider.GetRequiredService<IAstraFlowDiagnosticsReporter>();
+
+        var report = reporter.CreateReport();
+        var markdown = reporter.CreateMarkdownReport();
+
+        report.PipelineBehaviors.Should().Contain(r => r.Category == "Request pre-processor");
+        report.PipelineBehaviors.Should().Contain(r => r.Category == "Response request post-processor");
+        report.PipelineBehaviors.Should().Contain(r => r.Category == "Response request exception action");
+        report.PipelineBehaviors.Should().Contain(r => r.Category == "Response request exception handler");
+        report.NotificationHandlers.Should().Contain(r => r.ImplementationType!.Contains(nameof(PingNotificationHandler), StringComparison.Ordinal));
+        markdown.Should().NotContain("secret-payload-value");
     }
 
     [Fact]
@@ -187,6 +211,12 @@ public sealed class AstraFlowDiagnosticsTests
         services.AddScoped<IRequestHandler<PingRequest, string>, PingHandler>();
         services.AddScoped<INotificationHandler<PingNotification>, PingNotificationHandler>();
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(PassThroughBehavior<,>));
+        services.AddScoped<IRequestPreProcessor<PingRequest>, PingPreProcessor>();
+        services.AddScoped<IRequestPostProcessor<PingRequest, string>, PingPostProcessor>();
+        services.AddScoped<IRequestExceptionAction<PingRequest, string, InvalidOperationException>, PingExceptionAction>();
+        services.AddScoped<IRequestExceptionHandler<PingRequest, string, InvalidOperationException>, PingExceptionHandler>();
+        services.AddScoped<IRequestExceptionAction<VoidPingRequest, InvalidOperationException>, VoidPingExceptionAction>();
+        services.AddScoped<IRequestExceptionHandler<VoidPingRequest, InvalidOperationException>, VoidPingExceptionHandler>();
         services.AddScoped<IObjectMappingRule, SampleMappingRule>();
         services.AddScoped<IObjectMappingValidator, AstraFlowObjectMappingValidator>();
         services.AddSingleton<IProjection<SampleEntity, SampleResponse>, SampleProjection>();
@@ -194,6 +224,8 @@ public sealed class AstraFlowDiagnosticsTests
     }
 
     public sealed record PingRequest(string Value) : IRequest<string>;
+
+    public sealed record VoidPingRequest(string Value) : IRequest;
 
     public sealed record MissingHandlerRequest : IRequest<string>;
 
@@ -232,6 +264,66 @@ public sealed class AstraFlowDiagnosticsTests
             CancellationToken cancellationToken)
         {
             return next();
+        }
+    }
+
+    public sealed class PingPreProcessor : IRequestPreProcessor<PingRequest>
+    {
+        public Task Process(PingRequest request, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class PingPostProcessor : IRequestPostProcessor<PingRequest, string>
+    {
+        public Task Process(PingRequest request, string response, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class PingExceptionAction
+        : IRequestExceptionAction<PingRequest, string, InvalidOperationException>
+    {
+        public Task Execute(PingRequest request, InvalidOperationException exception, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class PingExceptionHandler
+        : IRequestExceptionHandler<PingRequest, string, InvalidOperationException>
+    {
+        public Task Handle(
+            PingRequest request,
+            InvalidOperationException exception,
+            RequestExceptionHandlerState<string> state,
+            CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class VoidPingExceptionAction
+        : IRequestExceptionAction<VoidPingRequest, InvalidOperationException>
+    {
+        public Task Execute(VoidPingRequest request, InvalidOperationException exception, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class VoidPingExceptionHandler
+        : IRequestExceptionHandler<VoidPingRequest, InvalidOperationException>
+    {
+        public Task Handle(
+            VoidPingRequest request,
+            InvalidOperationException exception,
+            RequestExceptionHandlerState state,
+            CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
     }
 

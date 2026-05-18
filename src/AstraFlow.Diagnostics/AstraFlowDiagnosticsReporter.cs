@@ -38,7 +38,14 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
             descriptors,
             ("Pipeline behavior", typeof(IPipelineBehavior<,>)),
             ("Void pipeline behavior", typeof(IRequestPipelineBehavior<>)),
-            ("Stream pipeline behavior", typeof(IStreamPipelineBehavior<,>)));
+            ("Stream pipeline behavior", typeof(IStreamPipelineBehavior<,>)),
+            ("Request pre-processor", typeof(IRequestPreProcessor<>)),
+            ("Void request post-processor", typeof(IRequestPostProcessor<>)),
+            ("Response request post-processor", typeof(IRequestPostProcessor<,>)),
+            ("Void request exception action", typeof(IRequestExceptionAction<,>)),
+            ("Response request exception action", typeof(IRequestExceptionAction<,,>)),
+            ("Void request exception handler", typeof(IRequestExceptionHandler<,>)),
+            ("Response request exception handler", typeof(IRequestExceptionHandler<,,>)));
         var mappingRules = GetRegistrations(descriptors, "Mapping rule", typeof(IObjectMappingRule));
         var projections = GetProjectionRegistrations(descriptors);
 
