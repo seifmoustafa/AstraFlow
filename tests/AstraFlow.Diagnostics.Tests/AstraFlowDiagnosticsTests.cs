@@ -58,6 +58,40 @@ public sealed class AstraFlowDiagnosticsTests
     }
 
     [Fact]
+    public void CreateReport_WithOrderSensitiveMediatorRegistrations_PreservesDependencyInjectionOrder()
+    {
+        var services = new ServiceCollection();
+        services.AddScoped<INotificationHandler<PingNotification>, ZFirstNotificationHandler>();
+        services.AddScoped<INotificationHandler<PingNotification>, ASecondNotificationHandler>();
+        services.AddScoped<IRequestPreProcessor<PingRequest>, ZFirstPreProcessor>();
+        services.AddScoped<IRequestPreProcessor<PingRequest>, ASecondPreProcessor>();
+        services.AddAstraFlowDiagnostics(options =>
+        {
+            options.ValidateRequestCoverage = false;
+            options.ValidateMappingCatalog = false;
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var reporter = provider.GetRequiredService<IAstraFlowDiagnosticsReporter>();
+
+        var report = reporter.CreateReport();
+        var markdown = reporter.CreateMarkdownReport();
+        var notificationImplementations = report.NotificationHandlers.Select(r => r.ImplementationType).ToArray();
+        var pipelineImplementations = report.PipelineBehaviors.Select(r => r.ImplementationType).ToArray();
+
+        notificationImplementations.Should().HaveCount(2);
+        notificationImplementations[0].Should().Contain(nameof(ZFirstNotificationHandler));
+        notificationImplementations[1].Should().Contain(nameof(ASecondNotificationHandler));
+        pipelineImplementations.Should().HaveCount(2);
+        pipelineImplementations[0].Should().Contain(nameof(ZFirstPreProcessor));
+        pipelineImplementations[1].Should().Contain(nameof(ASecondPreProcessor));
+        markdown.IndexOf(nameof(ZFirstNotificationHandler), StringComparison.Ordinal)
+            .Should().BeLessThan(markdown.IndexOf(nameof(ASecondNotificationHandler), StringComparison.Ordinal));
+        markdown.IndexOf(nameof(ZFirstPreProcessor), StringComparison.Ordinal)
+            .Should().BeLessThan(markdown.IndexOf(nameof(ASecondPreProcessor), StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void CreateReport_WithDuplicateRequestHandlers_ReportsError()
     {
         var services = CreateBaseServices();
@@ -255,6 +289,22 @@ public sealed class AstraFlowDiagnosticsTests
         }
     }
 
+    public sealed class ZFirstNotificationHandler : INotificationHandler<PingNotification>
+    {
+        public Task Handle(PingNotification notification, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class ASecondNotificationHandler : INotificationHandler<PingNotification>
+    {
+        public Task Handle(PingNotification notification, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
     public sealed class PassThroughBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
         where TRequest : notnull
     {
@@ -268,6 +318,22 @@ public sealed class AstraFlowDiagnosticsTests
     }
 
     public sealed class PingPreProcessor : IRequestPreProcessor<PingRequest>
+    {
+        public Task Process(PingRequest request, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class ZFirstPreProcessor : IRequestPreProcessor<PingRequest>
+    {
+        public Task Process(PingRequest request, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    public sealed class ASecondPreProcessor : IRequestPreProcessor<PingRequest>
     {
         public Task Process(PingRequest request, CancellationToken cancellationToken)
         {

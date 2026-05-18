@@ -155,9 +155,6 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
                     GetDisplayName(d.ServiceType),
                     GetImplementationType(d) is { } implementationType ? GetDisplayName(implementationType) : null,
                     d.Lifetime)))
-            .OrderBy(r => r.ServiceType, StringComparer.Ordinal)
-            .ThenBy(r => r.ImplementationType, StringComparer.Ordinal)
-            .ThenBy(r => r.Lifetime)
             .ToArray();
     }
 

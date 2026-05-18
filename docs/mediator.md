@@ -30,7 +30,7 @@ Pipeline behaviors execute in dependency-injection registration order. A behavio
 
 Notifications publish sequentially by default. Failure handling is controlled by `NotificationPublishOptions.FailurePolicy`: `FailFast`, `Continue`, or `Aggregate`. Scheduling is controlled by `NotificationPublishOptions.PublishStrategy`: `Sequential`, `Parallel`, or `BoundedParallel`.
 
-Diagnostics report handler, notification handler, pipeline behavior, stream behavior, processor, and exception-flow registration types and lifetimes. Reports do not inspect request, response, notification, or DTO payload values.
+Diagnostics report handler, notification handler, pipeline behavior, stream behavior, processor, and exception-flow registration types and lifetimes. Order-sensitive mediator registration tables preserve DI registration order. Reports do not inspect request, response, notification, or DTO payload values.
 
 Handler scanning is assembly-marker based:
 
@@ -47,7 +47,7 @@ Coverage validation is optional because some applications register generated or 
 Use `AstraFlow.Contracts` in shared assemblies that define requests and notifications but should not reference the mediator runtime:
 
 ```powershell
-dotnet add package AstraFlow.Contracts --version 1.4.1
+dotnet add package AstraFlow.Contracts --version 1.4.2
 ```
 
 The contracts keep the `AstraFlow.Mediator` namespace so application code can use the same imports when it later references `AstraFlow.Mediator`.

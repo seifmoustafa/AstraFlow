@@ -1,4 +1,4 @@
-﻿# Package Selection
+# Package Selection
 
 This guide explains which AstraFlow package to install.
 
@@ -31,7 +31,7 @@ Install this package in projects that only need shared mediator contract types:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Contracts --version 1.4.1
+dotnet add package AstraFlow.Contracts --version 1.4.2
 ```
 
 Use this in shared contracts, client contract assemblies, Blazor/shared projects, and modular boundaries that should not reference the mediator runtime.
@@ -55,7 +55,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mediator --version 1.4.1
+dotnet add package AstraFlow.Mediator --version 1.4.2
 ```
 
 Use this in application layers, worker services, APIs, and modular monolith modules that own request handling.
@@ -75,7 +75,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.4.1
+dotnet add package AstraFlow.Mapper --version 1.4.2
 ```
 
 Use this in application or contract-mapping layers that need auditable DTO conversion.
@@ -87,7 +87,7 @@ Install this package only when you need EF Core relational projection validation
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.1
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.2
 ```
 
 This package references EF Core. Keep it out of projects that do not use EF Core.
@@ -99,7 +99,7 @@ Install this package when you want registration and validation reports.
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.4.1
+dotnet add package AstraFlow.Diagnostics --version 1.4.2
 ```
 
 Register diagnostics after mediator and mapper registrations so the reporter can inspect those service descriptors.
@@ -120,7 +120,7 @@ Install this package in test projects when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.4.1
+dotnet add package AstraFlow.Testing --version 1.4.2
 ```
 
 The package is test-framework-neutral. It does not depend on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework.
@@ -134,7 +134,7 @@ Install the meta package when a project intentionally uses mediator and mapper t
 Example:
 
 ```powershell
-dotnet add package AstraFlow --version 1.4.1
+dotnet add package AstraFlow --version 1.4.2
 ```
 
 The meta package is convenient, but focused packages keep dependency intent clearer in shared libraries and smaller projects.

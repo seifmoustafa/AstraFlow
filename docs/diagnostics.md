@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.4.1
+dotnet add package AstraFlow.Diagnostics --version 1.4.2
 ```
 
 The package references `AstraFlow.Mediator` and `AstraFlow.Mapper` so it can understand the core public contracts.
@@ -50,6 +50,8 @@ Use `CreateReport()` for application decisions or tests. Use JSON for tooling an
 | Pipeline behaviors | Open or closed behavior registration and lifetime. |
 | Mapping rules | Registered `IObjectMappingRule` implementations and lifetimes. |
 | Projections | Registered `IProjection<TSource, TDestination>` implementations, optional names, and lifetimes. |
+
+Mediator registration tables preserve the dependency-injection registration order captured when diagnostics is registered. Use that order to review notification handlers, pipeline behaviors, stream behaviors, processors, exception actions, and exception handlers because those components have order-sensitive runtime behavior.
 
 The summary has `HasErrors`, which is suitable for health-check-style decisions without requiring an ASP.NET Core health check dependency.
 

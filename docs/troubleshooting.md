@@ -183,4 +183,4 @@ That is expected for invalid input when your codec returns null. Treat null as "
 | `AFD201` | Handler, behavior, or mapping rule is singleton. | Prefer scoped lifetime unless singleton is deliberate. |
 | `AFD301` | Mapper catalog validation failed. | Fix declared mappings, duplicate pairs, undeclared rules, or `CanMap` drift. |
 
-In `1.4.1`, the diagnostics behavior table also includes existing mediator pre-processors, post-processors, exception actions, and exception handlers. Diagnostics report type names and lifetimes, not request, response, notification, or DTO payload values.
+In `1.4.2`, the diagnostics behavior table also includes existing mediator pre-processors, post-processors, exception actions, and exception handlers. Order-sensitive mediator registration tables preserve DI registration order so runtime ordering can be reviewed. Diagnostics report type names and lifetimes, not request, response, notification, or DTO payload values.

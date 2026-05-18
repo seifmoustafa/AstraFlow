@@ -2,6 +2,36 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.4.2
+
+### Added
+
+- Added diagnostics regression coverage for order-sensitive mediator registrations.
+
+### Changed
+
+- Diagnostics registration tables now preserve dependency-injection registration order instead of sorting registrations alphabetically.
+
+### Fixed
+
+- Fixed diagnostics output so notification handlers, pipeline behaviors, processors, stream behaviors, exception actions, and exception handlers reflect runtime registration order.
+
+### Docs
+
+- Clarified that diagnostics registration table order mirrors captured DI registration order for mediator components.
+
+### Tests
+
+- Added report and Markdown assertions that non-alphabetical mediator registrations remain in DI order.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.4.2`.
+
+### Breaking changes
+
+- None.
+
 ## 1.4.1
 
 ### Added

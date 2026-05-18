@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.1
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.2
 ```
 
 ## Validate One Projection
