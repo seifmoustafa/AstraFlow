@@ -2,6 +2,41 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.6.2
+
+### Added
+
+- Added explicit `IncludeBase<TBaseSource, TBaseDestination>()` support for convention inheritance mapping.
+- Added explicit `IncludeDerived<TDerivedSource, TDerivedDestination>()` support for polymorphic convention dispatch.
+- Added `AFC017` diagnostics for included base mapping pairs.
+- Added `AFC018` diagnostics for included derived mapping pairs.
+- Added `AFC019` diagnostics for derived mappings that can be selected through polymorphic dispatch.
+- Added a `v1.6.2` inheritance and polymorphism design note.
+
+### Changed
+
+- Convention mapping resolution can now select an explicitly included derived mapping when mapping a derived source instance into an assignable base destination type.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping and API reference documentation for inheritance and polymorphic mapping.
+
+### Tests
+
+- Added tests for `IncludeBase`, `IncludeDerived`, polymorphic dispatch, and non-polymorphic behavior when derived mappings are not explicitly included.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.6.2`.
+
+### Breaking changes
+
+- None.
+
 ## 1.6.1
 
 ### Added

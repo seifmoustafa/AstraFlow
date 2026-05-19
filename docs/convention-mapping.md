@@ -5,8 +5,8 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.6.1
-dotnet add package AstraFlow.Mapper.Conventions --version 1.6.1
+dotnet add package AstraFlow.Mapper --version 1.6.2
+dotnet add package AstraFlow.Mapper.Conventions --version 1.6.2
 ```
 
 ## Register
@@ -140,7 +140,35 @@ Enum-to-enum members map only when every source enum name exists on the destinat
 
 ## Collection Shapes
 
-Convention mapping can adapt simple collection shapes when the source and destination element type is the same, such as `string[]` to `List<string>`. It does not perform deep graph collection updates or hidden item remapping in `1.6.1`.
+Convention mapping can adapt simple collection shapes when the source and destination element type is the same, such as `string[]` to `List<string>`. It does not perform deep graph collection updates or hidden item remapping in `1.6.2`.
+
+## Inheritance And Polymorphic Mapping
+
+Inheritance and polymorphic mapping are explicit. AstraFlow does not scan type hierarchies or infer derived maps globally.
+
+Use `IncludeBase` on a derived pair to make the inheritance relationship visible in the mapping plan:
+
+```csharp
+CreateMap<Animal, AnimalResponse>();
+
+CreateMap<Dog, DogResponse>()
+    .IncludeBase<Animal, AnimalResponse>();
+```
+
+The derived mapping still uses normal convention member matching for inherited public properties. The plan reports `AFC017`.
+
+Use `IncludeDerived` on a base pair when a base destination request may receive a derived destination:
+
+```csharp
+CreateMap<Animal, AnimalResponse>()
+    .IncludeDerived<Dog, DogResponse>();
+
+AnimalResponse response = mapper.Map<AnimalResponse>(new Dog());
+```
+
+The result can be `DogResponse` because the derived pair was explicitly included and `DogResponse` is assignable to `AnimalResponse`. The base plan reports `AFC018`; the derived plan reports `AFC019`.
+
+Collection element polymorphism remains outside `1.6.2` scope.
 
 ## Value Transformers
 

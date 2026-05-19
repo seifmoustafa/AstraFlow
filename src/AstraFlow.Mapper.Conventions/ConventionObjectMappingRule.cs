@@ -21,9 +21,7 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
 
     public bool CanMap(Type sourceType, Type destinationType)
     {
-        return _catalog.Definitions.Any(definition =>
-            definition.SourceType == sourceType &&
-            definition.DestinationType == destinationType);
+        return ResolveDefinition(sourceType, destinationType) is not null;
     }
 
     public object? Map(object? source, Type destinationType, IMapper mapper)
@@ -32,9 +30,7 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
             return null;
 
         var sourceType = source.GetType();
-        var definition = _catalog.Definitions.SingleOrDefault(candidate =>
-            candidate.SourceType == sourceType &&
-            candidate.DestinationType == destinationType);
+        var definition = ResolveDefinition(sourceType, destinationType);
 
         if (definition is null)
         {
@@ -45,7 +41,7 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
         var resolvedPlan = ConventionMappingPlanBuilder.BuildResolvedPlan(definition, _options);
         ConventionMappingPlanBuilder.ThrowIfInvalid(resolvedPlan.Plan, _options);
 
-        var destination = CreateDestination(destinationType, resolvedPlan, source);
+        var destination = CreateDestination(definition.DestinationType, resolvedPlan, source);
         RunHooks(definition.BeforeMapHooks, source, destination);
 
         foreach (var member in resolvedPlan.Members.Where(member => member.CanMap && !member.IsConstructorBound))
@@ -66,9 +62,7 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
 
         var sourceType = source.GetType();
         var destinationType = destination.GetType();
-        var definition = _catalog.Definitions.SingleOrDefault(candidate =>
-            candidate.SourceType == sourceType &&
-            candidate.DestinationType == destinationType);
+        var definition = ResolveExactDefinition(sourceType, destinationType);
 
         if (definition is null)
         {
@@ -95,6 +89,38 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
         }
 
         RunHooks(definition.AfterMapHooks, source, destination);
+    }
+
+    private ConventionMappingDefinition? ResolveDefinition(Type sourceType, Type destinationType)
+    {
+        var exact = ResolveExactDefinition(sourceType, destinationType);
+        if (exact is not null)
+            return exact;
+
+        var candidates = _catalog.Definitions
+            .Where(definition =>
+                definition.IsPolymorphicDerivedMapping &&
+                definition.SourceType == sourceType &&
+                destinationType.IsAssignableFrom(definition.DestinationType))
+            .ToArray();
+
+        if (candidates.Length == 0)
+            return null;
+
+        if (candidates.Length > 1)
+        {
+            throw new InvalidOperationException(
+                $"Multiple polymorphic convention mappings registered from '{sourceType.FullName}' to assignable destination '{destinationType.FullName}'.");
+        }
+
+        return candidates[0];
+    }
+
+    private ConventionMappingDefinition? ResolveExactDefinition(Type sourceType, Type destinationType)
+    {
+        return _catalog.Definitions.SingleOrDefault(candidate =>
+            candidate.SourceType == sourceType &&
+            candidate.DestinationType == destinationType);
     }
 
     private static object CreateDestination(
