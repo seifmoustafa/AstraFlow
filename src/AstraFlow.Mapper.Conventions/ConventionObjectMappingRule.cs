@@ -46,12 +46,14 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
         ConventionMappingPlanBuilder.ThrowIfInvalid(resolvedPlan.Plan, _options);
 
         var destination = CreateDestination(destinationType, resolvedPlan, source);
+        RunHooks(definition.BeforeMapHooks, source, destination);
 
         foreach (var member in resolvedPlan.Members.Where(member => member.CanMap && !member.IsConstructorBound))
         {
             ApplyMappedMember(source, destination, member);
         }
 
+        RunHooks(definition.AfterMapHooks, source, destination);
         return destination;
     }
 
@@ -83,12 +85,16 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
         var resolvedPlan = ConventionMappingPlanBuilder.BuildResolvedPlan(definition, _options);
         ConventionMappingPlanBuilder.ThrowIfInvalid(resolvedPlan.Plan, _options);
 
+        RunHooks(definition.BeforeMapHooks, source, destination);
+
         foreach (var member in resolvedPlan.Members.Where(member =>
             member.CanMap &&
             ConventionMappingPlanBuilder.CanWrite(member.DestinationProperty)))
         {
             ApplyMappedMember(source, destination, member);
         }
+
+        RunHooks(definition.AfterMapHooks, source, destination);
     }
 
     private static object CreateDestination(
@@ -111,6 +117,7 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
                     parameter.RequiresEnumToString,
                     parameter.RequiresEnumToEnum,
                     parameter.RequiresCollectionMapping,
+                    parameter.ValueTransformer,
                     parameter.Parameter.ParameterType))
                 .ToArray();
 
@@ -148,6 +155,7 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
             member.RequiresEnumToString,
             member.RequiresEnumToEnum,
             member.RequiresCollectionMapping,
+            member.ValueTransformer,
             member.DestinationProperty.PropertyType);
 
         var target = ResolveDestinationTarget(destination, member.DestinationPath);
@@ -160,34 +168,49 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
         bool requiresEnumToString,
         bool requiresEnumToEnum,
         bool requiresCollectionMapping,
+        ConventionValueTransformerDefinition? valueTransformer,
         Type destinationType)
     {
+        object? result = value;
+
         if (value is null && configuration?.HasNullSubstitute == true)
         {
-            return configuration.NullSubstitute;
+            result = configuration.NullSubstitute;
         }
-
-        if (value is not null && configuration?.HasConverter == true && configuration.Converter is not null)
+        else if (value is not null && configuration?.HasConverter == true && configuration.Converter is not null)
         {
-            return configuration.Converter(value);
+            result = configuration.Converter(value);
         }
-
-        if (value is not null && requiresEnumToString)
+        else if (value is not null && requiresEnumToString)
         {
-            return value.ToString();
+            result = value.ToString();
         }
-
-        if (value is not null && requiresEnumToEnum)
+        else if (value is not null && requiresEnumToEnum)
         {
-            return Enum.Parse(Nullable.GetUnderlyingType(destinationType) ?? destinationType, value.ToString()!);
+            result = Enum.Parse(Nullable.GetUnderlyingType(destinationType) ?? destinationType, value.ToString()!);
         }
-
-        if (value is not null && requiresCollectionMapping)
+        else if (value is not null && requiresCollectionMapping)
         {
-            return MapCollectionShape(value, destinationType);
+            result = MapCollectionShape(value, destinationType);
         }
 
-        return value;
+        if (valueTransformer is not null)
+        {
+            return valueTransformer.Transformer(result);
+        }
+
+        return result;
+    }
+
+    private static void RunHooks(
+        IReadOnlyList<Action<object, object>> hooks,
+        object source,
+        object destination)
+    {
+        foreach (var hook in hooks)
+        {
+            hook(source, destination);
+        }
     }
 
     private static object ResolveDestinationTarget(object destination, IReadOnlyList<System.Reflection.PropertyInfo> path)

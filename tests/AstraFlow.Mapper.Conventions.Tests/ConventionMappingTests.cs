@@ -617,6 +617,83 @@ public sealed class ConventionMappingTests
             finding.Member == nameof(PersonNameDto.FullName));
     }
 
+    [Fact]
+    public void Map_WithValueTransformer_AppliesTransformerAndReportsIt()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.AddValueTransformer<string>(value => value?.Trim());
+                catalog.CreateMap<ContactInfo, ContactDto>();
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<ContactDto>(new ContactInfo(" ada@example.com "));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Email.Should().Be("ada@example.com");
+        plan.Members.Single(member => member.DestinationMember == nameof(ContactDto.Email))
+            .Decision.Should().Be("Transformed");
+        plan.Findings.Should().Contain(finding =>
+            finding.Code == "AFC014" &&
+            finding.Member == nameof(ContactDto.Email));
+    }
+
+    [Fact]
+    public void Map_WithBeforeAndAfterHooks_RunsHooksAroundMemberAssignmentAndReportsThem()
+    {
+        var order = new List<string>();
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<ContactInfo, HookedContactDto>()
+                    .BeforeMap((_, destination) =>
+                    {
+                        order.Add("before:" + (destination.Email ?? "null"));
+                        destination.BeforeWasCalled = true;
+                    })
+                    .AfterMap((_, destination) =>
+                    {
+                        order.Add("after:" + destination.Email);
+                        destination.AfterWasCalled = true;
+                    });
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<HookedContactDto>(new ContactInfo("ada@example.com"));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.BeforeWasCalled.Should().BeTrue();
+        result.AfterWasCalled.Should().BeTrue();
+        order.Should().Equal("before:null", "after:ada@example.com");
+        plan.Findings.Should().Contain(finding => finding.Code == "AFC015");
+        plan.Findings.Should().Contain(finding => finding.Code == "AFC016");
+    }
+
+    [Fact]
+    public void MapInto_WithBeforeAndAfterHooks_RunsHooksAroundExistingDestinationUpdate()
+    {
+        var order = new List<string>();
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<ContactInfo, HookedContactDto>()
+                    .EnableUpdateMapping()
+                    .BeforeMap((_, destination) => order.Add("before:" + destination.Email))
+                    .AfterMap((_, destination) => order.Add("after:" + destination.Email));
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IConventionMapper>();
+        var destination = new HookedContactDto { Email = "old@example.com" };
+
+        mapper.MapInto(new ContactInfo("new@example.com"), destination);
+
+        destination.Email.Should().Be("new@example.com");
+        order.Should().Equal("before:old@example.com", "after:new@example.com");
+    }
+
     private static ServiceCollection CreateServices(
         Action<ConventionMappingCatalog>? configureCatalog = null,
         Action<ConventionMappingOptions>? configureOptions = null)
@@ -782,6 +859,15 @@ public sealed class ConventionMappingTests
 
     private sealed class ContactDto
     {
+        public string? Email { get; set; }
+    }
+
+    private sealed class HookedContactDto
+    {
+        public bool AfterWasCalled { get; set; }
+
+        public bool BeforeWasCalled { get; set; }
+
         public string? Email { get; set; }
     }
 

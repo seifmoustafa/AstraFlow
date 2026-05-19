@@ -75,6 +75,28 @@ public sealed class ConventionMappingExpression<TSource, TDestination>
     }
 
     /// <summary>
+    /// Runs a hook after destination construction and before member assignment.
+    /// </summary>
+    /// <param name="hook">The before-map hook.</param>
+    /// <returns>The same expression for chaining.</returns>
+    public ConventionMappingExpression<TSource, TDestination> BeforeMap(Action<TSource, TDestination> hook)
+    {
+        _definition.AddBeforeMapHook(hook);
+        return this;
+    }
+
+    /// <summary>
+    /// Runs a hook after member assignment.
+    /// </summary>
+    /// <param name="hook">The after-map hook.</param>
+    /// <returns>The same expression for chaining.</returns>
+    public ConventionMappingExpression<TSource, TDestination> AfterMap(Action<TSource, TDestination> hook)
+    {
+        _definition.AddAfterMapHook(hook);
+        return this;
+    }
+
+    /// <summary>
     /// Enables opt-in flattening from nested source members to flat destination members.
     /// </summary>
     /// <returns>The same expression for chaining.</returns>
@@ -122,7 +144,10 @@ public sealed class ConventionMappingExpression<TSource, TDestination>
     public ConventionMappingExpression<TDestination, TSource> ReverseMap(
         Action<ConventionMappingExpression<TDestination, TSource>>? configure = null)
     {
-        var reverseDefinition = new ConventionMappingDefinition(typeof(TDestination), typeof(TSource))
+        var reverseDefinition = new ConventionMappingDefinition(
+            typeof(TDestination),
+            typeof(TSource),
+            _definition.ValueTransformers)
         {
             ExplicitReverseMapping = true
         };

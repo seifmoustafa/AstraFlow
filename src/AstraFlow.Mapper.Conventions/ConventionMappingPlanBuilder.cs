@@ -20,6 +20,7 @@ internal static class ConventionMappingPlanBuilder
         var members = new List<MappingPlanMember>();
         var resolvedMembers = new List<ConventionResolvedMember>();
         var findings = new List<MappingPlanFinding>();
+        AddHookFindings(definition, findings);
         var allowCaseInsensitive = definition.AllowCaseInsensitiveMemberMatching ||
             options.AllowCaseInsensitiveMemberMatching;
         var constructor = ResolveConstructorBinding(
@@ -97,6 +98,10 @@ internal static class ConventionMappingPlanBuilder
                 {
                     var substitutionReason = AddConfigurationReason("Null substitution configured.", memberConfiguration);
                     members.Add(new MappingPlanMember(destinationMemberName, null, "Substituted", substitutionReason));
+                    var substitutionTransformer = ResolveValueTransformer(definition, destinationProperty.PropertyType);
+                    if (substitutionTransformer is not null)
+                        AddTransformerFinding(findings, destinationMemberName, substitutionTransformer);
+
                     resolvedMembers.Add(ConventionResolvedMember.Mappable(
                         destinationProperty,
                         destinationTarget.Path,
@@ -108,6 +113,7 @@ internal static class ConventionMappingPlanBuilder
                         false,
                         false,
                         false,
+                        substitutionTransformer,
                         isConstructorBound));
                     continue;
                 }
@@ -179,11 +185,14 @@ internal static class ConventionMappingPlanBuilder
             }
 
             usedSourceMembers.Add(sourceMemberName);
-            var decisionText = GetDecisionText(memberConfiguration, compatibility, sourceResolution);
+            var valueTransformer = ResolveValueTransformer(definition, destinationProperty.PropertyType);
+            var decisionText = GetDecisionText(memberConfiguration, compatibility, sourceResolution, valueTransformer);
             if (isConstructorBound)
                 decisionText = "ConstructorBound";
 
             var mappedReason = AddConfigurationReason(compatibility.Reason, memberConfiguration);
+            if (valueTransformer is not null)
+                mappedReason = $"{mappedReason} Value transformer for '{GetDisplayName(valueTransformer.ValueType)}' configured.";
             if (isConstructorBound)
                 mappedReason = $"{mappedReason} Bound through destination constructor.";
             if (definition.ExplicitReverseMapping)
@@ -196,6 +205,8 @@ internal static class ConventionMappingPlanBuilder
                     destinationMemberName,
                     $"Destination member '{destinationMemberName}' is resolved by '{memberConfiguration.ResolverType.FullName}'."));
             }
+            if (valueTransformer is not null)
+                AddTransformerFinding(findings, destinationMemberName, valueTransformer);
 
             members.Add(new MappingPlanMember(destinationMemberName, sourceMemberName, decisionText, mappedReason));
             resolvedMembers.Add(ConventionResolvedMember.Mappable(
@@ -209,6 +220,7 @@ internal static class ConventionMappingPlanBuilder
                 compatibility.RequiresEnumToString,
                 compatibility.RequiresEnumToEnum,
                 compatibility.RequiresCollectionMapping,
+                valueTransformer,
                 isConstructorBound));
         }
 
@@ -373,7 +385,8 @@ internal static class ConventionMappingPlanBuilder
                 sourceResolution.SourceValueFactory,
                 compatibility.RequiresEnumToString,
                 compatibility.RequiresEnumToEnum,
-                compatibility.RequiresCollectionMapping));
+                compatibility.RequiresCollectionMapping,
+                ResolveValueTransformer(definition, parameter.ParameterType)));
         }
 
         return new ConventionResolvedConstructor(constructor, parameters, true, "ConstructorBound", "Destination constructor parameters are mapped by convention.");
@@ -630,7 +643,8 @@ internal static class ConventionMappingPlanBuilder
     private static string GetDecisionText(
         ConventionMemberMappingDefinition? memberConfiguration,
         MemberCompatibility compatibility,
-        SourceMemberResolution sourceResolution)
+        SourceMemberResolution sourceResolution,
+        ConventionValueTransformerDefinition? valueTransformer)
     {
         if (sourceResolution.DecisionOverride is not null)
             return sourceResolution.DecisionOverride;
@@ -640,6 +654,9 @@ internal static class ConventionMappingPlanBuilder
 
         if (memberConfiguration?.HasConverter == true)
             return "Converted";
+
+        if (valueTransformer is not null)
+            return "Transformed";
 
         if (memberConfiguration?.HasCondition == true)
             return "MappedWhen";
@@ -705,6 +722,51 @@ internal static class ConventionMappingPlanBuilder
             code,
             "Constructor",
             message));
+    }
+
+    private static void AddHookFindings(
+        ConventionMappingDefinition definition,
+        List<MappingPlanFinding> findings)
+    {
+        if (definition.BeforeMapHooks.Count != 0)
+        {
+            findings.Add(new MappingPlanFinding(
+                MappingPlanFindingSeverity.Info,
+                "AFC015",
+                "Mapping",
+                $"Convention mapping '{GetDisplayName(definition.SourceType)} -> {GetDisplayName(definition.DestinationType)}' has {definition.BeforeMapHooks.Count} before-map hook(s)."));
+        }
+
+        if (definition.AfterMapHooks.Count != 0)
+        {
+            findings.Add(new MappingPlanFinding(
+                MappingPlanFindingSeverity.Info,
+                "AFC016",
+                "Mapping",
+                $"Convention mapping '{GetDisplayName(definition.SourceType)} -> {GetDisplayName(definition.DestinationType)}' has {definition.AfterMapHooks.Count} after-map hook(s)."));
+        }
+    }
+
+    private static void AddTransformerFinding(
+        List<MappingPlanFinding> findings,
+        string destinationMemberName,
+        ConventionValueTransformerDefinition transformer)
+    {
+        findings.Add(new MappingPlanFinding(
+            MappingPlanFindingSeverity.Info,
+            "AFC014",
+            destinationMemberName,
+            $"Destination member '{destinationMemberName}' uses value transformer for '{GetDisplayName(transformer.ValueType)}'."));
+    }
+
+    private static ConventionValueTransformerDefinition? ResolveValueTransformer(
+        ConventionMappingDefinition definition,
+        Type destinationType)
+    {
+        var normalizedDestinationType = Nullable.GetUnderlyingType(destinationType) ?? destinationType;
+        return definition.ValueTransformers.LastOrDefault(transformer =>
+            transformer.ValueType == destinationType ||
+            transformer.ValueType == normalizedDestinationType);
     }
 
     private static bool IsNumeric(Type type)

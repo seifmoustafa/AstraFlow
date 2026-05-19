@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.6.0</Version>
-    <AssemblyVersion>1.6.0.0</AssemblyVersion>
-    <FileVersion>1.6.0.0</FileVersion>
+    <Version>1.6.1</Version>
+    <AssemblyVersion>1.6.1.0</AssemblyVersion>
+    <FileVersion>1.6.1.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.6.0:
-      - Adds opt-in flattening, unflattening, explicit reverse mapping, include-members, custom source expressions, custom destination paths, and value resolvers for convention mapping.
-      - Keeps advanced mapping decisions visible in deterministic mapping plans with resolver diagnostics.
-      - Preserves explicit mapping defaults: convention mapping, flattening, unflattening, and reverse mapping remain opt-in.
+    <PackageReleaseNotes>AstraFlow 1.6.1:
+      - Promotes selected v1.6.x candidate follow-ups: value transformers and before/after map hooks.
+      - Adds AFC014, AFC015, and AFC016 diagnostics so transformers and hooks are visible in mapping plans.
+      - Preserves explicit defaults: transformers and hooks apply only to opt-in convention mappings.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

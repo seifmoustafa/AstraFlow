@@ -923,7 +923,7 @@ What must NOT be included:
 
 #### v1.6.x Candidate Follow-ups
 
-Status: `Candidate`.
+Status: `Candidate, partially promoted`.
 
 Goal:
 
@@ -937,9 +937,9 @@ Packages affected:
 
 Candidate features:
 
-- Value transformers if global behavior can be made diagnosable.
-- Before-map hooks if diagnostics-visible.
-- After-map hooks if diagnostics-visible.
+- Value transformers if global behavior can be made diagnosable. `Done in v1.6.1`.
+- Before-map hooks if diagnostics-visible. `Done in v1.6.1`.
+- After-map hooks if diagnostics-visible. `Done in v1.6.1`.
 - Inheritance mapping after profile/catalog model stabilizes.
 - Polymorphic mapping after profile/catalog model stabilizes.
 - Collection element polymorphism after profile/catalog model stabilizes.
@@ -968,6 +968,7 @@ Test requirements:
 Documentation requirements:
 
 - Candidate-specific design notes before promotion.
+- `v1.6.1` design note: `docs/design-v1.6.1-candidate-followups.md`.
 
 Migration examples required:
 
