@@ -2,6 +2,144 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.6.0
+
+### Added
+
+- Added opt-in flattening for nested source members mapped into flat destination members.
+- Added opt-in unflattening for flat source members mapped into nested destination paths.
+- Added explicit `ReverseMap` registration; reverse mapping is never implicit.
+- Added `IncludeMembers` for composing destination members from selected child source members.
+- Added custom source expression support through `MapFrom`.
+- Added custom destination path support through `ForPath`.
+- Added value resolver support through `IConventionValueResolver`.
+- Added mapping plan decisions for `Flattened`, `Unflattened`, `IncludedMember`, and `Resolved`.
+- Added resolver diagnostics with `AFC013`.
+
+### Changed
+
+- Convention mapping plans now report nested destination paths and advanced mapping decisions.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping documentation for advanced mapping scenarios.
+
+### Tests
+
+- Added tests for flattening, unflattening, explicit reverse mapping, include members, custom source expressions, custom destination paths, and value resolvers.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.6.0`.
+
+### Breaking changes
+
+- None.
+
+## 1.5.2
+
+### Added
+
+- Added constructor and record binding for opt-in convention mapping, including immutable destination support when constructor parameters can be mapped.
+- Added `IConventionMapper` for convention-specific mapping operations.
+- Added explicit existing-destination update mapping with `EnableUpdateMapping` and `MapInto`.
+- Added constructor ambiguity, constructor availability, and immutable destination diagnostics.
+- Added safe same-element collection shape mapping for convention members.
+
+### Changed
+
+- Convention mapping plans now show constructor-bound members so record and immutable destination mappings are inspectable.
+- Update mapping is documented separately from read DTO mapping and must be enabled per source/destination pair.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping, API reference, diagnostics, and troubleshooting documentation for constructor binding, record binding, immutable destinations, and safe update mapping.
+
+### Tests
+
+- Added tests for record mapping, immutable constructor mapping, ambiguous constructor diagnostics, explicit update mapping, conditional patch behavior, sensitive destination write protection, and safe collection shape mapping.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.5.2`.
+
+### Breaking changes
+
+- None.
+
+## 1.5.1
+
+### Added
+
+- Added fluent convention member configuration with `ForMember`, `MapFrom`, `Required`, `NullSubstitute`, `ConvertUsing`, and `Condition`.
+- Added enum-to-enum validation, enum-to-string convention mapping, nullable compatibility diagnostics, numeric conversion diagnostics, and required-member diagnostics.
+- Added mapping plan decisions for converted, conditional, null-substituted, enum-to-enum, and enum-to-string member mappings.
+
+### Changed
+
+- Convention mapping plans now include member-level configuration reasons so automatic and configured decisions are reviewable in diagnostics.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping, API reference, and troubleshooting documentation for member configuration, converters, conditionals, null substitution, and new finding codes.
+
+### Tests
+
+- Added convention mapping tests for explicit member sources, required destinations, null substitution, converters, conditional mapping, enum mapping, nullable diagnostics, numeric diagnostics, and mapping plan visibility.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.5.1`.
+
+### Breaking changes
+
+- None.
+
+## 1.5.0
+
+### Added
+
+- Added optional `AstraFlow.Mapper.Conventions` for opt-in convention mapping.
+- Added convention mapping profiles, catalogs, exact source/destination pair registration, exact member matching, and opt-in case-insensitive member matching.
+- Added include rules, ignore rules, sensitive-member allow rules, strict mode, and deterministic mapping plan export.
+- Added mapper-level `IMappingPlanProvider` and `MappingPlan` diagnostics contracts.
+
+### Changed
+
+- Diagnostics reports now include mapping plan output when a package provides mapping plans.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Added convention mapping guidance covering registration, profiles, strict mode, sensitive fields, plan export, and troubleshooting.
+
+### Tests
+
+- Added convention mapping tests for opt-in behavior, exact matching, case-insensitive matching, include/ignore rules, unmapped diagnostics, ambiguity, sensitive fields, strict mode, plan export, and diagnostics output.
+
+### Packaging
+
+- Added `AstraFlow.Mapper.Conventions` to solution, CI, pack scripts, package asset verification, and clean install verification.
+
+### Breaking changes
+
+- None.
+
 ## 1.4.2
 
 ### Added

@@ -47,7 +47,7 @@ Coverage validation is optional because some applications register generated or 
 Use `AstraFlow.Contracts` in shared assemblies that define requests and notifications but should not reference the mediator runtime:
 
 ```powershell
-dotnet add package AstraFlow.Contracts --version 1.4.2
+dotnet add package AstraFlow.Contracts --version 1.5.2
 ```
 
 The contracts keep the `AstraFlow.Mediator` namespace so application code can use the same imports when it later references `AstraFlow.Mediator`.

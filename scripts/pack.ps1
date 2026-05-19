@@ -31,6 +31,7 @@ try {
     Invoke-DotNetStep "Pack AstraFlow.Contracts" @("pack", ".\src\AstraFlow.Contracts\AstraFlow.Contracts.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Mediator" @("pack", ".\src\AstraFlow.Mediator\AstraFlow.Mediator.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Mapper" @("pack", ".\src\AstraFlow.Mapper\AstraFlow.Mapper.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Pack AstraFlow.Mapper.Conventions" @("pack", ".\src\AstraFlow.Mapper.Conventions\AstraFlow.Mapper.Conventions.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Mapper.EntityFrameworkCore" @("pack", ".\src\AstraFlow.Mapper.EntityFrameworkCore\AstraFlow.Mapper.EntityFrameworkCore.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Diagnostics" @("pack", ".\src\AstraFlow.Diagnostics\AstraFlow.Diagnostics.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Testing" @("pack", ".\src\AstraFlow.Testing\AstraFlow.Testing.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")

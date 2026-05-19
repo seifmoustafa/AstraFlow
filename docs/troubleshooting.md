@@ -145,6 +145,48 @@ EF Core can allow some client-side work in the final projection while still gene
 
 If `IProjectionRegistry.Get<TSource, TDestination>()` throws because multiple unnamed projections exist, convert each projection to `INamedProjection<TSource, TDestination>` and resolve by name.
 
+### Convention Mapping Fails With AFC001 Or AFC002
+
+Strict convention mapping treats unmapped destination and source members as failures. Add an exact member, configure `Ignore(...)`, use `Include(...)` as an allow list, or temporarily set `StrictMode = false` while migrating.
+
+### Convention Mapping Fails With AFC003
+
+Case-insensitive matching found more than one possible source member. Rename the source members or keep exact matching for that pair.
+
+### Convention Mapping Fails With AFC004
+
+A source or destination member matched a sensitive-field fragment such as password, secret, token, API key, or connection string. Remove the member from the DTO, ignore it, or explicitly call `AllowSensitiveMember(...)` when the mapping is intentional.
+
+### Convention Mapping Fails With AFC006 Or AFC007
+
+`AFC006` means a nullable value-type source may flow into a non-nullable destination. Configure `NullSubstitute(...)`, use `ConvertUsing(...)`, or make the destination nullable.
+
+`AFC007` means a numeric type conversion would be implicit. Configure `ConvertUsing(...)` so the conversion is explicit and visible in the mapping plan.
+
+### Convention Mapping Fails With AFC008
+
+Enum-to-enum mapping only succeeds when every source enum name exists on the destination enum. Add the missing destination enum names or configure a converter.
+
+### Convention Mapping Fails With AFC009
+
+A destination member was marked `Required()` but has no matched source member, is ignored, or is outside the include list. Add `MapFrom(...)`, remove the required rule, or include the destination member.
+
+### Convention Mapping Fails With AFC010 Or AFC011
+
+`AFC010` means more than one public constructor can be mapped with the same specificity. Remove the ambiguity by changing the destination constructors or using a DTO shape with one mappable constructor.
+
+`AFC011` means the destination cannot be created because there is no usable parameterless constructor and no public constructor whose parameters can all be mapped. Add a mappable constructor, add `ForMember(...).MapFrom(...)` rules, or use a mutable DTO.
+
+### Convention Mapping Fails With AFC012
+
+An immutable destination member was visible in the destination type but was not assigned through a constructor. Add a matching constructor parameter, configure `MapFrom(...)`, or make the member writable.
+
+### Existing Destination Mapping Fails
+
+`IConventionMapper.MapInto(...)` requires `EnableUpdateMapping()` on the exact source/destination pair. This keeps read DTO mapping separate from write/update behavior.
+
+If an update mapping fails with `AFC004`, the destination member is sensitive. Do not update secrets by convention; call `AllowSensitiveMember(...)` only when the write is intentional and reviewed.
+
 ## Secure ID Problems
 
 ### `SecureIdMapper` Cannot Resolve
@@ -183,4 +225,4 @@ That is expected for invalid input when your codec returns null. Treat null as "
 | `AFD201` | Handler, behavior, or mapping rule is singleton. | Prefer scoped lifetime unless singleton is deliberate. |
 | `AFD301` | Mapper catalog validation failed. | Fix declared mappings, duplicate pairs, undeclared rules, or `CanMap` drift. |
 
-In `1.4.2`, the diagnostics behavior table also includes existing mediator pre-processors, post-processors, exception actions, and exception handlers. Order-sensitive mediator registration tables preserve DI registration order so runtime ordering can be reviewed. Diagnostics report type names and lifetimes, not request, response, notification, or DTO payload values.
+In `1.5.0`, the diagnostics behavior table also includes existing mediator pre-processors, post-processors, exception actions, and exception handlers. Order-sensitive mediator registration tables preserve DI registration order so runtime ordering can be reviewed. Diagnostics report type names and lifetimes, not request, response, notification, or DTO payload values.

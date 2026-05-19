@@ -4,7 +4,7 @@ This guide documents AstraFlow target framework support, compatibility goals, an
 
 ## Current Support
 
-AstraFlow `1.4.2` currently targets:
+AstraFlow `1.5.2` currently targets:
 
 | Package | Current targets |
 | --- | --- |
@@ -12,11 +12,12 @@ AstraFlow `1.4.2` currently targets:
 | `AstraFlow.Contracts` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Mediator` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Mapper` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Mapper.Conventions` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Testing` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Mapper.EntityFrameworkCore` | `net10.0` |
 
-This means applications, shared libraries, contracts projects, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the contracts package, core packages, and `AstraFlow.Testing`. EF Core projection translation validation still requires a `net10.0` project.
+This means applications, shared libraries, contracts projects, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the contracts package, core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing`. EF Core projection translation validation still requires a `net10.0` project.
 
 ## Compatibility Goal
 
@@ -26,7 +27,7 @@ Current target policy:
 
 | Package | Policy | Notes |
 | --- | --- | --- |
-| Contracts, core, and testing packages | Keep `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` while tests and dependencies remain healthy. | Core means mediator, mapper, diagnostics, testing, and meta package. |
+| Contracts, core, conventions, and testing packages | Keep `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` while tests and dependencies remain healthy. | Core means mediator, mapper, conventions, diagnostics, testing, and meta package. |
 | EF Core package | Keep target support aligned with the referenced EF Core major version. | Do not broaden EF support by silently pinning consumers to an incompatible EF Core line. |
 
 Direct .NET Framework targets such as `net462` or `net471` are candidates only after testing proves they add value beyond `netstandard2.0` consumption.
@@ -57,7 +58,7 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Use AstraFlow `1.4.2` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
+Use AstraFlow `1.5.2` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
@@ -81,10 +82,10 @@ dotnet test AstraFlow.slnx -c Release
 .\scripts\pack.ps1
 ```
 
-For `1.4.2`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` includes only `lib/net10.0/`.
+For `1.5.2`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` includes only `lib/net10.0/`.
 
 Then run:
 
 ```powershell
-.\scripts\verify-package-install.ps1 -Version 1.4.2
+.\scripts\verify-package-install.ps1 -Version 1.5.2
 ```

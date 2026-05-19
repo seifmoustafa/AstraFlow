@@ -30,6 +30,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | `AstraFlow.Contracts` | Shared mediator contracts for requests, notifications, streams, senders, publishers, processors, and exception flow. |
 | `AstraFlow.Mediator` | Request/response dispatch, void commands, stream requests, notification publishing, pipeline behaviors, processors, exception flow, handler scanning, duplicate handler detection, and optional handler coverage validation. |
 | `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named projection registry, projection validation, and secure ID mapping abstractions. |
+| `AstraFlow.Mapper.Conventions` | Optional convention mapping with exact pair registration, profiles, strict mapping plans, flattening, explicit reverse mapping, custom paths, resolvers, and sensitive-field safeguards. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
 | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
 | `AstraFlow.Testing` | Framework-neutral test helpers for fake mediator flows, handler harnesses, mapper/projection assertions, diagnostics assertions, and test secure IDs. |
@@ -47,6 +48,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | [Mediator Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator.md) | You are using requests, handlers, notifications, or pipeline behaviors. |
 | [Mediator Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator-scenarios.md) | You want expected behavior for success cases, missing handlers, duplicate handlers, ambiguous requests, pipeline order, and notification failures. |
 | [Mapper Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mapper.md) | You are writing mapping rules, projections, validation, or secure ID mapping. |
+| [Convention Mapping](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/convention-mapping.md) | You want opt-in convention mapping with visible mapping plans and sensitive-field safeguards. |
 | [Mapper Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mapper-scenarios.md) | You want expected behavior for object mapping, nulls, collections, validation failures, projections, and secure IDs. |
 | [Projection Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/projections.md) | You are registering, naming, validating, or resolving explicit projections. |
 | [Projection Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/projection-scenarios.md) | You want expected behavior for duplicate, missing, named, risky, and strict projection cases. |
@@ -62,7 +64,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 
 ## Target Framework
 
-Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line.
+Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. Since `1.5.0`, `AstraFlow.Mapper.Conventions` ships the same non-EF targets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line.
 
 ## Public API At A Glance
 
@@ -75,6 +77,7 @@ Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraF
 | `services.AddAstraFlowMediator(builder => ..., params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and add explicit behaviors, processors, stream behaviors, and exception-flow components. | Core handlers are scanned and cross-cutting components are registered in a readable place. |
 | `services.AddAstraFlowMapper(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mapper` | Register mapper services and scan marker assemblies for mapping rules and projections. | `IMapper`, `IObjectMappingValidator`, `IProjectionRegistry`, `IProjectionValidator`, `SecureIdMapper`, and startup validation are registered. |
 | `services.AddAstraFlowMapper(IEnumerable<Type>, Action<MappingOptions>?)` | `AstraFlow.Mapper` | Register mapper services with explicit mapper/projection validation options. | Mapping and projection validation behavior is configured without adding new overloads for every option. |
+| `services.AddAstraFlowConventionMapping(...)` | `AstraFlow.Mapper.Conventions` | Register exact opt-in convention mapping pairs, profiles, and strict mapping-plan validation. | Convention mapping rules and `IMappingPlanProvider` are registered without changing explicit mapper defaults. |
 | `services.AddAstraFlowDiagnostics(Action<AstraFlowDiagnosticsOptions>?)` | `AstraFlow.Diagnostics` | Register diagnostics after mediator/mapper services so it can snapshot registrations. | `IAstraFlowDiagnosticsReporter` can create in-memory, JSON, and Markdown reports. |
 | `services.AddAstraFlow(bool validateRequestCoverage = false, params Type[] assemblyMarkerTypes)` | `AstraFlow` | Register mediator and mapper together. | Combined setup for applications that intentionally use both packages. |
 
@@ -261,12 +264,54 @@ var query = db.Users.ProjectWith<User, UserListItem>(registry, "list");
 
 Projection validation reports warnings by default. Set `ProjectionValidationMode.Error` in CI or strict startup validation when projection findings should fail the build or application startup.
 
+## Quick Start: Convention Mapping
+
+Install the optional conventions package only where convention mapping is deliberate:
+
+```powershell
+dotnet add package AstraFlow.Mapper.Conventions --version 1.5.2
+```
+
+Register exact pairs through a profile:
+
+```csharp
+services.AddAstraFlowMapper(typeof(UserProfile));
+services.AddAstraFlowConventionMapping(catalog => catalog.AddProfile<UserProfile>());
+
+public sealed class UserProfile : ConventionMappingProfile
+{
+    public UserProfile()
+    {
+        CreateMap<User, UserResponse>()
+            .ForMember(destination => destination.DisplayName, member => member
+                .MapFrom(source => source.Name)
+                .Required())
+            .ForMember(destination => destination.Score, member => member.NullSubstitute(0))
+            .Ignore(nameof(UserResponse.InternalNote));
+    }
+}
+```
+
+Convention mapping stays disabled for every pair that is not registered. Member rules, converters, conditions, null substitution, enum decisions, and constructor-bound record members are included in mapping plans so every convention-created member can be reviewed before publishing.
+
+Existing-destination updates are separate from read DTO mapping:
+
+```csharp
+CreateMap<UserPatch, User>()
+    .EnableUpdateMapping()
+    .ForMember(destination => destination.Email, member => member.Condition(source => source.HasEmail));
+
+provider.GetRequiredService<IConventionMapper>().MapInto(patch, user);
+```
+
+Sensitive destination writes remain blocked unless explicitly allowed.
+
 ## Quick Start: EF Core Projection Checks
 
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.4.2
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.5.2
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -348,7 +393,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.4.2
+dotnet add package AstraFlow.Testing --version 1.5.2
 ```
 
 Use the fake mediator to record requests and notifications:

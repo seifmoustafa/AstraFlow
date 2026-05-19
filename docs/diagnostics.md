@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.4.2
+dotnet add package AstraFlow.Diagnostics --version 1.5.2
 ```
 
 The package references `AstraFlow.Mediator` and `AstraFlow.Mapper` so it can understand the core public contracts.
@@ -49,11 +49,14 @@ Use `CreateReport()` for application decisions or tests. Use JSON for tooling an
 | Notification handlers | Service type, implementation type, and DI lifetime. |
 | Pipeline behaviors | Open or closed behavior registration and lifetime. |
 | Mapping rules | Registered `IObjectMappingRule` implementations and lifetimes. |
+| Mapping plans | Convention-created member decisions, member configuration reasons, and findings from registered `IMappingPlanProvider` services. |
 | Projections | Registered `IProjection<TSource, TDestination>` implementations, optional names, and lifetimes. |
 
 Mediator registration tables preserve the dependency-injection registration order captured when diagnostics is registered. Use that order to review notification handlers, pipeline behaviors, stream behaviors, processors, exception actions, and exception handlers because those components have order-sensitive runtime behavior.
 
 The summary has `HasErrors`, which is suitable for health-check-style decisions without requiring an ASP.NET Core health check dependency.
+
+Mapping plan rows include configured member behavior such as converters, null substitution, conditional mapping, enum mapping, required members, constructor-bound members, existing-destination update decisions, and blocked unsafe nullable or numeric conversions. Diagnostics report type/member names and rule reasons, not DTO payload values.
 
 ## Options
 
@@ -108,6 +111,7 @@ Markdown includes:
 - notification handler table,
 - mediator cross-cutting table for pipeline behaviors, stream behaviors, processors, exception actions, and exception handlers,
 - mapping rule table,
+- mapping plan table,
 - projection table.
 
 Named projections are shown in the projection service column as `[name: value]`.

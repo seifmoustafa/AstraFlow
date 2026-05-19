@@ -47,12 +47,14 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
             ("Void request exception handler", typeof(IRequestExceptionHandler<,>)),
             ("Response request exception handler", typeof(IRequestExceptionHandler<,,>)));
         var mappingRules = GetRegistrations(descriptors, "Mapping rule", typeof(IObjectMappingRule));
+        var mappingPlans = GetMappingPlans();
         var projections = GetProjectionRegistrations(descriptors);
 
         var findings = new List<AstraFlowDiagnosticFinding>();
-        AddInfoFindings(findings, requestHandlers, notificationHandlers, pipelineBehaviors, mappingRules, projections);
+        AddInfoFindings(findings, requestHandlers, notificationHandlers, pipelineBehaviors, mappingRules, mappingPlans, projections);
         AddDuplicateRequestHandlerFindings(findings, descriptors);
         AddUnsafeLifetimeFindings(findings, requestHandlers, notificationHandlers, pipelineBehaviors, mappingRules, projections);
+        AddMappingPlanFindings(findings, mappingPlans);
 
         if (_options.ValidateRequestCoverage)
             AddRequestCoverageFindings(findings, descriptors);
@@ -74,6 +76,7 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
             notificationHandlers.Count,
             pipelineBehaviors.Count,
             mappingRules.Count,
+            mappingPlans.Count,
             projections.Count,
             orderedFindings.Count(f => f.Severity == DiagnosticSeverity.Info),
             orderedFindings.Count(f => f.Severity == DiagnosticSeverity.Warning),
@@ -85,6 +88,7 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
             notificationHandlers,
             pipelineBehaviors,
             mappingRules,
+            mappingPlans,
             projections,
             orderedFindings,
             summary);
@@ -130,6 +134,7 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         AppendRegistrations(builder, "Notification Handlers", report.NotificationHandlers);
         AppendRegistrations(builder, "Pipeline Behaviors", report.PipelineBehaviors);
         AppendRegistrations(builder, "Mapping Rules", report.MappingRules);
+        AppendMappingPlans(builder, report.MappingPlans);
         AppendRegistrations(builder, "Projections", report.Projections);
 
         return builder.ToString();
@@ -189,12 +194,31 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         return GetRegistrations(descriptors, "Projection", typeof(IProjection<,>));
     }
 
+    private IReadOnlyList<MappingPlan> GetMappingPlans()
+    {
+        try
+        {
+            using var scope = _scopeFactory.CreateScope();
+            return scope.ServiceProvider
+                .GetServices<IMappingPlanProvider>()
+                .SelectMany(provider => provider.GetMappingPlans())
+                .OrderBy(plan => plan.SourceType, StringComparer.Ordinal)
+                .ThenBy(plan => plan.DestinationType, StringComparer.Ordinal)
+                .ToArray();
+        }
+        catch (InvalidOperationException)
+        {
+            return Array.Empty<MappingPlan>();
+        }
+    }
+
     private void AddInfoFindings(
         ICollection<AstraFlowDiagnosticFinding> findings,
         IReadOnlyCollection<AstraFlowDiagnosticRegistration> requestHandlers,
         IReadOnlyCollection<AstraFlowDiagnosticRegistration> notificationHandlers,
         IReadOnlyCollection<AstraFlowDiagnosticRegistration> pipelineBehaviors,
         IReadOnlyCollection<AstraFlowDiagnosticRegistration> mappingRules,
+        IReadOnlyCollection<MappingPlan> mappingPlans,
         IReadOnlyCollection<AstraFlowDiagnosticRegistration> projections)
     {
         if (!_options.IncludeInfoFindings)
@@ -203,7 +227,30 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         findings.Add(new AstraFlowDiagnosticFinding(
             DiagnosticSeverity.Info,
             "AFD000",
-            $"Discovered {requestHandlers.Count} request handlers, {notificationHandlers.Count} notification handlers, {pipelineBehaviors.Count} pipeline behaviors, {mappingRules.Count} mapping rules, and {projections.Count} projections."));
+            $"Discovered {requestHandlers.Count} request handlers, {notificationHandlers.Count} notification handlers, {pipelineBehaviors.Count} pipeline behaviors, {mappingRules.Count} mapping rules, {mappingPlans.Count} mapping plans, and {projections.Count} projections."));
+    }
+
+    private static void AddMappingPlanFindings(
+        ICollection<AstraFlowDiagnosticFinding> findings,
+        IEnumerable<MappingPlan> mappingPlans)
+    {
+        foreach (var plan in mappingPlans)
+        {
+            foreach (var finding in plan.Findings)
+            {
+                findings.Add(new AstraFlowDiagnosticFinding(
+                    finding.Severity switch
+                    {
+                        MappingPlanFindingSeverity.Error => DiagnosticSeverity.Error,
+                        MappingPlanFindingSeverity.Warning => DiagnosticSeverity.Warning,
+                        _ => DiagnosticSeverity.Info
+                    },
+                    finding.Code,
+                    finding.Message,
+                    $"{plan.SourceType} -> {plan.DestinationType}" +
+                    (string.IsNullOrWhiteSpace(finding.Member) ? "" : $" [{finding.Member}]")));
+            }
+        }
     }
 
     private static void AddDuplicateRequestHandlerFindings(
@@ -501,6 +548,33 @@ internal sealed class AstraFlowDiagnosticsReporter : IAstraFlowDiagnosticsReport
         foreach (var registration in registrations)
         {
             builder.AppendLine($"| {EscapeMarkdown(registration.ServiceType)} | {EscapeMarkdown(registration.ImplementationType)} | {registration.Lifetime} |");
+        }
+
+        builder.AppendLine();
+    }
+
+    private static void AppendMappingPlans(
+        StringBuilder builder,
+        IReadOnlyCollection<MappingPlan> plans)
+    {
+        builder.AppendLine("## Mapping Plans");
+        builder.AppendLine();
+
+        if (plans.Count == 0)
+        {
+            builder.AppendLine("None discovered.");
+            builder.AppendLine();
+            return;
+        }
+
+        builder.AppendLine("| Source | Destination | Destination Member | Source Member | Decision | Reason |");
+        builder.AppendLine("| --- | --- | --- | --- | --- | --- |");
+        foreach (var plan in plans)
+        {
+            foreach (var member in plan.Members)
+            {
+                builder.AppendLine($"| {EscapeMarkdown(plan.SourceType)} | {EscapeMarkdown(plan.DestinationType)} | {EscapeMarkdown(member.DestinationMember)} | {EscapeMarkdown(member.SourceMember)} | {EscapeMarkdown(member.Decision)} | {EscapeMarkdown(member.Reason)} |");
+            }
         }
 
         builder.AppendLine();
