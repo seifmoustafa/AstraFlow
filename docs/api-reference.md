@@ -93,6 +93,11 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `ObjectMappingPair` | Record struct | Identifies one source/destination mapping pair. | Use in declared rules. |
 | `IObjectMappingValidator` | Interface | Validates mapping catalog consistency. | No, inject or use in tests. |
 | `MappingOptions` | Class | Controls mapper validation behavior. | Configure through options. |
+| `IMappingPlanProvider` | Interface | Exposes deterministic mapping plans for diagnostics and tests. | Implemented by convention mapping providers. |
+| `MappingPlan` | Record | Describes a source/destination mapping plan. | Returned by mapping plan providers. |
+| `MappingPlanMember` | Record | Describes one convention member decision. | Returned inside mapping plans. |
+| `MappingPlanFinding` | Record | Describes a mapping-plan warning or error. | Returned inside mapping plans and surfaced by diagnostics. |
+| `MappingPlanFindingSeverity` | Enum | Describes mapping-plan finding severity. | Info, warning, or error. |
 | `IProjection<TSource, TDestination>` | Interface | Provides an explicit LINQ expression projection. | Yes. |
 | `INamedProjection<TSource, TDestination>` | Interface | Adds an explicit projection name. | Yes, when multiple projections share the same source/destination pair. |
 | `IProjectionRegistry` | Interface | Resolves registered projections by pair and optional name. | No, inject it. |
@@ -117,6 +122,7 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `ObjectMappingPair.Create` | `static ObjectMappingPair Create<TSource, TDestination>()` | Creates a pair using generic source/destination types. | Prefer this over manual `typeof(...)` repetition. |
 | `ObjectMappingPair.ToString` | `string ToString()` | Returns `SourceType.FullName -> DestinationType.FullName`. | Used in diagnostics. |
 | `IObjectMappingValidator.Validate` | `void Validate(MappingOptions options)` | Validates declared rule ownership, duplicate pairs, missing rule acceptance, and declaration drift. | Throws `InvalidOperationException` for catalog problems. |
+| `IMappingPlanProvider.GetMappingPlans` | `IReadOnlyCollection<MappingPlan> GetMappingPlans()` | Returns deterministic mapping plans. | Convention mapping uses this so every convention-created member can be reviewed. |
 | `IProjection.Expression` | `Expression<Func<TSource, TDestination>> Expression { get; }` | Supplies the projection expression. | Keep it provider-translatable; do not call services or `IMapper` inside it. |
 | `INamedProjection.Name` | `string Name { get; }` | Supplies the projection name. | Names are case-insensitive during lookup and must be unique per source/destination pair. |
 | `IProjectionRegistry.Registrations` | `IReadOnlyList<ProjectionRegistration> Registrations { get; }` | Lists resolved projection registrations. | Useful for diagnostics, tests, and release checks. |
@@ -144,6 +150,26 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `RequireDeclaredMappingRules` | `true` | Every mapping rule must implement `IDeclaredObjectMappingRule`. |
 | `ValidateProjectionCatalogOnStartup` | `true` | The hosted startup validator validates registered projections when the app starts. |
 | `ProjectionValidationMode` | `Warning` | Projection findings are warnings by default. Use `Error` to fail strict startup validation. |
+
+## Convention Mapping APIs
+
+| API | Kind | What It Does | Notes |
+| --- | --- | --- | --- |
+| `AddAstraFlowConventionMapping` | Extension method | Registers opt-in convention mapping catalog, rule, plan provider, and startup validator. | Call after `AddAstraFlowMapper`. |
+| `ConventionMappingCatalog` | Class | Holds profiles and exact pair registrations. | Use `AddProfile<TProfile>()` or `CreateMap<TSource, TDestination>()`. |
+| `ConventionMappingProfile` | Abstract class | Groups convention mapping pairs. | Derive and call `CreateMap` in the constructor. |
+| `ConventionMappingExpression<TSource, TDestination>` | Class | Configures one pair. | Supports case-insensitive matching, include, ignore, and sensitive-member allow rules. |
+| `ConventionMappingOptions` | Class | Controls convention matching, strict mode, and sensitive-field policy. | Strict mode and sensitive-field require-allow are enabled by default. |
+
+## Convention Finding Codes
+
+| Code | Meaning |
+| --- | --- |
+| `AFC001` | Destination member has no matched source member. |
+| `AFC002` | Source member is not mapped to the destination. |
+| `AFC003` | Case-insensitive matching found ambiguous source members. |
+| `AFC004` | Sensitive member mapping requires an explicit allow rule. |
+| `AFC005` | Source and destination member types are incompatible. |
 
 ## Projection Finding Codes
 

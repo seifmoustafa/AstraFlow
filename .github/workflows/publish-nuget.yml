@@ -53,6 +53,9 @@ jobs:
       - name: Pack mapper
         run: dotnet pack src/AstraFlow.Mapper/AstraFlow.Mapper.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Pack mapper conventions
+        run: dotnet pack src/AstraFlow.Mapper.Conventions/AstraFlow.Mapper.Conventions.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
       - name: Pack mapper EF Core
         run: dotnet pack src/AstraFlow.Mapper.EntityFrameworkCore/AstraFlow.Mapper.EntityFrameworkCore.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
@@ -78,6 +81,7 @@ jobs:
             "src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.$version.nupkg",
             "src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.$version.nupkg",
             "src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.$version.nupkg",
+            "src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.$version.nupkg",
             "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.$version.nupkg",
             "src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.$version.nupkg",
             "src/AstraFlow/bin/Release/AstraFlow.$version.nupkg"

@@ -145,6 +145,18 @@ EF Core can allow some client-side work in the final projection while still gene
 
 If `IProjectionRegistry.Get<TSource, TDestination>()` throws because multiple unnamed projections exist, convert each projection to `INamedProjection<TSource, TDestination>` and resolve by name.
 
+### Convention Mapping Fails With AFC001 Or AFC002
+
+Strict convention mapping treats unmapped destination and source members as failures. Add an exact member, configure `Ignore(...)`, use `Include(...)` as an allow list, or temporarily set `StrictMode = false` while migrating.
+
+### Convention Mapping Fails With AFC003
+
+Case-insensitive matching found more than one possible source member. Rename the source members or keep exact matching for that pair.
+
+### Convention Mapping Fails With AFC004
+
+A source or destination member matched a sensitive-field fragment such as password, secret, token, API key, or connection string. Remove the member from the DTO, ignore it, or explicitly call `AllowSensitiveMember(...)` when the mapping is intentional.
+
 ## Secure ID Problems
 
 ### `SecureIdMapper` Cannot Resolve
@@ -183,4 +195,4 @@ That is expected for invalid input when your codec returns null. Treat null as "
 | `AFD201` | Handler, behavior, or mapping rule is singleton. | Prefer scoped lifetime unless singleton is deliberate. |
 | `AFD301` | Mapper catalog validation failed. | Fix declared mappings, duplicate pairs, undeclared rules, or `CanMap` drift. |
 
-In `1.4.2`, the diagnostics behavior table also includes existing mediator pre-processors, post-processors, exception actions, and exception handlers. Order-sensitive mediator registration tables preserve DI registration order so runtime ordering can be reviewed. Diagnostics report type names and lifetimes, not request, response, notification, or DTO payload values.
+In `1.5.0`, the diagnostics behavior table also includes existing mediator pre-processors, post-processors, exception actions, and exception handlers. Order-sensitive mediator registration tables preserve DI registration order so runtime ordering can be reviewed. Diagnostics report type names and lifetimes, not request, response, notification, or DTO payload values.
