@@ -4,4 +4,5 @@ namespace AstraFlow.Mapper.Conventions;
 
 internal sealed record ConventionResolvedMappingPlan(
     MappingPlan Plan,
-    IReadOnlyList<ConventionResolvedMember> Members);
+    IReadOnlyList<ConventionResolvedMember> Members,
+    ConventionResolvedConstructor Constructor);

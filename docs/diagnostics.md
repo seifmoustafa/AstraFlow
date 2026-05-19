@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.5.1
+dotnet add package AstraFlow.Diagnostics --version 1.5.2
 ```
 
 The package references `AstraFlow.Mediator` and `AstraFlow.Mapper` so it can understand the core public contracts.
@@ -56,7 +56,7 @@ Mediator registration tables preserve the dependency-injection registration orde
 
 The summary has `HasErrors`, which is suitable for health-check-style decisions without requiring an ASP.NET Core health check dependency.
 
-Mapping plan rows include configured member behavior such as converters, null substitution, conditional mapping, enum mapping, required members, and blocked unsafe nullable or numeric conversions. Diagnostics report type/member names and rule reasons, not DTO payload values.
+Mapping plan rows include configured member behavior such as converters, null substitution, conditional mapping, enum mapping, required members, constructor-bound members, existing-destination update decisions, and blocked unsafe nullable or numeric conversions. Diagnostics report type/member names and rule reasons, not DTO payload values.
 
 ## Options
 

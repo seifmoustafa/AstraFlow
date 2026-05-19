@@ -171,6 +171,22 @@ Enum-to-enum mapping only succeeds when every source enum name exists on the des
 
 A destination member was marked `Required()` but has no matched source member, is ignored, or is outside the include list. Add `MapFrom(...)`, remove the required rule, or include the destination member.
 
+### Convention Mapping Fails With AFC010 Or AFC011
+
+`AFC010` means more than one public constructor can be mapped with the same specificity. Remove the ambiguity by changing the destination constructors or using a DTO shape with one mappable constructor.
+
+`AFC011` means the destination cannot be created because there is no usable parameterless constructor and no public constructor whose parameters can all be mapped. Add a mappable constructor, add `ForMember(...).MapFrom(...)` rules, or use a mutable DTO.
+
+### Convention Mapping Fails With AFC012
+
+An immutable destination member was visible in the destination type but was not assigned through a constructor. Add a matching constructor parameter, configure `MapFrom(...)`, or make the member writable.
+
+### Existing Destination Mapping Fails
+
+`IConventionMapper.MapInto(...)` requires `EnableUpdateMapping()` on the exact source/destination pair. This keeps read DTO mapping separate from write/update behavior.
+
+If an update mapping fails with `AFC004`, the destination member is sensitive. Do not update secrets by convention; call `AllowSensitiveMember(...)` only when the write is intentional and reviewed.
+
 ## Secure ID Problems
 
 ### `SecureIdMapper` Cannot Resolve

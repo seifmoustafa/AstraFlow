@@ -45,6 +45,80 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
         var resolvedPlan = ConventionMappingPlanBuilder.BuildResolvedPlan(definition, _options);
         ConventionMappingPlanBuilder.ThrowIfInvalid(resolvedPlan.Plan, _options);
 
+        var destination = CreateDestination(destinationType, resolvedPlan, source);
+
+        foreach (var member in resolvedPlan.Members.Where(member => member.CanMap && !member.IsConstructorBound))
+        {
+            ApplyMappedMember(source, destination, member);
+        }
+
+        return destination;
+    }
+
+    public void MapInto(object source, object destination)
+    {
+        if (source is null)
+            throw new ArgumentNullException(nameof(source));
+        if (destination is null)
+            throw new ArgumentNullException(nameof(destination));
+
+        var sourceType = source.GetType();
+        var destinationType = destination.GetType();
+        var definition = _catalog.Definitions.SingleOrDefault(candidate =>
+            candidate.SourceType == sourceType &&
+            candidate.DestinationType == destinationType);
+
+        if (definition is null)
+        {
+            throw new InvalidOperationException(
+                $"No convention mapping pair registered from '{sourceType.FullName}' to '{destinationType.FullName}'.");
+        }
+
+        if (!definition.UpdateMappingEnabled)
+        {
+            throw new InvalidOperationException(
+                $"Convention update mapping from '{sourceType.FullName}' to '{destinationType.FullName}' requires EnableUpdateMapping.");
+        }
+
+        var resolvedPlan = ConventionMappingPlanBuilder.BuildResolvedPlan(definition, _options);
+        ConventionMappingPlanBuilder.ThrowIfInvalid(resolvedPlan.Plan, _options);
+
+        foreach (var member in resolvedPlan.Members.Where(member =>
+            member.CanMap &&
+            ConventionMappingPlanBuilder.CanWrite(member.DestinationProperty)))
+        {
+            ApplyMappedMember(source, destination, member);
+        }
+    }
+
+    private static object CreateDestination(
+        Type destinationType,
+        ConventionResolvedMappingPlan resolvedPlan,
+        object source)
+    {
+        if (!resolvedPlan.Constructor.CanConstruct)
+        {
+            throw new InvalidOperationException(
+                $"Destination type '{destinationType.FullName}' could not be created by convention mapping.");
+        }
+
+        if (resolvedPlan.Constructor.UsesParameterizedConstructor)
+        {
+            var values = resolvedPlan.Constructor.Parameters
+                .Select(parameter => ConvertValue(
+                    parameter.SourceValueFactory(source),
+                    parameter.Configuration,
+                    parameter.RequiresEnumToString,
+                    parameter.RequiresEnumToEnum,
+                    parameter.RequiresCollectionMapping,
+                    parameter.Parameter.ParameterType))
+                .ToArray();
+
+            var constructed = resolvedPlan.Constructor.Constructor!.Invoke(values);
+            if (constructed is not null)
+                return constructed;
+        }
+
         var destination = Activator.CreateInstance(destinationType);
         if (destination is null)
         {
@@ -52,39 +126,105 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
                 $"Destination type '{destinationType.FullName}' could not be created by convention mapping.");
         }
 
-        foreach (var member in resolvedPlan.Members.Where(member => member.CanMap))
+        return destination;
+    }
+
+    private static void ApplyMappedMember(object source, object destination, ConventionResolvedMember member)
+    {
+        if (member.Configuration?.HasCondition == true &&
+            member.Configuration.Condition is not null &&
+            !member.Configuration.Condition(source))
         {
-            if (member.Configuration?.HasCondition == true &&
-                member.Configuration.Condition is not null &&
-                !member.Configuration.Condition(source))
-            {
-                continue;
-            }
-
-            var value = member.SourceValueFactory is null
-                ? null
-                : member.SourceValueFactory(source);
-
-            if (value is null && member.Configuration?.HasNullSubstitute == true)
-            {
-                value = member.Configuration.NullSubstitute;
-            }
-            else if (value is not null && member.Configuration?.HasConverter == true && member.Configuration.Converter is not null)
-            {
-                value = member.Configuration.Converter(value);
-            }
-            else if (value is not null && member.RequiresEnumToString)
-            {
-                value = value.ToString();
-            }
-            else if (value is not null && member.RequiresEnumToEnum)
-            {
-                value = Enum.Parse(Nullable.GetUnderlyingType(member.DestinationProperty.PropertyType) ?? member.DestinationProperty.PropertyType, value.ToString()!);
-            }
-
-            member.DestinationProperty.SetValue(destination, value);
+            return;
         }
 
-        return destination;
+        var value = member.SourceValueFactory is null
+            ? null
+            : member.SourceValueFactory(source);
+
+        value = ConvertValue(
+            value,
+            member.Configuration,
+            member.RequiresEnumToString,
+            member.RequiresEnumToEnum,
+            member.RequiresCollectionMapping,
+            member.DestinationProperty.PropertyType);
+
+        member.DestinationProperty.SetValue(destination, value);
+    }
+
+    private static object? ConvertValue(
+        object? value,
+        ConventionMemberMappingDefinition? configuration,
+        bool requiresEnumToString,
+        bool requiresEnumToEnum,
+        bool requiresCollectionMapping,
+        Type destinationType)
+    {
+        if (value is null && configuration?.HasNullSubstitute == true)
+        {
+            return configuration.NullSubstitute;
+        }
+
+        if (value is not null && configuration?.HasConverter == true && configuration.Converter is not null)
+        {
+            return configuration.Converter(value);
+        }
+
+        if (value is not null && requiresEnumToString)
+        {
+            return value.ToString();
+        }
+
+        if (value is not null && requiresEnumToEnum)
+        {
+            return Enum.Parse(Nullable.GetUnderlyingType(destinationType) ?? destinationType, value.ToString()!);
+        }
+
+        if (value is not null && requiresCollectionMapping)
+        {
+            return MapCollectionShape(value, destinationType);
+        }
+
+        return value;
+    }
+
+    private static object MapCollectionShape(object value, Type destinationType)
+    {
+        var itemType = ResolveCollectionItemType(destinationType);
+        if (itemType is null)
+            return value;
+
+        var list = (System.Collections.IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(itemType))!;
+        foreach (var item in (System.Collections.IEnumerable)value)
+        {
+            list.Add(item);
+        }
+
+        if (destinationType.IsArray)
+        {
+            var array = Array.CreateInstance(itemType, list.Count);
+            list.CopyTo(array, 0);
+            return array;
+        }
+
+        return list;
+    }
+
+    private static Type? ResolveCollectionItemType(Type destinationType)
+    {
+        if (destinationType.IsArray)
+            return destinationType.GetElementType();
+
+        return destinationType
+            .GetInterfaces()
+            .Append(destinationType)
+            .Where(type => type.IsGenericType)
+            .Where(type =>
+                type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
+                type.GetGenericTypeDefinition() == typeof(IReadOnlyList<>) ||
+                type.GetGenericTypeDefinition() == typeof(List<>))
+            .Select(type => type.GetGenericArguments()[0])
+            .FirstOrDefault();
     }
 }

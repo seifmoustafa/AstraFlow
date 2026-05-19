@@ -5,8 +5,8 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.5.1
-dotnet add package AstraFlow.Mapper.Conventions --version 1.5.1
+dotnet add package AstraFlow.Mapper --version 1.5.2
+dotnet add package AstraFlow.Mapper.Conventions --version 1.5.2
 ```
 
 ## Register
@@ -45,7 +45,22 @@ CreateMap<Customer, CustomerResponse>()
     .UseCaseInsensitiveMemberMatching();
 ```
 
-Destination properties must be writable. Source properties must be readable. Constructor and record binding are not part of `1.5.1`.
+Source properties must be readable. Writable destination properties are assigned after construction. Record and immutable destinations can be created when a single public constructor can be bound from source members or explicit `ForMember` rules.
+
+## Constructor And Record Binding
+
+Constructor binding is automatic for registered convention pairs when the destination has a public constructor whose parameters can all be mapped. AstraFlow chooses the most specific mappable constructor. If two constructors are equally specific, mapping fails with `AFC010`.
+
+```csharp
+public sealed record CustomerResponse(Guid Id, string DisplayName);
+
+CreateMap<Customer, CustomerResponse>()
+    .ForMember(destination => destination.DisplayName, member => member
+        .MapFrom(source => source.Name)
+        .Required());
+```
+
+Constructor-bound members are reported as `ConstructorBound` in mapping plans. If an immutable destination member cannot be constructor-bound or assigned, mapping fails with `AFC012`.
 
 ## Member Configuration
 
@@ -95,6 +110,24 @@ CreateMap<CustomerPatch, CustomerPatchResult>()
 
 Conditions are reported in mapping plans as `MappedWhen`. Reports show the rule exists, not source payload values.
 
+## Existing Destination Updates
+
+Existing-destination mapping is separate from read DTO mapping. Enable it per pair, then inject `IConventionMapper` and call `MapInto`.
+
+```csharp
+CreateMap<CustomerPatch, Customer>()
+    .EnableUpdateMapping()
+    .ForMember(destination => destination.Email, member => member
+        .Condition(source => source.HasEmail));
+
+var mapper = provider.GetRequiredService<IConventionMapper>();
+mapper.MapInto(patch, customer);
+```
+
+`MapInto` returns the same destination instance. If the source is null, the destination is left unchanged. If `EnableUpdateMapping` was not configured for the pair, `MapInto` fails clearly.
+
+Update mappings use the same sensitive-member policy as read mappings. Destination members such as tokens, secrets, passwords, API keys, and connection strings are blocked unless `AllowSensitiveMember` is configured for that pair.
+
 ## Enum Members
 
 Enum-to-string members are mapped by name:
@@ -104,6 +137,10 @@ CreateMap<Order, OrderResponse>();
 ```
 
 Enum-to-enum members map only when every source enum name exists on the destination enum. Missing destination names produce `AFC008`.
+
+## Collection Shapes
+
+Convention mapping can adapt simple collection shapes when the source and destination element type is the same, such as `string[]` to `List<string>`. It does not perform deep graph collection updates or hidden item remapping in `1.5.2`.
 
 ## Include And Ignore
 
@@ -144,4 +181,4 @@ var plans = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans(
 
 Each convention-created member is reported with its destination member, source member, decision, and reason.
 
-Member-level decisions include `Converted`, `MappedWhen`, `MappedWithNullSubstitute`, `EnumToEnum`, and `EnumToString` when those rules are used.
+Member-level decisions include `Converted`, `MappedWhen`, `MappedWithNullSubstitute`, `EnumToEnum`, `EnumToString`, `ConstructorBound`, and `Collection` when those rules are used.

@@ -134,8 +134,8 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Nullable compatibility diagnostics | Done | Warn about unsafe null flows. |
 | Numeric conversion diagnostics | Done | Warn about precision loss and narrowing. |
 | Enum mapping helpers | Done | Enum-to-enum and enum-to-string validation. |
-| Constructor/record binding | Planned | Ambiguity checked. |
-| Existing destination mapping | Planned | Update/patch scenarios. |
+| Constructor/record binding | Done | Ambiguity checked. |
+| Existing destination mapping | Done | Update/patch scenarios. |
 | Null substitution | Done | Per-member explicit config. |
 | Value converters | Done | Explicit converter objects. |
 | Value resolvers | Planned | DI-aware and lifetime-diagnosed. |

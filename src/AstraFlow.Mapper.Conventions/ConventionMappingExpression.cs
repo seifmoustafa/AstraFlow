@@ -61,6 +61,16 @@ public sealed class ConventionMappingExpression<TSource, TDestination>
     }
 
     /// <summary>
+    /// Enables explicit mapping into an existing destination instance for this pair.
+    /// </summary>
+    /// <returns>The same expression for chaining.</returns>
+    public ConventionMappingExpression<TSource, TDestination> EnableUpdateMapping()
+    {
+        _definition.UpdateMappingEnabled = true;
+        return this;
+    }
+
+    /// <summary>
     /// Configures one destination member with explicit source, converter, null, condition, or required-member rules.
     /// </summary>
     /// <typeparam name="TDestinationMember">The destination member type.</typeparam>

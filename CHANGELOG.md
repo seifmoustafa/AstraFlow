@@ -2,6 +2,41 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.5.2
+
+### Added
+
+- Added constructor and record binding for opt-in convention mapping, including immutable destination support when constructor parameters can be mapped.
+- Added `IConventionMapper` for convention-specific mapping operations.
+- Added explicit existing-destination update mapping with `EnableUpdateMapping` and `MapInto`.
+- Added constructor ambiguity, constructor availability, and immutable destination diagnostics.
+- Added safe same-element collection shape mapping for convention members.
+
+### Changed
+
+- Convention mapping plans now show constructor-bound members so record and immutable destination mappings are inspectable.
+- Update mapping is documented separately from read DTO mapping and must be enabled per source/destination pair.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping, API reference, diagnostics, and troubleshooting documentation for constructor binding, record binding, immutable destinations, and safe update mapping.
+
+### Tests
+
+- Added tests for record mapping, immutable constructor mapping, ambiguous constructor diagnostics, explicit update mapping, conditional patch behavior, sensitive destination write protection, and safe collection shape mapping.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.5.2`.
+
+### Breaking changes
+
+- None.
+
 ## 1.5.1
 
 ### Added

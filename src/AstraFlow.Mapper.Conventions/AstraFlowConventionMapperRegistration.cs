@@ -36,8 +36,10 @@ public static class AstraFlowConventionMapperRegistration
 
         services.TryAddSingleton(catalog);
         services.TryAddSingleton<ConventionMappingPlanProvider>();
+        services.AddScoped<ConventionObjectMappingRule>();
+        services.AddScoped<IConventionMapper, ConventionMapper>();
         services.AddSingleton<IMappingPlanProvider>(provider => provider.GetRequiredService<ConventionMappingPlanProvider>());
-        services.AddScoped<IObjectMappingRule, ConventionObjectMappingRule>();
+        services.AddScoped<IObjectMappingRule>(provider => provider.GetRequiredService<ConventionObjectMappingRule>());
         services.AddHostedService<ConventionMappingStartupValidator>();
 
         return services;

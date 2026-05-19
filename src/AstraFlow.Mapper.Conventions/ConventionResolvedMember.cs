@@ -11,6 +11,8 @@ internal sealed record ConventionResolvedMember(
     Func<object, object?>? SourceValueFactory,
     bool RequiresEnumToString,
     bool RequiresEnumToEnum,
+    bool RequiresCollectionMapping,
+    bool IsConstructorBound,
     bool CanMap)
 {
     public static ConventionResolvedMember Blocked(
@@ -19,7 +21,7 @@ internal sealed record ConventionResolvedMember(
         string decision,
         string reason)
     {
-        return new(destinationProperty, null, configuration, decision, reason, null, false, false, false);
+        return new(destinationProperty, null, configuration, decision, reason, null, false, false, false, false, false);
     }
 
     public static ConventionResolvedMember Mappable(
@@ -30,8 +32,10 @@ internal sealed record ConventionResolvedMember(
         string reason,
         Func<object, object?>? sourceValueFactory,
         bool requiresEnumToString,
-        bool requiresEnumToEnum)
+        bool requiresEnumToEnum,
+        bool requiresCollectionMapping,
+        bool isConstructorBound = false)
     {
-        return new(destinationProperty, sourceProperty, configuration, decision, reason, sourceValueFactory, requiresEnumToString, requiresEnumToEnum, true);
+        return new(destinationProperty, sourceProperty, configuration, decision, reason, sourceValueFactory, requiresEnumToString, requiresEnumToEnum, requiresCollectionMapping, isConstructorBound, true);
     }
 }
