@@ -123,28 +123,28 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| Safe convention mapping | Planned | Disabled by default. |
-| Mapping profiles/catalogs | Planned | Organize large applications. |
-| Fluent member configuration | Planned | Include, ignore, source, destination, converter, condition, null rules. |
-| Exact name matching | Planned | First convention mode. |
-| Case-insensitive matching | Planned | Opt-in. |
-| Sensitive-field deny list | Planned | Required for convention mapping. |
-| Unmapped destination validation | Planned | Catch missing DTO members. |
-| Unmapped source validation | Planned | Useful in strict mode. |
-| Nullable compatibility diagnostics | Planned | Warn about unsafe null flows. |
-| Numeric conversion diagnostics | Planned | Warn about precision loss and narrowing. |
-| Enum mapping helpers | Planned | Enum-to-enum and enum-to-string validation. |
+| Safe convention mapping | Done | Disabled by default. |
+| Mapping profiles/catalogs | Done | Organize large applications. |
+| Fluent member configuration | Done | Include, ignore, source, destination, converter, condition, null rules. |
+| Exact name matching | Done | First convention mode. |
+| Case-insensitive matching | Done | Opt-in. |
+| Sensitive-field deny list | Done | Required for convention mapping. |
+| Unmapped destination validation | Done | Catch missing DTO members. |
+| Unmapped source validation | Done | Useful in strict mode. |
+| Nullable compatibility diagnostics | Done | Warn about unsafe null flows. |
+| Numeric conversion diagnostics | Done | Warn about precision loss and narrowing. |
+| Enum mapping helpers | Done | Enum-to-enum and enum-to-string validation. |
 | Constructor/record binding | Planned | Ambiguity checked. |
 | Existing destination mapping | Planned | Update/patch scenarios. |
-| Null substitution | Planned | Per-member explicit config. |
-| Value converters | Planned | Explicit converter objects. |
+| Null substitution | Done | Per-member explicit config. |
+| Value converters | Done | Explicit converter objects. |
 | Value resolvers | Planned | DI-aware and lifetime-diagnosed. |
-| Conditional mapping | Planned | Patch/update DTOs. |
+| Conditional mapping | Done | Patch/update DTOs. |
 | Flattening | Planned | Opt-in and diagnostic-heavy. |
 | Reverse mapping | Planned | Explicit only. |
 | Unflattening | Planned | Protect domain-owned nested objects. |
 | Include members | Planned | Controlled composition mapping. |
-| Mapping plan export | Planned | Show every member decision. |
+| Mapping plan export | Done | Show every member decision. |
 | Mapping diff | Planned | Compare mapping plan between commits. |
 | Safe update mapping policy | Planned | Separate create, update, patch, and public-input DTO rules. |
 | Sensitive destination write policy | Planned | Block or warn on writes into password/token/key/secret-style members. |

@@ -2,6 +2,38 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.5.1
+
+### Added
+
+- Added fluent convention member configuration with `ForMember`, `MapFrom`, `Required`, `NullSubstitute`, `ConvertUsing`, and `Condition`.
+- Added enum-to-enum validation, enum-to-string convention mapping, nullable compatibility diagnostics, numeric conversion diagnostics, and required-member diagnostics.
+- Added mapping plan decisions for converted, conditional, null-substituted, enum-to-enum, and enum-to-string member mappings.
+
+### Changed
+
+- Convention mapping plans now include member-level configuration reasons so automatic and configured decisions are reviewable in diagnostics.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping, API reference, and troubleshooting documentation for member configuration, converters, conditionals, null substitution, and new finding codes.
+
+### Tests
+
+- Added convention mapping tests for explicit member sources, required destinations, null substitution, converters, conditional mapping, enum mapping, nullable diagnostics, numeric diagnostics, and mapping plan visibility.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.5.1`.
+
+### Breaking changes
+
+- None.
+
 ## 1.5.0
 
 ### Added

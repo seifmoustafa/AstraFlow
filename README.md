@@ -269,7 +269,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.5.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.5.1
 ```
 
 Register exact pairs through a profile:
@@ -283,19 +283,23 @@ public sealed class UserProfile : ConventionMappingProfile
     public UserProfile()
     {
         CreateMap<User, UserResponse>()
+            .ForMember(destination => destination.DisplayName, member => member
+                .MapFrom(source => source.Name)
+                .Required())
+            .ForMember(destination => destination.Score, member => member.NullSubstitute(0))
             .Ignore(nameof(UserResponse.InternalNote));
     }
 }
 ```
 
-Convention mapping stays disabled for every pair that is not registered. Diagnostics include mapping plans so every convention-created member can be reviewed before publishing.
+Convention mapping stays disabled for every pair that is not registered. Member rules, converters, conditions, null substitution, and enum decisions are included in mapping plans so every convention-created member can be reviewed before publishing.
 
 ## Quick Start: EF Core Projection Checks
 
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.5.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.5.1
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -377,7 +381,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.5.0
+dotnet add package AstraFlow.Testing --version 1.5.1
 ```
 
 Use the fake mediator to record requests and notifications:

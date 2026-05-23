@@ -157,6 +157,20 @@ Case-insensitive matching found more than one possible source member. Rename the
 
 A source or destination member matched a sensitive-field fragment such as password, secret, token, API key, or connection string. Remove the member from the DTO, ignore it, or explicitly call `AllowSensitiveMember(...)` when the mapping is intentional.
 
+### Convention Mapping Fails With AFC006 Or AFC007
+
+`AFC006` means a nullable value-type source may flow into a non-nullable destination. Configure `NullSubstitute(...)`, use `ConvertUsing(...)`, or make the destination nullable.
+
+`AFC007` means a numeric type conversion would be implicit. Configure `ConvertUsing(...)` so the conversion is explicit and visible in the mapping plan.
+
+### Convention Mapping Fails With AFC008
+
+Enum-to-enum mapping only succeeds when every source enum name exists on the destination enum. Add the missing destination enum names or configure a converter.
+
+### Convention Mapping Fails With AFC009
+
+A destination member was marked `Required()` but has no matched source member, is ignored, or is outside the include list. Add `MapFrom(...)`, remove the required rule, or include the destination member.
+
 ## Secure ID Problems
 
 ### `SecureIdMapper` Cannot Resolve

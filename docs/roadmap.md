@@ -654,7 +654,7 @@ What must NOT be included:
 
 #### v1.5.1 Member Configuration Expansion
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -2337,12 +2337,12 @@ Moved later:
 | Profiles/catalogs | Done | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Profile report | Profile tests |
 | Include/ignore rules | Done | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Include/ignore report | Rule tests |
 | Sensitive-field deny list | Done | v1.5.0 | `AstraFlow.Mapper.Conventions` | P0 | Security finding | Sensitive tests |
-| Member configuration | Planned | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Per-member diagnostics | Config tests |
-| Null substitution | Planned | v1.5.1 | `AstraFlow.Mapper.Conventions` | P1 | Member rule report | Null tests |
-| Value converters | Planned | v1.5.1 | `AstraFlow.Mapper.Conventions` | P1 | Converter report | Converter tests |
-| Conditional mapping | Planned | v1.5.1 | `AstraFlow.Mapper.Conventions` | P1 | Condition report | Condition tests |
-| Nullable diagnostics | Planned | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Nullable findings | Nullable tests |
-| Numeric diagnostics | Planned | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Numeric findings | Numeric tests |
+| Member configuration | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Per-member diagnostics | Config tests |
+| Null substitution | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P1 | Member rule report | Null tests |
+| Value converters | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P1 | Converter report | Converter tests |
+| Conditional mapping | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P1 | Condition report | Condition tests |
+| Nullable diagnostics | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Nullable findings | Nullable tests |
+| Numeric diagnostics | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Numeric findings | Numeric tests |
 | Constructor/record binding | Planned | v1.5.2 | `AstraFlow.Mapper.Conventions` | P1 | Binding report | Binding tests |
 | Existing destination mapping | Planned | v1.5.2 | `AstraFlow.Mapper.Conventions` | P1 | Update report | Update tests |
 | Flattening | Planned | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Flattening report | Flattening tests |
@@ -2381,7 +2381,7 @@ Moved later:
 | Pipeline behaviors | Done | v1.4.0 | P0 | `AstraFlow.Mediator` | MediatR-style | Order report | Patch expand |
 | Explicit mapping | Done | v1.0.0 | P0 | `AstraFlow.Mapper` | AutoMapper-style problem domain | Missing/duplicate mapping diagnostics | Preserve |
 | Convention mapping | Done | v1.5.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Opt-in and inspectable | Moved earlier |
-| Member config | Planned | v1.5.1 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Per-member diagnostics | Moved earlier |
+| Member config | Done | v1.5.1 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Per-member diagnostics | Moved earlier |
 | Destination/update mapping | Planned | v1.5.2 | P1 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Sensitive write diagnostics | Moved earlier |
 | Flattening/reverse/unflattening | Planned | v1.6.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Explicit and security-gated | Moved earlier |
 | Projections | Done, expand | v1.7 | P0 | `AstraFlow.Mapper` | AutoMapper-style query projection | Provider warnings | Moved earlier |

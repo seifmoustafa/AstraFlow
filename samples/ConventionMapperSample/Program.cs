@@ -15,9 +15,9 @@ var mapper = provider.GetRequiredService<IMapper>();
 var plans = provider.GetRequiredService<IMappingPlanProvider>();
 
 var response = mapper.Map<CustomerResponse>(
-    new Customer(Guid.NewGuid(), "Ada Lovelace", "ada@example.com"));
+    new Customer(Guid.NewGuid(), "Ada Lovelace", "ada@example.com", null));
 
-Console.WriteLine($"{response.Name} <{response.Email}>");
+Console.WriteLine($"{response.DisplayName} <{response.Email}> score={response.Score}");
 
 foreach (var plan in plans.GetMappingPlans())
 {
@@ -28,21 +28,27 @@ foreach (var plan in plans.GetMappingPlans())
     }
 }
 
-internal sealed record Customer(Guid Id, string Name, string Email);
+internal sealed record Customer(Guid Id, string Name, string Email, int? Score);
 
 internal sealed class CustomerResponse
 {
+    public string? DisplayName { get; set; }
+
     public string? Email { get; set; }
 
     public Guid Id { get; set; }
 
-    public string? Name { get; set; }
+    public int Score { get; set; }
 }
 
 internal sealed class CustomerProfile : ConventionMappingProfile
 {
     public CustomerProfile()
     {
-        CreateMap<Customer, CustomerResponse>();
+        CreateMap<Customer, CustomerResponse>()
+            .ForMember(destination => destination.DisplayName, member => member
+                .MapFrom(source => source.Name)
+                .Required())
+            .ForMember(destination => destination.Score, member => member.NullSubstitute(0));
     }
 }

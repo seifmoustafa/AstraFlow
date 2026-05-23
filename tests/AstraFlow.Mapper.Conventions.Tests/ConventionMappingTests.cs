@@ -183,6 +183,151 @@ public sealed class ConventionMappingTests
         markdown.Should().Contain(nameof(ReadCustomerDto.Email));
     }
 
+    [Fact]
+    public void Map_WithExplicitMemberSource_MapsRenamedRequiredMember()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<CustomerEntity, RenamedCustomerDto>()
+                .ForMember(destination => destination.DisplayName, member => member
+                    .MapFrom(source => source.Name)
+                    .Required());
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<RenamedCustomerDto>(new CustomerEntity(Guid.NewGuid(), "Ada", "ada@example.com"));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.DisplayName.Should().Be("Ada");
+        plan.Members.Should().Contain(member =>
+            member.DestinationMember == nameof(RenamedCustomerDto.DisplayName) &&
+            member.SourceMember == nameof(CustomerEntity.Name) &&
+            member.Reason.Contains("Required destination member."));
+    }
+
+    [Fact]
+    public void Map_WithRequiredDestinationMissingSource_FailsClearly()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<CustomerEntity, RenamedCustomerDto>()
+                .ForMember(destination => destination.DisplayName, member => member.Required());
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var act = () => mapper.Map<RenamedCustomerDto>(new CustomerEntity(Guid.NewGuid(), "Ada", "ada@example.com"));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*AFC009*Required destination member*");
+    }
+
+    [Fact]
+    public void Map_WithNullSubstitution_AppliesConfiguredFallbackAndReportsIt()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<NullableScoreEntity, ScoreDto>()
+                .ForMember(destination => destination.Score, member => member.NullSubstitute(100));
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<ScoreDto>(new NullableScoreEntity(null));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Score.Should().Be(100);
+        plan.Members.Single(member => member.DestinationMember == nameof(ScoreDto.Score))
+            .Reason.Should().Contain("Null substitution configured.");
+    }
+
+    [Fact]
+    public void Map_WithConverter_AppliesConverterAndReportsIt()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<OrderEntity, OrderDto>()
+                .ForMember(destination => destination.Total, member => member
+                    .ConvertUsing(source => source.TotalCents, cents => (cents / 100m).ToString("0.00")));
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<OrderDto>(new OrderEntity(1234));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Total.Should().Be("12.34");
+        plan.Members.Single(member => member.DestinationMember == nameof(OrderDto.Total))
+            .Decision.Should().Be("Converted");
+    }
+
+    [Fact]
+    public void Map_WithCondition_SkipsMemberWhenPredicateIsFalseAndReportsIt()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<PatchCustomerDto, CustomerPatchResult>()
+                    .ForMember(destination => destination.Email, member => member
+                        .Condition(source => source.HasEmail));
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<CustomerPatchResult>(new PatchCustomerDto(false, "ada@example.com"));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Email.Should().BeNull();
+        plan.Members.Single(member => member.DestinationMember == nameof(CustomerPatchResult.Email))
+            .Decision.Should().Be("MappedWhen");
+    }
+
+    [Fact]
+    public void Map_WithEnumMembers_MapsMatchingEnumsAndEnumStrings()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<OrderStatusEntity, OrderStatusDto>();
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<OrderStatusDto>(new OrderStatusEntity(SourceOrderStatus.Paid, SourceOrderStatus.Pending));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Status.Should().Be(DestinationOrderStatus.Paid);
+        result.StatusText.Should().Be("Pending");
+        plan.Members.Should().Contain(member => member.Decision == "EnumToEnum");
+        plan.Members.Should().Contain(member => member.Decision == "EnumToString");
+    }
+
+    [Fact]
+    public void Map_WithEnumMismatch_FailsClearly()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<BrokenOrderStatusEntity, BrokenOrderStatusDto>();
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var act = () => mapper.Map<BrokenOrderStatusDto>(new BrokenOrderStatusEntity(SourceOrderStatus.Paid));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*AFC008*missing names*");
+    }
+
+    [Fact]
+    public void Plan_WithUnsafeNullableAndNumericMembers_ReportsDiagnostics()
+    {
+        using var provider = CreateServices(
+            catalog => catalog.CreateMap<UnsafeConversionEntity, UnsafeConversionDto>(),
+            options => options.StrictMode = false).BuildServiceProvider();
+
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        plan.Findings.Should().Contain(finding => finding.Code == "AFC006" && finding.Member == nameof(UnsafeConversionDto.Score));
+        plan.Findings.Should().Contain(finding => finding.Code == "AFC007" && finding.Member == nameof(UnsafeConversionDto.Count));
+        plan.Members.Should().Contain(member => member.DestinationMember == nameof(UnsafeConversionDto.Count) && member.Decision == "Blocked");
+    }
+
     private static ServiceCollection CreateServices(
         Action<ConventionMappingCatalog>? configureCatalog = null,
         Action<ConventionMappingOptions>? configureOptions = null)
@@ -206,6 +351,18 @@ public sealed class ConventionMappingTests
     private sealed record SecretEntity(string ApiToken);
 
     private sealed record AmbiguousCustomerEntity(string Name, string name);
+
+    private sealed record NullableScoreEntity(int? Score);
+
+    private sealed record OrderEntity(int TotalCents);
+
+    private sealed record PatchCustomerDto(bool HasEmail, string? Email);
+
+    private sealed record OrderStatusEntity(SourceOrderStatus Status, SourceOrderStatus StatusText);
+
+    private sealed record BrokenOrderStatusEntity(SourceOrderStatus Status);
+
+    private sealed record UnsafeConversionEntity(int? Score, int Count);
 
     private sealed class ReadCustomerDto
     {
@@ -242,6 +399,66 @@ public sealed class ConventionMappingTests
     private sealed class AmbiguousCustomerDto
     {
         public string? NAME { get; set; }
+    }
+
+    private sealed class RenamedCustomerDto
+    {
+        public string? DisplayName { get; set; }
+
+        public string? Email { get; set; }
+
+        public Guid Id { get; set; }
+    }
+
+    private sealed class ScoreDto
+    {
+        public int Score { get; set; }
+    }
+
+    private sealed class OrderDto
+    {
+        public string? Total { get; set; }
+    }
+
+    private sealed class CustomerPatchResult
+    {
+        public string? Email { get; set; }
+    }
+
+    private sealed class OrderStatusDto
+    {
+        public DestinationOrderStatus Status { get; set; }
+
+        public string? StatusText { get; set; }
+    }
+
+    private sealed class BrokenOrderStatusDto
+    {
+        public BrokenDestinationOrderStatus Status { get; set; }
+    }
+
+    private sealed class UnsafeConversionDto
+    {
+        public long Count { get; set; }
+
+        public int Score { get; set; }
+    }
+
+    private enum SourceOrderStatus
+    {
+        Pending,
+        Paid
+    }
+
+    private enum DestinationOrderStatus
+    {
+        Pending,
+        Paid
+    }
+
+    private enum BrokenDestinationOrderStatus
+    {
+        Pending
     }
 
     private sealed class CustomerProfile : ConventionMappingProfile
