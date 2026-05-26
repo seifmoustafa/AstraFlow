@@ -15,16 +15,27 @@ internal static class ConventionMappingPlanBuilder
         ConventionMappingOptions options)
     {
         var sourceProperties = GetReadableProperties(definition.SourceType);
-        var destinationProperties = GetWritableProperties(definition.DestinationType);
+        var destinationProperties = GetReadableProperties(definition.DestinationType);
         var usedSourceMembers = new HashSet<string>(StringComparer.Ordinal);
         var members = new List<MappingPlanMember>();
         var resolvedMembers = new List<ConventionResolvedMember>();
         var findings = new List<MappingPlanFinding>();
         var allowCaseInsensitive = definition.AllowCaseInsensitiveMemberMatching ||
             options.AllowCaseInsensitiveMemberMatching;
+        var constructor = ResolveConstructorBinding(
+            definition,
+            options,
+            sourceProperties,
+            destinationProperties,
+            allowCaseInsensitive,
+            findings);
+        var constructorBoundMembers = new HashSet<string>(
+            constructor.Parameters.Select(parameter => parameter.DestinationMemberName),
+            StringComparer.Ordinal);
 
         foreach (var destinationProperty in destinationProperties)
         {
+            var isConstructorBound = constructorBoundMembers.Contains(destinationProperty.Name);
             definition.MemberMappings.TryGetValue(destinationProperty.Name, out var memberConfiguration);
 
             if (definition.IgnoredMembers.Contains(destinationProperty.Name))
@@ -86,7 +97,9 @@ internal static class ConventionMappingPlanBuilder
                         substitutionReason,
                         null,
                         false,
-                        false));
+                        false,
+                        false,
+                        isConstructorBound));
                     continue;
                 }
 
@@ -115,6 +128,18 @@ internal static class ConventionMappingPlanBuilder
 
             var sourceMemberName = sourceResolution.SourceMemberName;
             var sourceMemberType = sourceResolution.SourceMemberType!;
+
+            if (!CanWrite(destinationProperty) && !isConstructorBound)
+            {
+                members.Add(new MappingPlanMember(destinationProperty.Name, sourceMemberName, "Blocked", "Destination member is immutable and no constructor binding is available."));
+                resolvedMembers.Add(ConventionResolvedMember.Blocked(destinationProperty, memberConfiguration, "Blocked", "Destination member is immutable and no constructor binding is available."));
+                findings.Add(new MappingPlanFinding(
+                    MappingPlanFindingSeverity.Error,
+                    "AFC012",
+                    destinationProperty.Name,
+                    $"Destination member '{destinationProperty.Name}' is immutable and cannot be set without constructor binding."));
+                continue;
+            }
 
             if (options.RequireExplicitSensitiveMemberAllow &&
                 (IsSensitive(sourceMemberName, options) || IsSensitive(destinationProperty.Name, options)) &&
@@ -146,7 +171,13 @@ internal static class ConventionMappingPlanBuilder
 
             usedSourceMembers.Add(sourceMemberName);
             var decisionText = GetDecisionText(memberConfiguration, compatibility);
+            if (isConstructorBound)
+                decisionText = "ConstructorBound";
+
             var mappedReason = AddConfigurationReason(compatibility.Reason, memberConfiguration);
+            if (isConstructorBound)
+                mappedReason = $"{mappedReason} Bound through destination constructor.";
+
             members.Add(new MappingPlanMember(destinationProperty.Name, sourceMemberName, decisionText, mappedReason));
             resolvedMembers.Add(ConventionResolvedMember.Mappable(
                 destinationProperty,
@@ -156,7 +187,9 @@ internal static class ConventionMappingPlanBuilder
                 mappedReason,
                 sourceResolution.SourceValueFactory,
                 compatibility.RequiresEnumToString,
-                compatibility.RequiresEnumToEnum));
+                compatibility.RequiresEnumToEnum,
+                compatibility.RequiresCollectionMapping,
+                isConstructorBound));
         }
 
         foreach (var sourceProperty in sourceProperties.Where(property => !usedSourceMembers.Contains(property.Name)))
@@ -178,7 +211,7 @@ internal static class ConventionMappingPlanBuilder
                 .ThenBy(finding => finding.Message, StringComparer.Ordinal)
                 .ToArray());
 
-        return new ConventionResolvedMappingPlan(plan, resolvedMembers);
+        return new ConventionResolvedMappingPlan(plan, resolvedMembers, constructor);
     }
 
     public static void ThrowIfInvalid(MappingPlan plan, ConventionMappingOptions options)
@@ -213,6 +246,110 @@ internal static class ConventionMappingPlanBuilder
             .Where(property => property.SetMethod is { IsPublic: true } && property.GetIndexParameters().Length == 0)
             .OrderBy(property => property.Name, StringComparer.Ordinal)
             .ToArray();
+    }
+
+    public static bool CanWrite(PropertyInfo property)
+    {
+        return property.SetMethod is { IsPublic: true } && property.GetIndexParameters().Length == 0;
+    }
+
+    private static ConventionResolvedConstructor ResolveConstructorBinding(
+        ConventionMappingDefinition definition,
+        ConventionMappingOptions options,
+        IReadOnlyList<PropertyInfo> sourceProperties,
+        IReadOnlyList<PropertyInfo> destinationProperties,
+        bool allowCaseInsensitive,
+        List<MappingPlanFinding> findings)
+    {
+        var parameterless = definition.DestinationType.GetConstructor(Type.EmptyTypes);
+        var publicConstructors = definition.DestinationType
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public)
+            .Where(constructor => constructor.GetParameters().Length != 0)
+            .OrderByDescending(constructor => constructor.GetParameters().Length)
+            .ToArray();
+
+        if (publicConstructors.Length == 0)
+        {
+            if (parameterless is not null || definition.DestinationType.IsValueType)
+                return ConventionResolvedConstructor.Parameterless;
+
+            AddConstructorFinding(findings, "AFC011", $"Destination type '{definition.DestinationType.FullName}' does not have a usable public constructor.");
+            return new ConventionResolvedConstructor(null, Array.Empty<ConventionResolvedConstructorParameter>(), false, "Blocked", "Destination type has no usable public constructor.");
+        }
+
+        var candidates = publicConstructors
+            .Select(constructor => TryBindConstructor(definition, options, sourceProperties, destinationProperties, allowCaseInsensitive, constructor))
+            .Where(candidate => candidate is not null)
+            .Cast<ConventionResolvedConstructor>()
+            .ToArray();
+
+        if (candidates.Length == 0)
+        {
+            if (parameterless is not null || definition.DestinationType.IsValueType)
+                return ConventionResolvedConstructor.Parameterless;
+
+            AddConstructorFinding(findings, "AFC011", $"Destination type '{definition.DestinationType.FullName}' has no constructor whose parameters can all be mapped.");
+            return new ConventionResolvedConstructor(null, Array.Empty<ConventionResolvedConstructorParameter>(), false, "Blocked", "No constructor parameters can all be mapped.");
+        }
+
+        var maxParameterCount = candidates.Max(candidate => candidate.Parameters.Count);
+        var best = candidates.Where(candidate => candidate.Parameters.Count == maxParameterCount).ToArray();
+        if (best.Length > 1)
+        {
+            AddConstructorFinding(findings, "AFC010", $"Destination type '{definition.DestinationType.FullName}' has multiple equally specific mappable constructors.");
+            return new ConventionResolvedConstructor(null, Array.Empty<ConventionResolvedConstructorParameter>(), false, "Blocked", "Constructor binding is ambiguous.");
+        }
+
+        return best[0];
+    }
+
+    private static ConventionResolvedConstructor? TryBindConstructor(
+        ConventionMappingDefinition definition,
+        ConventionMappingOptions options,
+        IReadOnlyList<PropertyInfo> sourceProperties,
+        IReadOnlyList<PropertyInfo> destinationProperties,
+        bool allowCaseInsensitive,
+        ConstructorInfo constructor)
+    {
+        var parameters = new List<ConventionResolvedConstructorParameter>();
+
+        foreach (var parameter in constructor.GetParameters())
+        {
+            if (parameter.Name is null)
+                return null;
+
+            var destinationProperty = destinationProperties.SingleOrDefault(property =>
+                string.Equals(property.Name, parameter.Name, StringComparison.OrdinalIgnoreCase));
+            var destinationMemberName = destinationProperty?.Name ?? parameter.Name;
+            definition.MemberMappings.TryGetValue(destinationMemberName, out var memberConfiguration);
+
+            var sourceResolution = ResolveSourceMember(sourceProperties, destinationMemberName, memberConfiguration, allowCaseInsensitive || destinationProperty is not null);
+            if (sourceResolution.IsAmbiguous || sourceResolution.SourceMemberName is null || sourceResolution.SourceValueFactory is null)
+                return null;
+
+            if (options.RequireExplicitSensitiveMemberAllow &&
+                (IsSensitive(sourceResolution.SourceMemberName, options) || IsSensitive(destinationMemberName, options)) &&
+                !definition.AllowedSensitiveMembers.Contains(sourceResolution.SourceMemberName) &&
+                !definition.AllowedSensitiveMembers.Contains(destinationMemberName))
+            {
+                return null;
+            }
+
+            var compatibility = GetCompatibility(sourceResolution.SourceMemberType!, parameter.ParameterType, memberConfiguration);
+            if (!compatibility.CanMap)
+                return null;
+
+            parameters.Add(new ConventionResolvedConstructorParameter(
+                parameter,
+                destinationMemberName,
+                memberConfiguration,
+                sourceResolution.SourceValueFactory,
+                compatibility.RequiresEnumToString,
+                compatibility.RequiresEnumToEnum,
+                compatibility.RequiresCollectionMapping));
+        }
+
+        return new ConventionResolvedConstructor(constructor, parameters, true, "ConstructorBound", "Destination constructor parameters are mapped by convention.");
     }
 
     private static SourceMemberResolution ResolveSourceMember(
@@ -336,6 +473,13 @@ internal static class ConventionMappingPlanBuilder
                 (destination, source) => $"Destination member '{destination}' requires numeric conversion from source member '{source}'. Configure ConvertUsing to make the conversion explicit.");
         }
 
+        if (TryResolveCollectionItemType(sourceType, out var sourceItemType) &&
+            TryResolveCollectionItemType(destinationType, out var destinationItemType) &&
+            destinationItemType == sourceItemType)
+        {
+            return MemberCompatibility.Success("Collection shape mapped by convention.", requiresCollectionMapping: true);
+        }
+
         return MemberCompatibility.Failure(
             "AFC005",
             MappingPlanFindingSeverity.Error,
@@ -358,6 +502,9 @@ internal static class ConventionMappingPlanBuilder
 
         if (compatibility.RequiresEnumToEnum)
             return "EnumToEnum";
+
+        if (compatibility.RequiresCollectionMapping)
+            return "Collection";
 
         if (memberConfiguration?.HasNullSubstitute == true)
             return "MappedWithNullSubstitute";
@@ -402,6 +549,15 @@ internal static class ConventionMappingPlanBuilder
             message));
     }
 
+    private static void AddConstructorFinding(List<MappingPlanFinding> findings, string code, string message)
+    {
+        findings.Add(new MappingPlanFinding(
+            MappingPlanFindingSeverity.Error,
+            code,
+            "Constructor",
+            message));
+    }
+
     private static bool IsNumeric(Type type)
     {
         type = Nullable.GetUnderlyingType(type) ?? type;
@@ -416,6 +572,34 @@ internal static class ConventionMappingPlanBuilder
             type == typeof(float) ||
             type == typeof(double) ||
             type == typeof(decimal);
+    }
+
+    private static bool TryResolveCollectionItemType(Type type, out Type itemType)
+    {
+        itemType = typeof(object);
+        if (type == typeof(string))
+            return false;
+
+        if (type.IsArray)
+        {
+            itemType = type.GetElementType()!;
+            return true;
+        }
+
+        var collectionType = type
+            .GetInterfaces()
+            .Append(type)
+            .Where(candidate => candidate.IsGenericType)
+            .FirstOrDefault(candidate =>
+                candidate.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
+                candidate.GetGenericTypeDefinition() == typeof(IReadOnlyList<>) ||
+                candidate.GetGenericTypeDefinition() == typeof(List<>));
+
+        if (collectionType is null)
+            return false;
+
+        itemType = collectionType.GetGenericArguments()[0];
+        return true;
     }
 
     private static string GetDisplayName(Type type)
@@ -450,14 +634,16 @@ internal static class ConventionMappingPlanBuilder
         string Reason,
         Func<string, string, string> Message,
         bool RequiresEnumToString,
-        bool RequiresEnumToEnum)
+        bool RequiresEnumToEnum,
+        bool RequiresCollectionMapping)
     {
         public static MemberCompatibility Success(
             string reason,
             bool requiresEnumToString = false,
-            bool requiresEnumToEnum = false)
+            bool requiresEnumToEnum = false,
+            bool requiresCollectionMapping = false)
         {
-            return new(true, string.Empty, MappingPlanFindingSeverity.Info, reason, static (_, _) => string.Empty, requiresEnumToString, requiresEnumToEnum);
+            return new(true, string.Empty, MappingPlanFindingSeverity.Info, reason, static (_, _) => string.Empty, requiresEnumToString, requiresEnumToEnum, requiresCollectionMapping);
         }
 
         public static MemberCompatibility Failure(
@@ -466,7 +652,7 @@ internal static class ConventionMappingPlanBuilder
             string reason,
             Func<string, string, string> message)
         {
-            return new(false, code, severity, reason, message, false, false);
+            return new(false, code, severity, reason, message, false, false, false);
         }
     }
 }

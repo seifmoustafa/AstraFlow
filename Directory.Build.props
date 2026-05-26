@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.5.1</Version>
-    <AssemblyVersion>1.5.1.0</AssemblyVersion>
-    <FileVersion>1.5.1.0</FileVersion>
+    <Version>1.5.2</Version>
+    <AssemblyVersion>1.5.2.0</AssemblyVersion>
+    <FileVersion>1.5.2.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.5.1:
-      - Adds fluent convention member configuration with explicit member sources, required destination rules, null substitution, converters, and conditional mapping.
-      - Adds enum mapping support plus nullable and numeric conversion diagnostics.
-      - Expands mapping plans so configured member behavior is visible in diagnostics.
+    <PackageReleaseNotes>AstraFlow 1.5.2:
+      - Adds constructor and record binding for opt-in convention mapping.
+      - Adds explicit existing-destination update mapping through IConventionMapper and EnableUpdateMapping.
+      - Adds constructor and immutable destination diagnostics, sensitive destination write protection for updates, and safe same-element collection shape mapping.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

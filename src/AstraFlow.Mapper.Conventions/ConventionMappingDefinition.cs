@@ -21,6 +21,8 @@ internal sealed class ConventionMappingDefinition
 
     public bool AllowCaseInsensitiveMemberMatching { get; set; }
 
+    public bool UpdateMappingEnabled { get; set; }
+
     public IReadOnlyCollection<string> IncludedMembers => _includedMembers;
 
     public IReadOnlyCollection<string> IgnoredMembers => _ignoredMembers;

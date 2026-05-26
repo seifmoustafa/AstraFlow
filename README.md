@@ -269,7 +269,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.5.1
+dotnet add package AstraFlow.Mapper.Conventions --version 1.5.2
 ```
 
 Register exact pairs through a profile:
@@ -292,14 +292,26 @@ public sealed class UserProfile : ConventionMappingProfile
 }
 ```
 
-Convention mapping stays disabled for every pair that is not registered. Member rules, converters, conditions, null substitution, and enum decisions are included in mapping plans so every convention-created member can be reviewed before publishing.
+Convention mapping stays disabled for every pair that is not registered. Member rules, converters, conditions, null substitution, enum decisions, and constructor-bound record members are included in mapping plans so every convention-created member can be reviewed before publishing.
+
+Existing-destination updates are separate from read DTO mapping:
+
+```csharp
+CreateMap<UserPatch, User>()
+    .EnableUpdateMapping()
+    .ForMember(destination => destination.Email, member => member.Condition(source => source.HasEmail));
+
+provider.GetRequiredService<IConventionMapper>().MapInto(patch, user);
+```
+
+Sensitive destination writes remain blocked unless explicitly allowed.
 
 ## Quick Start: EF Core Projection Checks
 
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.5.1
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.5.2
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -381,7 +393,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.5.1
+dotnet add package AstraFlow.Testing --version 1.5.2
 ```
 
 Use the fake mediator to record requests and notifications:

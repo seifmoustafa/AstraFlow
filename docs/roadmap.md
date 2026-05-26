@@ -514,7 +514,7 @@ What must NOT be included:
 
 ### v1.5 AutoMapper Core Parity Overview
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -738,7 +738,7 @@ What must NOT be included:
 
 #### v1.5.2 Destination, Constructor, and Update Mapping
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -2233,8 +2233,7 @@ Missing for AutoMapper-style parity:
 - Required destination member rules.
 - Unmapped source/destination diagnostics.
 - Nullable/numeric/enum diagnostics.
-- Constructor/record binding.
-- Immutable destination support.
+- Flattening, unflattening, and explicit reverse mapping.
 - Null substitution.
 - Value converters/resolvers.
 - Conditional mapping.
@@ -2343,8 +2342,8 @@ Moved later:
 | Conditional mapping | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P1 | Condition report | Condition tests |
 | Nullable diagnostics | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Nullable findings | Nullable tests |
 | Numeric diagnostics | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Numeric findings | Numeric tests |
-| Constructor/record binding | Planned | v1.5.2 | `AstraFlow.Mapper.Conventions` | P1 | Binding report | Binding tests |
-| Existing destination mapping | Planned | v1.5.2 | `AstraFlow.Mapper.Conventions` | P1 | Update report | Update tests |
+| Constructor/record binding | Done | v1.5.2 | `AstraFlow.Mapper.Conventions` | P1 | Binding report | Binding tests |
+| Existing destination mapping | Done | v1.5.2 | `AstraFlow.Mapper.Conventions` | P1 | Update report | Update tests |
 | Flattening | Planned | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Flattening report | Flattening tests |
 | Unflattening | Planned | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Domain-write findings | Unflattening tests |
 | Reverse mapping | Planned | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Explicit reverse report | Reverse tests |
@@ -2382,7 +2381,7 @@ Moved later:
 | Explicit mapping | Done | v1.0.0 | P0 | `AstraFlow.Mapper` | AutoMapper-style problem domain | Missing/duplicate mapping diagnostics | Preserve |
 | Convention mapping | Done | v1.5.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Opt-in and inspectable | Moved earlier |
 | Member config | Done | v1.5.1 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Per-member diagnostics | Moved earlier |
-| Destination/update mapping | Planned | v1.5.2 | P1 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Sensitive write diagnostics | Moved earlier |
+| Destination/update mapping | Done | v1.5.2 | P1 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Sensitive write diagnostics | Moved earlier |
 | Flattening/reverse/unflattening | Planned | v1.6.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Explicit and security-gated | Moved earlier |
 | Projections | Done, expand | v1.7 | P0 | `AstraFlow.Mapper` | AutoMapper-style query projection | Provider warnings | Moved earlier |
 | Analyzers | Planned | v1.8/v2 | P0 | `AstraFlow.Analyzers` | Compile-time parity | Stable rule IDs | Moved earlier |
@@ -2537,7 +2536,7 @@ Before claiming common AutoMapper-style replacement:
 - `v1.5.x` and `v1.6.0` completed.
 - Convention mapping opt-in and tested.
 - Mapping profiles/catalogs completed.
-- Member configuration, include/ignore, null substitution, value converters, conditionals, constructor/record binding completed.
+- Member configuration, include/ignore, null substitution, value converters, conditionals, constructor/record binding, immutable destination support, and existing destination mapping completed.
 - Flattening, unflattening, and explicit reverse mapping completed.
 - Sensitive-field deny list and mapping plan export completed.
 - Migration examples compile.

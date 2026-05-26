@@ -328,6 +328,151 @@ public sealed class ConventionMappingTests
         plan.Members.Should().Contain(member => member.DestinationMember == nameof(UnsafeConversionDto.Count) && member.Decision == "Blocked");
     }
 
+    [Fact]
+    public void Map_WithRecordDestination_BindsPrimaryConstructor()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<CustomerEntity, CustomerRecordDto>();
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var id = Guid.NewGuid();
+        var result = mapper.Map<CustomerRecordDto>(new CustomerEntity(id, "Ada", "ada@example.com"));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Should().Be(new CustomerRecordDto(id, "Ada", "ada@example.com"));
+        plan.Members.Should().OnlyContain(member => member.Decision == "ConstructorBound");
+    }
+
+    [Fact]
+    public void Map_WithImmutableDestination_BindsConstructorAndExplicitMemberSource()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<CustomerEntity, ImmutableCustomerDto>()
+                    .ForMember(destination => destination.DisplayName, member => member
+                        .MapFrom(source => source.Name)
+                        .Required());
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var id = Guid.NewGuid();
+        var result = mapper.Map<ImmutableCustomerDto>(new CustomerEntity(id, "Ada", "ada@example.com"));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Id.Should().Be(id);
+        result.DisplayName.Should().Be("Ada");
+        plan.Members.Should().Contain(member =>
+            member.DestinationMember == nameof(ImmutableCustomerDto.DisplayName) &&
+            member.Decision == "ConstructorBound" &&
+            member.Reason.Contains("Bound through destination constructor."));
+    }
+
+    [Fact]
+    public void Map_WithAmbiguousConstructorBinding_FailsClearly()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<CustomerEntity, AmbiguousConstructorDto>();
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var act = () => mapper.Map<AmbiguousConstructorDto>(new CustomerEntity(Guid.NewGuid(), "Ada", "ada@example.com"));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*AFC010*multiple equally specific mappable constructors*");
+    }
+
+    [Fact]
+    public void MapInto_WithoutExplicitUpdateMapping_FailsClearly()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<PatchCustomerDto, CustomerPatchResult>();
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IConventionMapper>();
+        var destination = new CustomerPatchResult { Email = "old@example.com" };
+
+        var act = () => mapper.MapInto(new PatchCustomerDto(true, "ada@example.com"), destination);
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*requires EnableUpdateMapping*");
+    }
+
+    [Fact]
+    public void MapInto_WithCondition_UpdatesExistingDestinationOnlyWhenPredicatePasses()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<PatchCustomerDto, CustomerPatchResult>()
+                    .EnableUpdateMapping()
+                    .ForMember(destination => destination.Email, member => member.Condition(source => source.HasEmail));
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IConventionMapper>();
+        var destination = new CustomerPatchResult { Email = "old@example.com" };
+
+        var sameDestination = mapper.MapInto(new PatchCustomerDto(false, "ada@example.com"), destination);
+        sameDestination.Should().BeSameAs(destination);
+        destination.Email.Should().Be("old@example.com");
+
+        mapper.MapInto(new PatchCustomerDto(true, "ada@example.com"), destination);
+
+        destination.Email.Should().Be("ada@example.com");
+    }
+
+    [Fact]
+    public void MapInto_WithSensitiveDestinationWrite_BlocksUnlessAllowed()
+    {
+        using var blockedProvider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<SecretEntity, SecretDto>()
+                .EnableUpdateMapping();
+        }).BuildServiceProvider();
+        var blockedMapper = blockedProvider.GetRequiredService<IConventionMapper>();
+
+        var blocked = () => blockedMapper.MapInto(new SecretEntity("new-token"), new SecretDto { ApiToken = "old-token" });
+
+        blocked.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*AFC004*AllowSensitiveMember*");
+
+        using var allowedProvider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<SecretEntity, SecretDto>()
+                .EnableUpdateMapping()
+                .AllowSensitiveMember(nameof(SecretDto.ApiToken));
+        }).BuildServiceProvider();
+        var destination = new SecretDto { ApiToken = "old-token" };
+
+        allowedProvider.GetRequiredService<IConventionMapper>().MapInto(new SecretEntity("new-token"), destination);
+
+        destination.ApiToken.Should().Be("new-token");
+    }
+
+    [Fact]
+    public void Map_WithSafeCollectionShape_MapsSameElementCollections()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<TagSource, TagDto>();
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<TagDto>(new TagSource(["alpha", "beta"]));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Tags.Should().Equal("alpha", "beta");
+        plan.Members.Single(member => member.DestinationMember == nameof(TagDto.Tags))
+            .Decision.Should().Be("Collection");
+    }
+
     private static ServiceCollection CreateServices(
         Action<ConventionMappingCatalog>? configureCatalog = null,
         Action<ConventionMappingOptions>? configureOptions = null)
@@ -363,6 +508,10 @@ public sealed class ConventionMappingTests
     private sealed record BrokenOrderStatusEntity(SourceOrderStatus Status);
 
     private sealed record UnsafeConversionEntity(int? Score, int Count);
+
+    private sealed record CustomerRecordDto(Guid Id, string Name, string Email);
+
+    private sealed record TagSource(string[] Tags);
 
     private sealed class ReadCustomerDto
     {
@@ -423,6 +572,41 @@ public sealed class ConventionMappingTests
     private sealed class CustomerPatchResult
     {
         public string? Email { get; set; }
+    }
+
+    private sealed class ImmutableCustomerDto
+    {
+        public ImmutableCustomerDto(Guid id, string displayName)
+        {
+            Id = id;
+            DisplayName = displayName;
+        }
+
+        public Guid Id { get; }
+
+        public string DisplayName { get; }
+    }
+
+    private sealed class AmbiguousConstructorDto
+    {
+        public AmbiguousConstructorDto(string name)
+        {
+            Name = name;
+        }
+
+        public AmbiguousConstructorDto(Guid id)
+        {
+            Id = id;
+        }
+
+        public Guid Id { get; }
+
+        public string? Name { get; }
+    }
+
+    private sealed class TagDto
+    {
+        public List<string> Tags { get; set; } = [];
     }
 
     private sealed class OrderStatusDto

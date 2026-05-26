@@ -5,19 +5,26 @@ using Microsoft.Extensions.DependencyInjection;
 var services = new ServiceCollection();
 
 services.AddAstraFlowMapper(typeof(CustomerProfile));
-services.AddAstraFlowConventionMapping(catalog =>
-{
-    catalog.AddProfile<CustomerProfile>();
-});
+services.AddAstraFlowConventionMapping(
+    catalog =>
+    {
+        catalog.AddProfile<CustomerProfile>();
+    },
+    options => options.StrictMode = false);
 
 using var provider = services.BuildServiceProvider();
 var mapper = provider.GetRequiredService<IMapper>();
+var conventionMapper = provider.GetRequiredService<IConventionMapper>();
 var plans = provider.GetRequiredService<IMappingPlanProvider>();
 
 var response = mapper.Map<CustomerResponse>(
     new Customer(Guid.NewGuid(), "Ada Lovelace", "ada@example.com", null));
 
 Console.WriteLine($"{response.DisplayName} <{response.Email}> score={response.Score}");
+
+var existing = new CustomerAccount("old@example.com");
+conventionMapper.MapInto(new CustomerPatch(true, "ada@example.com"), existing);
+Console.WriteLine($"updated email={existing.Email}");
 
 foreach (var plan in plans.GetMappingPlans())
 {
@@ -30,15 +37,18 @@ foreach (var plan in plans.GetMappingPlans())
 
 internal sealed record Customer(Guid Id, string Name, string Email, int? Score);
 
-internal sealed class CustomerResponse
+internal sealed record CustomerResponse(Guid Id, string DisplayName, string Email, int Score);
+
+internal sealed record CustomerPatch(bool HasEmail, string? Email);
+
+internal sealed class CustomerAccount
 {
-    public string? DisplayName { get; set; }
+    public CustomerAccount(string email)
+    {
+        Email = email;
+    }
 
     public string? Email { get; set; }
-
-    public Guid Id { get; set; }
-
-    public int Score { get; set; }
 }
 
 internal sealed class CustomerProfile : ConventionMappingProfile
@@ -50,5 +60,10 @@ internal sealed class CustomerProfile : ConventionMappingProfile
                 .MapFrom(source => source.Name)
                 .Required())
             .ForMember(destination => destination.Score, member => member.NullSubstitute(0));
+
+        CreateMap<CustomerPatch, CustomerAccount>()
+            .EnableUpdateMapping()
+            .ForMember(destination => destination.Email, member => member
+                .Condition(source => source.HasEmail));
     }
 }
