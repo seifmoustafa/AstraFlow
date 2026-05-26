@@ -29,7 +29,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | --- | --- |
 | `AstraFlow.Contracts` | Shared mediator contracts for requests, notifications, streams, senders, publishers, processors, and exception flow. |
 | `AstraFlow.Mediator` | Request/response dispatch, void commands, stream requests, notification publishing, pipeline behaviors, processors, exception flow, handler scanning, duplicate handler detection, and optional handler coverage validation. |
-| `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named projection registry, projection validation, and secure ID mapping abstractions. |
+| `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named and parameterized projection registries, projection plan export, projection validation, and secure ID mapping abstractions. |
 | `AstraFlow.Mapper.Conventions` | Optional convention mapping with exact pair registration, profiles, strict mapping plans, flattening, explicit reverse mapping, inheritance, polymorphic dispatch, custom paths, resolvers, value transformers, hooks, and sensitive-field safeguards. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
 | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
@@ -269,7 +269,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.5.2
+dotnet add package AstraFlow.Mapper.Conventions --version 1.7.0
 ```
 
 Register exact pairs through a profile:
@@ -311,7 +311,7 @@ Sensitive destination writes remain blocked unless explicitly allowed.
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.5.2
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.0
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -393,7 +393,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.5.2
+dotnet add package AstraFlow.Testing --version 1.7.0
 ```
 
 Use the fake mediator to record requests and notifications:
@@ -411,7 +411,7 @@ The testing package is framework-neutral and does not depend on xUnit, NUnit, MS
 
 ## v1 Non-Goals
 
-AstraFlow v1 intentionally does not include convention mapping, flattening, reverse-map generation, compatibility shims, source generators, or analyzers. Those belong in optional packages after the explicit core is stable in real production use.
+AstraFlow v1 intentionally keeps convention mapping, advanced mapping behavior, source generators, analyzers, framework integrations, and ecosystem helpers opt-in. The explicit mediator and mapper core remains the default path.
 
 ## Roadmap
 

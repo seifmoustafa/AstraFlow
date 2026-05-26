@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.6.2</Version>
-    <AssemblyVersion>1.6.2.0</AssemblyVersion>
-    <FileVersion>1.6.2.0</FileVersion>
+    <Version>1.7.0</Version>
+    <AssemblyVersion>1.7.0.0</AssemblyVersion>
+    <FileVersion>1.7.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,11 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.6.2:
-      - Promotes v1.6.x inheritance and polymorphic mapping candidate follow-ups.
-      - Adds IncludeBase and IncludeDerived for explicit convention mapping hierarchy support.
-      - Adds AFC017, AFC018, and AFC019 diagnostics for inheritance and polymorphic mapping visibility.
+    <PackageReleaseNotes>AstraFlow 1.7.0:
+      - Adds explicit parameterized projections and parameterized projection registry APIs.
+      - Adds deterministic projection plan export for CI-friendly review.
+      - Adds projection diagnostics for raw public IDs and secure ID infrastructure in query expressions.
+      - Expands EF Core projection validation reports with provider metadata and parameter sample support.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

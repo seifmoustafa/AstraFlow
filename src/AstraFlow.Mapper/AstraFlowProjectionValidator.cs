@@ -43,14 +43,14 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
     {
         foreach (var duplicate in registrations
                      .Where(registration => registration.Name is null)
-                     .GroupBy(registration => new { registration.SourceType, registration.DestinationType })
+                     .GroupBy(registration => new { registration.SourceType, registration.DestinationType, registration.ParameterType })
                      .Where(group => group.Skip(1).Any()))
         {
             var implementations = JoinImplementations(duplicate);
             findings.Add(new ProjectionValidationFinding(
                 severity,
                 "AFP001",
-                $"Multiple unnamed projections are registered for '{GetDisplayName(duplicate.Key.SourceType)} -> {GetDisplayName(duplicate.Key.DestinationType)}': {implementations}. Add unique projection names.",
+                $"Multiple unnamed projections are registered for '{GetDisplayName(duplicate.Key.SourceType)} -> {GetDisplayName(duplicate.Key.DestinationType)}{GetParameterSuffix(duplicate.Key.ParameterType)}': {implementations}. Add unique projection names.",
                 duplicate.Key.SourceType,
                 duplicate.Key.DestinationType));
         }
@@ -61,6 +61,7 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
                          registration => new NamedProjectionKey(
                              registration.SourceType,
                              registration.DestinationType,
+                             registration.ParameterType,
                              registration.Name!.Trim().ToUpperInvariant()))
                      .Where(group => group.Skip(1).Any()))
         {
@@ -69,7 +70,7 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
             findings.Add(new ProjectionValidationFinding(
                 severity,
                 "AFP002",
-                $"Multiple projections named '{first.Name}' are registered for '{GetDisplayName(first.SourceType)} -> {GetDisplayName(first.DestinationType)}': {implementations}. Projection names must be unique per source/destination pair.",
+                $"Multiple projections named '{first.Name}' are registered for '{GetDisplayName(first.SourceType)} -> {GetDisplayName(first.DestinationType)}{GetParameterSuffix(first.ParameterType)}': {implementations}. Projection names must be unique per source/destination pair.",
                 first.SourceType,
                 first.DestinationType,
                 first.Name));
@@ -159,6 +160,11 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
         return $"{genericName}<{arguments}>";
     }
 
+    private static string GetParameterSuffix(Type? parameterType)
+    {
+        return parameterType is null ? "" : $" with parameters '{GetDisplayName(parameterType)}'";
+    }
+
     private sealed class ProjectionRiskVisitor : ExpressionVisitor
     {
         private readonly ProjectionRegistration _registration;
@@ -183,6 +189,14 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
             {
                 Add("AFP103", $"Projection '{GetDisplayName(_registration.ImplementationType)}' calls '{nameof(Guid.NewGuid)}', which is non-deterministic and usually not provider-translatable.");
             }
+            else if (node.Method.Name is nameof(SecureIdMapper.Encrypt) or nameof(ISecureIdCodec.TryDecrypt) &&
+                     (node.Method.DeclaringType == typeof(SecureIdMapper) ||
+                      node.Method.DeclaringType == typeof(ISecureIdCodec) ||
+                      (node.Method.DeclaringType is not null &&
+                       typeof(ISecureIdCodec).IsAssignableFrom(node.Method.DeclaringType))))
+            {
+                Add("AFP107", $"Projection '{GetDisplayName(_registration.ImplementationType)}' calls secure ID infrastructure inside the query expression. Project raw values first or assign secure IDs after materialization.");
+            }
             else if (IsCustomMethod(node.Method.DeclaringType))
             {
                 Add("AFP102", $"Projection '{GetDisplayName(_registration.ImplementationType)}' calls custom method '{GetDisplayName(node.Method.DeclaringType!)}.{node.Method.Name}', which query providers may not translate.");
@@ -206,6 +220,12 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
                 Add("AFP104", $"Projection '{GetDisplayName(_registration.ImplementationType)}' captures complex closure value '{node.Member.Name}'. Capture scalar values only or pass provider-translatable constants.");
             }
 
+            if (node.Member.Name.EndsWith("PublicId", StringComparison.OrdinalIgnoreCase) &&
+                (Nullable.GetUnderlyingType(node.Type) ?? node.Type) == typeof(Guid))
+            {
+                Add("AFP106", $"Projection '{GetDisplayName(_registration.ImplementationType)}' exposes raw public identifier member '{node.Member.Name}'. Project a safe DTO identifier or document why raw IDs are acceptable.");
+            }
+
             return base.VisitMember(node);
         }
 
@@ -214,6 +234,20 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
             if (node.Type.IsAbstract || node.Type.IsInterface)
             {
                 Add("AFP105", $"Projection '{GetDisplayName(_registration.ImplementationType)}' constructs unsupported type '{GetDisplayName(node.Type)}'.");
+            }
+
+            for (var i = 0; i < node.Arguments.Count; i++)
+            {
+                var memberName = node.Members?.Count > i
+                    ? node.Members[i].Name
+                    : node.Constructor?.GetParameters()[i].Name;
+
+                if (memberName is not null &&
+                    memberName.EndsWith("PublicId", StringComparison.OrdinalIgnoreCase) &&
+                    (Nullable.GetUnderlyingType(node.Arguments[i].Type) ?? node.Arguments[i].Type) == typeof(Guid))
+                {
+                    Add("AFP106", $"Projection '{GetDisplayName(_registration.ImplementationType)}' exposes raw public identifier member '{memberName}'. Project a safe DTO identifier or document why raw IDs are acceptable.");
+                }
             }
 
             return base.VisitNew(node);
@@ -266,5 +300,5 @@ internal sealed class AstraFlowProjectionValidator : IProjectionValidator
         }
     }
 
-    private sealed record NamedProjectionKey(Type SourceType, Type DestinationType, string Name);
+    private sealed record NamedProjectionKey(Type SourceType, Type DestinationType, Type? ParameterType, string Name);
 }

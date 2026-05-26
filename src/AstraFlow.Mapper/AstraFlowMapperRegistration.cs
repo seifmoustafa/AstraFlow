@@ -51,7 +51,10 @@ public static class AstraFlowMapperRegistration
         services.AddScoped<IMapper, AstraFlowObjectMapper>();
         services.AddScoped<IObjectMappingValidator, AstraFlowObjectMappingValidator>();
         services.AddScoped<IProjectionRegistry, AstraFlowProjectionRegistry>();
+        services.AddScoped<IParameterizedProjectionRegistry>(provider =>
+            (AstraFlowProjectionRegistry)provider.GetRequiredService<IProjectionRegistry>());
         services.AddScoped<IProjectionValidator, AstraFlowProjectionValidator>();
+        services.AddScoped<IProjectionPlanProvider, AstraFlowProjectionPlanProvider>();
         services.AddHostedService<AstraFlowObjectMappingStartupValidator>();
 
         foreach (var ruleType in DiscoverMappingRuleTypes(markerTypes))
@@ -93,14 +96,19 @@ public static class AstraFlowMapperRegistration
                 .GetInterfaces()
                 .Where(interfaceType =>
                     interfaceType.IsGenericType &&
-                    interfaceType.GetGenericTypeDefinition() == typeof(IProjection<,>))
+                    (interfaceType.GetGenericTypeDefinition() == typeof(IProjection<,>) ||
+                     interfaceType.GetGenericTypeDefinition() == typeof(IParameterizedProjection<,,>)))
                 .Distinct()
                 .Select(interfaceType =>
                 {
                     var arguments = interfaceType.GetGenericArguments();
+                    var parameterType = interfaceType.GetGenericTypeDefinition() == typeof(IParameterizedProjection<,,>)
+                        ? arguments[2]
+                        : null;
                     return new ProjectionDescriptor(
                         arguments[0],
                         arguments[1],
+                        parameterType,
                         interfaceType,
                         type,
                         ServiceLifetime.Scoped);

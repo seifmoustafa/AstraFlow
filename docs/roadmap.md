@@ -987,7 +987,7 @@ What must NOT be included:
 
 ### v1.7 Projection and EF Provider Parity
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -1009,7 +1009,29 @@ Features included:
 
 - Projection parameters.
 - Projection parameter object model.
-- Provider matrix.
+- Deterministic projection plan export.
+- CI-friendly projection reports through `IProjectionPlanProvider`.
+- SQLite provider tests.
+- EF provider validation report metadata.
+- Provider matrix documentation.
+- Provider-specific warning codes.
+- Expression translation warnings.
+- Non-translatable method warnings.
+- Non-deterministic expression warnings.
+- No unsafe closure capture.
+- Raw public ID checks.
+- Secure ID projection checks.
+- SQL snapshot helper remains candidate only.
+
+Deferred to `v1.7.x` or later:
+
+- SQL Server provider tests where practical.
+- PostgreSQL provider tests where practical.
+- MySQL provider tests where practical.
+- Projection diffing.
+
+Original candidate scope:
+
 - SQLite provider tests.
 - SQL Server provider tests where practical.
 - PostgreSQL provider tests where practical.
@@ -1080,6 +1102,38 @@ What must NOT be included:
 - Hiding `IQueryable` provider behavior.
 - Forcing provider dependencies into mapper core.
 - SQL snapshot helper as required scope.
+
+### v1.7.x Projection Stabilization Patches
+
+Status: `Patch`.
+
+Goal:
+
+Harden the `v1.7.0` projection and EF provider parity baseline without expanding core package dependencies.
+
+Packages affected:
+
+- `AstraFlow.Mapper`
+- `AstraFlow.Mapper.EntityFrameworkCore`
+- `AstraFlow.Diagnostics`
+- `AstraFlow.Testing`
+- docs, samples, scripts, CI
+
+Patch-safe scope:
+
+- Documentation corrections for projection parameters and provider validation.
+- Additional projection plan assertion helpers.
+- More static projection warning coverage where additive and low risk.
+- Provider-specific test projects for SQL Server, PostgreSQL, or MySQL if dependencies stay isolated.
+- More clean consumer projection validation examples.
+- Package verification polish.
+
+What must NOT be included:
+
+- Provider dependencies in `AstraFlow.Mapper`.
+- Required SQL snapshot output.
+- Query execution during validation.
+- Breaking projection API changes.
 
 ### v1.8 Early Analyzers and Source Generators
 
@@ -2349,8 +2403,8 @@ Moved later:
 | Flattening | Done | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Flattening report | Flattening tests |
 | Unflattening | Done | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Domain-write findings | Unflattening tests |
 | Reverse mapping | Done | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Explicit reverse report | Reverse tests |
-| Projection parameters | Planned | v1.7 | `AstraFlow.Mapper` | P0 | Parameter report | Parameter tests |
-| EF provider matrix | Planned | v1.7 | `AstraFlow.Mapper.EntityFrameworkCore` | P0 | Provider findings | Provider tests |
+| Projection parameters | Done | v1.7.0 | `AstraFlow.Mapper` | P0 | Parameter report | Parameter tests |
+| EF provider matrix | Done, expand | v1.7.0/v1.7.x | `AstraFlow.Mapper.EntityFrameworkCore` | P0 | Provider findings | Provider tests |
 | Mapping analyzers/generators | Planned | v1.8/v2 | `AstraFlow.Analyzers`/`AstraFlow.Generators` | P0 | Rule IDs and metadata | Analyzer/generator tests |
 | Migration guide/scanner | Planned | v1.10 | `AstraFlow.Cli` | P1 | Suggestion report | Fixture tests |
 

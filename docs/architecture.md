@@ -4,13 +4,13 @@ AstraFlow is a small explicit application-flow package family. The core idea is 
 
 ## Design Goals
 
-| Goal | What It Means In v1.4.0 |
+| Goal | What It Means In `1.7.0` |
 | --- | --- |
 | Explicit flow | Requests declare response types. Handlers are concrete classes. Mapping rules are code, not naming magic. |
 | Clear failure modes | Missing handlers, duplicate handlers, ambiguous request contracts, missing mappings, duplicate mappings, and invalid mapping catalogs throw actionable exceptions. |
 | Narrow contracts | Interfaces are small enough to implement, test, and reason about. |
 | Framework independence | Core packages do not require ASP.NET Core MVC, EF Core, FluentValidation, OpenTelemetry, tenant frameworks, or custom result types. |
-| Secure defaults | No convention mapping, no payload logging, no built-in cryptography, and no automatic raw-ID exposure policy. |
+| Secure defaults | Convention mapping is opt-in, payloads are not logged by default, cryptography remains application-owned, and projection diagnostics flag raw public-ID risks. |
 | Package quality | XML docs, README, license, symbols, package icon, CI, publishing docs, and samples ship with the package family. |
 
 ## Package Boundaries

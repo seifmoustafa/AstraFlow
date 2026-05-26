@@ -2,6 +2,49 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.7.0
+
+### Added
+
+- Added explicit `IParameterizedProjection<TSource, TDestination, TParameters>` support for tenant, user, culture, current-time, and other parameterized read-model scenarios.
+- Added `INamedParameterizedProjection<TSource, TDestination, TParameters>` and `IParameterizedProjectionRegistry` for named and unnamed parameterized projection lookup.
+- Added `ProjectWith` overloads that bind parameter objects into provider-visible projection expressions without executing queries.
+- Added deterministic projection plan export through `IProjectionPlanProvider` and `ProjectionPlan`.
+- Added parameter metadata to projection registrations and plans.
+- Added `AFP106` diagnostics for raw public ID projection risks.
+- Added `AFP107` diagnostics for secure ID infrastructure calls inside query projection expressions.
+- Added EF Core parameterized projection translation validation.
+- Added EF Core provider metadata through `EfCoreProjectionValidationReport.ProviderName` and `ValidatedProjectionCount`.
+- Added `AFPEF002` for unmapped EF entity sources and `AFPEF003` for missing parameter samples during EF provider validation.
+
+### Changed
+
+- Projection duplicate validation now includes parameter object type when grouping parameterized projections.
+- EF Core projection validation can accept sample parameter objects for provider translation checks.
+- Release-facing documentation now points current package install examples at `1.7.0`.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded projection, EF Core, API reference, package selection, compatibility, and release documentation for `1.7.0`.
+- Added `v1.7.x` stabilization lane to the roadmap.
+
+### Tests
+
+- Added projection tests for parameterized projection application, registry lookup, projection plan export, raw public ID diagnostics, and secure ID projection diagnostics.
+- Added EF Core tests for provider metadata, unmapped entity findings, parameterized projection translation, missing parameter samples, and supplied parameter samples.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.7.0`.
+
+### Breaking changes
+
+- None.
+
 ## 1.6.2
 
 ### Added

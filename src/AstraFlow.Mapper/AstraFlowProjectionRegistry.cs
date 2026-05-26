@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AstraFlow.Mapper;
 
-internal sealed class AstraFlowProjectionRegistry : IProjectionRegistry
+internal sealed class AstraFlowProjectionRegistry : IProjectionRegistry, IParameterizedProjectionRegistry
 {
     private static readonly StringComparer NameComparer = StringComparer.OrdinalIgnoreCase;
 
@@ -96,6 +96,7 @@ internal sealed class AstraFlowProjectionRegistry : IProjectionRegistry
             descriptor.SourceType,
             descriptor.DestinationType,
             name,
+            descriptor.ParameterType,
             descriptor.ServiceType,
             descriptor.ImplementationType,
             descriptor.Lifetime);
@@ -113,6 +114,15 @@ internal sealed class AstraFlowProjectionRegistry : IProjectionRegistry
                 type.GetGenericArguments()[0] == descriptor.SourceType &&
                 type.GetGenericArguments()[1] == descriptor.DestinationType);
 
+        namedInterface ??= descriptor.ImplementationType
+            .GetInterfaces()
+            .FirstOrDefault(type =>
+                type.IsGenericType &&
+                type.GetGenericTypeDefinition() == typeof(INamedParameterizedProjection<,,>) &&
+                type.GetGenericArguments()[0] == descriptor.SourceType &&
+                type.GetGenericArguments()[1] == descriptor.DestinationType &&
+                type.GetGenericArguments()[2] == descriptor.ParameterType);
+
         if (namedInterface is null)
             return null;
 
@@ -129,6 +139,65 @@ internal sealed class AstraFlowProjectionRegistry : IProjectionRegistry
         return name.Trim();
     }
 
+    public IParameterizedProjection<TSource, TDestination, TParameters> GetParameterized<TSource, TDestination, TParameters>()
+    {
+        var matches = GetEntries()
+            .Where(entry =>
+                entry.Registration.SourceType == typeof(TSource) &&
+                entry.Registration.DestinationType == typeof(TDestination) &&
+                entry.Registration.ParameterType == typeof(TParameters) &&
+                entry.Registration.Name is null)
+            .ToArray();
+
+        return GetSingleParameterized<TSource, TDestination, TParameters>(matches, null);
+    }
+
+    public IParameterizedProjection<TSource, TDestination, TParameters> GetParameterized<TSource, TDestination, TParameters>(
+        string name)
+    {
+        var normalizedName = NormalizeRequiredName(name);
+        var matches = GetEntries()
+            .Where(entry =>
+                entry.Registration.SourceType == typeof(TSource) &&
+                entry.Registration.DestinationType == typeof(TDestination) &&
+                entry.Registration.ParameterType == typeof(TParameters) &&
+                NameComparer.Equals(entry.Registration.Name, normalizedName))
+            .ToArray();
+
+        return GetSingleParameterized<TSource, TDestination, TParameters>(matches, normalizedName);
+    }
+
+    public bool TryGetParameterized<TSource, TDestination, TParameters>(
+        out IParameterizedProjection<TSource, TDestination, TParameters> projection)
+    {
+        try
+        {
+            projection = GetParameterized<TSource, TDestination, TParameters>();
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            projection = default!;
+            return false;
+        }
+    }
+
+    public bool TryGetParameterized<TSource, TDestination, TParameters>(
+        string name,
+        out IParameterizedProjection<TSource, TDestination, TParameters> projection)
+    {
+        try
+        {
+            projection = GetParameterized<TSource, TDestination, TParameters>(name);
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            projection = default!;
+            return false;
+        }
+    }
+
     private static IProjection<TSource, TDestination> GetSingle<TSource, TDestination>(
         IReadOnlyCollection<ProjectionEntry> matches,
         string? name)
@@ -139,6 +208,30 @@ internal sealed class AstraFlowProjectionRegistry : IProjectionRegistry
         var projectionLabel = name is null
             ? $"unnamed projection from '{typeof(TSource).FullName}' to '{typeof(TDestination).FullName}'"
             : $"projection named '{name}' from '{typeof(TSource).FullName}' to '{typeof(TDestination).FullName}'";
+
+        if (matches.Count == 0)
+            throw new InvalidOperationException($"No {projectionLabel} is registered.");
+
+        var implementations = string.Join(
+            ", ",
+            matches
+                .Select(match => match.Registration.ImplementationType.FullName ?? match.Registration.ImplementationType.Name)
+                .OrderBy(value => value, StringComparer.Ordinal));
+
+        throw new InvalidOperationException(
+            $"Multiple {projectionLabel} registrations were found: {implementations}.");
+    }
+
+    private static IParameterizedProjection<TSource, TDestination, TParameters> GetSingleParameterized<TSource, TDestination, TParameters>(
+        IReadOnlyCollection<ProjectionEntry> matches,
+        string? name)
+    {
+        if (matches.Count == 1)
+            return (IParameterizedProjection<TSource, TDestination, TParameters>)matches.Single().Instance;
+
+        var projectionLabel = name is null
+            ? $"unnamed parameterized projection from '{typeof(TSource).FullName}' to '{typeof(TDestination).FullName}' with parameters '{typeof(TParameters).FullName}'"
+            : $"parameterized projection named '{name}' from '{typeof(TSource).FullName}' to '{typeof(TDestination).FullName}' with parameters '{typeof(TParameters).FullName}'";
 
         if (matches.Count == 0)
             throw new InvalidOperationException($"No {projectionLabel} is registered.");

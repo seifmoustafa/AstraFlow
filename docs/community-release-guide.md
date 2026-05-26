@@ -2,27 +2,25 @@
 
 This guide is for preparing AstraFlow releases for a public repository push and community consumption.
 
-## Current Release: v1.4.0
+## Current Release: v1.7.0
 
-v1.4.0 is the mediator parity and ergonomics release. It adds `AstraFlow.Contracts`, void requests, stream requests, request processors, request exception flow, and opt-in parallel notification publishing while keeping sequential behavior as the default.
+v1.7.0 is the projection and EF provider parity release. It adds explicit parameterized projections, deterministic projection plan export, raw public ID and secure ID projection diagnostics, and provider-aware EF Core projection validation reports.
 
 Key message:
 
 ```text
-AstraFlow v1.4.0 adds a contracts-only package plus richer mediator flows: void commands, async stream requests, pre/post processors, explicit exception actions/handlers, and opt-in parallel notification strategies.
+AstraFlow v1.7.0 makes projection-heavy read models more inspectable with parameterized projections, CI-friendly projection plans, and EF Core provider validation that translates queries without executing them.
 ```
 
-## What Changed Since v1.3.0
+## What Changed Since v1.6.2
 
 | Area | Change | Why It Matters |
 | --- | --- | --- |
-| New package | Added `AstraFlow.Contracts`. | Shared contract projects can reference request/notification/stream abstractions without the mediator runtime. |
-| Void requests | Added `IRequest`, `IRequestHandler<TRequest>`, and void send support. | Commands that do not return values no longer need artificial response wrappers. |
-| Stream requests | Added stream request contracts, handlers, sender APIs, and stream behaviors. | Export and read-model flows can stream results without buffering. |
-| Processor flow | Added request pre-processors and post-processors. | Simple before/after cross-cutting work no longer needs full pipeline behavior code. |
-| Exception flow | Added exception actions and handlers with explicit handled state. | Failure policies are inspectable and do not silently swallow exceptions. |
-| Notification publishing | Added `Parallel` and `BoundedParallel` strategies. | Independent notification handlers can opt into concurrency without changing the safe sequential default. |
-| Release verification | CI, publish, pack, and install verification now include `AstraFlow.Contracts`. | The new package is checked across supported targets before publish. |
+| Parameterized projections | Added `IParameterizedProjection`, named parameterized projections, registry lookup, and `ProjectWith` overloads. | Tenant, user, culture, and current-time values are explicit instead of hidden in complex closures. |
+| Projection plans | Added `IProjectionPlanProvider` and deterministic `ProjectionPlan` output. | CI and review tools can inspect projection shape without payload values. |
+| Projection diagnostics | Added `AFP106` and `AFP107`. | Raw public IDs and secure ID infrastructure inside queries are surfaced before release. |
+| EF validation | Added parameter sample support plus provider metadata and `AFPEF002`/`AFPEF003`. | Provider validation is clearer and parameterized projections can be checked without executing queries. |
+| Docs | Updated projection, EF Core, compatibility, package selection, API reference, and roadmap docs. | Public docs match the shipped package version. |
 
 ## Pre-Push Checklist
 
@@ -191,7 +189,7 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
 
 ```powershell
 git add .
-git commit -m "Release AstraFlow v1.4.0 mediator parity"
+git commit -m "Release AstraFlow v1.7.0 projection parity"
 ```
 
 Before committing, confirm no package artifacts are staged:
@@ -212,9 +210,9 @@ Do not commit:
 ## Suggested Tag
 
 ```powershell
-git tag v1.4.0
+git tag v1.7.0
 git push origin main
-git push origin v1.4.0
+git push origin v1.7.0
 ```
 
 Only tag after local verification passes.
@@ -222,19 +220,18 @@ Only tag after local verification passes.
 ## Suggested GitHub Release Notes
 
 ```markdown
-## AstraFlow v1.4.0
+## AstraFlow v1.7.0
 
-This release adds `AstraFlow.Contracts` and expands mediator ergonomics with void requests, stream requests, processors, exception flow, and opt-in parallel notification publishing.
+This release adds projection and EF provider parity improvements: explicit parameterized projections, deterministic projection plans, raw public ID and secure ID projection diagnostics, and provider-aware EF Core validation reports.
 
 ### Changed
 
-- Add `AstraFlow.Contracts` for shared contracts without the mediator runtime.
-- Add void request dispatch through `IRequest` and `IRequestHandler<TRequest>`.
-- Add stream requests through `IStreamRequest<TResponse>`, `IStreamRequestHandler<TRequest, TResponse>`, and `IStreamSender`.
-- Add request pre/post processors.
-- Add exception actions and handlers with explicit handled state.
-- Add `Parallel` and `BoundedParallel` notification publish strategies while keeping sequential publishing as the default.
-- Update diagnostics, testing helpers, scripts, CI, publish workflow, and clean-install verification for the new contracts package.
+- Add `IParameterizedProjection`, `INamedParameterizedProjection`, and `IParameterizedProjectionRegistry`.
+- Add `ProjectWith` overloads for parameterized projections.
+- Add deterministic projection plan export through `IProjectionPlanProvider`.
+- Add `AFP106` raw public ID diagnostics and `AFP107` secure ID projection diagnostics.
+- Add EF Core parameter sample support, provider metadata, `AFPEF002`, and `AFPEF003`.
+- Update docs, package metadata, tests, and clean-install verification for `1.7.0`.
 
 ### Verification
 
