@@ -1111,6 +1111,10 @@ Goal:
 
 Harden the `v1.7.0` projection and EF provider parity baseline without expanding core package dependencies.
 
+Patch releases:
+
+- `v1.7.1`: projection plan assertion helpers in `AstraFlow.Testing`, plus release-facing documentation and package metadata updates.
+
 Packages affected:
 
 - `AstraFlow.Mapper`

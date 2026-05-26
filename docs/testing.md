@@ -1,4 +1,4 @@
-# Testing
+﻿# Testing
 
 `AstraFlow.Testing` is an optional test-helper package for projects that use AstraFlow mediator, mapper, projections, diagnostics, or secure ID flows.
 
@@ -7,7 +7,7 @@ It has no dependency on xUnit, NUnit, MSTest, FluentAssertions, or a mocking fra
 Install:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.7.0
+dotnet add package AstraFlow.Testing --version 1.7.1
 ```
 
 ## Fake Mediator
@@ -111,6 +111,17 @@ var report = validator.Validate(new MappingOptions());
 report.ShouldHaveProjectionFinding("AFP101");
 ```
 
+Use projection plan assertions when tests export deterministic plans through `IProjectionPlanProvider`.
+
+```csharp
+var plans = planProvider.GetProjectionPlans();
+var plan = plans.ShouldHaveParameterizedProjectionPlan<User, UserListItem, UserProjectionParameters>("list");
+
+plan.ShouldHaveProjectionParameter("TenantId");
+plan.ShouldHaveProjectionMember("Name", "Constructed");
+plan.ShouldHaveNoProjectionPlanFindings();
+```
+
 ## Diagnostics Assertions
 
 Use diagnostics assertions when a test creates an `AstraFlowDiagnosticReport`.
@@ -137,3 +148,4 @@ var encoded = codec.ShouldRoundTripSecureId(Guid.NewGuid());
 - Fakes record object references and types so tests can make their own assertions.
 - No helper depends on a specific test framework.
 - No helper replaces integration tests for DI registration, EF Core translation, or application startup.
+

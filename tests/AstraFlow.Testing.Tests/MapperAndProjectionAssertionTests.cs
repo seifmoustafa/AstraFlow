@@ -39,6 +39,63 @@ public sealed class MapperAndProjectionAssertionTests
     }
 
     [Fact]
+    public void Projection_plan_assertion_resolves_parameterized_plan()
+    {
+        var plan = CreateProjectionPlan();
+        IReadOnlyCollection<ProjectionPlan> plans = [plan];
+
+        var resolved = plans.ShouldHaveParameterizedProjectionPlan<User, UserDto, UserProjectionParameters>("list");
+
+        resolved.Should().BeSameAs(plan);
+    }
+
+    [Fact]
+    public void Projection_plan_assertion_resolves_parameterized_plan_when_static_plan_shares_name()
+    {
+        var staticPlan = CreateProjectionPlan() with { ParameterType = null, Parameters = [] };
+        var parameterizedPlan = CreateProjectionPlan();
+        IReadOnlyCollection<ProjectionPlan> plans = [staticPlan, parameterizedPlan];
+
+        var resolved = plans.ShouldHaveParameterizedProjectionPlan<User, UserDto, UserProjectionParameters>("list");
+
+        resolved.Should().BeSameAs(parameterizedPlan);
+    }
+
+    [Fact]
+    public void Projection_plan_assertions_return_matching_details()
+    {
+        var plan = CreateProjectionPlan();
+
+        var parameter = plan.ShouldHaveProjectionParameter("TenantId");
+        var member = plan.ShouldHaveProjectionMember("Name", "Constructed");
+        var finding = plan.ShouldHaveProjectionPlanFinding("AFP106");
+
+        parameter.Type.Should().Be(typeof(Guid).FullName);
+        member.SourceExpression.Should().Be("Name");
+        finding.Message.Should().Be("Raw public ID projection risk.");
+    }
+
+    [Fact]
+    public void Projection_plan_assertion_reports_missing_member()
+    {
+        var plan = CreateProjectionPlan();
+
+        var act = () => plan.ShouldHaveProjectionMember("Missing");
+
+        act.Should().Throw<AstraFlowAssertionException>();
+    }
+
+    [Fact]
+    public void Projection_plan_assertion_requires_no_findings()
+    {
+        var plan = CreateProjectionPlan() with { Findings = [] };
+
+        var resolved = plan.ShouldHaveNoProjectionPlanFindings();
+
+        resolved.Should().BeSameAs(plan);
+    }
+
+    [Fact]
     public void Test_secure_id_codec_round_trips_guid_deterministically()
     {
         var codec = new TestSecureIdCodec();
@@ -54,6 +111,35 @@ public sealed class MapperAndProjectionAssertionTests
     private sealed record User(string Name);
 
     private sealed record UserDto(string Name);
+
+    private sealed record UserProjectionParameters(Guid TenantId);
+
+    private static ProjectionPlan CreateProjectionPlan()
+    {
+        return new ProjectionPlan(
+            typeof(User).FullName!,
+            typeof(UserDto).FullName!,
+            "list",
+            typeof(UserProjection).FullName!,
+            typeof(UserProjectionParameters).FullName!,
+            [
+                new ProjectionParameterMember("TenantId", typeof(Guid).FullName!, false)
+            ],
+            [
+                new ProjectionPlanMember(
+                    "Name",
+                    "Name",
+                    "Constructed",
+                    "Destination constructor argument is supplied by the projection expression.")
+            ],
+            [
+                new ProjectionPlanFinding(
+                    MappingPlanFindingSeverity.Warning,
+                    "AFP106",
+                    "Id",
+                    "Raw public ID projection risk.")
+            ]);
+    }
 
     private sealed class StubMapper(Func<object?, Type, object?> map) : IMapper
     {

@@ -1,4 +1,4 @@
-# Publishing
+﻿# Publishing
 
 AstraFlow releases are gated and should be published from GitHub Actions, not from a developer workstation.
 
@@ -79,7 +79,7 @@ Use the exact secret name `NUGET_API_KEY`.
 1. Update `Version`, `AssemblyVersion`, and `FileVersion` in `Directory.Build.props`.
 2. Update `CHANGELOG.md`.
 3. Run `docs/release-checklist.md`.
-4. Create and push a release tag such as `v1.7.0`.
+4. Create and push a release tag such as `v1.7.1`.
 5. Open GitHub Actions.
 6. Run `Publish AstraFlow Packages`.
 7. Type `PUBLISH` when prompted.
@@ -106,6 +106,7 @@ To list them publicly:
    - `AstraFlow.Contracts`
    - `AstraFlow.Mediator`
    - `AstraFlow.Mapper`
+   - `AstraFlow.Mapper.Conventions`
    - `AstraFlow.Mapper.EntityFrameworkCore`
    - `AstraFlow.Diagnostics`
    - `AstraFlow.Testing`
@@ -122,16 +123,16 @@ Use local packing only to verify artifacts before release:
 
 Expected package artifacts:
 
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.7.0.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.7.0.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.7.0.nupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.7.0.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.7.0.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.7.0.nupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.7.0.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.7.0.nupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.7.1.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.7.1.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.7.1.nupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.7.1.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.7.1.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.7.1.nupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.7.1.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.7.1.nupkg`
 
-For `1.7.0`, inspect the packages before publishing:
+For `1.7.1`, inspect the packages before publishing:
 
 - each package should include `README.md`, `CHANGELOG.md`, `LICENSE`, the package icon, XML docs, DLLs, and `.nuspec`,
 - `AstraFlow.Contracts`, core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` must include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`,
@@ -152,29 +153,29 @@ Do not save the key in shell profiles, `.env` files, source files, or documentat
 After NuGet shows all eight packages, verify clean consumer projects can consume the published runtime packages:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.7.0" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.7.0" />
-<PackageReference Include="AstraFlow.Mapper.Conventions" Version="1.7.0" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.7.0" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.7.0" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.7.1" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.7.1" />
+<PackageReference Include="AstraFlow.Mapper.Conventions" Version="1.7.1" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.7.1" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.7.1" />
 ```
 
 Use `AstraFlow.Contracts` in shared contract projects that should not reference the mediator runtime:
 
 ```xml
-<PackageReference Include="AstraFlow.Contracts" Version="1.7.0" />
+<PackageReference Include="AstraFlow.Contracts" Version="1.7.1" />
 ```
 
 Use `AstraFlow.Testing` only in test projects:
 
 ```xml
-<PackageReference Include="AstraFlow.Testing" Version="1.7.0" />
+<PackageReference Include="AstraFlow.Testing" Version="1.7.1" />
 ```
 
 Use the meta-package only where both mediator and mapper are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.7.0" />
+<PackageReference Include="AstraFlow" Version="1.7.1" />
 ```
 
 Then run:
@@ -186,3 +187,4 @@ dotnet test samples/AstraFlow.SampleConsumer/AstraFlow.SampleConsumer.sln --no-b
 ```
 
 Sample consumers that are meant to validate NuGet consumption should not keep local AstraFlow project references after package-reference migration is verified.
+

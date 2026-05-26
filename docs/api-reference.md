@@ -1,6 +1,6 @@
-# API Reference
+﻿# API Reference
 
-This reference describes the public AstraFlow `1.7.0` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow `1.7.1` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
@@ -320,6 +320,7 @@ Each item is mapped through the same explicit rule lookup. Collection mapping do
 | `PipelineTestHarness<TRequest, TResponse>` | Class | Executes pipeline behaviors around a terminal delegate. |
 | `NotificationHandlerTestHarness<TNotification>` | Class | Executes one notification handler directly. |
 | `AstraFlowAssertionException` | Exception | Assertion failure type used by framework-neutral helpers. |
+| `ProjectionPlanAssertions` | Static class | Assertion helpers for deterministic projection plan tests. |
 | `TestSecureIdCodec` | Class | Deterministic test-only secure ID codec. |
 
 ## Testing Assertion Helpers
@@ -341,7 +342,14 @@ Each item is mapped through the same explicit rule lookup. Collection mapping do
 | `ShouldResolveProjection<TSource, TDestination>(name)` | Projection registry can resolve a named projection. |
 | `ShouldHaveNoProjectionFindings()` | Projection validator reports no findings. |
 | `ShouldHaveProjectionFinding(code)` | Projection validation report contains a finding code. |
+| `ShouldHaveProjectionPlan<TSource, TDestination>()` | Projection plan collection contains a static or parameterized plan for the requested pair. |
+| `ShouldHaveParameterizedProjectionPlan<TSource, TDestination, TParameters>()` | Projection plan collection contains a parameterized plan with the requested parameter object type. |
+| `ShouldHaveProjectionParameter(name)` | Projection plan contains the requested parameter member. |
+| `ShouldHaveProjectionMember(destinationMember, decision)` | Projection plan contains the requested destination member decision. |
+| `ShouldHaveProjectionPlanFinding(code)` | Projection plan contains a finding code. |
+| `ShouldHaveNoProjectionPlanFindings()` | Projection plan has no findings. |
 | `ShouldHaveNoDiagnosticErrors()` | Diagnostics report has no error or fatal findings. |
 | `ShouldHaveDiagnosticFinding(code)` | Diagnostics report contains a finding code. |
 | `ShouldThrowAsync<TException>()` | Async operation throws the expected exception type. |
 | `ShouldRoundTripSecureId()` | Secure ID codec encodes and decodes the supplied `Guid`. |
+
