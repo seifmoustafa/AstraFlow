@@ -5,11 +5,13 @@
     <Project Path="samples/ConventionMapperSample/ConventionMapperSample.csproj" />
     <Project Path="samples/DiagnosticsSample/DiagnosticsSample.csproj" />
     <Project Path="samples/ExplicitMapperSample/ExplicitMapperSample.csproj" />
+    <Project Path="samples/GeneratedMediatorRegistrationSample/GeneratedMediatorRegistrationSample.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/AstraFlow.Analyzers/AstraFlow.Analyzers.csproj" />
     <Project Path="src/AstraFlow.Contracts/AstraFlow.Contracts.csproj" />
     <Project Path="src/AstraFlow.Diagnostics/AstraFlow.Diagnostics.csproj" />
+    <Project Path="src/AstraFlow.Generators/AstraFlow.Generators.csproj" />
     <Project Path="src/AstraFlow.Mapper.Conventions/AstraFlow.Mapper.Conventions.csproj" />
     <Project Path="src/AstraFlow.Mapper.EntityFrameworkCore/AstraFlow.Mapper.EntityFrameworkCore.csproj" />
     <Project Path="src/AstraFlow.Mapper/AstraFlow.Mapper.csproj" />
@@ -20,6 +22,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/AstraFlow.Analyzers.Tests/AstraFlow.Analyzers.Tests.csproj" />
     <Project Path="tests/AstraFlow.Diagnostics.Tests/AstraFlow.Diagnostics.Tests.csproj" />
+    <Project Path="tests/AstraFlow.Generators.Tests/AstraFlow.Generators.Tests.csproj" />
     <Project Path="tests/AstraFlow.IntegrationTests/AstraFlow.IntegrationTests.csproj" />
     <Project Path="tests/AstraFlow.Mapper.Conventions.Tests/AstraFlow.Mapper.Conventions.Tests.csproj" />
     <Project Path="tests/AstraFlow.Mapper.EntityFrameworkCore.Tests/AstraFlow.Mapper.EntityFrameworkCore.Tests.csproj" />

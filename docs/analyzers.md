@@ -1,21 +1,21 @@
 # AstraFlow Analyzers
 
-AstraFlow `1.8.0` introduced the `AstraFlow.Analyzers` package foundation. AstraFlow `1.8.1` added mediator analyzer rules. AstraFlow `1.8.2` adds mapper and projection analyzer rules on top of that foundation.
+AstraFlow `1.8.0` introduced the `AstraFlow.Analyzers` package foundation. AstraFlow `1.8.1` added mediator analyzer rules. AstraFlow `1.8.2` added mapper and projection analyzer rules on top of that foundation.
 
-This release intentionally keeps the analyzer package source-only, generator-free, and code-fix-free while adding build-time warnings for common mapper and projection risks.
+The analyzer package remains source-only and code-fix-free. Source generator work lives in the separate `AstraFlow.Generators` package starting in `1.8.3`.
 
 ## Install
 
 Use the analyzer package from application, library, or test projects where you want build-time AstraFlow guidance:
 
 ```powershell
-dotnet add package AstraFlow.Analyzers --version 1.8.2
+dotnet add package AstraFlow.Analyzers --version 1.8.3
 ```
 
 Analyzer packages should be referenced privately so they do not flow transitively to consumers:
 
 ```xml
-<PackageReference Include="AstraFlow.Analyzers" Version="1.8.2" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Analyzers" Version="1.8.3" PrivateAssets="all" />
 ```
 
 ## Scope In 1.8.2
@@ -278,7 +278,7 @@ Treat these rules as fast feedback for common risky shapes:
 
 ## Roadmap
 
-After `1.8.2`, the roadmap continues with:
+After `1.8.3`, the roadmap continues with:
 
 - `1.8.3`: generated registration foundation,
 - `1.8.4`: generated mapping and projection metadata.

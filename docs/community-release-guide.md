@@ -2,14 +2,14 @@
 
 This guide is for preparing AstraFlow releases for a public repository push and community consumption.
 
-## Current Release: v1.8.2
+## Current Release: v1.8.3
 
-v1.8.2 builds on the analyzer foundation with mapper and projection analyzer warnings for undeclared mapping rules, reverse sensitive writes, raw public IDs, mapper calls inside query expressions, custom projection methods, and complex projection captures.
+v1.8.3 adds the first `AstraFlow.Generators` package with deterministic generated mediator component registration for handlers, notifications, streams, processors, and exception flow.
 
 Key message:
 
 ```text
-AstraFlow v1.8.2 adds mapper and projection build-time diagnostics to `AstraFlow.Analyzers` while staying source-only, generator-free, code-fix-free, and conservative about provider translation limits.
+AstraFlow v1.8.3 adds `AstraFlow.Generators` for readable generated mediator DI registrations while keeping runtime scanning available as the fallback path.
 ```
 
 ## What Changed Since v1.8.1
@@ -59,42 +59,46 @@ dotnet pack src\AstraFlow.Mapper.EntityFrameworkCore\AstraFlow.Mapper.EntityFram
 dotnet pack src\AstraFlow.Diagnostics\AstraFlow.Diagnostics.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet pack src\AstraFlow.Testing\AstraFlow.Testing.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet pack src\AstraFlow.Analyzers\AstraFlow.Analyzers.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
+dotnet pack src\AstraFlow.Generators\AstraFlow.Generators.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet pack src\AstraFlow\AstraFlow.csproj -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 ```
 
 Expected artifacts:
 
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.8.2.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.8.2.snupkg`
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.8.2.nupkg`
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.8.2.snupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.8.2.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.8.2.snupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.8.2.nupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.8.2.snupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.8.2.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.8.2.snupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.8.2.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.8.2.snupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.8.2.nupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.8.2.snupkg`
-- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.8.2.nupkg`
-- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.8.2.snupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.8.2.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.8.2.snupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.8.3.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.8.3.snupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.8.3.nupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.8.3.snupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.8.3.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.8.3.snupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.8.3.nupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.8.3.snupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.8.3.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.8.3.snupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.8.3.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.8.3.snupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.8.3.nupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.8.3.snupkg`
+- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.8.3.nupkg`
+- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.8.3.snupkg`
+- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.8.3.nupkg`
+- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.8.3.snupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.8.3.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.8.3.snupkg`
 
 Inspect package contents:
 
 ```powershell
-tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.8.2.nupkg
-tar -tf src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.8.2.nupkg
-tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.8.2.nupkg
-tar -tf src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.8.2.nupkg
-tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.8.2.nupkg
-tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.8.2.nupkg
-tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.8.2.nupkg
-tar -tf src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.8.2.nupkg
-tar -tf src\AstraFlow\bin\Release\AstraFlow.1.8.2.nupkg
+tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.8.3.nupkg
+tar -tf src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.8.3.nupkg
+tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.8.3.nupkg
+tar -tf src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.8.3.nupkg
+tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.8.3.nupkg
+tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.8.3.nupkg
+tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.8.3.nupkg
+tar -tf src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.8.3.nupkg
+tar -tf src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.8.3.nupkg
+tar -tf src\AstraFlow\bin\Release\AstraFlow.1.8.3.nupkg
 ```
 
 Each `.nupkg` should include:
@@ -122,6 +126,11 @@ Core packages should include:
 - `analyzers/dotnet/cs/AstraFlow.Analyzers.dll`,
 - no runtime `lib/` assets.
 
+`AstraFlow.Generators` should include:
+
+- `analyzers/dotnet/cs/AstraFlow.Generators.dll`,
+- no runtime `lib/` assets.
+
 The NuGet README should use absolute GitHub URLs for images and documentation links. NuGet displays `PackageIcon` separately, but README images do not render from packaged relative paths such as `assets/branding/astraflow-icon.png`. Publish after the README target branch contains the referenced docs, or change those links to the final release tag before packing.
 
 Each `.snupkg` should include:
@@ -138,15 +147,16 @@ $root = Resolve-Path '.'
 $localSource = Join-Path $root '.dotnet-cli-home\local-packages'
 New-Item -ItemType Directory -Force -Path $localSource | Out-Null
 
-Copy-Item '.\src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.8.2.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.8.2.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.8.2.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.8.2.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.8.2.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.8.2.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.8.2.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.8.2.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.8.2.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.8.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.8.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.8.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.8.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.8.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.8.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.8.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.8.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.8.3.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.8.3.nupkg' -Destination $localSource -Force
 
 $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 @"
@@ -160,27 +170,28 @@ $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 </configuration>
 "@ | Set-Content -LiteralPath $config -Encoding UTF8
 
-$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.8.2'
+$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.8.3'
 New-Item -ItemType Directory -Force -Path $sampleRoot | Out-Null
 $sample = Join-Path $sampleRoot ('AstraFlowInstallCheck-' + [guid]::NewGuid().ToString('N'))
 dotnet new console --framework net10.0 --output $sample --no-restore
 $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-dotnet add $project.FullName package AstraFlow.Contracts --version 1.8.2 --no-restore
-dotnet add $project.FullName package AstraFlow.Mediator --version 1.8.2 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper --version 1.8.2 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.8.2 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.8.2 --no-restore
-dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.8.2 --no-restore
-dotnet add $project.FullName package AstraFlow.Testing --version 1.8.2 --no-restore
-dotnet add $project.FullName package AstraFlow.Analyzers --version 1.8.2 --no-restore
-dotnet add $project.FullName package AstraFlow --version 1.8.2 --no-restore
+dotnet add $project.FullName package AstraFlow.Contracts --version 1.8.3 --no-restore
+dotnet add $project.FullName package AstraFlow.Mediator --version 1.8.3 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper --version 1.8.3 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.8.3 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.8.3 --no-restore
+dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.8.3 --no-restore
+dotnet add $project.FullName package AstraFlow.Testing --version 1.8.3 --no-restore
+dotnet add $project.FullName package AstraFlow.Analyzers --version 1.8.3 --no-restore
+dotnet add $project.FullName package AstraFlow.Generators --version 1.8.3 --no-restore
+dotnet add $project.FullName package AstraFlow --version 1.8.3 --no-restore
 dotnet restore $project.FullName --configfile $config
 dotnet build $project.FullName --no-restore
 ```
 
 Expected result:
 
-- All nine packages install,
+- All ten packages install,
 - the project restores,
 - the project builds.
 
@@ -192,14 +203,15 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
     $template = if ($framework -eq 'netstandard2.0') { 'classlib' } else { 'console' }
     dotnet new $template --framework $framework --output $sample --no-restore
     $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-    dotnet add $project.FullName package AstraFlow.Contracts --version 1.8.2 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mediator --version 1.8.2 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper --version 1.8.2 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.8.2 --no-restore
-    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.8.2 --no-restore
-    dotnet add $project.FullName package AstraFlow.Testing --version 1.8.2 --no-restore
-    dotnet add $project.FullName package AstraFlow.Analyzers --version 1.8.2 --no-restore
-    dotnet add $project.FullName package AstraFlow --version 1.8.2 --no-restore
+    dotnet add $project.FullName package AstraFlow.Contracts --version 1.8.3 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mediator --version 1.8.3 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper --version 1.8.3 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.8.3 --no-restore
+    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.8.3 --no-restore
+    dotnet add $project.FullName package AstraFlow.Testing --version 1.8.3 --no-restore
+    dotnet add $project.FullName package AstraFlow.Analyzers --version 1.8.3 --no-restore
+    dotnet add $project.FullName package AstraFlow.Generators --version 1.8.3 --no-restore
+    dotnet add $project.FullName package AstraFlow --version 1.8.3 --no-restore
     dotnet restore $project.FullName --configfile $config
     dotnet build $project.FullName --no-restore
 }
@@ -209,7 +221,7 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
 
 ```powershell
 git add .
-git commit -m "Release AstraFlow v1.8.2 mapper projection analyzers"
+git commit -m "Release AstraFlow v1.8.3 generated mediator registration"
 ```
 
 Before committing, confirm no package artifacts are staged:
@@ -230,9 +242,9 @@ Do not commit:
 ## Suggested Tag
 
 ```powershell
-git tag v1.8.2
+git tag v1.8.3
 git push origin main
-git push origin v1.8.2
+git push origin v1.8.3
 ```
 
 Only tag after local verification passes.
@@ -240,9 +252,9 @@ Only tag after local verification passes.
 ## Suggested GitHub Release Notes
 
 ```markdown
-## AstraFlow v1.8.2
+## AstraFlow v1.8.3
 
-This patch adds mapper and projection analyzer warnings for the v1.8.x analyzer lane while preserving source-only analyzer packaging and avoiding code fixes or generator dependencies.
+This patch adds the first source generator package for mediator DI registration while preserving runtime scanning as the fallback path.
 
 ### Changed
 
@@ -252,13 +264,13 @@ This patch adds mapper and projection analyzer warnings for the v1.8.x analyzer 
 - Add `AFAN0302` mapper-call-inside-query diagnostics.
 - Add `AFAN0303` custom projection method diagnostics.
 - Add `AFAN0304` complex projection capture diagnostics.
-- Update docs, package metadata, tests, and clean-install verification for `1.8.2`.
+- Update docs, package metadata, tests, and clean-install verification for `1.8.3`.
 
 ### Verification
 
 - Release build passed.
 - Full test suite passed.
-- All nine packages packed as `1.8.2`.
+- All ten packages packed as `1.8.3`.
 - Package contents include README, CHANGELOG, LICENSE, icon, XML docs, DLLs for expected target frameworks, nuspec files, and symbol packages.
 ```
 

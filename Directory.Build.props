@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.8.2</Version>
-    <AssemblyVersion>1.8.2.0</AssemblyVersion>
-    <FileVersion>1.8.2.0</FileVersion>
+    <Version>1.8.3</Version>
+    <AssemblyVersion>1.8.3.0</AssemblyVersion>
+    <FileVersion>1.8.3.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.8.2:
-      - Adds mapper and projection analyzer warnings for undeclared mapping rules, reverse sensitive writes, raw public IDs, mapper calls inside query expressions, custom projection methods, and complex projection captures.
-      - Keeps analyzer rules source-only, generator-free, code-fix-free, and conservative about provider translation limits.
-      - Expands analyzer docs, tests, and release verification for the 1.8.x analyzer lane.
+    <PackageReleaseNotes>AstraFlow 1.8.3:
+      - Adds the AstraFlow.Generators package with deterministic generated mediator component registration.
+      - Generates readable DI registration code for request handlers, notification handlers, stream handlers, processors, and exception-flow components.
+      - Keeps runtime scanning as the fallback path while adding generator tests, docs, package verification, and compiler-asset checks.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

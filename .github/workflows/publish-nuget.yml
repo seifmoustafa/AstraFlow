@@ -68,6 +68,9 @@ jobs:
       - name: Pack analyzers
         run: dotnet pack src/AstraFlow.Analyzers/AstraFlow.Analyzers.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Pack generators
+        run: dotnet pack src/AstraFlow.Generators/AstraFlow.Generators.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
       - name: Pack meta package
         run: dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
@@ -87,7 +90,6 @@ jobs:
             "src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.$version.nupkg",
             "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.$version.nupkg",
             "src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.$version.nupkg",
-            "src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.$version.nupkg",
             "src/AstraFlow/bin/Release/AstraFlow.$version.nupkg"
           )
           foreach ($package in $corePackages) {
@@ -110,12 +112,15 @@ jobs:
             throw "AstraFlow.Mapper.EntityFrameworkCore should remain net10.0-only in $version."
           }
 
-          $analyzerEntries = tar -tf "src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.$version.nupkg"
-          if (-not ($analyzerEntries -match "^analyzers/dotnet/cs/AstraFlow.Analyzers.dll$")) {
-            throw "AstraFlow.Analyzers is missing analyzer DLL assets."
-          }
-          if ($analyzerEntries -match "^lib/") {
-            throw "AstraFlow.Analyzers should ship analyzer assets, not runtime lib assets."
+          $compilerPackages = @("AstraFlow.Analyzers", "AstraFlow.Generators")
+          foreach ($compilerPackage in $compilerPackages) {
+            $compilerEntries = tar -tf "src/$compilerPackage/bin/Release/$compilerPackage.$version.nupkg"
+            if (-not ($compilerEntries -match "^analyzers/dotnet/cs/$compilerPackage.dll$")) {
+              throw "$compilerPackage is missing compiler DLL assets."
+            }
+            if ($compilerEntries -match "^lib/") {
+              throw "$compilerPackage should ship compiler assets, not runtime lib assets."
+            }
           }
 
       - name: Verify clean package install

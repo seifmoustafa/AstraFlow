@@ -4,7 +4,7 @@
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current implementation truth: AstraFlow is complete through `v1.8.2` in this repository. The next planned roadmap item is `v1.8.3` generated registration foundation.
+Current implementation truth: AstraFlow is complete through `v1.8.3` in this repository. The next planned roadmap item is `v1.8.4` generated mapping and projection metadata.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -1290,7 +1290,7 @@ What must NOT be included:
 
 #### v1.8.3 Generated Registration Foundation
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -1304,19 +1304,20 @@ Packages affected:
 
 Features included:
 
-- Generated handler registration.
-- Generated notification registration.
-- Generated stream registration.
-- Generated processor/exception-flow registration if stable.
-- AOT/trimming-friendly registration sample.
+- Generated closed request handler registration.
+- Generated closed notification handler registration.
+- Generated closed stream handler registration.
+- Generated closed pre-processor, post-processor, exception-action, and exception-handler registration.
+- AOT/trimming-friendly generated mediator registration sample.
 
 Acceptance gates:
 
 - Analyzers are useful without generators.
-- Generators do not ship before analyzer IDs and metadata are stable.
-- Runtime fallback remains unless explicitly documented.
-- Generated code is deterministic and readable.
-- AOT/trimming sample builds.
+- Generators ship after the analyzer foundation and stable rule catalog.
+- Runtime fallback remains through `AddAstraFlowMediator(...)`.
+- Generated code is deterministic, readable, and fully qualified.
+- Generated mediator registration sample builds.
+- Generator package builds as compiler assets under `analyzers/dotnet/cs`.
 
 What must NOT be included:
 
@@ -2306,6 +2307,7 @@ Missing for AutoMapper-style parity:
 - Generated mapping plans and generated projection metadata.
 - Provider matrix expansion beyond the current SQLite baseline.
 - Additional mapper/projection analyzer maturity beyond the first `1.8.2` warning set.
+- Generated mapping/projection metadata beyond the first `1.8.3` mediator registration generator.
 - Migration guide and scanner from common mapper usage.
 
 Moved earlier:
@@ -2385,7 +2387,7 @@ Moved later:
 | Exception handlers | Done | v1.4.0 | `AstraFlow.Mediator` | P1 | Explicit handled-state report | Exception tests |
 | Exception actions | Done | v1.4.0 | `AstraFlow.Mediator` | P1 | Always-rethrow docs | Rethrow tests |
 | Essential analyzers | Done, expand | v1.8.0-v1.8.2 | `AstraFlow.Analyzers` | P0 | Stable rule IDs | Analyzer tests |
-| Generated registrations | Planned | v1.8.3 | `AstraFlow.Generators` | P0 | Generated metadata report | Generator tests |
+| Generated registrations | Done, expand | v1.8.3/v2 | `AstraFlow.Generators` | P0 | Generated metadata report | Generator tests |
 | Migration guide/scanner | Planned | v1.10 | `AstraFlow.Cli` | P1 | Suggestion report | Fixture tests |
 
 ## AutoMapper-Style Parity Checklist
@@ -2451,7 +2453,7 @@ Moved later:
 | Flattening/reverse/unflattening | Done | v1.6.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Explicit and security-gated | Moved earlier |
 | Projections | Done, expand | v1.7 | P0 | `AstraFlow.Mapper` | AutoMapper-style query projection | Provider warnings | Moved earlier |
 | Analyzers | Done, expand | v1.8.0-v1.8.2/v2 | P0 | `AstraFlow.Analyzers` | Compile-time parity | Stable rule IDs | Moved earlier |
-| Generators | Planned | v1.8.3-v1.8.4/v2 | P0 | `AstraFlow.Generators` | AOT/trimming parity | Deterministic output | Moved earlier |
+| Generators | Done, expand | v1.8.3-v1.8.4/v2 | P0 | `AstraFlow.Generators` | AOT/trimming parity | Deterministic output | Moved earlier |
 | Benchmarks | Planned | v1.9 | P1 | `AstraFlow.Benchmarks` | Credible comparisons | Repeatable evidence | Moved earlier |
 | CLI inspection | Planned | v1.10 | P1 | `AstraFlow.Cli` | Adoption tooling | Redacted reports | Moved earlier |
 | ASP.NET Core integration | Planned | v1.11 | P1 | `AstraFlow.AspNetCore` | Common app integration | Dev-only diagnostics endpoint | After parity |
