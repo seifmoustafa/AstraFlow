@@ -34,4 +34,34 @@ public static class AstraFlowAnalyzerRuleIds
     /// Handler type is registered as a singleton service.
     /// </summary>
     public const string SingletonHandlerLifetime = "AFAN0105";
+
+    /// <summary>
+    /// Mapping rule does not expose declared mapping pairs for startup validation and diagnostics.
+    /// </summary>
+    public const string UndeclaredMappingRule = "AFAN0201";
+
+    /// <summary>
+    /// Reverse convention mapping may write into sensitive destination members.
+    /// </summary>
+    public const string ReverseMapSensitiveWrite = "AFAN0202";
+
+    /// <summary>
+    /// Projection destination exposes a raw public identifier shape.
+    /// </summary>
+    public const string RawPublicIdProjection = "AFAN0301";
+
+    /// <summary>
+    /// Mapper call is used inside a query projection expression.
+    /// </summary>
+    public const string MapperCallInsideQuery = "AFAN0302";
+
+    /// <summary>
+    /// Projection expression calls a custom method that query providers may not translate.
+    /// </summary>
+    public const string CustomMethodInProjection = "AFAN0303";
+
+    /// <summary>
+    /// Projection expression captures a complex instance value.
+    /// </summary>
+    public const string ComplexProjectionCapture = "AFAN0304";
 }

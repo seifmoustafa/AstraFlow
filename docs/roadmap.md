@@ -4,6 +4,8 @@
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
+Current implementation truth: AstraFlow is complete through `v1.8.2` in this repository. The next planned roadmap item is `v1.8.3` generated registration foundation.
+
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
 The post-`v1.4.0` roadmap prioritizes practical MediatR-style and AutoMapper-style capability parity first, then differentiators:
@@ -156,6 +158,8 @@ Status: `Active policy`.
 ## Status Legend
 
 - `Done`: implemented, tested, documented, and released or intended for release as completed scope.
+- `Done, expand`: implemented, tested, and documented for the current release scope, with later expansion still planned.
+- `Done where promoted`: candidate ideas that were promoted and shipped are done; unpromoted related ideas remain candidate.
 - `Patch`: SemVer-safe hardening for existing released behavior.
 - `Planned`: approved direction, not implemented yet.
 - `Candidate`: useful but still requires design review.
@@ -923,7 +927,9 @@ What must NOT be included:
 
 #### v1.6.x Candidate Follow-ups
 
-Status: `Candidate, partially promoted`.
+Status: `Done where promoted`.
+
+Unpromoted related ideas remain candidate.
 
 Goal:
 
@@ -1105,7 +1111,7 @@ What must NOT be included:
 
 ### v1.7.x Projection Stabilization Patches
 
-Status: `Patch`.
+Status: `Done`.
 
 Goal:
 
@@ -1142,7 +1148,7 @@ What must NOT be included:
 
 ### v1.8 Early Analyzers and Source Generators
 
-Status: `Done`.
+Status: `Done, expand`.
 
 Goal:
 
@@ -1216,7 +1222,7 @@ What must NOT be included:
 
 #### v1.8.1 Mediator Analyzers
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -1250,7 +1256,7 @@ What must NOT be included:
 
 #### v1.8.2 Mapper and Projection Analyzers
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -1264,13 +1270,12 @@ Packages affected:
 
 Features included:
 
-- Mapping declaration drift analyzer.
-- Sensitive field mapping analyzer.
-- Raw public ID analyzer.
-- Mapper call inside `IQueryable` analyzer.
-- Non-translatable projection analyzer.
-- Complex closure capture analyzer.
-- Reverse mapping sensitive-write analyzer if `v1.6` exists.
+- Undeclared mapping rule analyzer as the first declaration-drift check.
+- Reverse mapping sensitive-write analyzer.
+- Raw `Guid` `PublicId` projection shape analyzer.
+- Mapper call inside `IQueryable` or projection expression analyzer.
+- Custom method call inside projection expression analyzer.
+- Complex closure or instance-field capture analyzer.
 
 Acceptance gates:
 
@@ -2276,34 +2281,32 @@ What AstraFlow already has:
 - Testing package with fake sender, fake publisher, fake mediator, harnesses, and assertions.
 - Package install verification.
 - Multi-target core package assets.
+- Opt-in convention mapping package.
+- Convention mapping profiles and catalogs.
+- Include, ignore, sensitive-member allow, strict mode, and mapping plan export.
+- Member configuration, required-member checks, null substitution, value converters, conditionals, nullable diagnostics, numeric diagnostics, and enum mapping helpers.
+- Constructor, record, immutable destination, and existing-destination mapping.
+- Flattening, unflattening, explicit reverse mapping, include members, value resolvers, value transformers, before/after hooks, inheritance mapping, and polymorphic dispatch.
+- Parameterized projections, named parameterized projections, projection parameter metadata, and projection plan export.
+- Projection plan and projection parameter assertions in `AstraFlow.Testing`.
+- Analyzer package foundation with stable `AFAN` rule IDs and source-only analyzer assets.
+- Mediator analyzers for missing handlers, duplicate handlers, ambiguous request contracts, missing stream handlers, and singleton handler lifetime risks.
+- Mapper and projection analyzers for undeclared mapping rules, reverse sensitive writes, raw public IDs, mapper calls inside query expressions, custom projection methods, and complex projection captures.
 
 Missing for MediatR-style parity:
 
-- Richer diagnostics for processor/order/exception behavior.
-- Stream cancellation and disposal hardening.
-- Notification handler diagnostics expansion.
-- Compile-time analyzers for missing, duplicate, ambiguous, stream, behavior-order, and lifetime risks.
+- Behavior-order analyzer remains a later candidate.
 - Generated registration for handlers, notifications, streams, processors, and exception-flow components.
-- AOT/trimming-friendly registration.
+- AOT/trimming-friendly generated registration sample.
 - Migration guide and scanner from common mediator usage.
 
 Missing for AutoMapper-style parity:
 
-- Opt-in convention mapping.
-- Profiles/catalogs.
-- Member configuration.
-- Include/ignore rules.
-- Required destination member rules.
-- Unmapped source/destination diagnostics.
-- Nullable/numeric/enum diagnostics.
-- Flattening, unflattening, and explicit reverse mapping.
-- Null substitution.
-- Value converters/resolvers.
-- Conditional mapping.
-- Existing destination mapping.
-- Flattening, unflattening, and explicit reverse mapping.
-- Mapping plan export and diffing.
-- Mapping analyzers and generated mapping plans.
+- Mapping plan diffing.
+- Generated mapping plans and generated projection metadata.
+- Provider matrix expansion beyond the current SQLite baseline.
+- Additional mapper/projection analyzer maturity beyond the first `1.8.2` warning set.
+- Migration guide and scanner from common mapper usage.
 
 Moved earlier:
 
@@ -2381,8 +2384,8 @@ Moved later:
 | Post-processors | Done | v1.4.0 | `AstraFlow.Mediator` | P1 | Processor report | Processor tests |
 | Exception handlers | Done | v1.4.0 | `AstraFlow.Mediator` | P1 | Explicit handled-state report | Exception tests |
 | Exception actions | Done | v1.4.0 | `AstraFlow.Mediator` | P1 | Always-rethrow docs | Rethrow tests |
-| Essential analyzers | Planned | v1.8 | `AstraFlow.Analyzers` | P0 | Stable rule IDs | Analyzer tests |
-| Generated registrations | Planned | v1.8 | `AstraFlow.Generators` | P0 | Generated metadata report | Generator tests |
+| Essential analyzers | Done, expand | v1.8.0-v1.8.2 | `AstraFlow.Analyzers` | P0 | Stable rule IDs | Analyzer tests |
+| Generated registrations | Planned | v1.8.3 | `AstraFlow.Generators` | P0 | Generated metadata report | Generator tests |
 | Migration guide/scanner | Planned | v1.10 | `AstraFlow.Cli` | P1 | Suggestion report | Fixture tests |
 
 ## AutoMapper-Style Parity Checklist
@@ -2412,7 +2415,7 @@ Moved later:
 | Reverse mapping | Done | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Explicit reverse report | Reverse tests |
 | Projection parameters | Done | v1.7.0 | `AstraFlow.Mapper` | P0 | Parameter report | Parameter tests |
 | EF provider matrix | Done, expand | v1.7.0/v1.7.x | `AstraFlow.Mapper.EntityFrameworkCore` | P0 | Provider findings | Provider tests |
-| Mapping analyzers/generators | Planned | v1.8/v2 | `AstraFlow.Analyzers`/`AstraFlow.Generators` | P0 | Rule IDs and metadata | Analyzer/generator tests |
+| Mapping analyzers/generators | Done, expand | v1.8.2/v1.8.4/v2 | `AstraFlow.Analyzers`/`AstraFlow.Generators` | P0 | Rule IDs and metadata | Analyzer/generator tests |
 | Migration guide/scanner | Planned | v1.10 | `AstraFlow.Cli` | P1 | Suggestion report | Fixture tests |
 
 ## AstraFlow Differentiator Matrix
@@ -2447,8 +2450,8 @@ Moved later:
 | Destination/update mapping | Done | v1.5.2 | P1 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Sensitive write diagnostics | Moved earlier |
 | Flattening/reverse/unflattening | Done | v1.6.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Explicit and security-gated | Moved earlier |
 | Projections | Done, expand | v1.7 | P0 | `AstraFlow.Mapper` | AutoMapper-style query projection | Provider warnings | Moved earlier |
-| Analyzers | Planned | v1.8/v2 | P0 | `AstraFlow.Analyzers` | Compile-time parity | Stable rule IDs | Moved earlier |
-| Generators | Planned | v1.8/v2 | P0 | `AstraFlow.Generators` | AOT/trimming parity | Deterministic output | Moved earlier |
+| Analyzers | Done, expand | v1.8.0-v1.8.2/v2 | P0 | `AstraFlow.Analyzers` | Compile-time parity | Stable rule IDs | Moved earlier |
+| Generators | Planned | v1.8.3-v1.8.4/v2 | P0 | `AstraFlow.Generators` | AOT/trimming parity | Deterministic output | Moved earlier |
 | Benchmarks | Planned | v1.9 | P1 | `AstraFlow.Benchmarks` | Credible comparisons | Repeatable evidence | Moved earlier |
 | CLI inspection | Planned | v1.10 | P1 | `AstraFlow.Cli` | Adoption tooling | Redacted reports | Moved earlier |
 | ASP.NET Core integration | Planned | v1.11 | P1 | `AstraFlow.AspNetCore` | Common app integration | Dev-only diagnostics endpoint | After parity |
@@ -2525,9 +2528,6 @@ Keep outside the committed parity path until they pass design review:
 - Request batching.
 - Request deduplication.
 - Naming convention profiles beyond exact/case-insensitive matching.
-- Value transformers if global behavior cannot be made diagnosable.
-- Before/after map hooks if they obscure mapping behavior.
-- Polymorphic and inheritance mapping until profile/catalog model is stable.
 - Circular-reference and max-depth controls unless deep graph mapping becomes explicit scope.
 - Dynamic/dictionary mapping.
 - DataReader mapping.

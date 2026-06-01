@@ -130,6 +130,126 @@ public static class AstraFlowAnalyzerRules
             helpLinkUri: $"{DocumentationBaseUrl}#afan0105"));
 
     /// <summary>
+    /// Mapping rule does not expose declared mapping pairs.
+    /// </summary>
+    public static readonly AstraFlowAnalyzerRule UndeclaredMappingRule = new(
+        AstraFlowAnalyzerRuleIds.UndeclaredMappingRule,
+        "AstraFlow mapping rule is undeclared",
+        AstraFlowAnalyzerCategories.Mapper,
+        AstraFlowAnalyzerRuleSeverity.Warning,
+        true,
+        "afan0201",
+        new DiagnosticDescriptor(
+            AstraFlowAnalyzerRuleIds.UndeclaredMappingRule,
+            "AstraFlow mapping rule is undeclared",
+            "AstraFlow mapping rule '{0}' implements IObjectMappingRule but not IDeclaredObjectMappingRule",
+            AstraFlowAnalyzerCategories.Mapper,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "Mapping rules should expose declared source/destination pairs so startup validation, diagnostics, tests, and future tooling can compare declarations with implementation behavior.",
+            helpLinkUri: $"{DocumentationBaseUrl}#afan0201"));
+
+    /// <summary>
+    /// Reverse convention mapping may write into sensitive destination members.
+    /// </summary>
+    public static readonly AstraFlowAnalyzerRule ReverseMapSensitiveWrite = new(
+        AstraFlowAnalyzerRuleIds.ReverseMapSensitiveWrite,
+        "AstraFlow reverse mapping may write sensitive members",
+        AstraFlowAnalyzerCategories.Mapper,
+        AstraFlowAnalyzerRuleSeverity.Warning,
+        true,
+        "afan0202",
+        new DiagnosticDescriptor(
+            AstraFlowAnalyzerRuleIds.ReverseMapSensitiveWrite,
+            "AstraFlow reverse mapping may write sensitive members",
+            "AstraFlow ReverseMap writes into destination type '{0}', which has sensitive member(s): {1}",
+            AstraFlowAnalyzerCategories.Mapper,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "Reverse mapping from public DTO shapes back into domain or persistence types can accidentally write password, token, key, or secret members.",
+            helpLinkUri: $"{DocumentationBaseUrl}#afan0202"));
+
+    /// <summary>
+    /// Projection destination exposes a raw public identifier member.
+    /// </summary>
+    public static readonly AstraFlowAnalyzerRule RawPublicIdProjection = new(
+        AstraFlowAnalyzerRuleIds.RawPublicIdProjection,
+        "AstraFlow projection exposes raw public ID",
+        AstraFlowAnalyzerCategories.Projection,
+        AstraFlowAnalyzerRuleSeverity.Warning,
+        true,
+        "afan0301",
+        new DiagnosticDescriptor(
+            AstraFlowAnalyzerRuleIds.RawPublicIdProjection,
+            "AstraFlow projection exposes raw public ID",
+            "AstraFlow projection '{0}' targets '{1}', which exposes raw Guid public ID member(s): {2}",
+            AstraFlowAnalyzerCategories.Projection,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "Projection DTOs with Guid PublicId-style members can leak raw public identifiers when secure DTO policy expects encoded identifiers.",
+            helpLinkUri: $"{DocumentationBaseUrl}#afan0301"));
+
+    /// <summary>
+    /// Mapper call appears inside a query projection expression.
+    /// </summary>
+    public static readonly AstraFlowAnalyzerRule MapperCallInsideQuery = new(
+        AstraFlowAnalyzerRuleIds.MapperCallInsideQuery,
+        "AstraFlow mapper call is inside query expression",
+        AstraFlowAnalyzerCategories.Projection,
+        AstraFlowAnalyzerRuleSeverity.Warning,
+        true,
+        "afan0302",
+        new DiagnosticDescriptor(
+            AstraFlowAnalyzerRuleIds.MapperCallInsideQuery,
+            "AstraFlow mapper call is inside query expression",
+            "AstraFlow mapper call '{0}' is inside a query projection expression",
+            AstraFlowAnalyzerCategories.Projection,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "Runtime mapper calls inside IQueryable or projection expressions are usually not provider-translatable. Prefer explicit projection expressions.",
+            helpLinkUri: $"{DocumentationBaseUrl}#afan0302"));
+
+    /// <summary>
+    /// Projection expression calls a custom method.
+    /// </summary>
+    public static readonly AstraFlowAnalyzerRule CustomMethodInProjection = new(
+        AstraFlowAnalyzerRuleIds.CustomMethodInProjection,
+        "AstraFlow projection calls custom method",
+        AstraFlowAnalyzerCategories.Projection,
+        AstraFlowAnalyzerRuleSeverity.Warning,
+        true,
+        "afan0303",
+        new DiagnosticDescriptor(
+            AstraFlowAnalyzerRuleIds.CustomMethodInProjection,
+            "AstraFlow projection calls custom method",
+            "AstraFlow projection expression calls custom method '{0}'",
+            AstraFlowAnalyzerCategories.Projection,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "Custom methods inside query projection expressions may not translate across LINQ providers. Validate with the target provider or replace with provider-translatable expressions.",
+            helpLinkUri: $"{DocumentationBaseUrl}#afan0303"));
+
+    /// <summary>
+    /// Projection expression captures a complex instance value.
+    /// </summary>
+    public static readonly AstraFlowAnalyzerRule ComplexProjectionCapture = new(
+        AstraFlowAnalyzerRuleIds.ComplexProjectionCapture,
+        "AstraFlow projection captures complex value",
+        AstraFlowAnalyzerCategories.Projection,
+        AstraFlowAnalyzerRuleSeverity.Warning,
+        true,
+        "afan0304",
+        new DiagnosticDescriptor(
+            AstraFlowAnalyzerRuleIds.ComplexProjectionCapture,
+            "AstraFlow projection captures complex value",
+            "AstraFlow projection expression captures complex member '{0}' of type '{1}'",
+            AstraFlowAnalyzerCategories.Projection,
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: "Projection expressions should capture scalar values only. Complex captures can become provider-specific constants and fail translation.",
+            helpLinkUri: $"{DocumentationBaseUrl}#afan0304"));
+
+    /// <summary>
     /// All analyzer rules shipped by the package.
     /// </summary>
     public static IReadOnlyList<AstraFlowAnalyzerRule> All { get; } =
@@ -139,6 +259,12 @@ public static class AstraFlowAnalyzerRules
         DuplicateRequestHandler,
         AmbiguousRequestContract,
         MissingStreamHandler,
-        SingletonHandlerLifetime
+        SingletonHandlerLifetime,
+        UndeclaredMappingRule,
+        ReverseMapSensitiveWrite,
+        RawPublicIdProjection,
+        MapperCallInsideQuery,
+        CustomMethodInProjection,
+        ComplexProjectionCapture
     ];
 }

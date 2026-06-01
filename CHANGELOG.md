@@ -2,6 +2,44 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.8.2
+
+### Added
+
+- Added mapper and projection analyzer warnings `AFAN0201`, `AFAN0202`, and `AFAN0301` through `AFAN0304`.
+- Added undeclared mapping rule diagnostics for concrete `IObjectMappingRule` implementations that do not expose `IDeclaredObjectMappingRule` mapping pairs.
+- Added reverse convention mapping sensitive-write diagnostics for `ReverseMap` calls that target destination types with password, token, key, credential, or secret-style members.
+- Added raw public ID projection diagnostics for `IProjection<TSource, TDestination>` destination types that expose `Guid` `PublicId` members.
+- Added mapper-call-inside-query diagnostics for `IMapper.Map` calls inside `IQueryable` or projection expressions.
+- Added custom projection method diagnostics for user methods called inside projection expressions.
+- Added complex projection capture diagnostics for non-scalar instance fields captured inside projection expressions.
+
+### Changed
+
+- Release-facing documentation now points current package install examples at `1.8.2`.
+- Marked `v1.8.2` mapper and projection analyzer work as complete in the roadmap and future ideas bank.
+- Analyzer documentation now lists the mapper and projection rule catalog, recommended fixes, and static-analysis limits.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded analyzer, package selection, API reference, roadmap, future ideas, and release guidance for mapper and projection analyzers.
+
+### Tests
+
+- Added analyzer tests for undeclared mapping rules, reverse sensitive writes, raw public ID projection shapes, mapper calls inside queryable lambdas, custom projection methods, and complex projection captures.
+
+### Packaging
+
+- Updated package metadata and release notes for `1.8.2`.
+
+### Breaking changes
+
+- None.
+
 ## 1.8.1
 
 ### Added
