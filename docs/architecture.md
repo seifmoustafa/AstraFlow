@@ -1,10 +1,10 @@
-﻿# Architecture
+# Architecture
 
 AstraFlow is a small explicit application-flow package family. The core idea is simple: application behavior should be visible in source code, startup failures should be clear, and optional productivity layers should not weaken secure defaults.
 
 ## Design Goals
 
-| Goal | What It Means In `1.7.2` |
+| Goal | What It Means In `1.8.0` |
 | --- | --- |
 | Explicit flow | Requests declare response types. Handlers are concrete classes. Mapping rules are code, not naming magic. |
 | Clear failure modes | Missing handlers, duplicate handlers, ambiguous request contracts, missing mappings, duplicate mappings, and invalid mapping catalogs throw actionable exceptions. |

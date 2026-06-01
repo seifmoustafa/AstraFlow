@@ -2,6 +2,43 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.8.0
+
+### Added
+
+- Added `AstraFlow.Analyzers` package foundation.
+- Added stable analyzer rule ID constants, categories, severity metadata, and descriptor catalog.
+- Added `AFAN0001` as a disabled-by-default infrastructure marker descriptor for analyzer package verification.
+- Added analyzer test infrastructure using Roslyn compilation and analyzer execution APIs.
+- Added analyzer documentation with rule ID policy, severity policy, suppression guidance, and a rule documentation template.
+
+### Changed
+
+- Release-facing documentation now points current package install examples at `1.8.0`.
+- Marked the roadmap's next lane as `v1.8.0` analyzer foundation work.
+- Clean package install verification now includes `AstraFlow.Analyzers`.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Added `docs/analyzers.md`.
+- Updated package selection, compatibility, release, and publishing guidance for the analyzer package.
+
+### Tests
+
+- Added analyzer foundation tests for rule catalog stability, supported descriptors, and no-op source analysis.
+
+### Packaging
+
+- Added analyzer package packing and CI/publish package asset verification.
+
+### Breaking changes
+
+- None.
+
 ## 1.7.2
 
 ### Added

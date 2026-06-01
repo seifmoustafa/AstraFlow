@@ -1,6 +1,6 @@
-﻿# API Reference
+# API Reference
 
-This reference describes the public AstraFlow `1.7.2` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow `1.8.0` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
@@ -12,7 +12,21 @@ This reference describes the public AstraFlow `1.7.2` API surface. It is intenti
 | `AstraFlow.Mapper.EntityFrameworkCore` | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers. |
 | `AstraFlow.Diagnostics` | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reporting for AstraFlow registrations and validation findings. |
 | `AstraFlow.Testing` | `AstraFlow.Testing` | Framework-neutral fake dispatchers, harnesses, assertions, and test secure ID helpers. |
+| `AstraFlow.Analyzers` | `AstraFlow.Analyzers` | Roslyn analyzer descriptors, stable rule IDs, severity metadata, and build-time diagnostics infrastructure. |
 | `AstraFlow` | `AstraFlow` | Convenience registration for mediator and mapper together. |
+
+## Analyzer Types
+
+| Type | Kind | Purpose | Consumer Implements? |
+| --- | --- | --- | --- |
+| `AstraFlowAnalyzerFoundationAnalyzer` | Roslyn analyzer | Exposes the `1.8.0` analyzer descriptor catalog without reporting feature diagnostics yet. | No. The compiler loads it from the analyzer package. |
+| `AstraFlowAnalyzerRuleIds` | Static class | Holds stable analyzer rule ID constants. | No. |
+| `AstraFlowAnalyzerCategories` | Static class | Holds analyzer diagnostic category constants. | No. |
+| `AstraFlowAnalyzerRuleSeverity` | Enum | Describes AstraFlow analyzer severity policy: `Info`, `Warning`, and `Error`. | No. |
+| `AstraFlowAnalyzerRule` | Record | Describes rule ID, title, category, severity, default enabled state, documentation anchor, and Roslyn descriptor. | No. |
+| `AstraFlowAnalyzerRules` | Static class | Central descriptor catalog for analyzer tests, docs, and future tooling. | No. |
+
+`1.8.0` intentionally exposes analyzer infrastructure before mediator, mapper, and projection rules expand. It does not ship source generators or code fixes.
 
 ## Registration APIs
 

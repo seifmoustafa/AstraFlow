@@ -232,6 +232,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
+| Analyzer package foundation | Done | Shipped in `1.8.0` with stable rule IDs, severity metadata, docs, and test infrastructure. |
 | Missing request handler analyzer | Planned | Compile-time warning. |
 | Duplicate request handler analyzer | Planned | Compile-time warning where discoverable. |
 | Ambiguous request contract analyzer | Planned | Request implements conflicting contracts. |

@@ -1,4 +1,4 @@
-﻿# AstraFlow
+# AstraFlow
 
 ![AstraFlow package icon](https://raw.githubusercontent.com/seifmoustafa/AstraFlow/main/assets/branding/astraflow-icon.png)
 
@@ -34,6 +34,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
 | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
 | `AstraFlow.Testing` | Framework-neutral test helpers for fake mediator flows, handler harnesses, mapper/projection assertions, diagnostics assertions, and test secure IDs. |
+| `AstraFlow.Analyzers` | Roslyn analyzer foundation with stable AstraFlow rule IDs, severity metadata, suppression guidance, and build-time diagnostics infrastructure. |
 | `AstraFlow` | Convenience package referencing both mediator and mapper with one registration method. |
 
 ## Documentation Map
@@ -55,6 +56,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | [EF Core Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/entity-framework-core.md) | You want optional EF Core projection translation checks. |
 | [Diagnostics Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/diagnostics.md) | You want JSON or Markdown reports of handlers, behaviors, mappings, projections, and diagnostics findings. |
 | [Testing Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/testing.md) | You want fake sender/publisher/mediator helpers, handler harnesses, and assertion helpers for tests. |
+| [Analyzer Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/analyzers.md) | You want the analyzer package scope, stable rule IDs, severity policy, suppression guidance, and rule documentation pattern. |
 | [Troubleshooting](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/troubleshooting.md) | You hit an exception and want the likely cause and fix. |
 | [Community Release Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/community-release-guide.md) | You are preparing the repo push, tag, package verification, and community-facing release notes. |
 | [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | You want the completed v1.2 projection safety scope and the future testing, mediator-parity, mapping-parity, analyzer, generator, and ecosystem roadmap. |
@@ -64,7 +66,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 
 ## Target Framework
 
-Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. Since `1.5.0`, `AstraFlow.Mapper.Conventions` ships the same non-EF targets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line.
+Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. Since `1.5.0`, `AstraFlow.Mapper.Conventions` ships the same non-EF targets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line. Since `1.8.0`, `AstraFlow.Analyzers` ships compiler analyzer assets under `analyzers/dotnet/cs` instead of runtime `lib/` assets.
 
 ## Public API At A Glance
 
@@ -269,7 +271,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.7.2
+dotnet add package AstraFlow.Mapper.Conventions --version 1.8.0
 ```
 
 Register exact pairs through a profile:
@@ -311,7 +313,7 @@ Sensitive destination writes remain blocked unless explicitly allowed.
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.2
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.8.0
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -393,7 +395,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.7.2
+dotnet add package AstraFlow.Testing --version 1.8.0
 ```
 
 Use the fake mediator to record requests and notifications:

@@ -1,10 +1,10 @@
-﻿# Compatibility
+# Compatibility
 
 This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion.
 
 ## Current Support
 
-AstraFlow `1.7.2` currently targets:
+AstraFlow `1.8.0` currently targets:
 
 | Package | Current targets |
 | --- | --- |
@@ -16,8 +16,9 @@ AstraFlow `1.7.2` currently targets:
 | `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Testing` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Mapper.EntityFrameworkCore` | `net10.0` |
+| `AstraFlow.Analyzers` | Roslyn analyzer assets under `analyzers/dotnet/cs` |
 
-This means applications, shared libraries, contracts projects, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the contracts package, core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing`. EF Core projection translation validation still requires a `net10.0` project.
+This means applications, shared libraries, contracts projects, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the contracts package, core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing`. EF Core projection translation validation still requires a `net10.0` project. Analyzer assets are consumed by the compiler rather than referenced as runtime libraries.
 
 ## Compatibility Goal
 
@@ -29,6 +30,7 @@ Current target policy:
 | --- | --- | --- |
 | Contracts, core, conventions, and testing packages | Keep `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` while tests and dependencies remain healthy. | Core means mediator, mapper, conventions, diagnostics, testing, and meta package. |
 | EF Core package | Keep target support aligned with the referenced EF Core major version. | Do not broaden EF support by silently pinning consumers to an incompatible EF Core line. |
+| Analyzer package | Ship compiler analyzer assets under `analyzers/dotnet/cs`. | Do not add runtime `lib/` assets unless the package gains a separate runtime API. |
 
 Direct .NET Framework targets such as `net462` or `net471` are candidates only after testing proves they add value beyond `netstandard2.0` consumption.
 
@@ -42,7 +44,8 @@ The `1.2.1` audit found these items. `1.2.2` resolved the core package blockers,
 | Guard APIs | Newer guard helpers were replaced in core code. | Done for supported core targets. |
 | Diagnostics JSON | `System.Text.Json` is added for the `netstandard2.0` diagnostics asset. | Done. |
 | EF Core package | EF validation package references EF Core `10.0.2`. | Still `net10.0`; broader EF Core support needs a separate versioning design. |
-| Clean install checks | `scripts/verify-package-install.ps1` installs packed packages into external consumer projects. | Done for `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` package combinations, including `AstraFlow.Testing`. |
+| Analyzer package | Analyzer assets ship separately from runtime libraries. | Done in `1.8.0` through `AstraFlow.Analyzers` package assets under `analyzers/dotnet/cs`. |
+| Clean install checks | `scripts/verify-package-install.ps1` installs packed packages into external consumer projects. | Done for `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` package combinations, including `AstraFlow.Testing` and `AstraFlow.Analyzers`. |
 
 ## Release Rules For Target Expansion
 
@@ -58,9 +61,11 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Use AstraFlow `1.7.2` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
+Use AstraFlow `1.8.0` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
+
+Use `AstraFlow.Analyzers` as a private analyzer reference. It does not provide runtime APIs.
 
 Do not rely on roadmap candidate targets as published package support.
 
@@ -82,12 +87,12 @@ dotnet test AstraFlow.slnx -c Release
 .\scripts\pack.ps1
 ```
 
-For `1.7.2`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` includes only `lib/net10.0/`.
+For `1.8.0`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` includes only `lib/net10.0/`. Confirm `AstraFlow.Analyzers` includes `analyzers/dotnet/cs/AstraFlow.Analyzers.dll` and no runtime `lib/` assets.
 
 Then run:
 
 ```powershell
-.\scripts\verify-package-install.ps1 -Version 1.7.2
+.\scripts\verify-package-install.ps1 -Version 1.8.0
 ```
 
 

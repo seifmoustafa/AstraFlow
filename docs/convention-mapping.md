@@ -1,12 +1,12 @@
-﻿# Convention Mapping
+# Convention Mapping
 
 `AstraFlow.Mapper.Conventions` adds opt-in convention mapping on top of the explicit mapper. It is disabled unless the application installs the package and registers convention pairs.
 
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.7.2
-dotnet add package AstraFlow.Mapper.Conventions --version 1.7.2
+dotnet add package AstraFlow.Mapper --version 1.8.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.8.0
 ```
 
 ## Register

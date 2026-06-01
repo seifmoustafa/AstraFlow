@@ -1,4 +1,4 @@
-﻿# Publishing
+# Publishing
 
 AstraFlow releases are gated and should be published from GitHub Actions, not from a developer workstation.
 
@@ -57,6 +57,7 @@ The first publish needs to cover:
 - `AstraFlow.Mapper.EntityFrameworkCore`
 - `AstraFlow.Diagnostics`
 - `AstraFlow.Testing`
+- `AstraFlow.Analyzers`
 
 After the first publish, tighten the key to exact package IDs if NuGet offers them in the package list.
 
@@ -79,7 +80,7 @@ Use the exact secret name `NUGET_API_KEY`.
 1. Update `Version`, `AssemblyVersion`, and `FileVersion` in `Directory.Build.props`.
 2. Update `CHANGELOG.md`.
 3. Run `docs/release-checklist.md`.
-4. Create and push a release tag such as `v1.7.2`.
+4. Create and push a release tag such as `v1.8.0`.
 5. Open GitHub Actions.
 6. Run `Publish AstraFlow Packages`.
 7. Type `PUBLISH` when prompted.
@@ -110,6 +111,7 @@ To list them publicly:
    - `AstraFlow.Mapper.EntityFrameworkCore`
    - `AstraFlow.Diagnostics`
    - `AstraFlow.Testing`
+   - `AstraFlow.Analyzers`
 
 NuGet indexing can take a few minutes after relisting. During that time, the packages may install by exact ID before they appear in search.
 
@@ -123,20 +125,22 @@ Use local packing only to verify artifacts before release:
 
 Expected package artifacts:
 
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.7.2.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.7.2.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.7.2.nupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.7.2.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.7.2.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.7.2.nupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.7.2.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.7.2.nupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.8.0.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.8.0.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.8.0.nupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.8.0.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.8.0.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.8.0.nupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.8.0.nupkg`
+- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.8.0.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.8.0.nupkg`
 
-For `1.7.2`, inspect the packages before publishing:
+For `1.8.0`, inspect the packages before publishing:
 
 - each package should include `README.md`, `CHANGELOG.md`, `LICENSE`, the package icon, XML docs, DLLs, and `.nuspec`,
 - `AstraFlow.Contracts`, core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` must include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`,
-- `AstraFlow.Mapper.EntityFrameworkCore` must include `lib/net10.0/` only.
+- `AstraFlow.Mapper.EntityFrameworkCore` must include `lib/net10.0/` only,
+- `AstraFlow.Analyzers` must include `analyzers/dotnet/cs/AstraFlow.Analyzers.dll` and no runtime `lib/` assets.
 
 Do not commit `bin/`, `obj/`, `.nupkg`, or `.snupkg` files.
 
@@ -150,32 +154,38 @@ Do not save the key in shell profiles, `.env` files, source files, or documentat
 
 ## After Publish: Consumer Verification
 
-After NuGet shows all eight packages, verify clean consumer projects can consume the published runtime packages:
+After NuGet shows all nine packages, verify clean consumer projects can consume the published runtime packages:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.7.2" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.7.2" />
-<PackageReference Include="AstraFlow.Mapper.Conventions" Version="1.7.2" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.7.2" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.7.2" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.8.0" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.8.0" />
+<PackageReference Include="AstraFlow.Mapper.Conventions" Version="1.8.0" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.8.0" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.8.0" />
 ```
 
 Use `AstraFlow.Contracts` in shared contract projects that should not reference the mediator runtime:
 
 ```xml
-<PackageReference Include="AstraFlow.Contracts" Version="1.7.2" />
+<PackageReference Include="AstraFlow.Contracts" Version="1.8.0" />
 ```
 
 Use `AstraFlow.Testing` only in test projects:
 
 ```xml
-<PackageReference Include="AstraFlow.Testing" Version="1.7.2" />
+<PackageReference Include="AstraFlow.Testing" Version="1.8.0" />
+```
+
+Use `AstraFlow.Analyzers` as a private analyzer reference:
+
+```xml
+<PackageReference Include="AstraFlow.Analyzers" Version="1.8.0" PrivateAssets="all" />
 ```
 
 Use the meta-package only where both mediator and mapper are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.7.2" />
+<PackageReference Include="AstraFlow" Version="1.8.0" />
 ```
 
 Then run:

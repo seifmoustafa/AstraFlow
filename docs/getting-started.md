@@ -1,4 +1,4 @@
-﻿# Getting Started
+# Getting Started
 
 This guide takes a new consumer from package choice to the first working mediator and mapper setup.
 
@@ -14,20 +14,22 @@ Install the package that matches the surface you need:
 - `AstraFlow.Mapper.Conventions` for opt-in convention mapping over exact source/destination pairs.
 - `AstraFlow.Diagnostics` for registration and validation reports.
 - `AstraFlow.Testing` for test helpers.
+- `AstraFlow.Analyzers` for build-time analyzer diagnostics.
 - `AstraFlow.Mapper.EntityFrameworkCore` for optional EF Core projection translation checks.
 - `AstraFlow` for both.
 
-Since `1.4.0`, `AstraFlow.Contracts`, the core packages, and `AstraFlow.Testing` support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. The optional EF Core projection validation package remains `net10.0` because it follows EF Core 10.
+Since `1.4.0`, `AstraFlow.Contracts`, the core packages, and `AstraFlow.Testing` support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. The optional EF Core projection validation package remains `net10.0` because it follows EF Core 10. `AstraFlow.Analyzers` ships compiler analyzer assets, not runtime libraries.
 
 ```powershell
-dotnet add package AstraFlow.Contracts --version 1.7.2
-dotnet add package AstraFlow.Mediator --version 1.7.2
-dotnet add package AstraFlow.Mapper --version 1.7.2
-dotnet add package AstraFlow.Mapper.Conventions --version 1.7.2
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.2
-dotnet add package AstraFlow.Diagnostics --version 1.7.2
-dotnet add package AstraFlow.Testing --version 1.7.2
-dotnet add package AstraFlow --version 1.7.2
+dotnet add package AstraFlow.Contracts --version 1.8.0
+dotnet add package AstraFlow.Mediator --version 1.8.0
+dotnet add package AstraFlow.Mapper --version 1.8.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.8.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.8.0
+dotnet add package AstraFlow.Diagnostics --version 1.8.0
+dotnet add package AstraFlow.Testing --version 1.8.0
+dotnet add package AstraFlow.Analyzers --version 1.8.0
+dotnet add package AstraFlow --version 1.8.0
 ```
 
 Use only the package you need. If a project only sends requests, install `AstraFlow.Mediator`. If a project only maps DTOs explicitly, install `AstraFlow.Mapper`. Add `AstraFlow.Mapper.Conventions` only when convention mapping is deliberately configured. Use the meta-package when mediator and explicit mapper are intentionally part of the same project.
