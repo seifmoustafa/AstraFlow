@@ -16,7 +16,8 @@ All notable AstraFlow changes are tracked here.
 
 ### Fixed
 
-- None.
+- Fixed clean package install verification so target-framework smoke projects are retargeted directly instead of depending on SDK template framework options.
+- Fixed clean package install verification temp project names to avoid Windows path-length-sensitive build failures.
 
 ### Docs
 
