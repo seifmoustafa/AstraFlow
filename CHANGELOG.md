@@ -2,6 +2,38 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.7.2
+
+### Added
+
+- Added projection plan parameter type assertions in `AstraFlow.Testing`.
+- Added sensitive and non-sensitive projection parameter assertions for deterministic projection plan tests.
+
+### Changed
+
+- Release-facing documentation now points current package install examples at `1.7.2`.
+- Marked the `v1.7.x` stabilization lane with the `1.7.2` projection parameter assertion patch.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded testing, projections, API reference, and release documentation for projection parameter assertions.
+
+### Tests
+
+- Added `AstraFlow.Testing` coverage for projection plan parameter type and sensitivity assertion paths.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.7.2`.
+
+### Breaking changes
+
+- None.
+
 ## 1.7.1
 
 ### Added

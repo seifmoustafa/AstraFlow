@@ -1114,6 +1114,7 @@ Harden the `v1.7.0` projection and EF provider parity baseline without expanding
 Patch releases:
 
 - `v1.7.1`: projection plan assertion helpers in `AstraFlow.Testing`, plus release-facing documentation and package metadata updates.
+- `v1.7.2`: projection plan parameter type and sensitivity assertion helpers in `AstraFlow.Testing`.
 
 Packages affected:
 

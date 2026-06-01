@@ -5,7 +5,7 @@ AstraFlow projections are explicit LINQ expressions used to shape query results 
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.7.1
+dotnet add package AstraFlow.Mapper --version 1.7.2
 ```
 
 ## Basic Projection
@@ -114,7 +114,8 @@ Test projects can assert exported plans with `AstraFlow.Testing`:
 
 ```csharp
 var plan = plans.ShouldHaveParameterizedProjectionPlan<Customer, CustomerListItem, CustomerProjectionParameters>();
-plan.ShouldHaveProjectionParameter("TenantId");
+plan.ShouldHaveProjectionParameter("TenantId", typeof(Guid).FullName!);
+plan.ShouldHaveNonSensitiveProjectionParameter("TenantId");
 plan.ShouldHaveProjectionMember("TenantId", "Parameterized");
 ```
 
@@ -172,4 +173,5 @@ services.AddAstraFlowDiagnostics();
 ```
 
 The report includes projection rows and `AFP...` findings without printing entity values, DTO values, query results, connection strings, secrets, or captured object contents.
+
 

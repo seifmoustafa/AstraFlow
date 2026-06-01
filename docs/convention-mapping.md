@@ -5,8 +5,8 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.7.1
-dotnet add package AstraFlow.Mapper.Conventions --version 1.7.1
+dotnet add package AstraFlow.Mapper --version 1.7.2
+dotnet add package AstraFlow.Mapper.Conventions --version 1.7.2
 ```
 
 ## Register
@@ -309,4 +309,5 @@ var plans = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans(
 Each convention-created member is reported with its destination member, source member, decision, and reason.
 
 Member-level decisions include `Converted`, `MappedWhen`, `MappedWithNullSubstitute`, `EnumToEnum`, `EnumToString`, `ConstructorBound`, `Collection`, `Flattened`, `Unflattened`, `IncludedMember`, `Resolved`, and `Transformed` when those rules are used.
+
 

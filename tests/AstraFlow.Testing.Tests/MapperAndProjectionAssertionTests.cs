@@ -66,13 +66,35 @@ public sealed class MapperAndProjectionAssertionTests
     {
         var plan = CreateProjectionPlan();
 
-        var parameter = plan.ShouldHaveProjectionParameter("TenantId");
+        var parameter = plan.ShouldHaveProjectionParameter("TenantId", typeof(Guid).FullName!);
         var member = plan.ShouldHaveProjectionMember("Name", "Constructed");
         var finding = plan.ShouldHaveProjectionPlanFinding("AFP106");
 
         parameter.Type.Should().Be(typeof(Guid).FullName);
         member.SourceExpression.Should().Be("Name");
         finding.Message.Should().Be("Raw public ID projection risk.");
+    }
+
+    [Fact]
+    public void Projection_plan_assertions_report_parameter_sensitivity()
+    {
+        var plan = CreateProjectionPlan();
+
+        var nonSensitive = plan.ShouldHaveNonSensitiveProjectionParameter("TenantId");
+        var sensitive = plan.ShouldHaveSensitiveProjectionParameter("AccessToken");
+
+        nonSensitive.IsSensitive.Should().BeFalse();
+        sensitive.IsSensitive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Projection_plan_assertion_reports_wrong_parameter_type()
+    {
+        var plan = CreateProjectionPlan();
+
+        var act = () => plan.ShouldHaveProjectionParameter("TenantId", typeof(string).FullName!);
+
+        act.Should().Throw<AstraFlowAssertionException>();
     }
 
     [Fact]
@@ -123,6 +145,7 @@ public sealed class MapperAndProjectionAssertionTests
             typeof(UserProjection).FullName!,
             typeof(UserProjectionParameters).FullName!,
             [
+                new ProjectionParameterMember("AccessToken", typeof(string).FullName!, true),
                 new ProjectionParameterMember("TenantId", typeof(Guid).FullName!, false)
             ],
             [

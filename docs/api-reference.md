@@ -1,6 +1,6 @@
 ﻿# API Reference
 
-This reference describes the public AstraFlow `1.7.1` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow `1.7.2` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
@@ -345,6 +345,9 @@ Each item is mapped through the same explicit rule lookup. Collection mapping do
 | `ShouldHaveProjectionPlan<TSource, TDestination>()` | Projection plan collection contains a static or parameterized plan for the requested pair. |
 | `ShouldHaveParameterizedProjectionPlan<TSource, TDestination, TParameters>()` | Projection plan collection contains a parameterized plan with the requested parameter object type. |
 | `ShouldHaveProjectionParameter(name)` | Projection plan contains the requested parameter member. |
+| `ShouldHaveProjectionParameter(name, type)` | Projection plan contains the requested parameter member with the expected type display name. |
+| `ShouldHaveSensitiveProjectionParameter(name)` | Projection plan contains the requested parameter member marked sensitive. |
+| `ShouldHaveNonSensitiveProjectionParameter(name)` | Projection plan contains the requested parameter member marked non-sensitive. |
 | `ShouldHaveProjectionMember(destinationMember, decision)` | Projection plan contains the requested destination member decision. |
 | `ShouldHaveProjectionPlanFinding(code)` | Projection plan contains a finding code. |
 | `ShouldHaveNoProjectionPlanFindings()` | Projection plan has no findings. |
@@ -352,4 +355,5 @@ Each item is mapped through the same explicit rule lookup. Collection mapping do
 | `ShouldHaveDiagnosticFinding(code)` | Diagnostics report contains a finding code. |
 | `ShouldThrowAsync<TException>()` | Async operation throws the expected exception type. |
 | `ShouldRoundTripSecureId()` | Secure ID codec encodes and decodes the supplied `Guid`. |
+
 

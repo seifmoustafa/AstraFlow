@@ -7,7 +7,7 @@ It has no dependency on xUnit, NUnit, MSTest, FluentAssertions, or a mocking fra
 Install:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.7.1
+dotnet add package AstraFlow.Testing --version 1.7.2
 ```
 
 ## Fake Mediator
@@ -117,7 +117,9 @@ Use projection plan assertions when tests export deterministic plans through `IP
 var plans = planProvider.GetProjectionPlans();
 var plan = plans.ShouldHaveParameterizedProjectionPlan<User, UserListItem, UserProjectionParameters>("list");
 
-plan.ShouldHaveProjectionParameter("TenantId");
+plan.ShouldHaveProjectionParameter("TenantId", typeof(Guid).FullName!);
+plan.ShouldHaveNonSensitiveProjectionParameter("TenantId");
+plan.ShouldHaveSensitiveProjectionParameter("AccessToken");
 plan.ShouldHaveProjectionMember("Name", "Constructed");
 plan.ShouldHaveNoProjectionPlanFindings();
 ```
@@ -148,4 +150,5 @@ var encoded = codec.ShouldRoundTripSecureId(Guid.NewGuid());
 - Fakes record object references and types so tests can make their own assertions.
 - No helper depends on a specific test framework.
 - No helper replaces integration tests for DI registration, EF Core translation, or application startup.
+
 

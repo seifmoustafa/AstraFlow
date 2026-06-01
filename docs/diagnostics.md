@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.7.1
+dotnet add package AstraFlow.Diagnostics --version 1.7.2
 ```
 
 The package references `AstraFlow.Mediator` and `AstraFlow.Mapper` so it can understand the core public contracts.
@@ -151,4 +151,5 @@ report.Summary.HasErrors.Should().BeFalse();
 ```
 
 For CI, write JSON or Markdown as an artifact. Do not fail CI on warnings until the team agrees on warning policy.
+
 
