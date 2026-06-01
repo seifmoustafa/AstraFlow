@@ -20,5 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\AstraFlow.Contracts\AstraFlow.Contracts.csproj" />
     <ProjectReference Include="..\..\src\AstraFlow.Generators\AstraFlow.Generators.csproj" />
+    <ProjectReference Include="..\..\src\AstraFlow.Mapper\AstraFlow.Mapper.csproj" />
   </ItemGroup>
 </Project>

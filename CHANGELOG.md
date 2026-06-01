@@ -2,6 +2,24 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.8.4
+
+### Added
+
+- Added generated mapper and projection metadata through `AstraFlow.Generators`.
+- Added `IGeneratedMapperMetadataProvider`, `GeneratedMapperMetadata`, `GeneratedMappingRuleMetadata`, and `GeneratedProjectionMetadata`.
+- Added generated `AddAstraFlowGeneratedMapperMetadata()` and `GetAstraFlowGeneratedMapperMetadata()` helpers.
+- Added generator tests for mapping rule metadata, declared-rule flags, projection metadata, named projection flags, parameterized projections, empty projects, and unsupported mapper shapes.
+
+### Changed
+
+- Updated release-facing documentation, package metadata, and roadmap status for `1.8.4`.
+- Kept runtime mapper/projection scanning as the fallback path while adding compile-time metadata for diagnostics, CLI, AOT, and future optimization.
+
+### Fixed
+
+- None.
+
 ## 1.8.3
 
 ### Added

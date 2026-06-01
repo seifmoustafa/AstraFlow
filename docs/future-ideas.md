@@ -258,11 +258,12 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Notification registration generator | Done | Shipped in `1.8.3` through `AstraFlow.Generators`. |
 | Stream registration generator | Done | Shipped in `1.8.3` through `AstraFlow.Generators`. |
 | Processor/exception registration generator | Done | Shipped in `1.8.3` through `AstraFlow.Generators`. |
+| Mapping metadata generator | Done | First generated mapping rule metadata shipped in `1.8.4`. |
 | Mapping dispatch table generator | Planned | Faster explicit mapping lookup. |
 | Convention mapping plan generator | Planned | Safer convention output. |
 | Collection mapping fast-path generator | Planned | Performance phase. |
-| Projection registry metadata generator | Planned | Faster registry and AOT support. |
-| Diagnostics metadata generator | Candidate | Avoid runtime reflection. |
+| Projection registry metadata generator | Done, expand | First generated projection metadata shipped in `1.8.4`; registry fast paths remain future work. |
+| Diagnostics metadata generator | Candidate | Avoid runtime reflection; `1.8.4` provides generated metadata inputs. |
 | Incremental generator diagnostics | Planned | Stable build messages. |
 | Generator snapshot tests | Done, expand | First deterministic output tests shipped in `1.8.3`; expand with future generator lanes. |
 

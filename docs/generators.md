@@ -1,26 +1,37 @@
 # AstraFlow Generators
 
-AstraFlow `1.8.3` introduces the `AstraFlow.Generators` package foundation for generated mediator component registration.
+AstraFlow `1.8.3` introduced the `AstraFlow.Generators` package foundation for generated mediator component registration. AstraFlow `1.8.4` adds generated mapper and projection metadata on top of that foundation.
 
-The generator emits readable dependency-injection code for mediator components discovered in the current compilation. It is intentionally a foundation release: runtime assembly scanning remains available and should stay as the fallback path while apps validate generated registration in their own build.
+The generator emits readable code for components discovered in the current compilation. Runtime assembly scanning remains available and should stay as the fallback path while apps validate generated output in their own build.
 
 ## Install
 
 Use the generator package from application or library projects that reference `AstraFlow.Mediator`:
 
 ```powershell
-dotnet add package AstraFlow.Generators --version 1.8.3
+dotnet add package AstraFlow.Generators --version 1.8.4
 ```
 
 Generator packages should be referenced privately so they do not flow transitively to consumers:
 
 ```xml
-<PackageReference Include="AstraFlow.Generators" Version="1.8.3" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Generators" Version="1.8.4" PrivateAssets="all" />
 ```
 
-## Scope In 1.8.3
+## Scope In 1.8.4
 
-`1.8.3` generates `AstraFlow.Mediator.AstraFlowGeneratedMediatorRegistration` with:
+`1.8.4` includes the `1.8.3` generated mediator registration APIs and adds `AstraFlow.Mapper.AstraFlowGeneratedMapperMetadataRegistration` with:
+
+- `AddAstraFlowGeneratedMapperMetadata(this IServiceCollection services)`,
+- `GetAstraFlowGeneratedMapperMetadata()`,
+- generated mapping rule implementation metadata,
+- declared mapping rule flags,
+- generated projection source/destination metadata,
+- generated parameterized projection metadata,
+- generated named projection flags,
+- deterministic ordering by implementation and service type.
+
+The `1.8.3` mediator generator still emits `AstraFlow.Mediator.AstraFlowGeneratedMediatorRegistration` with:
 
 - `AddAstraFlowGeneratedMediatorRegistrations(this IServiceCollection services)`,
 - closed `IRequestHandler<TRequest>` registrations,
@@ -36,9 +47,9 @@ Generator packages should be referenced privately so they do not flow transitive
 
 It does not include:
 
-- generated mapper dispatch tables,
-- generated projection registry metadata,
-- generated diagnostics metadata,
+- generated runtime mapper dispatch tables,
+- generated convention mapping plans,
+- generated diagnostics metadata integration,
 - open generic handler registration,
 - a generator-only runtime mode,
 - migration guidance that removes runtime scanning.
@@ -60,6 +71,29 @@ services.AddAstraFlowGeneratedMediatorRegistrations();
 `AddAstraFlowMediator()` registers the mediator runtime services. `AddAstraFlowGeneratedMediatorRegistrations()` adds deterministic compile-time registrations for components found in the current project. If you pass marker assemblies to `AddAstraFlowMediator(...)`, runtime scanning remains the fallback path and may duplicate generated component registrations.
 
 The repository also includes `samples/GeneratedMediatorRegistrationSample`, which builds the generated registration extension from a consumer-style app.
+
+Generated mapper metadata can be registered and read through dependency injection:
+
+```csharp
+using AstraFlow.Mapper;
+using Microsoft.Extensions.DependencyInjection;
+
+var services = new ServiceCollection();
+
+services.AddAstraFlowMapper(typeof(Program));
+services.AddAstraFlowGeneratedMapperMetadata();
+
+using var provider = services.BuildServiceProvider();
+var metadata = provider
+    .GetRequiredService<IGeneratedMapperMetadataProvider>()
+    .GetMetadata();
+```
+
+Or read directly without a service provider:
+
+```csharp
+var metadata = AstraFlowGeneratedMapperMetadataRegistration.GetAstraFlowGeneratedMapperMetadata();
+```
 
 ## Generated Shape
 
