@@ -831,7 +831,7 @@ After core convention mapping exists, common advanced scenarios such as flatteni
 
 #### v1.6.0 Advanced Mapping Parity Core
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -2344,9 +2344,9 @@ Moved later:
 | Numeric diagnostics | Done | v1.5.1 | `AstraFlow.Mapper.Conventions` | P0 | Numeric findings | Numeric tests |
 | Constructor/record binding | Done | v1.5.2 | `AstraFlow.Mapper.Conventions` | P1 | Binding report | Binding tests |
 | Existing destination mapping | Done | v1.5.2 | `AstraFlow.Mapper.Conventions` | P1 | Update report | Update tests |
-| Flattening | Planned | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Flattening report | Flattening tests |
-| Unflattening | Planned | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Domain-write findings | Unflattening tests |
-| Reverse mapping | Planned | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Explicit reverse report | Reverse tests |
+| Flattening | Done | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Flattening report | Flattening tests |
+| Unflattening | Done | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Domain-write findings | Unflattening tests |
+| Reverse mapping | Done | v1.6.0 | `AstraFlow.Mapper.Conventions` | P0 | Explicit reverse report | Reverse tests |
 | Projection parameters | Planned | v1.7 | `AstraFlow.Mapper` | P0 | Parameter report | Parameter tests |
 | EF provider matrix | Planned | v1.7 | `AstraFlow.Mapper.EntityFrameworkCore` | P0 | Provider findings | Provider tests |
 | Mapping analyzers/generators | Planned | v1.8/v2 | `AstraFlow.Analyzers`/`AstraFlow.Generators` | P0 | Rule IDs and metadata | Analyzer/generator tests |
@@ -2382,7 +2382,7 @@ Moved later:
 | Convention mapping | Done | v1.5.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Opt-in and inspectable | Moved earlier |
 | Member config | Done | v1.5.1 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Per-member diagnostics | Moved earlier |
 | Destination/update mapping | Done | v1.5.2 | P1 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Sensitive write diagnostics | Moved earlier |
-| Flattening/reverse/unflattening | Planned | v1.6.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Explicit and security-gated | Moved earlier |
+| Flattening/reverse/unflattening | Done | v1.6.0 | P0 | `AstraFlow.Mapper.Conventions` | AutoMapper-style | Explicit and security-gated | Moved earlier |
 | Projections | Done, expand | v1.7 | P0 | `AstraFlow.Mapper` | AutoMapper-style query projection | Provider warnings | Moved earlier |
 | Analyzers | Planned | v1.8/v2 | P0 | `AstraFlow.Analyzers` | Compile-time parity | Stable rule IDs | Moved earlier |
 | Generators | Planned | v1.8/v2 | P0 | `AstraFlow.Generators` | AOT/trimming parity | Deterministic output | Moved earlier |

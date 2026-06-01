@@ -19,6 +19,6 @@ public abstract class ConventionMappingProfile
     {
         var definition = new ConventionMappingDefinition(typeof(TSource), typeof(TDestination));
         _definitions.Add(definition);
-        return new ConventionMappingExpression<TSource, TDestination>(definition);
+        return new ConventionMappingExpression<TSource, TDestination>(definition, _definitions.Add);
     }
 }

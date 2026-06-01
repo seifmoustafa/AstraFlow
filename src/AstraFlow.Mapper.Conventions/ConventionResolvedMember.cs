@@ -4,6 +4,7 @@ namespace AstraFlow.Mapper.Conventions;
 
 internal sealed record ConventionResolvedMember(
     PropertyInfo DestinationProperty,
+    IReadOnlyList<PropertyInfo> DestinationPath,
     PropertyInfo? SourceProperty,
     ConventionMemberMappingDefinition? Configuration,
     string Decision,
@@ -21,7 +22,23 @@ internal sealed record ConventionResolvedMember(
         string decision,
         string reason)
     {
-        return new(destinationProperty, null, configuration, decision, reason, null, false, false, false, false, false);
+        return new(destinationProperty, [destinationProperty], null, configuration, decision, reason, null, false, false, false, false, false);
+    }
+
+    public static ConventionResolvedMember Mappable(
+        PropertyInfo destinationProperty,
+        IReadOnlyList<PropertyInfo> destinationPath,
+        PropertyInfo? sourceProperty,
+        ConventionMemberMappingDefinition? configuration,
+        string decision,
+        string reason,
+        Func<object, object?>? sourceValueFactory,
+        bool requiresEnumToString,
+        bool requiresEnumToEnum,
+        bool requiresCollectionMapping,
+        bool isConstructorBound = false)
+    {
+        return new(destinationProperty, destinationPath, sourceProperty, configuration, decision, reason, sourceValueFactory, requiresEnumToString, requiresEnumToEnum, requiresCollectionMapping, isConstructorBound, true);
     }
 
     public static ConventionResolvedMember Mappable(
@@ -36,6 +53,17 @@ internal sealed record ConventionResolvedMember(
         bool requiresCollectionMapping,
         bool isConstructorBound = false)
     {
-        return new(destinationProperty, sourceProperty, configuration, decision, reason, sourceValueFactory, requiresEnumToString, requiresEnumToEnum, requiresCollectionMapping, isConstructorBound, true);
+        return Mappable(
+            destinationProperty,
+            [destinationProperty],
+            sourceProperty,
+            configuration,
+            decision,
+            reason,
+            sourceValueFactory,
+            requiresEnumToString,
+            requiresEnumToEnum,
+            requiresCollectionMapping,
+            isConstructorBound);
     }
 }

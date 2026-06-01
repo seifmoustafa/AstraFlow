@@ -2,6 +2,44 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.6.0
+
+### Added
+
+- Added opt-in flattening for nested source members mapped into flat destination members.
+- Added opt-in unflattening for flat source members mapped into nested destination paths.
+- Added explicit `ReverseMap` registration; reverse mapping is never implicit.
+- Added `IncludeMembers` for composing destination members from selected child source members.
+- Added custom source expression support through `MapFrom`.
+- Added custom destination path support through `ForPath`.
+- Added value resolver support through `IConventionValueResolver`.
+- Added mapping plan decisions for `Flattened`, `Unflattened`, `IncludedMember`, and `Resolved`.
+- Added resolver diagnostics with `AFC013`.
+
+### Changed
+
+- Convention mapping plans now report nested destination paths and advanced mapping decisions.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping documentation for advanced mapping scenarios.
+
+### Tests
+
+- Added tests for flattening, unflattening, explicit reverse mapping, include members, custom source expressions, custom destination paths, and value resolvers.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.6.0`.
+
+### Breaking changes
+
+- None.
+
 ## 1.5.2
 
 ### Added

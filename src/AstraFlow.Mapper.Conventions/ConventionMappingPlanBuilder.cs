@@ -32,54 +32,62 @@ internal static class ConventionMappingPlanBuilder
         var constructorBoundMembers = new HashSet<string>(
             constructor.Parameters.Select(parameter => parameter.DestinationMemberName),
             StringComparer.Ordinal);
+        var destinationTargets = GetDestinationTargets(definition, destinationProperties);
 
-        foreach (var destinationProperty in destinationProperties)
+        foreach (var destinationTarget in destinationTargets)
         {
-            var isConstructorBound = constructorBoundMembers.Contains(destinationProperty.Name);
-            definition.MemberMappings.TryGetValue(destinationProperty.Name, out var memberConfiguration);
+            var destinationProperty = destinationTarget.Property;
+            var destinationMemberName = destinationTarget.Name;
+            var isConstructorBound = constructorBoundMembers.Contains(destinationMemberName);
+            definition.MemberMappings.TryGetValue(destinationMemberName, out var memberConfiguration);
 
-            if (definition.IgnoredMembers.Contains(destinationProperty.Name))
+            if (definition.IgnoredMembers.Contains(destinationMemberName))
             {
                 var decision = memberConfiguration?.IsRequired == true ? "Blocked" : "Ignored";
                 var reason = memberConfiguration?.IsRequired == true
                     ? "Destination member is required but ignored."
                     : "Destination member is ignored.";
-                members.Add(new MappingPlanMember(destinationProperty.Name, null, decision, reason));
+                members.Add(new MappingPlanMember(destinationMemberName, null, decision, reason));
                 resolvedMembers.Add(ConventionResolvedMember.Blocked(destinationProperty, memberConfiguration, decision, reason));
 
                 if (memberConfiguration?.IsRequired == true)
-                    AddRequiredFinding(findings, destinationProperty.Name, "Destination member is required but ignored.");
+                    AddRequiredFinding(findings, destinationMemberName, "Destination member is required but ignored.");
 
                 continue;
             }
 
             if (definition.IncludedMembers.Count != 0 &&
-                !definition.IncludedMembers.Contains(destinationProperty.Name))
+                !definition.IncludedMembers.Contains(destinationMemberName))
             {
                 var decision = memberConfiguration?.IsRequired == true ? "Blocked" : "Ignored";
                 var reason = memberConfiguration?.IsRequired == true
                     ? "Destination member is required but not included."
                     : "Destination member is not included.";
-                members.Add(new MappingPlanMember(destinationProperty.Name, null, decision, reason));
+                members.Add(new MappingPlanMember(destinationMemberName, null, decision, reason));
                 resolvedMembers.Add(ConventionResolvedMember.Blocked(destinationProperty, memberConfiguration, decision, reason));
 
                 if (memberConfiguration?.IsRequired == true)
-                    AddRequiredFinding(findings, destinationProperty.Name, "Destination member is required but not included.");
+                    AddRequiredFinding(findings, destinationMemberName, "Destination member is required but not included.");
 
                 continue;
             }
 
-            var sourceResolution = ResolveSourceMember(sourceProperties, destinationProperty.Name, memberConfiguration, allowCaseInsensitive);
+            var sourceResolution = ResolveSourceMember(
+                definition,
+                sourceProperties,
+                destinationTarget,
+                memberConfiguration,
+                allowCaseInsensitive);
             if (sourceResolution.IsAmbiguous)
             {
                 var candidates = string.Join(", ", sourceResolution.CandidateNames.OrderBy(name => name, StringComparer.Ordinal));
-                members.Add(new MappingPlanMember(destinationProperty.Name, null, "Blocked", "Source member match is ambiguous."));
+                members.Add(new MappingPlanMember(destinationMemberName, null, "Blocked", "Source member match is ambiguous."));
                 resolvedMembers.Add(ConventionResolvedMember.Blocked(destinationProperty, memberConfiguration, "Blocked", "Source member match is ambiguous."));
                 findings.Add(new MappingPlanFinding(
                     MappingPlanFindingSeverity.Error,
                     "AFC003",
-                    destinationProperty.Name,
-                    $"Destination member '{destinationProperty.Name}' matched multiple source members: {candidates}."));
+                    destinationMemberName,
+                    $"Destination member '{destinationMemberName}' matched multiple source members: {candidates}."));
                 continue;
             }
 
@@ -88,9 +96,10 @@ internal static class ConventionMappingPlanBuilder
                 if (memberConfiguration?.HasNullSubstitute == true)
                 {
                     var substitutionReason = AddConfigurationReason("Null substitution configured.", memberConfiguration);
-                    members.Add(new MappingPlanMember(destinationProperty.Name, null, "Substituted", substitutionReason));
+                    members.Add(new MappingPlanMember(destinationMemberName, null, "Substituted", substitutionReason));
                     resolvedMembers.Add(ConventionResolvedMember.Mappable(
                         destinationProperty,
+                        destinationTarget.Path,
                         null,
                         memberConfiguration,
                         "Substituted",
@@ -107,20 +116,20 @@ internal static class ConventionMappingPlanBuilder
                 var reason = memberConfiguration?.IsRequired == true
                     ? "Required destination member has no source member."
                     : "No source member matched.";
-                members.Add(new MappingPlanMember(destinationProperty.Name, null, decision, reason));
+                members.Add(new MappingPlanMember(destinationMemberName, null, decision, reason));
                 resolvedMembers.Add(ConventionResolvedMember.Blocked(destinationProperty, memberConfiguration, decision, reason));
 
                 if (memberConfiguration?.IsRequired == true)
                 {
-                    AddRequiredFinding(findings, destinationProperty.Name, "Required destination member has no matched source member.");
+                    AddRequiredFinding(findings, destinationMemberName, "Required destination member has no matched source member.");
                 }
                 else
                 {
                     findings.Add(new MappingPlanFinding(
                         MappingPlanFindingSeverity.Warning,
                         "AFC001",
-                        destinationProperty.Name,
-                        $"Destination member '{destinationProperty.Name}' has no matched source member."));
+                        destinationMemberName,
+                        $"Destination member '{destinationMemberName}' has no matched source member."));
                 }
 
                 continue;
@@ -131,56 +140,67 @@ internal static class ConventionMappingPlanBuilder
 
             if (!CanWrite(destinationProperty) && !isConstructorBound)
             {
-                members.Add(new MappingPlanMember(destinationProperty.Name, sourceMemberName, "Blocked", "Destination member is immutable and no constructor binding is available."));
+                members.Add(new MappingPlanMember(destinationMemberName, sourceMemberName, "Blocked", "Destination member is immutable and no constructor binding is available."));
                 resolvedMembers.Add(ConventionResolvedMember.Blocked(destinationProperty, memberConfiguration, "Blocked", "Destination member is immutable and no constructor binding is available."));
                 findings.Add(new MappingPlanFinding(
                     MappingPlanFindingSeverity.Error,
                     "AFC012",
-                    destinationProperty.Name,
-                    $"Destination member '{destinationProperty.Name}' is immutable and cannot be set without constructor binding."));
+                    destinationMemberName,
+                    $"Destination member '{destinationMemberName}' is immutable and cannot be set without constructor binding."));
                 continue;
             }
 
             if (options.RequireExplicitSensitiveMemberAllow &&
-                (IsSensitive(sourceMemberName, options) || IsSensitive(destinationProperty.Name, options)) &&
+                (IsSensitive(sourceMemberName, options) || IsSensitive(destinationMemberName, options)) &&
                 !definition.AllowedSensitiveMembers.Contains(sourceMemberName) &&
-                !definition.AllowedSensitiveMembers.Contains(destinationProperty.Name))
+                !definition.AllowedSensitiveMembers.Contains(destinationMemberName))
             {
-                members.Add(new MappingPlanMember(destinationProperty.Name, sourceMemberName, "Blocked", "Sensitive member requires explicit allow."));
+                members.Add(new MappingPlanMember(destinationMemberName, sourceMemberName, "Blocked", "Sensitive member requires explicit allow."));
                 resolvedMembers.Add(ConventionResolvedMember.Blocked(destinationProperty, memberConfiguration, "Blocked", "Sensitive member requires explicit allow."));
                 findings.Add(new MappingPlanFinding(
                     MappingPlanFindingSeverity.Error,
                     "AFC004",
-                    destinationProperty.Name,
-                    $"Convention mapping for sensitive member '{destinationProperty.Name}' requires AllowSensitiveMember."));
+                    destinationMemberName,
+                    $"Convention mapping for sensitive member '{destinationMemberName}' requires AllowSensitiveMember."));
                 continue;
             }
 
             var compatibility = GetCompatibility(sourceMemberType, destinationProperty.PropertyType, memberConfiguration);
             if (!compatibility.CanMap)
             {
-                members.Add(new MappingPlanMember(destinationProperty.Name, sourceMemberName, "Blocked", compatibility.Reason));
+                members.Add(new MappingPlanMember(destinationMemberName, sourceMemberName, "Blocked", compatibility.Reason));
                 resolvedMembers.Add(ConventionResolvedMember.Blocked(destinationProperty, memberConfiguration, "Blocked", compatibility.Reason));
                 findings.Add(new MappingPlanFinding(
                     compatibility.Severity,
                     compatibility.Code,
-                    destinationProperty.Name,
-                    compatibility.Message(destinationProperty.Name, sourceMemberName)));
+                    destinationMemberName,
+                    compatibility.Message(destinationMemberName, sourceMemberName)));
                 continue;
             }
 
             usedSourceMembers.Add(sourceMemberName);
-            var decisionText = GetDecisionText(memberConfiguration, compatibility);
+            var decisionText = GetDecisionText(memberConfiguration, compatibility, sourceResolution);
             if (isConstructorBound)
                 decisionText = "ConstructorBound";
 
             var mappedReason = AddConfigurationReason(compatibility.Reason, memberConfiguration);
             if (isConstructorBound)
                 mappedReason = $"{mappedReason} Bound through destination constructor.";
+            if (definition.ExplicitReverseMapping)
+                mappedReason = $"{mappedReason} Explicit reverse mapping.";
+            if (memberConfiguration?.HasResolver == true && memberConfiguration.ResolverType is not null)
+            {
+                findings.Add(new MappingPlanFinding(
+                    MappingPlanFindingSeverity.Info,
+                    "AFC013",
+                    destinationMemberName,
+                    $"Destination member '{destinationMemberName}' is resolved by '{memberConfiguration.ResolverType.FullName}'."));
+            }
 
-            members.Add(new MappingPlanMember(destinationProperty.Name, sourceMemberName, decisionText, mappedReason));
+            members.Add(new MappingPlanMember(destinationMemberName, sourceMemberName, decisionText, mappedReason));
             resolvedMembers.Add(ConventionResolvedMember.Mappable(
                 destinationProperty,
+                destinationTarget.Path,
                 sourceResolution.SourceProperty,
                 memberConfiguration,
                 decisionText,
@@ -323,7 +343,14 @@ internal static class ConventionMappingPlanBuilder
             var destinationMemberName = destinationProperty?.Name ?? parameter.Name;
             definition.MemberMappings.TryGetValue(destinationMemberName, out var memberConfiguration);
 
-            var sourceResolution = ResolveSourceMember(sourceProperties, destinationMemberName, memberConfiguration, allowCaseInsensitive || destinationProperty is not null);
+            var sourceResolution = destinationProperty is null
+                ? ResolveSourceMemberByName(sourceProperties, destinationMemberName, memberConfiguration, allowCaseInsensitive)
+                : ResolveSourceMember(
+                    definition,
+                    sourceProperties,
+                    new DestinationMemberTarget(destinationMemberName, destinationProperty, [destinationProperty], false),
+                    memberConfiguration,
+                    allowCaseInsensitive || destinationProperty is not null);
             if (sourceResolution.IsAmbiguous || sourceResolution.SourceMemberName is null || sourceResolution.SourceValueFactory is null)
                 return null;
 
@@ -353,6 +380,38 @@ internal static class ConventionMappingPlanBuilder
     }
 
     private static SourceMemberResolution ResolveSourceMember(
+        ConventionMappingDefinition definition,
+        IReadOnlyList<PropertyInfo> sourceProperties,
+        DestinationMemberTarget destinationTarget,
+        ConventionMemberMappingDefinition? memberConfiguration,
+        bool allowCaseInsensitive)
+    {
+        var direct = ResolveSourceMemberByName(sourceProperties, destinationTarget.Name, memberConfiguration, allowCaseInsensitive);
+        if (direct.SourceMemberName is not null || direct.IsAmbiguous)
+            return direct;
+
+        var includedSource = ResolveIncludedSourceMember(definition, sourceProperties, destinationTarget.Name, allowCaseInsensitive);
+        if (includedSource is not null)
+            return includedSource;
+
+        if (definition.FlatteningEnabled && !destinationTarget.IsPath)
+        {
+            var flattenedSource = ResolveFlattenedSourceMember(sourceProperties, destinationTarget.Name, allowCaseInsensitive);
+            if (flattenedSource is not null)
+                return flattenedSource;
+        }
+
+        if (definition.UnflatteningEnabled && destinationTarget.IsPath)
+        {
+            var unflattenedSource = ResolveUnflattenedSourceMember(sourceProperties, destinationTarget, allowCaseInsensitive);
+            if (unflattenedSource is not null)
+                return unflattenedSource;
+        }
+
+        return SourceMemberResolution.None;
+    }
+
+    private static SourceMemberResolution ResolveSourceMemberByName(
         IReadOnlyList<PropertyInfo> sourceProperties,
         string destinationMemberName,
         ConventionMemberMappingDefinition? memberConfiguration,
@@ -394,6 +453,87 @@ internal static class ConventionMappingPlanBuilder
             source => match.GetValue(source),
             false,
             Array.Empty<string>());
+    }
+
+    private static SourceMemberResolution? ResolveIncludedSourceMember(
+        ConventionMappingDefinition definition,
+        IReadOnlyList<PropertyInfo> sourceProperties,
+        string destinationMemberName,
+        bool allowCaseInsensitive)
+    {
+        foreach (var includedSourceMember in definition.IncludedSourceMembers.OrderBy(name => name, StringComparer.Ordinal))
+        {
+            var sourceParent = sourceProperties.SingleOrDefault(property =>
+                string.Equals(property.Name, includedSourceMember, StringComparison.Ordinal));
+            if (sourceParent is null)
+                continue;
+
+            var child = GetReadableProperties(sourceParent.PropertyType)
+                .SingleOrDefault(property => MemberNameEquals(property.Name, destinationMemberName, allowCaseInsensitive));
+            if (child is null)
+                continue;
+
+            var sourcePath = $"{sourceParent.Name}.{child.Name}";
+            return new SourceMemberResolution(
+                sourcePath,
+                child.PropertyType,
+                child,
+                source => GetPathValue(source, [sourceParent, child]),
+                false,
+                Array.Empty<string>(),
+                "IncludedMember");
+        }
+
+        return null;
+    }
+
+    private static SourceMemberResolution? ResolveFlattenedSourceMember(
+        IReadOnlyList<PropertyInfo> sourceProperties,
+        string destinationMemberName,
+        bool allowCaseInsensitive)
+    {
+        foreach (var sourceParent in sourceProperties.Where(property => IsComplexType(property.PropertyType)))
+        {
+            foreach (var child in GetReadableProperties(sourceParent.PropertyType))
+            {
+                var flattenedName = sourceParent.Name + child.Name;
+                if (!MemberNameEquals(flattenedName, destinationMemberName, allowCaseInsensitive))
+                    continue;
+
+                var sourcePath = $"{sourceParent.Name}.{child.Name}";
+                return new SourceMemberResolution(
+                    sourcePath,
+                    child.PropertyType,
+                    child,
+                    source => GetPathValue(source, [sourceParent, child]),
+                    false,
+                    Array.Empty<string>(),
+                    "Flattened");
+            }
+        }
+
+        return null;
+    }
+
+    private static SourceMemberResolution? ResolveUnflattenedSourceMember(
+        IReadOnlyList<PropertyInfo> sourceProperties,
+        DestinationMemberTarget destinationTarget,
+        bool allowCaseInsensitive)
+    {
+        var flattenedName = string.Concat(destinationTarget.Path.Select(property => property.Name));
+        var sourceProperty = sourceProperties.SingleOrDefault(property =>
+            MemberNameEquals(property.Name, flattenedName, allowCaseInsensitive));
+        if (sourceProperty is null)
+            return null;
+
+        return new SourceMemberResolution(
+            sourceProperty.Name,
+            sourceProperty.PropertyType,
+            sourceProperty,
+            source => sourceProperty.GetValue(source),
+            false,
+            Array.Empty<string>(),
+            "Unflattened");
     }
 
     private static PropertyInfo[] FindSourceMatches(
@@ -489,8 +629,15 @@ internal static class ConventionMappingPlanBuilder
 
     private static string GetDecisionText(
         ConventionMemberMappingDefinition? memberConfiguration,
-        MemberCompatibility compatibility)
+        MemberCompatibility compatibility,
+        SourceMemberResolution sourceResolution)
     {
+        if (sourceResolution.DecisionOverride is not null)
+            return sourceResolution.DecisionOverride;
+
+        if (memberConfiguration?.HasResolver == true)
+            return "Resolved";
+
         if (memberConfiguration?.HasConverter == true)
             return "Converted";
 
@@ -526,6 +673,8 @@ internal static class ConventionMappingPlanBuilder
             parts.Add("Null substitution configured.");
         if (memberConfiguration.HasConverter)
             parts.Add("Converter configured.");
+        if (memberConfiguration.HasResolver && memberConfiguration.ResolverType is not null)
+            parts.Add($"Resolver '{memberConfiguration.ResolverType.FullName}' configured.");
         if (memberConfiguration.HasCondition)
             parts.Add("Condition configured.");
 
@@ -602,6 +751,105 @@ internal static class ConventionMappingPlanBuilder
         return true;
     }
 
+    private static IReadOnlyList<DestinationMemberTarget> GetDestinationTargets(
+        ConventionMappingDefinition definition,
+        IReadOnlyList<PropertyInfo> destinationProperties)
+    {
+        var targets = new List<DestinationMemberTarget>();
+        var nestedTargets = new List<DestinationMemberTarget>();
+
+        if (definition.UnflatteningEnabled)
+        {
+            foreach (var parent in destinationProperties.Where(property => IsComplexType(property.PropertyType)))
+            {
+                foreach (var child in GetWritableProperties(parent.PropertyType))
+                {
+                    nestedTargets.Add(new DestinationMemberTarget(
+                        $"{parent.Name}.{child.Name}",
+                        child,
+                        [parent, child],
+                        true));
+                }
+            }
+        }
+
+        foreach (var configuredPath in definition.MemberMappings.Keys.Where(name => name.Contains('.')))
+        {
+            var target = TryResolveDestinationPath(definition.DestinationType, configuredPath);
+            if (target is not null && nestedTargets.All(existing => existing.Name != target.Name))
+                nestedTargets.Add(target);
+        }
+
+        var nestedParents = new HashSet<string>(
+            nestedTargets.Select(target => target.Path[0].Name),
+            StringComparer.Ordinal);
+
+        foreach (var property in destinationProperties)
+        {
+            if (nestedParents.Contains(property.Name) &&
+                IsComplexType(property.PropertyType))
+            {
+                continue;
+            }
+
+            targets.Add(new DestinationMemberTarget(property.Name, property, [property], false));
+        }
+
+        targets.AddRange(nestedTargets.OrderBy(target => target.Name, StringComparer.Ordinal));
+        return targets.OrderBy(target => target.Name, StringComparer.Ordinal).ToArray();
+    }
+
+    private static DestinationMemberTarget? TryResolveDestinationPath(Type destinationType, string path)
+    {
+        var parts = path.Split('.');
+        if (parts.Length < 2)
+            return null;
+
+        var currentType = destinationType;
+        var properties = new List<PropertyInfo>();
+        foreach (var part in parts)
+        {
+            var property = currentType.GetProperty(part, BindingFlags.Instance | BindingFlags.Public);
+            if (property is null || property.GetIndexParameters().Length != 0)
+                return null;
+
+            properties.Add(property);
+            currentType = property.PropertyType;
+        }
+
+        var finalProperty = properties[properties.Count - 1];
+        return new DestinationMemberTarget(path, finalProperty, properties, true);
+    }
+
+    private static object? GetPathValue(object source, IReadOnlyList<PropertyInfo> path)
+    {
+        object? current = source;
+        foreach (var property in path)
+        {
+            if (current is null)
+                return null;
+
+            current = property.GetValue(current);
+        }
+
+        return current;
+    }
+
+    private static bool MemberNameEquals(string left, string right, bool allowCaseInsensitive)
+    {
+        return string.Equals(left, right, allowCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+    }
+
+    private static bool IsComplexType(Type type)
+    {
+        type = Nullable.GetUnderlyingType(type) ?? type;
+        if (type == typeof(string))
+            return false;
+
+        return type.IsClass &&
+            !typeof(System.Collections.IEnumerable).IsAssignableFrom(type);
+    }
+
     private static string GetDisplayName(Type type)
     {
         if (!type.IsGenericType)
@@ -616,13 +864,20 @@ internal static class ConventionMappingPlanBuilder
         return $"{genericName}<{arguments}>";
     }
 
+    private sealed record DestinationMemberTarget(
+        string Name,
+        PropertyInfo Property,
+        IReadOnlyList<PropertyInfo> Path,
+        bool IsPath);
+
     private sealed record SourceMemberResolution(
         string? SourceMemberName,
         Type? SourceMemberType,
         PropertyInfo? SourceProperty,
         Func<object, object?>? SourceValueFactory,
         bool IsAmbiguous,
-        IReadOnlyCollection<string> CandidateNames)
+        IReadOnlyCollection<string> CandidateNames,
+        string? DecisionOverride = null)
     {
         public static SourceMemberResolution None { get; } = new(null, null, null, null, false, Array.Empty<string>());
     }

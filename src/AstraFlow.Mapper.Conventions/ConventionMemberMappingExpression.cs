@@ -27,8 +27,13 @@ public sealed class ConventionMemberMappingExpression<TSource, TDestination, TDe
     public ConventionMemberMappingExpression<TSource, TDestination, TDestinationMember> MapFrom<TSourceMember>(
         Expression<Func<TSource, TSourceMember>> sourceMember)
     {
-        var property = GetProperty(sourceMember, nameof(sourceMember));
-        _definition.SetSourceMember(property.Name, typeof(TSourceMember), sourceMember.Compile());
+        if (sourceMember is null)
+            throw new ArgumentNullException(nameof(sourceMember));
+
+        var sourceName = TryGetProperty(sourceMember, out var property)
+            ? property.Name
+            : sourceMember.Body.ToString();
+        _definition.SetSourceExpression(sourceName, typeof(TSourceMember), sourceMember.Compile());
         return this;
     }
 
@@ -79,6 +84,18 @@ public sealed class ConventionMemberMappingExpression<TSource, TDestination, TDe
     }
 
     /// <summary>
+    /// Maps the destination member through a parameterless value resolver.
+    /// </summary>
+    /// <typeparam name="TResolver">The resolver type.</typeparam>
+    /// <returns>The same expression for chaining.</returns>
+    public ConventionMemberMappingExpression<TSource, TDestination, TDestinationMember> ResolveUsing<TResolver>()
+        where TResolver : IConventionValueResolver<TSource, TDestinationMember>, new()
+    {
+        _definition.SetResolver<TSource, TDestinationMember, TResolver>();
+        return this;
+    }
+
+    /// <summary>
     /// Marks the destination member as required in the mapping plan.
     /// </summary>
     /// <returns>The same expression for chaining.</returns>
@@ -103,5 +120,23 @@ public sealed class ConventionMemberMappingExpression<TSource, TDestination, TDe
             throw new ArgumentException("Expression must select a public property.", parameterName);
 
         return property;
+    }
+
+    private static bool TryGetProperty<TDeclaring, TMember>(
+        Expression<Func<TDeclaring, TMember>> expression,
+        out PropertyInfo property)
+    {
+        var body = expression.Body is UnaryExpression unary && unary.NodeType == ExpressionType.Convert
+            ? unary.Operand
+            : expression.Body;
+
+        if (body is MemberExpression { Member: PropertyInfo selected })
+        {
+            property = selected;
+            return true;
+        }
+
+        property = null!;
+        return false;
     }
 }

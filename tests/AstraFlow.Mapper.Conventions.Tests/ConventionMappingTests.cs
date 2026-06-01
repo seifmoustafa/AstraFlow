@@ -473,6 +473,150 @@ public sealed class ConventionMappingTests
             .Decision.Should().Be("Collection");
     }
 
+    [Fact]
+    public void Map_WithFlatteningEnabled_MapsNestedSourceMembersToFlatDestination()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<CustomerWithAddress, FlatCustomerDto>()
+                    .EnableFlattening();
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<FlatCustomerDto>(new CustomerWithAddress(new CustomerAddress("Cairo")));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.AddressCity.Should().Be("Cairo");
+        plan.Members.Single(member => member.DestinationMember == nameof(FlatCustomerDto.AddressCity))
+            .Decision.Should().Be("Flattened");
+    }
+
+    [Fact]
+    public void Map_WithUnflatteningEnabled_MapsFlatSourceMembersToNestedDestinationPaths()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<FlatCustomerDto, CustomerWithWritableAddress>()
+                    .EnableUnflattening();
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<CustomerWithWritableAddress>(new FlatCustomerDto { AddressCity = "Cairo" });
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Address.City.Should().Be("Cairo");
+        plan.Members.Single(member => member.DestinationMember == "Address.City")
+            .Decision.Should().Be("Unflattened");
+    }
+
+    [Fact]
+    public void Map_WithReverseMap_RequiresExplicitReverseRegistration()
+    {
+        using var blockedProvider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<CustomerEntity, ReadCustomerDto>();
+        }).BuildServiceProvider();
+        var blocked = () => blockedProvider.GetRequiredService<IMapper>()
+            .Map<CustomerEntity>(new ReadCustomerDto { Id = Guid.NewGuid(), Name = "Ada", Email = "ada@example.com" });
+
+        blocked.Should().Throw<InvalidOperationException>().WithMessage("*No mapping rule registered*");
+
+        using var allowedProvider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<CustomerEntity, ReadCustomerDto>()
+                .ReverseMap();
+        }).BuildServiceProvider();
+
+        var id = Guid.NewGuid();
+        var result = allowedProvider.GetRequiredService<IMapper>()
+            .Map<CustomerEntity>(new ReadCustomerDto { Id = id, Name = "Ada", Email = "ada@example.com" });
+
+        result.Should().Be(new CustomerEntity(id, "Ada", "ada@example.com"));
+    }
+
+    [Fact]
+    public void Map_WithIncludeMembers_MapsFromIncludedSourceMemberChildren()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<CustomerEnvelope, ContactDto>()
+                    .IncludeMembers(source => source.Contact);
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<ContactDto>(new CustomerEnvelope(new ContactInfo("ada@example.com")));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Email.Should().Be("ada@example.com");
+        plan.Members.Single(member => member.DestinationMember == nameof(ContactDto.Email))
+            .Decision.Should().Be("IncludedMember");
+    }
+
+    [Fact]
+    public void Map_WithCustomSourceExpression_MapsConfiguredExpression()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<PersonName, PersonNameDto>()
+                    .ForMember(destination => destination.FullName, member => member
+                        .MapFrom(source => source.FirstName + " " + source.LastName));
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<PersonNameDto>(new PersonName("Ada", "Lovelace"));
+
+        result.FullName.Should().Be("Ada Lovelace");
+    }
+
+    [Fact]
+    public void Map_WithCustomDestinationPath_MapsConfiguredNestedPath()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<AddressPatchDto, CustomerWithWritableAddress>()
+                    .ForPath(destination => destination.Address.City, member => member.MapFrom(source => source.City));
+            }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<CustomerWithWritableAddress>(new AddressPatchDto("Cairo"));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.Address.City.Should().Be("Cairo");
+        plan.Members.Should().Contain(member => member.DestinationMember == "Address.City");
+    }
+
+    [Fact]
+    public void Map_WithResolver_MapsResolvedValueAndReportsResolver()
+    {
+        using var provider = CreateServices(
+            catalog =>
+            {
+                catalog.CreateMap<PersonName, PersonNameDto>()
+                    .ForMember(destination => destination.FullName, member => member.ResolveUsing<FullNameResolver>());
+            },
+            options => options.StrictMode = false).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<PersonNameDto>(new PersonName("Ada", "Lovelace"));
+        var plan = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans().Single();
+
+        result.FullName.Should().Be("Ada Lovelace");
+        plan.Members.Single(member => member.DestinationMember == nameof(PersonNameDto.FullName))
+            .Decision.Should().Be("Resolved");
+        plan.Findings.Should().Contain(finding =>
+            finding.Code == "AFC013" &&
+            finding.Member == nameof(PersonNameDto.FullName));
+    }
+
     private static ServiceCollection CreateServices(
         Action<ConventionMappingCatalog>? configureCatalog = null,
         Action<ConventionMappingOptions>? configureOptions = null)
@@ -512,6 +656,18 @@ public sealed class ConventionMappingTests
     private sealed record CustomerRecordDto(Guid Id, string Name, string Email);
 
     private sealed record TagSource(string[] Tags);
+
+    private sealed record CustomerWithAddress(CustomerAddress Address);
+
+    private sealed record CustomerAddress(string City);
+
+    private sealed record CustomerEnvelope(ContactInfo Contact);
+
+    private sealed record ContactInfo(string Email);
+
+    private sealed record PersonName(string FirstName, string LastName);
+
+    private sealed record AddressPatchDto(string City);
 
     private sealed class ReadCustomerDto
     {
@@ -609,6 +765,31 @@ public sealed class ConventionMappingTests
         public List<string> Tags { get; set; } = [];
     }
 
+    private sealed class FlatCustomerDto
+    {
+        public string? AddressCity { get; set; }
+    }
+
+    private sealed class CustomerWithWritableAddress
+    {
+        public WritableCustomerAddress Address { get; set; } = new();
+    }
+
+    private sealed class WritableCustomerAddress
+    {
+        public string? City { get; set; }
+    }
+
+    private sealed class ContactDto
+    {
+        public string? Email { get; set; }
+    }
+
+    private sealed class PersonNameDto
+    {
+        public string? FullName { get; set; }
+    }
+
     private sealed class OrderStatusDto
     {
         public DestinationOrderStatus Status { get; set; }
@@ -650,6 +831,14 @@ public sealed class ConventionMappingTests
         public CustomerProfile()
         {
             CreateMap<CustomerEntity, ReadCustomerDto>();
+        }
+    }
+
+    private sealed class FullNameResolver : IConventionValueResolver<PersonName, string?>
+    {
+        public string Resolve(PersonName source)
+        {
+            return source.FirstName + " " + source.LastName;
         }
     }
 }

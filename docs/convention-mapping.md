@@ -5,8 +5,8 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.5.2
-dotnet add package AstraFlow.Mapper.Conventions --version 1.5.2
+dotnet add package AstraFlow.Mapper --version 1.6.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.6.0
 ```
 
 ## Register
@@ -140,7 +140,77 @@ Enum-to-enum members map only when every source enum name exists on the destinat
 
 ## Collection Shapes
 
-Convention mapping can adapt simple collection shapes when the source and destination element type is the same, such as `string[]` to `List<string>`. It does not perform deep graph collection updates or hidden item remapping in `1.5.2`.
+Convention mapping can adapt simple collection shapes when the source and destination element type is the same, such as `string[]` to `List<string>`. It does not perform deep graph collection updates or hidden item remapping in `1.6.0`.
+
+## Advanced Mapping
+
+Advanced convention mapping remains opt-in per mapping pair. Flattening, unflattening, and reverse mapping are never enabled globally.
+
+Enable flattening when a flat read DTO should receive a nested source value:
+
+```csharp
+CreateMap<Customer, CustomerResponse>()
+    .EnableFlattening();
+```
+
+`Customer.Address.City` can map to `CustomerResponse.AddressCity`. The mapping plan reports the decision as `Flattened`.
+
+Enable unflattening when flat input should write into an explicit nested destination path:
+
+```csharp
+CreateMap<CustomerPatch, Customer>()
+    .EnableUnflattening();
+```
+
+`CustomerPatch.AddressCity` can map to `Customer.Address.City`. The mapping plan reports the decision as `Unflattened`. Sensitive destination write protection still applies.
+
+Reverse mapping must be registered explicitly:
+
+```csharp
+CreateMap<Customer, CustomerResponse>()
+    .ReverseMap();
+```
+
+Use `IncludeMembers` to compose destination members from selected child source members:
+
+```csharp
+CreateMap<CustomerEnvelope, CustomerResponse>()
+    .IncludeMembers(source => source.Customer);
+```
+
+Use `ForPath` for a custom nested destination path:
+
+```csharp
+CreateMap<CustomerPatch, Customer>()
+    .ForPath(destination => destination.Address.City, member => member
+        .MapFrom(source => source.City));
+```
+
+Use `MapFrom` for custom source expressions:
+
+```csharp
+CreateMap<Person, PersonResponse>()
+    .ForMember(destination => destination.FullName, member => member
+        .MapFrom(source => source.FirstName + " " + source.LastName));
+```
+
+Use a resolver when member logic should live in a named type:
+
+```csharp
+public sealed class FullNameResolver : IConventionValueResolver<Person, string>
+{
+    public string Resolve(Person source)
+    {
+        return source.FirstName + " " + source.LastName;
+    }
+}
+
+CreateMap<Person, PersonResponse>()
+    .ForMember(destination => destination.FullName, member => member
+        .ResolveUsing<FullNameResolver>());
+```
+
+Resolvers are reported in mapping plans as `Resolved` and produce `AFC013` diagnostics so resolver usage is visible.
 
 ## Include And Ignore
 
@@ -181,4 +251,4 @@ var plans = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans(
 
 Each convention-created member is reported with its destination member, source member, decision, and reason.
 
-Member-level decisions include `Converted`, `MappedWhen`, `MappedWithNullSubstitute`, `EnumToEnum`, `EnumToString`, `ConstructorBound`, and `Collection` when those rules are used.
+Member-level decisions include `Converted`, `MappedWhen`, `MappedWithNullSubstitute`, `EnumToEnum`, `EnumToString`, `ConstructorBound`, `Collection`, `Flattened`, `Unflattened`, `IncludedMember`, and `Resolved` when those rules are used.

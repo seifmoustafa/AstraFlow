@@ -150,7 +150,8 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
             member.RequiresCollectionMapping,
             member.DestinationProperty.PropertyType);
 
-        member.DestinationProperty.SetValue(destination, value);
+        var target = ResolveDestinationTarget(destination, member.DestinationPath);
+        member.DestinationProperty.SetValue(target, value);
     }
 
     private static object? ConvertValue(
@@ -187,6 +188,34 @@ internal sealed class ConventionObjectMappingRule : IDeclaredObjectMappingRule
         }
 
         return value;
+    }
+
+    private static object ResolveDestinationTarget(object destination, IReadOnlyList<System.Reflection.PropertyInfo> path)
+    {
+        if (path.Count <= 1)
+            return destination;
+
+        object current = destination;
+        for (var i = 0; i < path.Count - 1; i++)
+        {
+            var property = path[i];
+            var next = property.GetValue(current);
+            if (next is null)
+            {
+                next = Activator.CreateInstance(property.PropertyType);
+                if (next is null)
+                {
+                    throw new InvalidOperationException(
+                        $"Destination path '{property.Name}' could not be created by convention mapping.");
+                }
+
+                property.SetValue(current, next);
+            }
+
+            current = next;
+        }
+
+        return current;
     }
 
     private static object MapCollectionShape(object value, Type destinationType)

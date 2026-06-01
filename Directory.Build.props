@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.5.2</Version>
-    <AssemblyVersion>1.5.2.0</AssemblyVersion>
-    <FileVersion>1.5.2.0</FileVersion>
+    <Version>1.6.0</Version>
+    <AssemblyVersion>1.6.0.0</AssemblyVersion>
+    <FileVersion>1.6.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.5.2:
-      - Adds constructor and record binding for opt-in convention mapping.
-      - Adds explicit existing-destination update mapping through IConventionMapper and EnableUpdateMapping.
-      - Adds constructor and immutable destination diagnostics, sensitive destination write protection for updates, and safe same-element collection shape mapping.
+    <PackageReleaseNotes>AstraFlow 1.6.0:
+      - Adds opt-in flattening, unflattening, explicit reverse mapping, include-members, custom source expressions, custom destination paths, and value resolvers for convention mapping.
+      - Keeps advanced mapping decisions visible in deterministic mapping plans with resolver diagnostics.
+      - Preserves explicit mapping defaults: convention mapping, flattening, unflattening, and reverse mapping remain opt-in.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

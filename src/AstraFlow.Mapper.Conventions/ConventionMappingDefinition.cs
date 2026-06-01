@@ -7,6 +7,7 @@ internal sealed class ConventionMappingDefinition
     private readonly HashSet<string> _includedMembers = new(StringComparer.Ordinal);
     private readonly HashSet<string> _ignoredMembers = new(StringComparer.Ordinal);
     private readonly HashSet<string> _allowedSensitiveMembers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _includedSourceMembers = new(StringComparer.Ordinal);
     private readonly Dictionary<string, ConventionMemberMappingDefinition> _memberMappings = new(StringComparer.Ordinal);
 
     public ConventionMappingDefinition(Type sourceType, Type destinationType)
@@ -23,11 +24,19 @@ internal sealed class ConventionMappingDefinition
 
     public bool UpdateMappingEnabled { get; set; }
 
+    public bool FlatteningEnabled { get; set; }
+
+    public bool UnflatteningEnabled { get; set; }
+
+    public bool ExplicitReverseMapping { get; set; }
+
     public IReadOnlyCollection<string> IncludedMembers => _includedMembers;
 
     public IReadOnlyCollection<string> IgnoredMembers => _ignoredMembers;
 
     public IReadOnlyCollection<string> AllowedSensitiveMembers => _allowedSensitiveMembers;
+
+    public IReadOnlyCollection<string> IncludedSourceMembers => _includedSourceMembers;
 
     public IReadOnlyDictionary<string, ConventionMemberMappingDefinition> MemberMappings => _memberMappings;
 
@@ -46,6 +55,11 @@ internal sealed class ConventionMappingDefinition
     public void AllowSensitiveMember(string memberName)
     {
         AddMember(_allowedSensitiveMembers, memberName, nameof(memberName));
+    }
+
+    public void IncludeSourceMember(string sourceMemberName)
+    {
+        AddMember(_includedSourceMembers, sourceMemberName, nameof(sourceMemberName));
     }
 
     public ConventionMemberMappingDefinition ConfigureMember(string destinationMemberName)

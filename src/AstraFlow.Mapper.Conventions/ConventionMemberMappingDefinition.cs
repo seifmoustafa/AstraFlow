@@ -19,6 +19,10 @@ internal sealed class ConventionMemberMappingDefinition
 
     public bool HasConverter { get; private set; }
 
+    public Type? ResolverType { get; private set; }
+
+    public bool HasResolver { get; private set; }
+
     public object? NullSubstitute { get; private set; }
 
     public bool HasNullSubstitute { get; private set; }
@@ -39,6 +43,22 @@ internal sealed class ConventionMemberMappingDefinition
         SourceValueFactory = source => sourceValueFactory((TSource)source);
         Converter = null;
         HasConverter = false;
+        ResolverType = null;
+        HasResolver = false;
+    }
+
+    public void SetSourceExpression<TSource, TSourceMember>(
+        string sourceMemberName,
+        Type sourceMemberType,
+        Func<TSource, TSourceMember> sourceValueFactory)
+    {
+        SourceMemberName = sourceMemberName;
+        SourceMemberType = sourceMemberType;
+        SourceValueFactory = source => sourceValueFactory((TSource)source);
+        Converter = null;
+        HasConverter = false;
+        ResolverType = null;
+        HasResolver = false;
     }
 
     public void SetConverter<TSource, TSourceMember, TDestinationMember>(
@@ -52,6 +72,20 @@ internal sealed class ConventionMemberMappingDefinition
         SourceValueFactory = source => sourceValueFactory((TSource)source);
         Converter = value => converter((TSourceMember)value!);
         HasConverter = true;
+        ResolverType = null;
+        HasResolver = false;
+    }
+
+    public void SetResolver<TSource, TDestinationMember, TResolver>()
+        where TResolver : IConventionValueResolver<TSource, TDestinationMember>, new()
+    {
+        SourceMemberName = typeof(TResolver).Name;
+        SourceMemberType = typeof(TDestinationMember);
+        SourceValueFactory = source => new TResolver().Resolve((TSource)source);
+        Converter = null;
+        HasConverter = false;
+        ResolverType = typeof(TResolver);
+        HasResolver = true;
     }
 
     public void SetNullSubstitute<TDestinationMember>(TDestinationMember value)
