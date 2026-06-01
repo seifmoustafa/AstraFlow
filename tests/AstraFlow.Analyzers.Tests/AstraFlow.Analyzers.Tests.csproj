@@ -14,9 +14,11 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
     <PackageReference Include="FluentAssertions" Version="7.*" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AstraFlow.Analyzers\AstraFlow.Analyzers.csproj" />
+    <ProjectReference Include="..\..\src\AstraFlow.Contracts\AstraFlow.Contracts.csproj" />
   </ItemGroup>
 </Project>

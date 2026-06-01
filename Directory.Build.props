@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.8.0</Version>
-    <AssemblyVersion>1.8.0.0</AssemblyVersion>
-    <FileVersion>1.8.0.0</FileVersion>
+    <Version>1.8.1</Version>
+    <AssemblyVersion>1.8.1.0</AssemblyVersion>
+    <FileVersion>1.8.1.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.8.0:
-      - Adds the AstraFlow.Analyzers package foundation with stable analyzer rule IDs and severity metadata.
-      - Adds analyzer test infrastructure without shipping generator dependencies or code fixes.
-      - Documents analyzer rule IDs, severity policy, suppression guidance, and the rule documentation pattern.
+    <PackageReleaseNotes>AstraFlow 1.8.1:
+      - Adds mediator analyzer warnings for missing handlers, duplicate handlers, ambiguous request contracts, missing stream handlers, and singleton handler lifetime risks.
+      - Keeps analyzer rules source-only, generator-free, and code-fix-free.
+      - Expands analyzer docs, tests, and release verification for the 1.8.x analyzer lane.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

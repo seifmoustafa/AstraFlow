@@ -233,12 +233,12 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Idea | Status | Notes |
 | --- | --- | --- |
 | Analyzer package foundation | Done | Shipped in `1.8.0` with stable rule IDs, severity metadata, docs, and test infrastructure. |
-| Missing request handler analyzer | Planned | Compile-time warning. |
-| Duplicate request handler analyzer | Planned | Compile-time warning where discoverable. |
-| Ambiguous request contract analyzer | Planned | Request implements conflicting contracts. |
-| Missing stream handler analyzer | Planned | After stream support. |
+| Missing request handler analyzer | Done | Shipped in `1.8.1` as `AFAN0101`. |
+| Duplicate request handler analyzer | Done | Shipped in `1.8.1` as `AFAN0102`. |
+| Ambiguous request contract analyzer | Done | Shipped in `1.8.1` as `AFAN0103`. |
+| Missing stream handler analyzer | Done | Shipped in `1.8.1` as `AFAN0104`. |
 | Behavior ordering analyzer | Planned | Configurable order rules. |
-| Unsafe singleton lifetime analyzer | Planned | Handler/behavior/mapper lifetime risks. |
+| Unsafe singleton lifetime analyzer | Done | Shipped in `1.8.1` as `AFAN0105` for request and stream handlers. |
 | Controller injects full mediator but only sends | Planned | Encourage narrow interfaces. |
 | Mapper declaration drift analyzer | Planned | Declared pairs versus implemented pairs. |
 | Sensitive field mapping analyzer | Planned | Convention and explicit mapping checks. |
