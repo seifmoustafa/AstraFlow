@@ -13,6 +13,7 @@ internal sealed record ConventionResolvedMember(
     bool RequiresEnumToString,
     bool RequiresEnumToEnum,
     bool RequiresCollectionMapping,
+    ConventionValueTransformerDefinition? ValueTransformer,
     bool IsConstructorBound,
     bool CanMap)
 {
@@ -22,7 +23,7 @@ internal sealed record ConventionResolvedMember(
         string decision,
         string reason)
     {
-        return new(destinationProperty, [destinationProperty], null, configuration, decision, reason, null, false, false, false, false, false);
+        return new(destinationProperty, [destinationProperty], null, configuration, decision, reason, null, false, false, false, null, false, false);
     }
 
     public static ConventionResolvedMember Mappable(
@@ -36,9 +37,10 @@ internal sealed record ConventionResolvedMember(
         bool requiresEnumToString,
         bool requiresEnumToEnum,
         bool requiresCollectionMapping,
+        ConventionValueTransformerDefinition? valueTransformer,
         bool isConstructorBound = false)
     {
-        return new(destinationProperty, destinationPath, sourceProperty, configuration, decision, reason, sourceValueFactory, requiresEnumToString, requiresEnumToEnum, requiresCollectionMapping, isConstructorBound, true);
+        return new(destinationProperty, destinationPath, sourceProperty, configuration, decision, reason, sourceValueFactory, requiresEnumToString, requiresEnumToEnum, requiresCollectionMapping, valueTransformer, isConstructorBound, true);
     }
 
     public static ConventionResolvedMember Mappable(
@@ -51,6 +53,7 @@ internal sealed record ConventionResolvedMember(
         bool requiresEnumToString,
         bool requiresEnumToEnum,
         bool requiresCollectionMapping,
+        ConventionValueTransformerDefinition? valueTransformer = null,
         bool isConstructorBound = false)
     {
         return Mappable(
@@ -64,6 +67,7 @@ internal sealed record ConventionResolvedMember(
             requiresEnumToString,
             requiresEnumToEnum,
             requiresCollectionMapping,
+            valueTransformer,
             isConstructorBound);
     }
 }

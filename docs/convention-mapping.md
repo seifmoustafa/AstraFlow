@@ -5,8 +5,8 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.6.0
-dotnet add package AstraFlow.Mapper.Conventions --version 1.6.0
+dotnet add package AstraFlow.Mapper --version 1.6.1
+dotnet add package AstraFlow.Mapper.Conventions --version 1.6.1
 ```
 
 ## Register
@@ -140,7 +140,36 @@ Enum-to-enum members map only when every source enum name exists on the destinat
 
 ## Collection Shapes
 
-Convention mapping can adapt simple collection shapes when the source and destination element type is the same, such as `string[]` to `List<string>`. It does not perform deep graph collection updates or hidden item remapping in `1.6.0`.
+Convention mapping can adapt simple collection shapes when the source and destination element type is the same, such as `string[]` to `List<string>`. It does not perform deep graph collection updates or hidden item remapping in `1.6.1`.
+
+## Value Transformers
+
+Use value transformers when a value type should be normalized across convention mappings and the behavior should still be visible in diagnostics.
+
+```csharp
+services.AddAstraFlowConventionMapping(catalog =>
+{
+    catalog.AddValueTransformer<string>(value => value?.Trim());
+    catalog.CreateMap<Customer, CustomerResponse>();
+});
+```
+
+Transformers are explicit and convention-only. A transformed member is reported as `Transformed` when no higher-priority decision already describes it, and `AFC014` identifies the transformed destination member.
+
+## Before And After Map Hooks
+
+Use per-pair hooks for small side effects around convention member assignment.
+
+```csharp
+CreateMap<CustomerPatch, Customer>()
+    .EnableUpdateMapping()
+    .BeforeMap((source, destination) => destination.MarkChanging())
+    .AfterMap((source, destination) => destination.MarkChanged());
+```
+
+Before hooks run after destination construction and before member assignment. After hooks run after member assignment. Existing destination updates run the same hooks around `MapInto`.
+
+Hook usage is reported with `AFC015` for before-map hooks and `AFC016` for after-map hooks. Reports show hook presence, not source or destination payload values.
 
 ## Advanced Mapping
 
@@ -251,4 +280,4 @@ var plans = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans(
 
 Each convention-created member is reported with its destination member, source member, decision, and reason.
 
-Member-level decisions include `Converted`, `MappedWhen`, `MappedWithNullSubstitute`, `EnumToEnum`, `EnumToString`, `ConstructorBound`, `Collection`, `Flattened`, `Unflattened`, `IncludedMember`, and `Resolved` when those rules are used.
+Member-level decisions include `Converted`, `MappedWhen`, `MappedWithNullSubstitute`, `EnumToEnum`, `EnumToString`, `ConstructorBound`, `Collection`, `Flattened`, `Unflattened`, `IncludedMember`, `Resolved`, and `Transformed` when those rules are used.

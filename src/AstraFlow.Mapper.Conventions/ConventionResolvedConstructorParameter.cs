@@ -9,4 +9,5 @@ internal sealed record ConventionResolvedConstructorParameter(
     Func<object, object?> SourceValueFactory,
     bool RequiresEnumToString,
     bool RequiresEnumToEnum,
-    bool RequiresCollectionMapping);
+    bool RequiresCollectionMapping,
+    ConventionValueTransformerDefinition? ValueTransformer);

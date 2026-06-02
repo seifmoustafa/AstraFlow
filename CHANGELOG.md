@@ -2,6 +2,42 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.6.1
+
+### Added
+
+- Added explicit convention value transformers through `AddValueTransformer`.
+- Added per-pair `BeforeMap` hooks for convention mapping.
+- Added per-pair `AfterMap` hooks for convention mapping.
+- Added `AFC014` diagnostics for value transformer usage.
+- Added `AFC015` diagnostics for before-map hook usage.
+- Added `AFC016` diagnostics for after-map hook usage.
+- Added a `v1.6.1` candidate follow-up design note.
+
+### Changed
+
+- Convention mapping plans now report transformed member decisions as `Transformed` when no higher-priority decision already describes the member.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping and API reference documentation for value transformers and map hooks.
+
+### Tests
+
+- Added tests for value transformer output and diagnostics, before/after hook order, and hooks around existing-destination updates.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.6.1`.
+
+### Breaking changes
+
+- None.
+
 ## 1.6.0
 
 ### Added
