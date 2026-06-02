@@ -11,6 +11,7 @@ internal sealed class ConventionMappingDefinition
     private readonly Dictionary<string, ConventionMemberMappingDefinition> _memberMappings = new(StringComparer.Ordinal);
     private readonly List<Action<object, object>> _beforeMapHooks = [];
     private readonly List<Action<object, object>> _afterMapHooks = [];
+    private readonly List<ConventionDerivedMappingDefinition> _derivedMappings = [];
 
     public ConventionMappingDefinition(
         Type sourceType,
@@ -36,6 +37,12 @@ internal sealed class ConventionMappingDefinition
 
     public bool ExplicitReverseMapping { get; set; }
 
+    public Type? IncludedBaseSourceType { get; private set; }
+
+    public Type? IncludedBaseDestinationType { get; private set; }
+
+    public bool IsPolymorphicDerivedMapping { get; set; }
+
     public IReadOnlyCollection<string> IncludedMembers => _includedMembers;
 
     public IReadOnlyCollection<string> IgnoredMembers => _ignoredMembers;
@@ -51,6 +58,8 @@ internal sealed class ConventionMappingDefinition
     public IReadOnlyList<Action<object, object>> BeforeMapHooks => _beforeMapHooks;
 
     public IReadOnlyList<Action<object, object>> AfterMapHooks => _afterMapHooks;
+
+    public IReadOnlyList<ConventionDerivedMappingDefinition> DerivedMappings => _derivedMappings;
 
     public ObjectMappingPair Pair => new(SourceType, DestinationType);
 
@@ -103,6 +112,22 @@ internal sealed class ConventionMappingDefinition
             throw new ArgumentNullException(nameof(hook));
 
         _afterMapHooks.Add((source, destination) => hook((TSource)source, (TDestination)destination));
+    }
+
+    public void IncludeBase(Type baseSourceType, Type baseDestinationType)
+    {
+        IncludedBaseSourceType = baseSourceType ?? throw new ArgumentNullException(nameof(baseSourceType));
+        IncludedBaseDestinationType = baseDestinationType ?? throw new ArgumentNullException(nameof(baseDestinationType));
+    }
+
+    public void IncludeDerived(Type derivedSourceType, Type derivedDestinationType)
+    {
+        if (derivedSourceType is null)
+            throw new ArgumentNullException(nameof(derivedSourceType));
+        if (derivedDestinationType is null)
+            throw new ArgumentNullException(nameof(derivedDestinationType));
+
+        _derivedMappings.Add(new ConventionDerivedMappingDefinition(derivedSourceType, derivedDestinationType));
     }
 
     private static void AddMember(ICollection<string> members, string memberName, string parameterName)

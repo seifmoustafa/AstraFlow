@@ -21,6 +21,7 @@ internal static class ConventionMappingPlanBuilder
         var resolvedMembers = new List<ConventionResolvedMember>();
         var findings = new List<MappingPlanFinding>();
         AddHookFindings(definition, findings);
+        AddInheritanceFindings(definition, findings);
         var allowCaseInsensitive = definition.AllowCaseInsensitiveMemberMatching ||
             options.AllowCaseInsensitiveMemberMatching;
         var constructor = ResolveConstructorBinding(
@@ -744,6 +745,39 @@ internal static class ConventionMappingPlanBuilder
                 "AFC016",
                 "Mapping",
                 $"Convention mapping '{GetDisplayName(definition.SourceType)} -> {GetDisplayName(definition.DestinationType)}' has {definition.AfterMapHooks.Count} after-map hook(s)."));
+        }
+    }
+
+    private static void AddInheritanceFindings(
+        ConventionMappingDefinition definition,
+        List<MappingPlanFinding> findings)
+    {
+        if (definition.IncludedBaseSourceType is not null &&
+            definition.IncludedBaseDestinationType is not null)
+        {
+            findings.Add(new MappingPlanFinding(
+                MappingPlanFindingSeverity.Info,
+                "AFC017",
+                "Mapping",
+                $"Convention mapping '{GetDisplayName(definition.SourceType)} -> {GetDisplayName(definition.DestinationType)}' includes base mapping '{GetDisplayName(definition.IncludedBaseSourceType)} -> {GetDisplayName(definition.IncludedBaseDestinationType)}'."));
+        }
+
+        foreach (var derivedMapping in definition.DerivedMappings)
+        {
+            findings.Add(new MappingPlanFinding(
+                MappingPlanFindingSeverity.Info,
+                "AFC018",
+                "Mapping",
+                $"Convention mapping '{GetDisplayName(definition.SourceType)} -> {GetDisplayName(definition.DestinationType)}' includes derived mapping '{GetDisplayName(derivedMapping.SourceType)} -> {GetDisplayName(derivedMapping.DestinationType)}'."));
+        }
+
+        if (definition.IsPolymorphicDerivedMapping)
+        {
+            findings.Add(new MappingPlanFinding(
+                MappingPlanFindingSeverity.Info,
+                "AFC019",
+                "Mapping",
+                $"Convention mapping '{GetDisplayName(definition.SourceType)} -> {GetDisplayName(definition.DestinationType)}' can be selected by explicit polymorphic dispatch."));
         }
     }
 
