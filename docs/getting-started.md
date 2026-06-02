@@ -200,7 +200,7 @@ services.AddScoped<ISecureIdCodec, MySecureIdCodec>();
 
 AstraFlow does not provide encryption. It only provides `ISecureIdCodec` and `SecureIdMapper` so your mapping rules can depend on a stable abstraction.
 
-## 9. Validate Before Publishing
+## 10. Validate Before Publishing
 
 Run the same checks the package release uses:
 
@@ -214,7 +214,7 @@ dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore
 
 For release details, see [Publishing](publishing.md).
 
-## 10. Add Diagnostics For Development And CI
+## 11. Add Diagnostics For Development And CI
 
 ```csharp
 services.AddAstraFlowDiagnostics(options =>
