@@ -9,13 +9,13 @@ The generator emits readable code for components discovered in the current compi
 Use the generator package from application or library projects that reference `AstraFlow.Mediator`:
 
 ```powershell
-dotnet add package AstraFlow.Generators --version 1.8.4
+dotnet add package AstraFlow.Generators --version 1.9.0
 ```
 
 Generator packages should be referenced privately so they do not flow transitively to consumers:
 
 ```xml
-<PackageReference Include="AstraFlow.Generators" Version="1.8.4" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Generators" Version="1.9.0" PrivateAssets="all" />
 ```
 
 ## Scope In 1.8.4

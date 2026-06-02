@@ -180,7 +180,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Projection provider baseline tests | Planned | Store expected validation outcomes for common providers. |
 | Projection SQL snapshot helper | Candidate | Review generated SQL shape without executing queries. |
 | Query tagging helpers | Candidate | EF integration. |
-| Projection performance benchmarks | Candidate | Compare registry lookup and expression use. |
+| Projection performance benchmarks | Done, expand | First registry lookup baseline shipped in `1.9.0`; expand with provider and query-shape scenarios before making claims. |
 | Projection analyzer code fixes | Candidate | Suggest replacing mapper calls or custom method calls. |
 | Expression simplification helpers | Research | Risky, may hide provider behavior. |
 | Async projection helpers | Research | Usually provider-owned, avoid hiding `IQueryable`. |
@@ -264,6 +264,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Collection mapping fast-path generator | Planned | Performance phase. |
 | Projection registry metadata generator | Done, expand | First generated projection metadata shipped in `1.8.4`; registry fast paths remain future work. |
 | Diagnostics metadata generator | Candidate | Avoid runtime reflection; `1.8.4` provides generated metadata inputs. |
+| Performance benchmark suite | Done, expand | First BenchmarkDotNet suite and smoke allocation capture shipped in `1.9.0`; future work should add scenarios before making speed claims. |
 | Incremental generator diagnostics | Planned | Stable build messages. |
 | Generator snapshot tests | Done, expand | First deterministic output tests shipped in `1.8.3`; expand with future generator lanes. |
 

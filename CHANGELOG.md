@@ -2,6 +2,23 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.9.0
+
+### Added
+
+- Added `AstraFlow.Benchmarks`, a non-packable BenchmarkDotNet project covering mediator request dispatch, cold start, service registration, pipeline depth, notification fan-out, object mapping, collection mapping, projection lookup, and generated mapper metadata lookup.
+- Added benchmark smoke mode with allocation capture for release and CI verification.
+- Added an on-demand benchmark workflow and `scripts/run-benchmarks.ps1` helper.
+- Added benchmark methodology, environment template, and claim policy documentation.
+
+### Changed
+
+- Updated release-facing documentation, package metadata, and roadmap status for `1.9.0`.
+
+### Fixed
+
+- None.
+
 ## 1.8.4
 
 ### Added

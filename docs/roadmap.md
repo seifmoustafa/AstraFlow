@@ -4,7 +4,7 @@
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current implementation truth: AstraFlow is complete through `v1.8.4` in this repository. The next planned roadmap item is `v1.9.0` performance and benchmarks.
+Current implementation truth: AstraFlow is complete through `v1.9.0` in this repository. The next planned roadmap item is `v1.10.0` CLI, migration acceleration, diagnostics diffing, and graph output.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -1362,7 +1362,7 @@ What must NOT be included:
 
 ### v1.9 Performance and Benchmarks
 
-Status: `Planned`.
+Status: `Done in v1.9.0`.
 
 Goal:
 
@@ -1379,7 +1379,7 @@ Packages affected:
 
 Features included:
 
-- BenchmarkDotNet project or equivalent benchmark project.
+- BenchmarkDotNet project added as `benchmarks/AstraFlow.Benchmarks`.
 - Cold start benchmark.
 - Service registration benchmark.
 - First request dispatch benchmark.
@@ -1390,9 +1390,9 @@ Features included:
 - Single object mapping benchmark.
 - Collection mapping benchmarks: 100, 1,000, 100,000.
 - Projection lookup benchmark.
-- Generated fast-path benchmarks where generators exist.
-- Allocation measurements.
-- Benchmark claim policy.
+- Generated metadata benchmark where generators exist.
+- Allocation measurements through BenchmarkDotNet `MemoryDiagnoser` and smoke-run allocation capture.
+- Benchmark claim policy documented in `docs/benchmarks.md`.
 
 Competitor-style parity covered:
 
@@ -1405,17 +1405,17 @@ AstraFlow advantage beyond parity:
 
 Acceptance gates:
 
-- Benchmarks run locally and in CI on demand.
-- Benchmark environment is documented.
+- Benchmarks run locally through `scripts/run-benchmarks.ps1` and in CI through workflow dispatch.
+- Benchmark environment is documented in `docs/benchmarks.md`.
 - Manual baseline exists in every benchmark group.
 - Benchmark results are reproducible.
 - No speed claims are made until repeatable numbers exist.
 
 Test requirements:
 
-- Benchmark project compile test.
-- Smoke benchmark run.
-- Allocation measurement capture.
+- Benchmark project compile test through solution/test builds.
+- Smoke benchmark run through `--smoke`.
+- Allocation measurement capture in smoke mode and BenchmarkDotNet output.
 
 Documentation requirements:
 
@@ -2455,7 +2455,7 @@ Moved later:
 | Projections | Done, expand | v1.7 | P0 | `AstraFlow.Mapper` | AutoMapper-style query projection | Provider warnings | Moved earlier |
 | Analyzers | Done, expand | v1.8.0-v1.8.2/v2 | P0 | `AstraFlow.Analyzers` | Compile-time parity | Stable rule IDs | Moved earlier |
 | Generators | Done, expand | v1.8.3-v1.8.4/v2 | P0 | `AstraFlow.Generators` | AOT/trimming parity | Deterministic output | Moved earlier |
-| Benchmarks | Planned | v1.9 | P1 | `AstraFlow.Benchmarks` | Credible comparisons | Repeatable evidence | Moved earlier |
+| Benchmarks | Done | v1.9 | P1 | `AstraFlow.Benchmarks` | Credible comparisons | Repeatable evidence | Moved earlier |
 | CLI inspection | Planned | v1.10 | P1 | `AstraFlow.Cli` | Adoption tooling | Redacted reports | Moved earlier |
 | ASP.NET Core integration | Planned | v1.11 | P1 | `AstraFlow.AspNetCore` | Common app integration | Dev-only diagnostics endpoint | After parity |
 | FluentValidation integration | Planned | v1.11 | P1 | `AstraFlow.FluentValidation` | Common validation flow | Validation diagnostics | After parity |
