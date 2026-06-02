@@ -6,6 +6,7 @@ namespace AstraFlow.Mapper.Conventions;
 public sealed class ConventionMappingCatalog
 {
     private readonly List<ConventionMappingDefinition> _definitions = [];
+    private readonly List<ConventionValueTransformerDefinition> _valueTransformers = [];
 
     internal IReadOnlyList<ConventionMappingDefinition> Definitions => _definitions;
 
@@ -20,6 +21,7 @@ public sealed class ConventionMappingCatalog
             throw new ArgumentNullException(nameof(profile));
 
         _definitions.AddRange(profile.Definitions);
+        _valueTransformers.AddRange(profile.ValueTransformers);
         return this;
     }
 
@@ -42,8 +44,25 @@ public sealed class ConventionMappingCatalog
     /// <returns>A mapping expression for include, ignore, and sensitive-member policy.</returns>
     public ConventionMappingExpression<TSource, TDestination> CreateMap<TSource, TDestination>()
     {
-        var definition = new ConventionMappingDefinition(typeof(TSource), typeof(TDestination));
+        var definition = new ConventionMappingDefinition(typeof(TSource), typeof(TDestination), _valueTransformers);
         _definitions.Add(definition);
-        return new ConventionMappingExpression<TSource, TDestination>(definition);
+        return new ConventionMappingExpression<TSource, TDestination>(definition, _definitions.Add);
+    }
+
+    /// <summary>
+    /// Adds a convention value transformer for the selected value type.
+    /// </summary>
+    /// <typeparam name="TValue">The transformed value type.</typeparam>
+    /// <param name="transformer">The transformer callback.</param>
+    /// <returns>The same catalog for chaining.</returns>
+    public ConventionMappingCatalog AddValueTransformer<TValue>(Func<TValue?, TValue?> transformer)
+    {
+        if (transformer is null)
+            throw new ArgumentNullException(nameof(transformer));
+
+        _valueTransformers.Add(new ConventionValueTransformerDefinition(
+            typeof(TValue),
+            value => transformer((TValue?)value)));
+        return this;
     }
 }

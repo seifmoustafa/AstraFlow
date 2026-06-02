@@ -2,6 +2,147 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.6.1
+
+### Added
+
+- Added explicit convention value transformers through `AddValueTransformer`.
+- Added per-pair `BeforeMap` hooks for convention mapping.
+- Added per-pair `AfterMap` hooks for convention mapping.
+- Added `AFC014` diagnostics for value transformer usage.
+- Added `AFC015` diagnostics for before-map hook usage.
+- Added `AFC016` diagnostics for after-map hook usage.
+- Added a `v1.6.1` candidate follow-up design note.
+
+### Changed
+
+- Convention mapping plans now report transformed member decisions as `Transformed` when no higher-priority decision already describes the member.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping and API reference documentation for value transformers and map hooks.
+
+### Tests
+
+- Added tests for value transformer output and diagnostics, before/after hook order, and hooks around existing-destination updates.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.6.1`.
+
+### Breaking changes
+
+- None.
+
+## 1.6.0
+
+### Added
+
+- Added opt-in flattening for nested source members mapped into flat destination members.
+- Added opt-in unflattening for flat source members mapped into nested destination paths.
+- Added explicit `ReverseMap` registration; reverse mapping is never implicit.
+- Added `IncludeMembers` for composing destination members from selected child source members.
+- Added custom source expression support through `MapFrom`.
+- Added custom destination path support through `ForPath`.
+- Added value resolver support through `IConventionValueResolver`.
+- Added mapping plan decisions for `Flattened`, `Unflattened`, `IncludedMember`, and `Resolved`.
+- Added resolver diagnostics with `AFC013`.
+
+### Changed
+
+- Convention mapping plans now report nested destination paths and advanced mapping decisions.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping documentation for advanced mapping scenarios.
+
+### Tests
+
+- Added tests for flattening, unflattening, explicit reverse mapping, include members, custom source expressions, custom destination paths, and value resolvers.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.6.0`.
+
+### Breaking changes
+
+- None.
+
+## 1.5.2
+
+### Added
+
+- Added constructor and record binding for opt-in convention mapping, including immutable destination support when constructor parameters can be mapped.
+- Added `IConventionMapper` for convention-specific mapping operations.
+- Added explicit existing-destination update mapping with `EnableUpdateMapping` and `MapInto`.
+- Added constructor ambiguity, constructor availability, and immutable destination diagnostics.
+- Added safe same-element collection shape mapping for convention members.
+
+### Changed
+
+- Convention mapping plans now show constructor-bound members so record and immutable destination mappings are inspectable.
+- Update mapping is documented separately from read DTO mapping and must be enabled per source/destination pair.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping, API reference, diagnostics, and troubleshooting documentation for constructor binding, record binding, immutable destinations, and safe update mapping.
+
+### Tests
+
+- Added tests for record mapping, immutable constructor mapping, ambiguous constructor diagnostics, explicit update mapping, conditional patch behavior, sensitive destination write protection, and safe collection shape mapping.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.5.2`.
+
+### Breaking changes
+
+- None.
+
+## 1.5.1
+
+### Added
+
+- Added fluent convention member configuration with `ForMember`, `MapFrom`, `Required`, `NullSubstitute`, `ConvertUsing`, and `Condition`.
+- Added enum-to-enum validation, enum-to-string convention mapping, nullable compatibility diagnostics, numeric conversion diagnostics, and required-member diagnostics.
+- Added mapping plan decisions for converted, conditional, null-substituted, enum-to-enum, and enum-to-string member mappings.
+
+### Changed
+
+- Convention mapping plans now include member-level configuration reasons so automatic and configured decisions are reviewable in diagnostics.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded convention mapping, API reference, and troubleshooting documentation for member configuration, converters, conditionals, null substitution, and new finding codes.
+
+### Tests
+
+- Added convention mapping tests for explicit member sources, required destinations, null substitution, converters, conditional mapping, enum mapping, nullable diagnostics, numeric diagnostics, and mapping plan visibility.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.5.1`.
+
+### Breaking changes
+
+- None.
+
 ## 1.5.0
 
 ### Added

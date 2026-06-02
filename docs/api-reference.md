@@ -158,7 +158,20 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `AddAstraFlowConventionMapping` | Extension method | Registers opt-in convention mapping catalog, rule, plan provider, and startup validator. | Call after `AddAstraFlowMapper`. |
 | `ConventionMappingCatalog` | Class | Holds profiles and exact pair registrations. | Use `AddProfile<TProfile>()` or `CreateMap<TSource, TDestination>()`. |
 | `ConventionMappingProfile` | Abstract class | Groups convention mapping pairs. | Derive and call `CreateMap` in the constructor. |
-| `ConventionMappingExpression<TSource, TDestination>` | Class | Configures one pair. | Supports case-insensitive matching, include, ignore, and sensitive-member allow rules. |
+| `AddValueTransformer` | Method | Adds an explicit convention value transformer for a value type. | Transformer usage is reported with `AFC014`. |
+| `ConventionMappingExpression<TSource, TDestination>` | Class | Configures one pair. | Supports case-insensitive matching, include, ignore, sensitive-member allow rules, `ForMember`, `ForPath`, include-members, flattening, unflattening, before/after hooks, explicit reverse mapping, and update mapping opt-in. |
+| `ForMember` | Method | Configures one destination member. | Supports explicit source members, custom source expressions, converters, resolvers, null substitution, conditions, and required destination rules. |
+| `ForPath` | Method | Configures one nested destination path. | Supports custom destination paths for unflattening and path-specific member configuration. |
+| `EnableFlattening` | Method | Enables nested source to flat destination matching for one pair. | Required before `Address.City` can map to `AddressCity`. |
+| `EnableUnflattening` | Method | Enables flat source to nested destination path matching for one pair. | Required before `AddressCity` can map to `Address.City`. |
+| `ReverseMap` | Method | Adds a reverse mapping pair explicitly. | Reverse mapping is never implicit. |
+| `IncludeMembers` | Method | Includes child source members in destination matching. | Child members appear in mapping plans as included-member decisions. |
+| `BeforeMap` | Method | Registers a per-pair hook that runs before member assignment. | Hook usage is reported with `AFC015`; payload values are not reported. |
+| `AfterMap` | Method | Registers a per-pair hook that runs after member assignment. | Hook usage is reported with `AFC016`; payload values are not reported. |
+| `EnableUpdateMapping` | Method | Enables mapping into an existing destination instance for one pair. | Required before `IConventionMapper.MapInto` can update an existing object. |
+| `ConventionMemberMappingExpression<TSource, TDestination, TDestinationMember>` | Class | Configures one destination member. | Use `MapFrom`, `ConvertUsing`, `ResolveUsing`, `NullSubstitute`, `Condition`, and `Required`. |
+| `IConventionValueResolver<TSource, TDestinationMember>` | Interface | Resolves one destination member from a source object. | Resolver usage is reported in mapping plans and `AFC013` findings. |
+| `IConventionMapper` | Interface | Provides convention-specific mapping operations. | Use `MapInto` for existing destination updates; read mapping can still use `IMapper`. |
 | `ConventionMappingOptions` | Class | Controls convention matching, strict mode, and sensitive-field policy. | Strict mode and sensitive-field require-allow are enabled by default. |
 
 ## Convention Finding Codes
@@ -170,6 +183,17 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `AFC003` | Case-insensitive matching found ambiguous source members. |
 | `AFC004` | Sensitive member mapping requires an explicit allow rule. |
 | `AFC005` | Source and destination member types are incompatible. |
+| `AFC006` | Nullable source member may flow into a non-nullable destination member. |
+| `AFC007` | Numeric member conversion requires an explicit converter. |
+| `AFC008` | Source enum names do not exist on the destination enum. |
+| `AFC009` | Required destination member has no source or is excluded from mapping. |
+| `AFC010` | Constructor binding is ambiguous because multiple constructors are equally specific. |
+| `AFC011` | Destination type has no usable constructor or no constructor whose parameters can all be mapped. |
+| `AFC012` | Immutable destination member cannot be assigned and was not constructor-bound. |
+| `AFC013` | Destination member is resolved by a configured value resolver. |
+| `AFC014` | Destination member uses a configured value transformer. |
+| `AFC015` | Convention mapping pair has before-map hooks. |
+| `AFC016` | Convention mapping pair has after-map hooks. |
 
 ## Projection Finding Codes
 

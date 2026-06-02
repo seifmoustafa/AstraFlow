@@ -30,7 +30,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | `AstraFlow.Contracts` | Shared mediator contracts for requests, notifications, streams, senders, publishers, processors, and exception flow. |
 | `AstraFlow.Mediator` | Request/response dispatch, void commands, stream requests, notification publishing, pipeline behaviors, processors, exception flow, handler scanning, duplicate handler detection, and optional handler coverage validation. |
 | `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named projection registry, projection validation, and secure ID mapping abstractions. |
-| `AstraFlow.Mapper.Conventions` | Optional convention mapping with exact pair registration, profiles, strict mapping plans, and sensitive-field safeguards. |
+| `AstraFlow.Mapper.Conventions` | Optional convention mapping with exact pair registration, profiles, strict mapping plans, flattening, explicit reverse mapping, custom paths, resolvers, value transformers, hooks, and sensitive-field safeguards. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
 | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
 | `AstraFlow.Testing` | Framework-neutral test helpers for fake mediator flows, handler harnesses, mapper/projection assertions, diagnostics assertions, and test secure IDs. |
@@ -269,7 +269,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.5.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.5.2
 ```
 
 Register exact pairs through a profile:
@@ -283,19 +283,35 @@ public sealed class UserProfile : ConventionMappingProfile
     public UserProfile()
     {
         CreateMap<User, UserResponse>()
+            .ForMember(destination => destination.DisplayName, member => member
+                .MapFrom(source => source.Name)
+                .Required())
+            .ForMember(destination => destination.Score, member => member.NullSubstitute(0))
             .Ignore(nameof(UserResponse.InternalNote));
     }
 }
 ```
 
-Convention mapping stays disabled for every pair that is not registered. Diagnostics include mapping plans so every convention-created member can be reviewed before publishing.
+Convention mapping stays disabled for every pair that is not registered. Member rules, converters, conditions, null substitution, enum decisions, and constructor-bound record members are included in mapping plans so every convention-created member can be reviewed before publishing.
+
+Existing-destination updates are separate from read DTO mapping:
+
+```csharp
+CreateMap<UserPatch, User>()
+    .EnableUpdateMapping()
+    .ForMember(destination => destination.Email, member => member.Condition(source => source.HasEmail));
+
+provider.GetRequiredService<IConventionMapper>().MapInto(patch, user);
+```
+
+Sensitive destination writes remain blocked unless explicitly allowed.
 
 ## Quick Start: EF Core Projection Checks
 
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.5.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.5.2
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -377,7 +393,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.5.0
+dotnet add package AstraFlow.Testing --version 1.5.2
 ```
 
 Use the fake mediator to record requests and notifications:

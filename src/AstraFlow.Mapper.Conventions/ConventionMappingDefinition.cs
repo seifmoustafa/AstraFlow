@@ -7,11 +7,19 @@ internal sealed class ConventionMappingDefinition
     private readonly HashSet<string> _includedMembers = new(StringComparer.Ordinal);
     private readonly HashSet<string> _ignoredMembers = new(StringComparer.Ordinal);
     private readonly HashSet<string> _allowedSensitiveMembers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _includedSourceMembers = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ConventionMemberMappingDefinition> _memberMappings = new(StringComparer.Ordinal);
+    private readonly List<Action<object, object>> _beforeMapHooks = [];
+    private readonly List<Action<object, object>> _afterMapHooks = [];
 
-    public ConventionMappingDefinition(Type sourceType, Type destinationType)
+    public ConventionMappingDefinition(
+        Type sourceType,
+        Type destinationType,
+        IReadOnlyList<ConventionValueTransformerDefinition> valueTransformers)
     {
         SourceType = sourceType ?? throw new ArgumentNullException(nameof(sourceType));
         DestinationType = destinationType ?? throw new ArgumentNullException(nameof(destinationType));
+        ValueTransformers = valueTransformers ?? throw new ArgumentNullException(nameof(valueTransformers));
     }
 
     public Type SourceType { get; }
@@ -20,11 +28,29 @@ internal sealed class ConventionMappingDefinition
 
     public bool AllowCaseInsensitiveMemberMatching { get; set; }
 
+    public bool UpdateMappingEnabled { get; set; }
+
+    public bool FlatteningEnabled { get; set; }
+
+    public bool UnflatteningEnabled { get; set; }
+
+    public bool ExplicitReverseMapping { get; set; }
+
     public IReadOnlyCollection<string> IncludedMembers => _includedMembers;
 
     public IReadOnlyCollection<string> IgnoredMembers => _ignoredMembers;
 
     public IReadOnlyCollection<string> AllowedSensitiveMembers => _allowedSensitiveMembers;
+
+    public IReadOnlyCollection<string> IncludedSourceMembers => _includedSourceMembers;
+
+    public IReadOnlyDictionary<string, ConventionMemberMappingDefinition> MemberMappings => _memberMappings;
+
+    public IReadOnlyList<ConventionValueTransformerDefinition> ValueTransformers { get; }
+
+    public IReadOnlyList<Action<object, object>> BeforeMapHooks => _beforeMapHooks;
+
+    public IReadOnlyList<Action<object, object>> AfterMapHooks => _afterMapHooks;
 
     public ObjectMappingPair Pair => new(SourceType, DestinationType);
 
@@ -41,6 +67,42 @@ internal sealed class ConventionMappingDefinition
     public void AllowSensitiveMember(string memberName)
     {
         AddMember(_allowedSensitiveMembers, memberName, nameof(memberName));
+    }
+
+    public void IncludeSourceMember(string sourceMemberName)
+    {
+        AddMember(_includedSourceMembers, sourceMemberName, nameof(sourceMemberName));
+    }
+
+    public ConventionMemberMappingDefinition ConfigureMember(string destinationMemberName)
+    {
+        if (string.IsNullOrWhiteSpace(destinationMemberName))
+            throw new ArgumentException("Member name cannot be empty.", nameof(destinationMemberName));
+
+        var normalized = destinationMemberName.Trim();
+        if (!_memberMappings.TryGetValue(normalized, out var memberMapping))
+        {
+            memberMapping = new ConventionMemberMappingDefinition(normalized);
+            _memberMappings.Add(normalized, memberMapping);
+        }
+
+        return memberMapping;
+    }
+
+    public void AddBeforeMapHook<TSource, TDestination>(Action<TSource, TDestination> hook)
+    {
+        if (hook is null)
+            throw new ArgumentNullException(nameof(hook));
+
+        _beforeMapHooks.Add((source, destination) => hook((TSource)source, (TDestination)destination));
+    }
+
+    public void AddAfterMapHook<TSource, TDestination>(Action<TSource, TDestination> hook)
+    {
+        if (hook is null)
+            throw new ArgumentNullException(nameof(hook));
+
+        _afterMapHooks.Add((source, destination) => hook((TSource)source, (TDestination)destination));
     }
 
     private static void AddMember(ICollection<string> members, string memberName, string parameterName)
