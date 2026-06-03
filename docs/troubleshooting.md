@@ -130,7 +130,7 @@ With `NotificationFailurePolicy.Aggregate`, AstraFlow attempts every handler and
 
 ### Query Provider Cannot Translate Projection
 
-AstraFlow `1.9.0` validates projection registrations and high-risk expression patterns. If EF Core or another provider cannot translate a projection:
+AstraFlow `1.10.0` validates projection registrations and high-risk expression patterns. If EF Core or another provider cannot translate a projection:
 
 - remove service calls from the expression,
 - avoid runtime mapper calls inside `Select`,

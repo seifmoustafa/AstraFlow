@@ -2,6 +2,26 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.10.0
+
+### Added
+
+- Added `AstraFlow.Cli`, a .NET tool package that installs the `astraflow` command.
+- Added `astraflow inspect [path]` plus handler, notification, mapping, and projection inspection categories.
+- Added `astraflow validate`, `astraflow report`, `astraflow diff`, `astraflow graph`, and `astraflow scan`.
+- Added JSON, Markdown, SARIF, Mermaid, DOT, and text output paths for CLI workflows.
+- Added migration candidate scanning for MediatR and AutoMapper references.
+- Added CLI command tests covering reports, validation, SARIF, diffing, graph output, migration scanning, and process smoke execution.
+
+### Changed
+
+- Updated release-facing documentation, package metadata, package selection guidance, roadmap status, and release guidance for `1.10.0`.
+- Updated package verification scripts to pack `AstraFlow.Cli` and verify clean local .NET tool installation.
+
+### Fixed
+
+- Fixed getting-started step numbering around validation and diagnostics setup.
+
 ## 1.9.0
 
 ### Added

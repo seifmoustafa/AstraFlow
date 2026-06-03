@@ -59,6 +59,7 @@ The first publish needs to cover:
 - `AstraFlow.Testing`
 - `AstraFlow.Analyzers`
 - `AstraFlow.Generators`
+- `AstraFlow.Cli`
 
 After the first publish, tighten the key to exact package IDs if NuGet offers them in the package list.
 
@@ -81,7 +82,7 @@ Use the exact secret name `NUGET_API_KEY`.
 1. Update `Version`, `AssemblyVersion`, and `FileVersion` in `Directory.Build.props`.
 2. Update `CHANGELOG.md`.
 3. Run `docs/release-checklist.md`.
-4. Create and push a release tag such as `v1.9.0`.
+4. Create and push a release tag such as `v1.10.0`.
 5. Open GitHub Actions.
 6. Run `Publish AstraFlow Packages`.
 7. Type `PUBLISH` when prompted.
@@ -114,6 +115,7 @@ To list them publicly:
    - `AstraFlow.Testing`
    - `AstraFlow.Analyzers`
    - `AstraFlow.Generators`
+   - `AstraFlow.Cli`
 
 NuGet indexing can take a few minutes after relisting. During that time, the packages may install by exact ID before they appear in search.
 
@@ -127,24 +129,26 @@ Use local packing only to verify artifacts before release:
 
 Expected package artifacts:
 
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.9.0.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.9.0.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.9.0.nupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.9.0.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.9.0.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.9.0.nupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.9.0.nupkg`
-- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.9.0.nupkg`
-- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.9.0.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.9.0.nupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.10.0.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.10.0.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.10.0.nupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.10.0.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.10.0.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.10.0.nupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.10.0.nupkg`
+- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.10.0.nupkg`
+- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.10.0.nupkg`
+- `src/AstraFlow.Cli/bin/Release/AstraFlow.Cli.1.10.0.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.10.0.nupkg`
 
-For `1.9.0`, inspect the packages before publishing:
+For `1.10.0`, inspect the packages before publishing:
 
 - each package should include `README.md`, `CHANGELOG.md`, `LICENSE`, the package icon, XML docs, DLLs, and `.nuspec`,
 - `AstraFlow.Contracts`, core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` must include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`,
 - `AstraFlow.Mapper.EntityFrameworkCore` must include `lib/net10.0/` only,
 - `AstraFlow.Analyzers` must include `analyzers/dotnet/cs/AstraFlow.Analyzers.dll` and no runtime `lib/` assets,
-- `AstraFlow.Generators` must include `analyzers/dotnet/cs/AstraFlow.Generators.dll` and no runtime `lib/` assets.
+- `AstraFlow.Generators` must include `analyzers/dotnet/cs/AstraFlow.Generators.dll` and no runtime `lib/` assets,
+- `AstraFlow.Cli` must install as the `astraflow` .NET tool.
 
 Do not commit `bin/`, `obj/`, `.nupkg`, or `.snupkg` files.
 
@@ -158,44 +162,51 @@ Do not save the key in shell profiles, `.env` files, source files, or documentat
 
 ## After Publish: Consumer Verification
 
-After NuGet shows all ten packages, verify clean consumer projects can consume the published runtime packages:
+After NuGet shows all eleven packages, verify clean consumer projects can consume the published runtime packages and install the CLI tool:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="1.9.0" />
-<PackageReference Include="AstraFlow.Mapper" Version="1.9.0" />
-<PackageReference Include="AstraFlow.Mapper.Conventions" Version="1.9.0" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.9.0" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="1.9.0" />
+<PackageReference Include="AstraFlow.Mediator" Version="1.10.0" />
+<PackageReference Include="AstraFlow.Mapper" Version="1.10.0" />
+<PackageReference Include="AstraFlow.Mapper.Conventions" Version="1.10.0" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="1.10.0" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="1.10.0" />
 ```
 
 Use `AstraFlow.Contracts` in shared contract projects that should not reference the mediator runtime:
 
 ```xml
-<PackageReference Include="AstraFlow.Contracts" Version="1.9.0" />
+<PackageReference Include="AstraFlow.Contracts" Version="1.10.0" />
 ```
 
 Use `AstraFlow.Testing` only in test projects:
 
 ```xml
-<PackageReference Include="AstraFlow.Testing" Version="1.9.0" />
+<PackageReference Include="AstraFlow.Testing" Version="1.10.0" />
 ```
 
 Use `AstraFlow.Analyzers` as a private analyzer reference:
 
 ```xml
-<PackageReference Include="AstraFlow.Analyzers" Version="1.9.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Analyzers" Version="1.10.0" PrivateAssets="all" />
 ```
 
 Use `AstraFlow.Generators` as a private generator reference:
 
 ```xml
-<PackageReference Include="AstraFlow.Generators" Version="1.9.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Generators" Version="1.10.0" PrivateAssets="all" />
+```
+
+Install and smoke-test the CLI package:
+
+```powershell
+dotnet tool install --global AstraFlow.Cli --version 1.10.0
+astraflow inspect .
 ```
 
 Use the meta-package only where both mediator and mapper are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="1.9.0" />
+<PackageReference Include="AstraFlow" Version="1.10.0" />
 ```
 
 Then run:

@@ -4,7 +4,7 @@
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current implementation truth: AstraFlow is complete through `v1.9.0` in this repository. The next planned roadmap item is `v1.10.0` CLI, migration acceleration, diagnostics diffing, and graph output.
+Current implementation truth: AstraFlow is complete through `v1.10.0` in this repository. The next planned roadmap item is `v1.11.0` web and validation integrations.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -1439,7 +1439,7 @@ What must NOT be included:
 
 ### v1.10 CLI, Migration Acceleration, Diagnostics Diffing, and Graph Output
 
-Status: `Planned`.
+Status: `Done in v1.10.0`.
 
 Goal:
 
@@ -1458,6 +1458,18 @@ Packages affected:
 - `AstraFlow.Mapper.Conventions`
 - `AstraFlow.Analyzers`
 - `AstraFlow.Generators`
+
+Delivered in `v1.10.0`:
+
+- `AstraFlow.Cli` exists as a `net10.0` .NET tool package.
+- `astraflow inspect [path]` emits a stable JSON report envelope.
+- `astraflow inspect handlers|notifications|mappings|projections` exposes category-specific snapshots.
+- `astraflow validate` emits structured success/error results.
+- `astraflow report` emits JSON, Markdown, and SARIF output.
+- `astraflow diff` compares JSON report snapshots.
+- `astraflow graph` emits Mermaid and DOT graphs.
+- `astraflow scan` reports MediatR and AutoMapper migration candidates.
+- CLI command, output-format, diff, graph, scan, and process smoke tests exist.
 
 Features included:
 
@@ -2389,7 +2401,7 @@ Moved later:
 | Exception actions | Done | v1.4.0 | `AstraFlow.Mediator` | P1 | Always-rethrow docs | Rethrow tests |
 | Essential analyzers | Done, expand | v1.8.0-v1.8.2 | `AstraFlow.Analyzers` | P0 | Stable rule IDs | Analyzer tests |
 | Generated registrations | Done, expand | v1.8.3/v2 | `AstraFlow.Generators` | P0 | Generated metadata report | Generator tests |
-| Migration guide/scanner | Planned | v1.10 | `AstraFlow.Cli` | P1 | Suggestion report | Fixture tests |
+| Migration guide/scanner | Done | v1.10 | `AstraFlow.Cli` | P1 | Suggestion report | Fixture tests |
 
 ## AutoMapper-Style Parity Checklist
 
@@ -2419,7 +2431,7 @@ Moved later:
 | Projection parameters | Done | v1.7.0 | `AstraFlow.Mapper` | P0 | Parameter report | Parameter tests |
 | EF provider matrix | Done, expand | v1.7.0/v1.7.x | `AstraFlow.Mapper.EntityFrameworkCore` | P0 | Provider findings | Provider tests |
 | Mapping analyzers/generators | Done, expand | v1.8.2/v1.8.4/v2 | `AstraFlow.Analyzers`/`AstraFlow.Generators` | P0 | Rule IDs and metadata | Analyzer/generator tests |
-| Migration guide/scanner | Planned | v1.10 | `AstraFlow.Cli` | P1 | Suggestion report | Fixture tests |
+| Migration guide/scanner | Done | v1.10 | `AstraFlow.Cli` | P1 | Suggestion report | Fixture tests |
 
 ## AstraFlow Differentiator Matrix
 
@@ -2456,7 +2468,7 @@ Moved later:
 | Analyzers | Done, expand | v1.8.0-v1.8.2/v2 | P0 | `AstraFlow.Analyzers` | Compile-time parity | Stable rule IDs | Moved earlier |
 | Generators | Done, expand | v1.8.3-v1.8.4/v2 | P0 | `AstraFlow.Generators` | AOT/trimming parity | Deterministic output | Moved earlier |
 | Benchmarks | Done | v1.9 | P1 | `AstraFlow.Benchmarks` | Credible comparisons | Repeatable evidence | Moved earlier |
-| CLI inspection | Planned | v1.10 | P1 | `AstraFlow.Cli` | Adoption tooling | Redacted reports | Moved earlier |
+| CLI inspection | Done | v1.10 | P1 | `AstraFlow.Cli` | Adoption tooling | Redacted reports | Moved earlier |
 | ASP.NET Core integration | Planned | v1.11 | P1 | `AstraFlow.AspNetCore` | Common app integration | Dev-only diagnostics endpoint | After parity |
 | FluentValidation integration | Planned | v1.11 | P1 | `AstraFlow.FluentValidation` | Common validation flow | Validation diagnostics | After parity |
 | Observability | Planned | v1.12 | P1 | `AstraFlow.OpenTelemetry` | Operational parity | No payload logging | After parity |
