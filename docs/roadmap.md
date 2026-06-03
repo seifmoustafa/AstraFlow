@@ -940,8 +940,8 @@ Candidate features:
 - Value transformers if global behavior can be made diagnosable. `Done in v1.6.1`.
 - Before-map hooks if diagnostics-visible. `Done in v1.6.1`.
 - After-map hooks if diagnostics-visible. `Done in v1.6.1`.
-- Inheritance mapping after profile/catalog model stabilizes.
-- Polymorphic mapping after profile/catalog model stabilizes.
+- Inheritance mapping after profile/catalog model stabilizes. `Done in v1.6.2`.
+- Polymorphic mapping after profile/catalog model stabilizes. `Done in v1.6.2`.
 - Collection element polymorphism after profile/catalog model stabilizes.
 - Collection update strategies if real update flows require them.
 - Max-depth controls only if deep graph mapping becomes explicit scope.
@@ -969,6 +969,7 @@ Documentation requirements:
 
 - Candidate-specific design notes before promotion.
 - `v1.6.1` design note: `docs/design-v1.6.1-candidate-followups.md`.
+- `v1.6.2` design note: `docs/design-v1.6.2-inheritance-polymorphism.md`.
 
 Migration examples required:
 

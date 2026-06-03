@@ -137,6 +137,60 @@ public sealed class ConventionMappingExpression<TSource, TDestination>
     }
 
     /// <summary>
+    /// Includes a base convention mapping relationship for diagnostics-visible inheritance mapping.
+    /// </summary>
+    /// <typeparam name="TBaseSource">The base source type.</typeparam>
+    /// <typeparam name="TBaseDestination">The base destination type.</typeparam>
+    /// <returns>The same expression for chaining.</returns>
+    public ConventionMappingExpression<TSource, TDestination> IncludeBase<TBaseSource, TBaseDestination>()
+    {
+        if (!typeof(TBaseSource).IsAssignableFrom(typeof(TSource)))
+        {
+            throw new InvalidOperationException(
+                $"Base source type '{typeof(TBaseSource).FullName}' is not assignable from '{typeof(TSource).FullName}'.");
+        }
+
+        if (!typeof(TBaseDestination).IsAssignableFrom(typeof(TDestination)))
+        {
+            throw new InvalidOperationException(
+                $"Base destination type '{typeof(TBaseDestination).FullName}' is not assignable from '{typeof(TDestination).FullName}'.");
+        }
+
+        _definition.IncludeBase(typeof(TBaseSource), typeof(TBaseDestination));
+        return this;
+    }
+
+    /// <summary>
+    /// Registers an explicit derived mapping pair for polymorphic convention dispatch.
+    /// </summary>
+    /// <typeparam name="TDerivedSource">The derived source type.</typeparam>
+    /// <typeparam name="TDerivedDestination">The derived destination type.</typeparam>
+    /// <param name="configure">Optional derived mapping configuration.</param>
+    /// <returns>The derived mapping expression.</returns>
+    public ConventionMappingExpression<TDerivedSource, TDerivedDestination> IncludeDerived<TDerivedSource, TDerivedDestination>(
+        Action<ConventionMappingExpression<TDerivedSource, TDerivedDestination>>? configure = null)
+        where TDerivedSource : TSource
+        where TDerivedDestination : TDestination
+    {
+        _definition.IncludeDerived(typeof(TDerivedSource), typeof(TDerivedDestination));
+        var derivedDefinition = new ConventionMappingDefinition(
+            typeof(TDerivedSource),
+            typeof(TDerivedDestination),
+            _definition.ValueTransformers)
+        {
+            IsPolymorphicDerivedMapping = true
+        };
+        derivedDefinition.IncludeBase(typeof(TSource), typeof(TDestination));
+        _addDefinition(derivedDefinition);
+
+        var derivedExpression = new ConventionMappingExpression<TDerivedSource, TDerivedDestination>(
+            derivedDefinition,
+            _addDefinition);
+        configure?.Invoke(derivedExpression);
+        return derivedExpression;
+    }
+
+    /// <summary>
     /// Adds an explicit reverse mapping pair. Reverse mapping is never implicit.
     /// </summary>
     /// <param name="configure">Optional reverse mapping configuration.</param>

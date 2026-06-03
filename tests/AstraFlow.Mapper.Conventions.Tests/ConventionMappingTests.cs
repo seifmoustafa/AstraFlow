@@ -694,6 +694,65 @@ public sealed class ConventionMappingTests
         order.Should().Equal("before:old@example.com", "after:new@example.com");
     }
 
+    [Fact]
+    public void Map_WithIncludeBase_MapsDerivedPairAndReportsInheritance()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<AnimalEntity, AnimalDto>();
+            catalog.CreateMap<DogEntity, DogDto>()
+                .IncludeBase<AnimalEntity, AnimalDto>();
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<DogDto>(new DogEntity("Ada", "Retriever"));
+        var derivedPlan = provider.GetRequiredService<IMappingPlanProvider>()
+            .GetMappingPlans()
+            .Single(plan => plan.DestinationType.EndsWith(nameof(DogDto), StringComparison.Ordinal));
+
+        result.Name.Should().Be("Ada");
+        result.Breed.Should().Be("Retriever");
+        derivedPlan.Findings.Should().Contain(finding => finding.Code == "AFC017");
+    }
+
+    [Fact]
+    public void Map_WithIncludeDerived_DispatchesPolymorphicSourceToDerivedDestination()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<AnimalEntity, AnimalDto>()
+                .IncludeDerived<DogEntity, DogDto>();
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var result = mapper.Map<AnimalDto>(new DogEntity("Ada", "Retriever"));
+        var plans = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans();
+
+        result.Should().BeOfType<DogDto>();
+        ((DogDto)result).Breed.Should().Be("Retriever");
+        plans.Single(plan => plan.DestinationType.EndsWith(nameof(AnimalDto), StringComparison.Ordinal))
+            .Findings.Should().Contain(finding => finding.Code == "AFC018");
+        plans.Single(plan => plan.DestinationType.EndsWith(nameof(DogDto), StringComparison.Ordinal))
+            .Findings.Should().Contain(finding => finding.Code == "AFC019");
+    }
+
+    [Fact]
+    public void Map_WithoutIncludeDerived_DoesNotDispatchPolymorphicSource()
+    {
+        using var provider = CreateServices(catalog =>
+        {
+            catalog.CreateMap<AnimalEntity, AnimalDto>();
+            catalog.CreateMap<DogEntity, DogDto>();
+        }).BuildServiceProvider();
+        var mapper = provider.GetRequiredService<IMapper>();
+
+        var act = () => mapper.Map<AnimalDto>(new DogEntity("Ada", "Retriever"));
+
+        act.Should()
+            .Throw<InvalidOperationException>()
+            .WithMessage("*No mapping rule registered*DogEntity*AnimalDto*");
+    }
+
     private static ServiceCollection CreateServices(
         Action<ConventionMappingCatalog>? configureCatalog = null,
         Action<ConventionMappingOptions>? configureOptions = null)
@@ -745,6 +804,27 @@ public sealed class ConventionMappingTests
     private sealed record PersonName(string FirstName, string LastName);
 
     private sealed record AddressPatchDto(string City);
+
+    private class AnimalEntity
+    {
+        public AnimalEntity(string name)
+        {
+            Name = name;
+        }
+
+        public string Name { get; }
+    }
+
+    private sealed class DogEntity : AnimalEntity
+    {
+        public DogEntity(string name, string breed)
+            : base(name)
+        {
+            Breed = breed;
+        }
+
+        public string Breed { get; }
+    }
 
     private sealed class ReadCustomerDto
     {
@@ -874,6 +954,16 @@ public sealed class ConventionMappingTests
     private sealed class PersonNameDto
     {
         public string? FullName { get; set; }
+    }
+
+    private class AnimalDto
+    {
+        public string? Name { get; set; }
+    }
+
+    private sealed class DogDto : AnimalDto
+    {
+        public string? Breed { get; set; }
     }
 
     private sealed class OrderStatusDto

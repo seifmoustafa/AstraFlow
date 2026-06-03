@@ -30,7 +30,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | `AstraFlow.Contracts` | Shared mediator contracts for requests, notifications, streams, senders, publishers, processors, and exception flow. |
 | `AstraFlow.Mediator` | Request/response dispatch, void commands, stream requests, notification publishing, pipeline behaviors, processors, exception flow, handler scanning, duplicate handler detection, and optional handler coverage validation. |
 | `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named projection registry, projection validation, and secure ID mapping abstractions. |
-| `AstraFlow.Mapper.Conventions` | Optional convention mapping with exact pair registration, profiles, strict mapping plans, flattening, explicit reverse mapping, custom paths, resolvers, value transformers, hooks, and sensitive-field safeguards. |
+| `AstraFlow.Mapper.Conventions` | Optional convention mapping with exact pair registration, profiles, strict mapping plans, flattening, explicit reverse mapping, inheritance, polymorphic dispatch, custom paths, resolvers, value transformers, hooks, and sensitive-field safeguards. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
 | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
 | `AstraFlow.Testing` | Framework-neutral test helpers for fake mediator flows, handler harnesses, mapper/projection assertions, diagnostics assertions, and test secure IDs. |

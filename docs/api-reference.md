@@ -159,13 +159,15 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `ConventionMappingCatalog` | Class | Holds profiles and exact pair registrations. | Use `AddProfile<TProfile>()` or `CreateMap<TSource, TDestination>()`. |
 | `ConventionMappingProfile` | Abstract class | Groups convention mapping pairs. | Derive and call `CreateMap` in the constructor. |
 | `AddValueTransformer` | Method | Adds an explicit convention value transformer for a value type. | Transformer usage is reported with `AFC014`. |
-| `ConventionMappingExpression<TSource, TDestination>` | Class | Configures one pair. | Supports case-insensitive matching, include, ignore, sensitive-member allow rules, `ForMember`, `ForPath`, include-members, flattening, unflattening, before/after hooks, explicit reverse mapping, and update mapping opt-in. |
+| `ConventionMappingExpression<TSource, TDestination>` | Class | Configures one pair. | Supports case-insensitive matching, include, ignore, sensitive-member allow rules, `ForMember`, `ForPath`, include-members, flattening, unflattening, inheritance, polymorphic derived mappings, before/after hooks, explicit reverse mapping, and update mapping opt-in. |
 | `ForMember` | Method | Configures one destination member. | Supports explicit source members, custom source expressions, converters, resolvers, null substitution, conditions, and required destination rules. |
 | `ForPath` | Method | Configures one nested destination path. | Supports custom destination paths for unflattening and path-specific member configuration. |
 | `EnableFlattening` | Method | Enables nested source to flat destination matching for one pair. | Required before `Address.City` can map to `AddressCity`. |
 | `EnableUnflattening` | Method | Enables flat source to nested destination path matching for one pair. | Required before `AddressCity` can map to `Address.City`. |
 | `ReverseMap` | Method | Adds a reverse mapping pair explicitly. | Reverse mapping is never implicit. |
 | `IncludeMembers` | Method | Includes child source members in destination matching. | Child members appear in mapping plans as included-member decisions. |
+| `IncludeBase` | Method | Records an explicit base mapping relationship for a derived pair. | Inheritance usage is reported with `AFC017`. |
+| `IncludeDerived` | Method | Registers a derived mapping pair for polymorphic convention dispatch. | Base plans report `AFC018`; derived plans report `AFC019`. |
 | `BeforeMap` | Method | Registers a per-pair hook that runs before member assignment. | Hook usage is reported with `AFC015`; payload values are not reported. |
 | `AfterMap` | Method | Registers a per-pair hook that runs after member assignment. | Hook usage is reported with `AFC016`; payload values are not reported. |
 | `EnableUpdateMapping` | Method | Enables mapping into an existing destination instance for one pair. | Required before `IConventionMapper.MapInto` can update an existing object. |
@@ -194,6 +196,9 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `AFC014` | Destination member uses a configured value transformer. |
 | `AFC015` | Convention mapping pair has before-map hooks. |
 | `AFC016` | Convention mapping pair has after-map hooks. |
+| `AFC017` | Convention mapping pair includes a base mapping pair. |
+| `AFC018` | Convention mapping pair includes a derived mapping pair. |
+| `AFC019` | Derived convention mapping can be selected by polymorphic dispatch. |
 
 ## Projection Finding Codes
 
