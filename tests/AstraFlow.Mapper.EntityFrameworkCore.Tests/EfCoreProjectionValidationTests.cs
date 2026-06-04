@@ -34,6 +34,8 @@ public sealed class EfCoreProjectionValidationTests
         var report = dbContext.ValidateProjectionTranslations(registry);
 
         report.Findings.Should().BeEmpty();
+        report.ProviderName.Should().Contain("Sqlite");
+        report.ValidatedProjectionCount.Should().Be(1);
     }
 
     [Fact]
@@ -46,7 +48,52 @@ public sealed class EfCoreProjectionValidationTests
 
         var report = dbContext.ValidateProjectionTranslations(registry);
 
-        report.Findings.Should().Contain(finding => finding.Code == "AFPEF001");
+        report.Findings.Should().Contain(finding => finding.Code == "AFPEF002");
+    }
+
+    [Fact]
+    public void ValidateProjectionTranslation_WithParameterizedProjection_ReturnsSql()
+    {
+        using var connection = CreateConnection();
+        using var dbContext = CreateDbContext(connection);
+        var projection = new TenantOrderProjection();
+
+        var sql = dbContext.ValidateProjectionTranslation(projection, new TenantProjectionParameters("tenant-1"));
+
+        sql.Should().Contain("SELECT");
+        sql.Should().Contain("Orders");
+    }
+
+    [Fact]
+    public void ValidateProjectionTranslations_WithParameterizedProjectionRequiresSample()
+    {
+        using var connection = CreateConnection();
+        using var dbContext = CreateDbContext(connection);
+        using var provider = CreateServices(typeof(TenantOrderProjection)).BuildServiceProvider();
+        var registry = provider.GetRequiredService<IProjectionRegistry>();
+
+        var report = dbContext.ValidateProjectionTranslations(registry);
+
+        report.Findings.Should().Contain(finding => finding.Code == "AFPEF003");
+    }
+
+    [Fact]
+    public void ValidateProjectionTranslations_WithParameterizedSample_ReturnsNoFindings()
+    {
+        using var connection = CreateConnection();
+        using var dbContext = CreateDbContext(connection);
+        using var provider = CreateServices(typeof(TenantOrderProjection)).BuildServiceProvider();
+        var registry = provider.GetRequiredService<IProjectionRegistry>();
+
+        var report = dbContext.ValidateProjectionTranslations(
+            registry,
+            new Dictionary<Type, object>
+            {
+                [typeof(TenantProjectionParameters)] = new TenantProjectionParameters("tenant-1")
+            });
+
+        report.Findings.Should().BeEmpty();
+        report.ValidatedProjectionCount.Should().Be(1);
     }
 
     private static SqliteConnection CreateConnection()
@@ -74,7 +121,10 @@ public sealed class EfCoreProjectionValidationTests
         foreach (var projectionType in projectionTypes)
         {
             foreach (var serviceType in projectionType.GetInterfaces()
-                         .Where(type => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IProjection<,>)))
+                         .Where(type =>
+                             type.IsGenericType &&
+                             (type.GetGenericTypeDefinition() == typeof(IProjection<,>) ||
+                              type.GetGenericTypeDefinition() == typeof(IParameterizedProjection<,,>))))
             {
                 var arguments = serviceType.GetGenericArguments();
                 services.AddScoped(projectionType);
@@ -82,6 +132,7 @@ public sealed class EfCoreProjectionValidationTests
                 services.AddSingleton(new ProjectionDescriptor(
                     arguments[0],
                     arguments[1],
+                    serviceType.GetGenericTypeDefinition() == typeof(IParameterizedProjection<,,>) ? arguments[2] : null,
                     serviceType,
                     projectionType,
                     ServiceLifetime.Scoped));
@@ -110,6 +161,10 @@ public sealed class EfCoreProjectionValidationTests
 
     private sealed record OrderListItem(int Id, string Number);
 
+    private sealed record TenantOrderListItem(int Id, string Number, string TenantId);
+
+    private sealed record TenantProjectionParameters(string TenantId);
+
     private sealed class OrderListProjection : IProjection<Order, OrderListItem>
     {
         public Expression<Func<Order, OrderListItem>> Expression =>
@@ -127,5 +182,12 @@ public sealed class EfCoreProjectionValidationTests
     {
         public Expression<Func<UnmappedOrder, OrderListItem>> Expression =>
             order => new OrderListItem(order.Id, order.Number);
+    }
+
+    private sealed class TenantOrderProjection
+        : IParameterizedProjection<Order, TenantOrderListItem, TenantProjectionParameters>
+    {
+        public Expression<Func<Order, TenantProjectionParameters, TenantOrderListItem>> Expression =>
+            (order, parameters) => new TenantOrderListItem(order.Id, order.Number, parameters.TenantId);
     }
 }

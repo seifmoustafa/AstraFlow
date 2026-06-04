@@ -10,6 +10,7 @@ namespace AstraFlow.Mapper.EntityFrameworkCore;
 /// <param name="ProjectionName">Projection name when available.</param>
 /// <param name="ImplementationType">Projection implementation type.</param>
 /// <param name="ExceptionType">Exception type produced by EF Core translation when available.</param>
+/// <param name="ProviderName">EF Core provider name used for validation.</param>
 public sealed record EfCoreProjectionValidationFinding(
     string Code,
     string Message,
@@ -17,4 +18,5 @@ public sealed record EfCoreProjectionValidationFinding(
     Type DestinationType,
     string? ProjectionName,
     Type ImplementationType,
-    string? ExceptionType);
+    string? ExceptionType,
+    string? ProviderName = null);

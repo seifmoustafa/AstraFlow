@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.5.2
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.0
 ```
 
 ## Validate One Projection
@@ -33,11 +33,35 @@ if (report.HasFindings)
 }
 ```
 
-Findings use `AFPEF...` codes. In v1.4.0:
+Findings use `AFPEF...` codes. In `1.7.0`:
 
 | Code | Meaning |
 | --- | --- |
 | `AFPEF001` | EF Core could not translate or prepare the projection against the current `DbContext`. |
+| `AFPEF002` | The projection source type is not mapped as an EF Core entity in the current `DbContext`. |
+| `AFPEF003` | A parameterized projection needs a sample parameter object for EF Core provider validation. |
+
+Reports include provider metadata:
+
+```csharp
+Console.WriteLine(report.ProviderName);
+Console.WriteLine(report.ValidatedProjectionCount);
+```
+
+## Validate Parameterized Projections
+
+Parameterized projections require sample parameter objects for provider validation:
+
+```csharp
+var report = dbContext.ValidateProjectionTranslations(
+    registry,
+    new Dictionary<Type, object>
+    {
+        [typeof(OrderProjectionParameters)] = new OrderProjectionParameters(tenantId)
+    });
+```
+
+The helper uses the sample object to bind the expression tree and ask EF Core for SQL. It still does not execute the query.
 
 ## What EF Core Validation Proves
 
@@ -79,4 +103,13 @@ var report = db.ValidateProjectionTranslations(registry);
 report.Findings.Should().BeEmpty();
 ```
 
-SQLite is the recommended v1.4.0 baseline because it exercises a real relational provider without Docker or external database services.
+SQLite is the recommended `1.7.0` baseline because it exercises a real relational provider without Docker or external database services.
+
+## Provider Matrix
+
+| Provider | Dependency location | Current `1.7.0` status |
+| --- | --- | --- |
+| SQLite | EF Core test project only | Covered by automated translation tests. |
+| SQL Server | Future provider-specific test project or optional package | Not required for `1.7.0`; dependency must stay isolated. |
+| PostgreSQL | Future provider-specific test project or optional package | Not required for `1.7.0`; dependency must stay isolated. |
+| MySQL | Future provider-specific test project or optional package | Not required for `1.7.0`; dependency must stay isolated. |

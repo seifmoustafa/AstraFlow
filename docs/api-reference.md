@@ -1,6 +1,6 @@
 # API Reference
 
-This reference describes the public AstraFlow v1.4.0 API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow `1.7.0` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
@@ -100,9 +100,14 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `MappingPlanFindingSeverity` | Enum | Describes mapping-plan finding severity. | Info, warning, or error. |
 | `IProjection<TSource, TDestination>` | Interface | Provides an explicit LINQ expression projection. | Yes. |
 | `INamedProjection<TSource, TDestination>` | Interface | Adds an explicit projection name. | Yes, when multiple projections share the same source/destination pair. |
+| `IParameterizedProjection<TSource, TDestination, TParameters>` | Interface | Provides an explicit LINQ projection with a parameter object. | Yes, for tenant/user/current-time/culture scenarios. |
+| `INamedParameterizedProjection<TSource, TDestination, TParameters>` | Interface | Adds an explicit name to a parameterized projection. | Yes, when multiple parameterized shapes share a tuple. |
 | `IProjectionRegistry` | Interface | Resolves registered projections by pair and optional name. | No, inject it. |
+| `IParameterizedProjectionRegistry` | Interface | Resolves registered parameterized projections by tuple and optional name. | No, inject it. |
 | `IProjectionValidator` | Interface | Validates projection registrations and high-risk expression patterns. | No, inject or use in tests. |
+| `IProjectionPlanProvider` | Interface | Exposes deterministic projection plans. | No, inject it for CI reports. |
 | `ProjectionRegistration` | Record | Describes a registered projection. | Returned by the registry. |
+| `ProjectionPlan` | Record | Describes one registered static or parameterized projection. | Returned by `IProjectionPlanProvider`. |
 | `ProjectionValidationReport` | Record | Contains projection validation findings. | Returned by the validator. |
 | `ProjectionValidationFinding` | Record | One projection validation finding with stable code. | Returned by validation reports. |
 | `ProjectionValidationMode` | Enum | Selects disabled, warning, or error projection validation. | Configure through `MappingOptions`. |
@@ -125,16 +130,24 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `IMappingPlanProvider.GetMappingPlans` | `IReadOnlyCollection<MappingPlan> GetMappingPlans()` | Returns deterministic mapping plans. | Convention mapping uses this so every convention-created member can be reviewed. |
 | `IProjection.Expression` | `Expression<Func<TSource, TDestination>> Expression { get; }` | Supplies the projection expression. | Keep it provider-translatable; do not call services or `IMapper` inside it. |
 | `INamedProjection.Name` | `string Name { get; }` | Supplies the projection name. | Names are case-insensitive during lookup and must be unique per source/destination pair. |
+| `IParameterizedProjection.Expression` | `Expression<Func<TSource, TParameters, TDestination>> Expression { get; }` | Supplies a projection expression with a parameter object. | Use for scalar external values instead of complex closure capture. |
+| `INamedParameterizedProjection.Name` | `string Name { get; }` | Supplies the parameterized projection name. | Names are unique per source/destination/parameter tuple. |
 | `IProjectionRegistry.Registrations` | `IReadOnlyList<ProjectionRegistration> Registrations { get; }` | Lists resolved projection registrations. | Useful for diagnostics, tests, and release checks. |
 | `IProjectionRegistry.Get` | `IProjection<TSource, TDestination> Get<TSource, TDestination>()` | Resolves the only unnamed projection for a pair. | Throws if missing or ambiguous. |
 | `IProjectionRegistry.Get` | `IProjection<TSource, TDestination> Get<TSource, TDestination>(string name)` | Resolves a named projection for a pair. | Throws if missing or duplicated. |
 | `IProjectionRegistry.TryGet` | `bool TryGet<TSource, TDestination>(out IProjection<TSource, TDestination> projection)` | Attempts unnamed projection lookup. | Returns false for missing or ambiguous lookup. |
 | `IProjectionRegistry.TryGet` | `bool TryGet<TSource, TDestination>(string name, out IProjection<TSource, TDestination> projection)` | Attempts named projection lookup. | Returns false for missing or ambiguous lookup. |
+| `IParameterizedProjectionRegistry.GetParameterized` | `IParameterizedProjection<TSource, TDestination, TParameters> GetParameterized<TSource, TDestination, TParameters>()` | Resolves the only unnamed parameterized projection for a tuple. | Throws if missing or ambiguous. |
+| `IParameterizedProjectionRegistry.GetParameterized` | `IParameterizedProjection<TSource, TDestination, TParameters> GetParameterized<TSource, TDestination, TParameters>(string name)` | Resolves a named parameterized projection for a tuple. | Throws if missing or duplicated. |
 | `IProjectionValidator.Validate` | `ProjectionValidationReport Validate(MappingOptions options)` | Checks duplicates, invalid expressions, and high-risk expression patterns. | Does not print payload values. |
+| `IProjectionPlanProvider.GetProjectionPlans` | `IReadOnlyCollection<ProjectionPlan> GetProjectionPlans()` | Returns deterministic projection plans. | Does not print payload or parameter values. |
 | `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination>(this IQueryable<TSource> query, IProjection<TSource, TDestination> projection)` | Applies a projection object's expression to a query. | Throws for null query or projection. |
 | `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination>(this IQueryable<TSource> query, Expression<Func<TSource, TDestination>> projection)` | Applies an inline expression to a query. | Useful when a separate projection class is unnecessary. |
 | `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination>(this IQueryable<TSource> query, IProjectionRegistry registry)` | Resolves and applies the only unnamed registered projection. | Throws for missing or ambiguous projections. |
 | `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination>(this IQueryable<TSource> query, IProjectionRegistry registry, string name)` | Resolves and applies a named registered projection. | Throws for missing or duplicate names. |
+| `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination, TParameters>(this IQueryable<TSource> query, IParameterizedProjection<TSource, TDestination, TParameters> projection, TParameters parameters)` | Binds a parameter object and applies a parameterized projection. | Does not execute the query. |
+| `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination, TParameters>(this IQueryable<TSource> query, IParameterizedProjectionRegistry registry, TParameters parameters)` | Resolves and applies the only unnamed parameterized projection. | Throws for missing or ambiguous projections. |
+| `ProjectWith` | `IQueryable<TDestination> ProjectWith<TSource, TDestination, TParameters>(this IQueryable<TSource> query, IParameterizedProjectionRegistry registry, string name, TParameters parameters)` | Resolves and applies a named parameterized projection. | Throws for missing or duplicate names. |
 | `ISecureIdCodec.Encrypt` | `string Encrypt(Guid id)` | Converts a raw `Guid` into an encrypted/public string. | AstraFlow does not provide cryptography. |
 | `ISecureIdCodec.TryDecrypt` | `Guid? TryDecrypt(string? encryptedId)` | Converts an encrypted/public string back to a `Guid` when valid. | Return null for invalid input. |
 | `SecureIdMapper.Encrypt` | `string Encrypt(Guid id)` | Encrypts a required ID through the codec. | Throws only if the codec throws. |
@@ -212,19 +225,25 @@ Marker types are used only to find assemblies. Passing `typeof(Program)` scans t
 | `AFP103` | A projection uses non-deterministic values such as `DateTime.UtcNow` or `Guid.NewGuid()`. |
 | `AFP104` | A projection captures a complex closure object. |
 | `AFP105` | A projection contains an unsupported construction pattern. |
+| `AFP106` | A projection exposes a raw public ID-shaped `Guid` member. |
+| `AFP107` | A projection calls secure ID infrastructure inside a query expression. |
 
 ## Entity Framework Core Methods
 
 | API | Signature | What Happens | Important Notes |
 | --- | --- | --- | --- |
 | `ValidateProjectionTranslation` | `string ValidateProjectionTranslation<TSource, TDestination>(this DbContext dbContext, IProjection<TSource, TDestination> projection) where TSource : class` | Builds a `DbSet<TSource>().Select(...)` query and asks EF Core for SQL. | Does not execute the query. Requires a relational provider. |
+| `ValidateProjectionTranslation` | `string ValidateProjectionTranslation<TSource, TDestination, TParameters>(this DbContext dbContext, IParameterizedProjection<TSource, TDestination, TParameters> projection, TParameters parameters) where TSource : class` | Binds a parameter object and asks EF Core for SQL. | Does not execute the query. |
 | `ValidateProjectionTranslations` | `EfCoreProjectionValidationReport ValidateProjectionTranslations(this DbContext dbContext, IProjectionRegistry registry)` | Validates every registered projection against the supplied DbContext. | Returns `AFPEF...` findings for EF Core model/provider failures. |
+| `ValidateProjectionTranslations` | `EfCoreProjectionValidationReport ValidateProjectionTranslations(this DbContext dbContext, IProjectionRegistry registry, IReadOnlyDictionary<Type, object> parameterSamples)` | Validates registered projections with sample parameter objects. | Required for parameterized projection provider validation. |
 
 ## Entity Framework Core Finding Codes
 
 | Code | Meaning |
 | --- | --- |
 | `AFPEF001` | EF Core could not translate or prepare the projection against the current `DbContext`. |
+| `AFPEF002` | Projection source type is not mapped as an EF Core entity in the current `DbContext`. |
+| `AFPEF003` | Parameterized projection validation is missing a sample parameter object. |
 
 ## Supported Collection Mapping Shapes
 

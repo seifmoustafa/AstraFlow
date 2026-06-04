@@ -14,6 +14,9 @@ This guide describes expected behavior for projection registration, lookup, vali
 | Projection calls a custom method | Validation reports `AFP102`. | Inline provider-translatable expression logic or validate with provider-specific tests. |
 | Projection uses `DateTime.UtcNow` or `Guid.NewGuid()` | Validation reports `AFP103`. | Capture scalar values outside the query or assign values after materialization. |
 | Projection captures a complex object | Validation reports `AFP104`. | Capture scalar values only. |
+| Projection needs tenant/user/current-time values | Use `IParameterizedProjection<TSource, TDestination, TParameters>`. | Pass an explicit parameter object to `ProjectWith`. |
+| Projection exposes a raw `Guid PublicId`-style member | Validation reports `AFP106`. | Project a safe DTO identifier or document why raw IDs are acceptable. |
+| Projection calls secure ID infrastructure | Validation reports `AFP107`. | Assign secure IDs after materialization or keep query projections provider-translatable. |
 | Strict mode is enabled | Startup validation throws when findings exist. | Fix findings or lower mode to `Warning`. |
 
 ## Multiple Shapes
@@ -46,6 +49,32 @@ Resolve explicitly:
 var list = db.Users.ProjectWith<User, UserDto>(registry, "list");
 var admin = db.Users.ProjectWith<User, UserDto>(registry, "admin");
 ```
+
+## Parameterized Shapes
+
+Parameterized projections make external values explicit:
+
+```csharp
+public sealed record UserProjectionParameters(Guid CurrentUserId);
+
+public sealed class UserForCurrentUserProjection
+    : IParameterizedProjection<User, UserDto, UserProjectionParameters>
+{
+    public Expression<Func<User, UserProjectionParameters, UserDto>> Expression =>
+        (user, parameters) => new UserDto(user.Id, user.UserName);
+}
+```
+
+Resolve and apply the projection with the parameter object:
+
+```csharp
+var registry = provider.GetRequiredService<IParameterizedProjectionRegistry>();
+var query = db.Users.ProjectWith<User, UserDto, UserProjectionParameters>(
+    registry,
+    new UserProjectionParameters(currentUserId));
+```
+
+Use `IProjectionPlanProvider` in CI to export and review static and parameterized projection plans.
 
 ## Warning Mode
 

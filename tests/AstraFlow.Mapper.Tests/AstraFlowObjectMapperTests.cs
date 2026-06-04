@@ -240,6 +240,59 @@ public sealed class AstraFlowObjectMapperTests
         result.Select(x => x.Name).Should().Equal("One", "Two");
     }
 
+    [Fact]
+    public void ProjectWith_UsesParameterizedProjection()
+    {
+        var source = new[]
+        {
+            new SampleEntity(Guid.NewGuid(), "One"),
+            new SampleEntity(Guid.NewGuid(), "Two"),
+        }.AsQueryable();
+
+        var result = source
+            .ProjectWith(new TenantSampleProjection(), new TenantProjectionParameters("tenant-1"))
+            .ToList();
+
+        result.Should().OnlyContain(item => item.TenantId == "tenant-1");
+    }
+
+    [Fact]
+    public void ParameterizedProjectionRegistry_ReturnsProjection()
+    {
+        using var provider = CreateServices(typeof(TenantSampleProjection)).BuildServiceProvider();
+        var registry = provider.GetRequiredService<IParameterizedProjectionRegistry>();
+
+        var projection = registry.GetParameterized<SampleEntity, TenantSampleResponse, TenantProjectionParameters>();
+
+        projection.Should().BeOfType<TenantSampleProjection>();
+    }
+
+    [Fact]
+    public void ProjectionPlanProvider_ExportsParameterizedPlan()
+    {
+        using var provider = CreateServices(typeof(TenantSampleProjection)).BuildServiceProvider();
+        var plans = provider.GetRequiredService<IProjectionPlanProvider>().GetProjectionPlans();
+
+        var plan = plans.Single();
+
+        plan.ParameterType.Should().Contain(nameof(TenantProjectionParameters));
+        plan.Parameters.Should().Contain(parameter => parameter.Name == nameof(TenantProjectionParameters.TenantId));
+        plan.Members.Should().Contain(member =>
+            member.DestinationMember == nameof(TenantSampleResponse.TenantId) &&
+            member.Decision == "Parameterized");
+    }
+
+    [Fact]
+    public void ProjectionValidator_WithRawPublicIdAndSecureIdInfrastructure_ReportsFindings()
+    {
+        using var provider = CreateServices(typeof(UnsafeIdentifierProjection)).BuildServiceProvider();
+        var validator = provider.GetRequiredService<IProjectionValidator>();
+
+        var report = validator.Validate(new MappingOptions());
+
+        report.Findings.Select(finding => finding.Code).Should().Contain(["AFP106", "AFP107"]);
+    }
+
     private static AstraFlowObjectMapper CreateMapper(params IObjectMappingRule[] rules)
     {
         return new AstraFlowObjectMapper(rules);
@@ -252,7 +305,10 @@ public sealed class AstraFlowObjectMapperTests
         foreach (var projectionType in markerTypes)
         {
             foreach (var serviceType in projectionType.GetInterfaces()
-                         .Where(type => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IProjection<,>)))
+                         .Where(type =>
+                             type.IsGenericType &&
+                             (type.GetGenericTypeDefinition() == typeof(IProjection<,>) ||
+                              type.GetGenericTypeDefinition() == typeof(IParameterizedProjection<,,>))))
             {
                 var arguments = serviceType.GetGenericArguments();
                 services.AddScoped(projectionType);
@@ -260,6 +316,7 @@ public sealed class AstraFlowObjectMapperTests
                 services.AddSingleton(new ProjectionDescriptor(
                     arguments[0],
                     arguments[1],
+                    serviceType.GetGenericTypeDefinition() == typeof(IParameterizedProjection<,,>) ? arguments[2] : null,
                     serviceType,
                     projectionType,
                     ServiceLifetime.Scoped));
@@ -272,6 +329,12 @@ public sealed class AstraFlowObjectMapperTests
     private sealed record SampleEntity(Guid Id, string Name);
 
     private sealed record SampleResponse(Guid Id, string Name);
+
+    private sealed record TenantSampleResponse(Guid Id, string Name, string TenantId);
+
+    private sealed record TenantProjectionParameters(string TenantId);
+
+    private sealed record UnsafeIdentifierResponse(Guid PublicId, string SecureId);
 
     private class SampleMappingRule : IDeclaredObjectMappingRule
     {
@@ -362,6 +425,21 @@ public sealed class AstraFlowObjectMapperTests
             entity => new SampleResponse(Guid.NewGuid(), Normalize(entity.Name + DateTime.UtcNow.Year));
 
         private static string Normalize(string value) => value.Trim();
+    }
+
+    private sealed class TenantSampleProjection
+        : IParameterizedProjection<SampleEntity, TenantSampleResponse, TenantProjectionParameters>
+    {
+        public System.Linq.Expressions.Expression<Func<SampleEntity, TenantProjectionParameters, TenantSampleResponse>> Expression =>
+            (entity, parameters) => new TenantSampleResponse(entity.Id, entity.Name, parameters.TenantId);
+    }
+
+    private sealed class UnsafeIdentifierProjection : IProjection<SampleEntity, UnsafeIdentifierResponse>
+    {
+        private static readonly SecureIdMapper SecureIds = new(new PrefixSecureIdCodec());
+
+        public System.Linq.Expressions.Expression<Func<SampleEntity, UnsafeIdentifierResponse>> Expression =>
+            entity => new UnsafeIdentifierResponse(entity.Id, SecureIds.Encrypt(entity.Id));
     }
 
 }

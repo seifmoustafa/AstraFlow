@@ -154,8 +154,8 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Naming convention profiles | Candidate | Optional naming conventions with diagnostics-visible output. |
 | Value transformers | Candidate | Risky if global and hidden. |
 | Before/after map hooks | Candidate | Must be visible in diagnostics. |
-| Polymorphic mapping | Candidate | After profiles are stable. |
-| Inheritance mapping | Candidate | After profiles are stable. |
+| Polymorphic mapping | Done | Shipped in `1.6.2` with explicit `IncludeDerived`. |
+| Inheritance mapping | Done | Shipped in `1.6.2` with explicit `IncludeBase`. |
 | Circular reference controls | Candidate | Only if deep graph mapping becomes supported. |
 | Max-depth controls | Candidate | Same as circular references. |
 | Dynamic/dictionary mapping | Research | Useful for integrations, risky for auditability. |
@@ -168,10 +168,10 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| Projection parameters | Planned | Avoid unsafe closure captures. |
+| Projection parameters | Done | Shipped in `1.7.0` through explicit parameter object projections. |
 | Provider matrix | Planned | SQLite, SQL Server, PostgreSQL, MySQL where practical. |
 | Provider-specific warning codes | Planned | Stable diagnostics. |
-| Projection plan export | Planned | Source/destination member and expression-risk report. |
+| Projection plan export | Done | Shipped in `1.7.0` through `IProjectionPlanProvider`. |
 | Projection diffing | Candidate | Review read-model changes in CI. |
 | Projection parameter object model | Planned | Pass explicit query parameters without complex closure captures. |
 | Projection raw-ID policy checks | Planned | Warn when public read models expose raw IDs while secure ID policy is enabled. |

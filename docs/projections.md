@@ -5,7 +5,7 @@ AstraFlow projections are explicit LINQ expressions used to shape query results 
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.5.2
+dotnet add package AstraFlow.Mapper --version 1.7.0
 ```
 
 ## Basic Projection
@@ -61,6 +61,55 @@ var query = db.Customers.ProjectWith<Customer, CustomerListItem>(registry, "admi
 
 Names are case-insensitive and trimmed during lookup. Duplicate names for the same source/destination pair are reported by validation.
 
+## Parameterized Projections
+
+Use `IParameterizedProjection<TSource, TDestination, TParameters>` when the query shape needs explicit runtime values such as tenant ID, current user ID, culture, or a captured clock value.
+
+```csharp
+public sealed record CustomerProjectionParameters(string TenantId);
+
+public sealed class TenantCustomerProjection
+    : IParameterizedProjection<Customer, CustomerListItem, CustomerProjectionParameters>
+{
+    public Expression<Func<Customer, CustomerProjectionParameters, CustomerListItem>> Expression =>
+        (customer, parameters) => new CustomerListItem(
+            customer.Id,
+            customer.Name,
+            parameters.TenantId);
+}
+```
+
+Apply it directly:
+
+```csharp
+var query = db.Customers.ProjectWith(
+    new TenantCustomerProjection(),
+    new CustomerProjectionParameters(tenantId));
+```
+
+Or resolve it through `IParameterizedProjectionRegistry`:
+
+```csharp
+var registry = provider.GetRequiredService<IParameterizedProjectionRegistry>();
+var query = db.Customers.ProjectWith<Customer, CustomerListItem, CustomerProjectionParameters>(
+    registry,
+    new CustomerProjectionParameters(tenantId));
+```
+
+Named parameterized projections can implement `INamedParameterizedProjection<TSource, TDestination, TParameters>`.
+
+Parameter values are bound into the expression tree. AstraFlow does not execute the query while applying or validating the projection.
+
+## Projection Plans
+
+`IProjectionPlanProvider` exports deterministic projection plans for CI review:
+
+```csharp
+var plans = provider.GetRequiredService<IProjectionPlanProvider>().GetProjectionPlans();
+```
+
+Plans include source type, destination type, optional projection name, optional parameter object type, public parameter members, destination member decisions, and projection findings. Plans never print entity values, DTO values, parameter values, connection strings, secrets, or tokens.
+
 ## Validation
 
 Projection validation is warning-by-default:
@@ -93,12 +142,15 @@ Validation findings use stable codes:
 | `AFP103` | A projection uses non-deterministic values such as `DateTime.UtcNow` or `Guid.NewGuid()`. |
 | `AFP104` | A projection captures a complex closure object. |
 | `AFP105` | A projection contains an unsupported construction pattern. |
+| `AFP106` | A projection exposes a raw public ID-shaped `Guid` member. |
+| `AFP107` | A projection calls secure ID infrastructure inside the query expression. |
 
 ## Rules
 
 - Keep expressions provider-translatable.
 - Do not call services or `IMapper` inside projections.
 - Use named projections when multiple shapes share the same source/destination pair.
+- Use parameterized projections instead of complex closure objects for tenant/user/current-time values.
 - Do not rely on registration order to pick a projection.
 - Use diagnostics to inspect projection registrations and findings.
 
