@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.FluentValidation --version 1.12.0
+dotnet add package AstraFlow.FluentValidation --version 1.13.0
 ```
 
 Register AstraFlow and the validation behaviors:
@@ -98,4 +98,3 @@ If validation does not run, check:
 - Validators are registered as `IValidator<TRequest>`.
 - The request type sent through `ISender` exactly matches the validator type.
 - Pipeline behavior order is intentional. AstraFlow behaviors run in DI registration order.
-

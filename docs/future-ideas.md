@@ -66,13 +66,13 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Multi-target support for core packages on `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` | Done | Shipped in `1.2.2`; EF Core remains version-aligned with EF Core 10. |
 | Direct .NET Framework target such as `net462` or `net471` | Research | Add only if it gives value beyond `netstandard2.0`. |
 | `AstraFlow.Contracts` | Done | Shared contracts without DI/runtime packages, shipped in `1.4.0`. |
-| Package compatibility matrix | Planned | Document package, TFM, dependency, and integration support. |
-| API compatibility baselines | Planned | Prevent accidental breaking changes. |
-| Public API diff in CI | Planned | Review API changes before publish. |
+| Package compatibility matrix | Done, expand | Current TFM and package support is documented; future releases can add richer dependency and host matrices. |
+| API compatibility baselines | Done, expand | `1.13.0` compares public XML member IDs against the previous published package version; future work can add richer binary compatibility analysis. |
+| Public API diff in CI | Done, expand | `1.13.0` publish workflow runs API compatibility verification before publishing. |
 | Old-version compatibility test suite | Candidate | Restore previous package versions and verify upgrade paths. |
-| Old-version upgrade smoke tests | Planned | Prove patch/minor upgrades do not require source changes unless documented. |
+| Old-version upgrade smoke tests | Done, expand | `1.13.0` adds a previous-version clean-consumer upgrade smoke; future work can add more consumer shapes. |
 | Migration guides from popular mediator/mapping approaches | Planned | Keep public docs capability-focused rather than competitor-centered. |
-| Migration cookbook | Planned | Before/after examples for manual dispatch, mediator usage, mapper usage, and projection usage. |
+| Migration cookbook | Done, expand | `1.13.0` adds upgrade and package-reference migration guidance; future work can add richer before/after recipes. |
 | Migration scanner report | Done, expand | First MediatR and AutoMapper candidate scanner shipped in `1.10.0`; future work can add richer recipes. |
 | Package selector guide | Planned | Help users choose focused packages instead of always using meta package. |
 | Offline package verification script | Candidate | Validate `.nupkg` contents, README, icon, docs, symbols, and dependencies. |
@@ -340,8 +340,8 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| API governance | Planned | Public API baselines and diff checks. |
-| Version support policy | Planned | Patch windows and support expectations. |
+| API governance | Done, expand | `1.13.0` adds API compatibility verification and governance docs; future work can add richer baselines and breaking-change review automation. |
+| Version support policy | Done, expand | `1.13.0` documents latest-minor support and previous-version upgrade confidence policy. |
 | Deprecation policy | Planned | Obsolete APIs with replacement guidance. |
 | Signed tags | Planned | Release integrity. |
 | Branch protection guide | Planned | Contributor/release safety. |

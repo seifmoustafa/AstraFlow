@@ -4,7 +4,7 @@ This guide documents AstraFlow target framework support, compatibility goals, an
 
 ## Current Support
 
-AstraFlow `1.12.0` currently targets:
+AstraFlow `1.13.0` currently targets:
 
 | Package | Current targets |
 | --- | --- |
@@ -40,6 +40,25 @@ Current target policy:
 
 Direct .NET Framework targets such as `net462` or `net471` are candidates only after testing proves they add value beyond `netstandard2.0` consumption.
 
+## Consumer Confidence Gates
+
+`1.13.0` adds two compatibility gates to release verification:
+
+- `scripts/verify-api-compatibility.ps1` compares public XML documentation member IDs from the previous published package version to the current packed packages.
+- `scripts/verify-upgrade-smoke.ps1` creates a clean consumer, builds it against the previous package version, upgrades it to the current locally packed version, and runs the same smoke flow again.
+
+These checks are intentionally conservative. They do not replace human review, but they make accidental public API removals and basic upgrade failures visible before publishing.
+
+## Version Support Policy
+
+AstraFlow supports the latest published minor version for normal package adoption, documentation, and release verification.
+
+Patch releases should be applied within the same minor line when they are available. Minor releases should preserve source compatibility unless a breaking change is explicitly documented and moved to a major version.
+
+Older minor versions remain installable from NuGet, but active validation, upgrade smoke testing, and API compatibility comparison focus on the previous stable published version and the current release candidate.
+
+Security fixes should be released on the latest stable line first. Backporting to older minor lines is discretionary and depends on severity, compatibility risk, and maintainer capacity.
+
 ## Compatibility Audit Findings
 
 The `1.2.1` audit found these items. `1.2.2` resolved the core package blockers, `1.2.3` added automated clean-install verification, `1.3.0` extended the matrix to `AstraFlow.Testing`, and `1.4.0` extends it to `AstraFlow.Contracts`.
@@ -68,7 +87,7 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Use AstraFlow `1.12.0` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
+Use AstraFlow `1.13.0` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
@@ -100,12 +119,14 @@ dotnet test AstraFlow.slnx -c Release
 .\scripts\pack.ps1
 ```
 
-For `1.12.0`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` and `AstraFlow.AspNetCore` include only `lib/net10.0/`. Confirm `AstraFlow.FluentValidation` and `AstraFlow.OpenTelemetry` include `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Analyzers` and `AstraFlow.Generators` include `analyzers/dotnet/cs/*.dll` and no runtime `lib/` assets.
+For `1.13.0`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` and `AstraFlow.AspNetCore` include only `lib/net10.0/`. Confirm `AstraFlow.FluentValidation` and `AstraFlow.OpenTelemetry` include `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Analyzers` and `AstraFlow.Generators` include `analyzers/dotnet/cs/*.dll` and no runtime `lib/` assets.
 
 Then run:
 
 ```powershell
-.\scripts\verify-package-install.ps1 -Version 1.12.0
+.\scripts\verify-package-install.ps1 -Version 1.13.0
+.\scripts\verify-api-compatibility.ps1 -PreviousVersion 1.12.0 -CurrentVersion 1.13.0
+.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 1.12.0 -CurrentVersion 1.13.0
 ```
 
 

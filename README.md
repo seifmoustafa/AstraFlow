@@ -49,6 +49,8 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | [Getting Started](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/getting-started.md) | You want the shortest path from install to working mediator and mapper usage. |
 | [Package Selection](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/package-selection.md) | You want to choose the smallest package set for an app, library, test project, or EF Core project. |
 | [Compatibility](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/compatibility.md) | You want current target framework support and target-expansion rules. |
+| [Migration Cookbook](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/migration-cookbook.md) | You want upgrade smoke-test guidance and before/after package migration checks. |
+| [API Governance](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/api-governance.md) | You want public API compatibility rules and release-review expectations. |
 | [API Reference](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/api-reference.md) | You need every public type, method, option, and expected behavior in one table-driven reference. |
 | [Architecture](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/architecture.md) | You want to understand the package design, runtime flow, dependency boundaries, and non-goals. |
 | [Mediator Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator.md) | You are using requests, handlers, notifications, or pipeline behaviors. |
@@ -288,7 +290,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.12.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.13.0
 ```
 
 Register exact pairs through a profile:
@@ -330,7 +332,7 @@ Sensitive destination writes remain blocked unless explicitly allowed.
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.12.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.13.0
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -412,7 +414,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.12.0
+dotnet add package AstraFlow.Testing --version 1.13.0
 ```
 
 Use the fake mediator to record requests and notifications:

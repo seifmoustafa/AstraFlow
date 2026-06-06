@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.AspNetCore --version 1.12.0
+dotnet add package AstraFlow.AspNetCore --version 1.13.0
 ```
 
 Register AstraFlow, diagnostics, and ASP.NET Core integration in the web app:
@@ -132,4 +132,3 @@ app.MapAstraFlowHealthSummary();
 ```
 
 The endpoint returns `Healthy` when diagnostics contain no error or fatal findings. It returns `Unhealthy` when diagnostics contain errors or fatal findings.
-

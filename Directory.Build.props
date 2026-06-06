@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.12.0</Version>
-    <AssemblyVersion>1.12.0.0</AssemblyVersion>
-    <FileVersion>1.12.0.0</FileVersion>
+    <Version>1.13.0</Version>
+    <AssemblyVersion>1.13.0.0</AssemblyVersion>
+    <FileVersion>1.13.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.12.0:
-      - Adds AstraFlow.OpenTelemetry with ActivitySource tracing, request and notification metrics, validation finding metrics, and redacted telemetry defaults.
-      - Adds telemetry disable and sampling switches plus documented span and metric names.
-      - Adds observability tests, documentation, packaging, workflow, and clean-install verification for the OpenTelemetry integration package.
+    <PackageReleaseNotes>AstraFlow 1.13.0:
+      - Adds public API compatibility verification against the previous published package version.
+      - Adds previous-version upgrade smoke verification for clean consumer projects.
+      - Adds migration cookbook and version support guidance for consumer confidence.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.OpenTelemetry --version 1.12.0
+dotnet add package AstraFlow.OpenTelemetry --version 1.13.0
 ```
 
 Register it after mediator registration:
@@ -121,4 +121,3 @@ var report = projectionValidator.ValidateWithAstraFlowTelemetry(mappingOptions, 
 ```
 
 The activities report success or error status. They do not attach mapping source values or DTO payloads.
-

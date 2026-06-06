@@ -4,7 +4,7 @@
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current implementation truth: AstraFlow is complete through `v1.12.0` in this repository. The next planned roadmap item is `v1.13.0` compatibility, migration, and consumer confidence.
+Current implementation truth: AstraFlow is complete through `v1.13.0` in this repository. The next planned roadmap item is `v2.0.0` compile-time superiority, secure DTO governance, and generated fast paths.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -1726,7 +1726,7 @@ What must NOT be included:
 
 ### v1.13 Compatibility, Migration, and Consumer Confidence
 
-Status: `Planned`.
+Status: `Done in v1.13.0`.
 
 Goal:
 
@@ -1745,7 +1745,7 @@ Packages affected:
 
 Features included:
 
-- Public API diff in CI.
+- Public API compatibility verification in CI.
 - Old-version upgrade smoke tests.
 - Compatibility matrix.
 - DI container compatibility tests where practical.
@@ -1772,7 +1772,7 @@ AstraFlow advantage beyond parity:
 
 Acceptance gates:
 
-- API diff runs in CI.
+- API compatibility verification runs in CI.
 - Upgrade smoke tests restore old package versions, upgrade, build, and test.
 - Compatibility matrix is current.
 - Samples compile.
@@ -1790,6 +1790,7 @@ Documentation requirements:
 - Compatibility matrix.
 - Migration cookbook.
 - Version support policy.
+- API governance guide.
 - Package deprecation process.
 - Versioned docs strategy.
 
