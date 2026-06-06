@@ -1,11 +1,11 @@
-# Diagnostics
+﻿# Diagnostics
 
 `AstraFlow.Diagnostics` adds framework-neutral reporting for AstraFlow registrations and validation findings. It is designed for console apps, workers, ASP.NET Core apps, tests, and CI without taking an ASP.NET Core dependency.
 
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.7.0
+dotnet add package AstraFlow.Diagnostics --version 1.7.1
 ```
 
 The package references `AstraFlow.Mediator` and `AstraFlow.Mapper` so it can understand the core public contracts.
@@ -151,3 +151,4 @@ report.Summary.HasErrors.Should().BeFalse();
 ```
 
 For CI, write JSON or Markdown as an artifact. Do not fail CI on warnings until the team agrees on warning policy.
+

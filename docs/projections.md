@@ -1,11 +1,11 @@
-# Projections
+﻿# Projections
 
 AstraFlow projections are explicit LINQ expressions used to shape query results into DTOs. They are not runtime object mappings and they do not call `IMapper`.
 
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.7.0
+dotnet add package AstraFlow.Mapper --version 1.7.1
 ```
 
 ## Basic Projection
@@ -110,6 +110,14 @@ var plans = provider.GetRequiredService<IProjectionPlanProvider>().GetProjection
 
 Plans include source type, destination type, optional projection name, optional parameter object type, public parameter members, destination member decisions, and projection findings. Plans never print entity values, DTO values, parameter values, connection strings, secrets, or tokens.
 
+Test projects can assert exported plans with `AstraFlow.Testing`:
+
+```csharp
+var plan = plans.ShouldHaveParameterizedProjectionPlan<Customer, CustomerListItem, CustomerProjectionParameters>();
+plan.ShouldHaveProjectionParameter("TenantId");
+plan.ShouldHaveProjectionMember("TenantId", "Parameterized");
+```
+
 ## Validation
 
 Projection validation is warning-by-default:
@@ -164,3 +172,4 @@ services.AddAstraFlowDiagnostics();
 ```
 
 The report includes projection rows and `AFP...` findings without printing entity values, DTO values, query results, connection strings, secrets, or captured object contents.
+

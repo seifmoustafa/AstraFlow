@@ -1,4 +1,4 @@
-# AstraFlow
+﻿# AstraFlow
 
 ![AstraFlow package icon](https://raw.githubusercontent.com/seifmoustafa/AstraFlow/main/assets/branding/astraflow-icon.png)
 
@@ -269,7 +269,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.7.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.7.1
 ```
 
 Register exact pairs through a profile:
@@ -311,7 +311,7 @@ Sensitive destination writes remain blocked unless explicitly allowed.
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.1
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -393,7 +393,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.7.0
+dotnet add package AstraFlow.Testing --version 1.7.1
 ```
 
 Use the fake mediator to record requests and notifications:
@@ -408,6 +408,7 @@ mediator.Requests.SingleSent<CreateInvoiceCommand>();
 ```
 
 The testing package is framework-neutral and does not depend on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework.
+It includes fake mediator helpers, mapper/projection assertions, projection plan assertions, diagnostics assertions, and a deterministic test secure ID codec.
 
 ## v1 Non-Goals
 
@@ -442,3 +443,4 @@ For first publish setup, create a dedicated GitHub repository, copy this folder 
 ## License
 
 MIT.
+

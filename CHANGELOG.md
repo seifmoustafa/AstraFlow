@@ -2,6 +2,38 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.7.1
+
+### Added
+
+- Added `ProjectionPlanAssertions` in `AstraFlow.Testing` for deterministic projection plan tests.
+- Added helpers for locating projection plans, parameterized projection plans, projection parameters, projection member decisions, projection plan findings, and clean projection plans.
+
+### Changed
+
+- Release-facing documentation now points current package install examples at `1.7.1`.
+- Marked the `v1.7.x` stabilization lane with the `1.7.1` projection testing helper patch.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded testing and API reference documentation for projection plan assertions.
+
+### Tests
+
+- Added `AstraFlow.Testing` coverage for projection plan assertion success and failure paths.
+
+### Packaging
+
+- Updated package metadata and release-facing version references for `1.7.1`.
+
+### Breaking changes
+
+- None.
+
 ## 1.7.0
 
 ### Added

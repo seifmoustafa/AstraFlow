@@ -1,12 +1,12 @@
-# Convention Mapping
+﻿# Convention Mapping
 
 `AstraFlow.Mapper.Conventions` adds opt-in convention mapping on top of the explicit mapper. It is disabled unless the application installs the package and registers convention pairs.
 
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.7.0
-dotnet add package AstraFlow.Mapper.Conventions --version 1.7.0
+dotnet add package AstraFlow.Mapper --version 1.7.1
+dotnet add package AstraFlow.Mapper.Conventions --version 1.7.1
 ```
 
 ## Register
@@ -309,3 +309,4 @@ var plans = provider.GetRequiredService<IMappingPlanProvider>().GetMappingPlans(
 Each convention-created member is reported with its destination member, source member, decision, and reason.
 
 Member-level decisions include `Converted`, `MappedWhen`, `MappedWithNullSubstitute`, `EnumToEnum`, `EnumToString`, `ConstructorBound`, `Collection`, `Flattened`, `Unflattened`, `IncludedMember`, `Resolved`, and `Transformed` when those rules are used.
+

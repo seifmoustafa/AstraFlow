@@ -1,4 +1,4 @@
-# Package Selection
+﻿# Package Selection
 
 This guide explains which AstraFlow package to install.
 
@@ -17,7 +17,7 @@ This guide explains which AstraFlow package to install.
 
 Prefer focused packages when a project needs only one concern. Use the meta package when a project intentionally uses both mediator and mapper.
 
-Target support in `1.7.0`: `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows EF Core 10.
+Target support in `1.7.1`: `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows EF Core 10.
 
 ## `AstraFlow.Contracts`
 
@@ -32,7 +32,7 @@ Install this package in projects that only need shared mediator contract types:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Contracts --version 1.7.0
+dotnet add package AstraFlow.Contracts --version 1.7.1
 ```
 
 Use this in shared contracts, client contract assemblies, Blazor/shared projects, and modular boundaries that should not reference the mediator runtime.
@@ -56,7 +56,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mediator --version 1.7.0
+dotnet add package AstraFlow.Mediator --version 1.7.1
 ```
 
 Use this in application layers, worker services, APIs, and modular monolith modules that own request handling.
@@ -76,7 +76,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.7.0
+dotnet add package AstraFlow.Mapper --version 1.7.1
 ```
 
 Use this in application or contract-mapping layers that need auditable DTO conversion.
@@ -96,7 +96,7 @@ Install this package when you need opt-in convention mapping for simple DTOs:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.7.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.7.1
 ```
 
 Use this with `AstraFlow.Mapper`. Convention mapping is not enabled by the meta package and is never enabled by default.
@@ -108,7 +108,7 @@ Install this package only when you need EF Core relational projection validation
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.1
 ```
 
 This package references EF Core. Keep it out of projects that do not use EF Core.
@@ -120,7 +120,7 @@ Install this package when you want registration and validation reports.
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.7.0
+dotnet add package AstraFlow.Diagnostics --version 1.7.1
 ```
 
 Register diagnostics after mediator and mapper registrations so the reporter can inspect those service descriptors.
@@ -134,14 +134,14 @@ Install this package in test projects when you need:
 - handler harnesses,
 - pipeline harnesses,
 - notification handler harnesses,
-- mapper and projection assertions,
+- mapper, projection, and projection plan assertions,
 - diagnostics assertions,
 - deterministic secure ID test codec.
 
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.7.0
+dotnet add package AstraFlow.Testing --version 1.7.1
 ```
 
 The package is test-framework-neutral. It does not depend on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework.
@@ -155,7 +155,7 @@ Install the meta package when a project intentionally uses mediator and mapper t
 Example:
 
 ```powershell
-dotnet add package AstraFlow --version 1.7.0
+dotnet add package AstraFlow --version 1.7.1
 ```
 
 The meta package is convenient, but focused packages keep dependency intent clearer in shared libraries and smaller projects.
@@ -180,3 +180,4 @@ The meta package is convenient, but focused packages keep dependency intent clea
 - Do not install `AstraFlow.Mapper.Conventions` unless convention mapping is deliberately configured.
 - Keep integration packages at application boundaries.
 - Keep domain projects free from runtime infrastructure packages when possible.
+

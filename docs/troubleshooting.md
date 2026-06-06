@@ -1,4 +1,4 @@
-# Troubleshooting
+﻿# Troubleshooting
 
 This guide maps common exceptions and confusing behaviors to likely causes and fixes.
 
@@ -130,7 +130,7 @@ With `NotificationFailurePolicy.Aggregate`, AstraFlow attempts every handler and
 
 ### Query Provider Cannot Translate Projection
 
-AstraFlow `1.7.0` validates projection registrations and high-risk expression patterns. If EF Core or another provider cannot translate a projection:
+AstraFlow `1.7.1` validates projection registrations and high-risk expression patterns. If EF Core or another provider cannot translate a projection:
 
 - remove service calls from the expression,
 - avoid runtime mapper calls inside `Select`,
@@ -226,3 +226,4 @@ That is expected for invalid input when your codec returns null. Treat null as "
 | `AFD301` | Mapper catalog validation failed. | Fix declared mappings, duplicate pairs, undeclared rules, or `CanMap` drift. |
 
 In `1.5.0`, the diagnostics behavior table also includes existing mediator pre-processors, post-processors, exception actions, and exception handlers. Order-sensitive mediator registration tables preserve DI registration order so runtime ordering can be reviewed. Diagnostics report type names and lifetimes, not request, response, notification, or DTO payload values.
+
