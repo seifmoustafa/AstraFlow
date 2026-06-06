@@ -70,6 +70,9 @@ jobs:
       - name: Pack FluentValidation integration
         run: dotnet pack src/AstraFlow.FluentValidation/AstraFlow.FluentValidation.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Pack OpenTelemetry integration
+        run: dotnet pack src/AstraFlow.OpenTelemetry/AstraFlow.OpenTelemetry.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
       - name: Pack testing
         run: dotnet pack src/AstraFlow.Testing/AstraFlow.Testing.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
@@ -139,6 +142,16 @@ jobs:
           }
           if ($fluentValidationEntries -match "^lib/netstandard2.0/") {
             throw "AstraFlow.FluentValidation should not ship netstandard2.0 assets in $version."
+          }
+
+          $openTelemetryEntries = tar -tf "src/AstraFlow.OpenTelemetry/bin/Release/AstraFlow.OpenTelemetry.$version.nupkg"
+          foreach ($tfm in @("net8.0", "net9.0", "net10.0")) {
+            if (-not ($openTelemetryEntries -match "^lib/$tfm/.*\.dll$")) {
+              throw "AstraFlow.OpenTelemetry is missing lib/$tfm DLL assets."
+            }
+          }
+          if ($openTelemetryEntries -match "^lib/netstandard2.0/") {
+            throw "AstraFlow.OpenTelemetry should not ship netstandard2.0 assets in $version."
           }
 
           $cliEntries = tar -tf "src/AstraFlow.Cli/bin/Release/AstraFlow.Cli.$version.nupkg"

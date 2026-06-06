@@ -297,7 +297,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | `AstraFlow.AspNetCore` | Done, expand | Minimal API helpers, controller helpers, problem details, redacted diagnostics endpoint, and health summary shipped in `1.11.0`; future work can add richer adapters. |
 | `AstraFlow.FluentValidation` | Done, expand | Validation behavior, aggregate errors, fail-fast mode, localization hook, and validation diagnostics shipped in `1.11.0`; future work can add richer severity adapters. |
 | `AstraFlow.EntityFrameworkCore` | Planned | Transaction behavior, outbox/inbox candidates, query tags, provider matrix. |
-| `AstraFlow.OpenTelemetry` | Planned | Tracing and metrics hooks if core observability is not enough. |
+| `AstraFlow.OpenTelemetry` | Done, expand | ActivitySource tracing, duration/failure metrics, validation finding metrics, redaction defaults, disable switch, and sampling controls shipped in `1.12.0`; future work can add correlation context and richer adapters. |
 | `AstraFlow.Caching` | Candidate | Cache behavior, explicit keys, invalidation notifications. |
 | `AstraFlow.Authorization` | Candidate | Policy behavior and diagnostics. |
 | `AstraFlow.Idempotency` | Candidate | Idempotency key contracts and stores. |
@@ -325,11 +325,11 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| ActivitySource tracing | Planned | Request, notification, mapping, projection validation spans. |
-| Metrics | Planned | Counts, durations, failures, validation findings. |
-| Redacted logging hooks | Planned | No payload values by default. |
+| ActivitySource tracing | Done, expand | Request, notification, mapping validation, and projection validation spans shipped in `1.12.0`; future work can add correlation context. |
+| Metrics | Done, expand | Duration, failure, and validation finding metrics shipped in `1.12.0`; future work can add richer topology metrics. |
+| Redacted logging hooks | Done, expand | Payload-free telemetry defaults and redactor abstraction shipped in `1.12.0`; future work can share a broader redaction policy across docs, CLI, and observability. |
 | Correlation and causation IDs | Candidate | Needs payload-free context model. |
-| Sampling controls | Candidate | Avoid high-cardinality noise. |
+| Sampling controls | Done, expand | Operation-name sampling controls shipped in `1.12.0`; future work can add richer host-level policy examples. |
 | Slow handler diagnostics | Candidate | Report timing without payload logging. |
 | Notification fan-out topology metrics | Candidate | Count fan-out and failures by handler type. |
 | Projection validation metrics | Candidate | Count provider validation failures by code and projection name. |

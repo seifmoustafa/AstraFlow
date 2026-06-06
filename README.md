@@ -39,6 +39,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | `AstraFlow.Cli` | Command-line inspection, validation, reporting, diffing, graph output, and migration scanning. |
 | `AstraFlow.AspNetCore` | ASP.NET Core helpers for minimal APIs, controllers, endpoint filters, problem details, redacted diagnostics endpoints, and health summaries. |
 | `AstraFlow.FluentValidation` | FluentValidation pipeline behaviors for AstraFlow requests with aggregate errors, fail-fast validation, localization hooks, and diagnostics. |
+| `AstraFlow.OpenTelemetry` | ActivitySource and Meter instrumentation for request, notification, validation, mapping, projection, and redacted operational telemetry. |
 | `AstraFlow` | Convenience package referencing both mediator and mapper with one registration method. |
 
 ## Documentation Map
@@ -65,6 +66,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | [CLI Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/cli.md) | You want `astraflow` inspect, validate, report, diff, graph, scan, and output-format guidance. |
 | [ASP.NET Core Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/aspnetcore.md) | You want minimal API helpers, controller helpers, diagnostics endpoints, health summaries, and problem details. |
 | [FluentValidation Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/fluentvalidation.md) | You want request validation pipeline behavior, fail-fast mode, localization hooks, and validation diagnostics. |
+| [Observability Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/observability.md) | You want ActivitySource tracing, metrics, OpenTelemetry setup, redaction, and payload-safety guidance. |
 | [Diagnostics Endpoint Safety](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/diagnostics-endpoint-safety.md) | You want the safety rules for HTTP diagnostics endpoints and production opt-in. |
 | [Benchmark Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/benchmarks.md) | You want benchmark commands, methodology, environment capture, and the performance claim policy. |
 | [Troubleshooting](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/troubleshooting.md) | You hit an exception and want the likely cause and fix. |
@@ -76,7 +78,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 
 ## Target Framework
 
-Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. Since `1.5.0`, `AstraFlow.Mapper.Conventions` ships the same non-EF targets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line. `AstraFlow.Analyzers` and `AstraFlow.Generators` ship compiler assets under `analyzers/dotnet/cs` instead of runtime `lib/` assets. `AstraFlow.Cli` and `AstraFlow.AspNetCore` target `net10.0`. `AstraFlow.FluentValidation` targets `net8.0`, `net9.0`, and `net10.0`.
+Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. Since `1.5.0`, `AstraFlow.Mapper.Conventions` ships the same non-EF targets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line. `AstraFlow.Analyzers` and `AstraFlow.Generators` ship compiler assets under `analyzers/dotnet/cs` instead of runtime `lib/` assets. `AstraFlow.Cli` and `AstraFlow.AspNetCore` target `net10.0`. `AstraFlow.FluentValidation` and `AstraFlow.OpenTelemetry` target `net8.0`, `net9.0`, and `net10.0`.
 
 ## Public API At A Glance
 
@@ -95,6 +97,7 @@ Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraF
 | `services.AddAstraFlowDiagnostics(Action<AstraFlowDiagnosticsOptions>?)` | `AstraFlow.Diagnostics` | Register diagnostics after mediator/mapper services so it can snapshot registrations. | `IAstraFlowDiagnosticsReporter` can create in-memory, JSON, and Markdown reports. |
 | `services.AddAstraFlowAspNetCore(...)` | `AstraFlow.AspNetCore` | Add ASP.NET Core integration options and validation problem endpoint filter services. | Minimal API helpers, diagnostics endpoints, and health summaries can be mapped at the app boundary. |
 | `services.AddAstraFlowFluentValidation(...)` | `AstraFlow.FluentValidation` | Add validation pipeline behaviors for response and void requests. | Registered `IValidator<TRequest>` instances run before handlers. |
+| `services.AddAstraFlowOpenTelemetry(...)` | `AstraFlow.OpenTelemetry` | Add ActivitySource and Meter instrumentation for mediator and notification flows. | Request/notification spans and metrics are emitted without payload values by default. |
 | `services.AddAstraFlow(bool validateRequestCoverage = false, params Type[] assemblyMarkerTypes)` | `AstraFlow` | Register mediator and mapper together. | Combined setup for applications that intentionally use both packages. |
 
 ### Mediator
@@ -285,7 +288,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.11.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.12.0
 ```
 
 Register exact pairs through a profile:
@@ -327,7 +330,7 @@ Sensitive destination writes remain blocked unless explicitly allowed.
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.11.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.12.0
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -409,7 +412,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.11.0
+dotnet add package AstraFlow.Testing --version 1.12.0
 ```
 
 Use the fake mediator to record requests and notifications:
