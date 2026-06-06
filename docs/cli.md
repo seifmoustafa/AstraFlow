@@ -13,7 +13,7 @@ dotnet run --project src/AstraFlow.Cli -- inspect AstraFlow.slnx
 After packing and publishing, install it as a .NET tool:
 
 ```powershell
-dotnet tool install --global AstraFlow.Cli --version 1.10.0
+dotnet tool install --global AstraFlow.Cli --version 1.11.0
 ```
 
 ## Commands

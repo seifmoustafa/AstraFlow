@@ -17,6 +17,36 @@ public sealed class HarnessTests
     }
 
     [Fact]
+    public void ValidationAssertions_ReportMissingExpectedProperty()
+    {
+        var errors = new Dictionary<string, string[]>
+        {
+            ["Name"] = ["Required"]
+        };
+
+        errors.ShouldContainValidationErrorFor("Name").Should().BeSameAs(errors);
+        var act = () => errors.ShouldContainValidationErrorFor("Number");
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Expected a validation error for 'Number'.");
+    }
+
+    [Fact]
+    public void ValidationAssertions_ReportUnexpectedProperty()
+    {
+        var errors = new Dictionary<string, string[]>
+        {
+            ["Name"] = ["Required"]
+        };
+
+        errors.ShouldNotContainValidationErrorFor("Number").Should().BeSameAs(errors);
+        var act = () => errors.ShouldNotContainValidationErrorFor("Name");
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Expected no validation error for 'Name'.");
+    }
+
+    [Fact]
     public async Task Pipeline_harness_executes_behaviors_in_order()
     {
         var events = new List<string>();

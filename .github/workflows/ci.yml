@@ -2,10 +2,19 @@
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - release/**
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: astraflow-ci-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -17,6 +26,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -53,6 +64,12 @@ jobs:
       - name: Pack diagnostics
         run: dotnet pack src/AstraFlow.Diagnostics/AstraFlow.Diagnostics.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Pack ASP.NET Core integration
+        run: dotnet pack src/AstraFlow.AspNetCore/AstraFlow.AspNetCore.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Pack FluentValidation integration
+        run: dotnet pack src/AstraFlow.FluentValidation/AstraFlow.FluentValidation.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
       - name: Pack testing
         run: dotnet pack src/AstraFlow.Testing/AstraFlow.Testing.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
@@ -61,6 +78,9 @@ jobs:
 
       - name: Pack generators
         run: dotnet pack src/AstraFlow.Generators/AstraFlow.Generators.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Pack CLI
+        run: dotnet pack src/AstraFlow.Cli/AstraFlow.Cli.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
       - name: Pack meta package
         run: dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
@@ -103,6 +123,29 @@ jobs:
             throw "AstraFlow.Mapper.EntityFrameworkCore should remain net10.0-only in $version."
           }
 
+          $aspNetCoreEntries = tar -tf "src/AstraFlow.AspNetCore/bin/Release/AstraFlow.AspNetCore.$version.nupkg"
+          if (-not ($aspNetCoreEntries -match "^lib/net10.0/.*\.dll$")) {
+            throw "AstraFlow.AspNetCore is missing lib/net10.0 DLL assets."
+          }
+          if ($aspNetCoreEntries -match "^lib/(netstandard2.0|net8.0|net9.0)/") {
+            throw "AstraFlow.AspNetCore should remain net10.0-only in $version."
+          }
+
+          $fluentValidationEntries = tar -tf "src/AstraFlow.FluentValidation/bin/Release/AstraFlow.FluentValidation.$version.nupkg"
+          foreach ($tfm in @("net8.0", "net9.0", "net10.0")) {
+            if (-not ($fluentValidationEntries -match "^lib/$tfm/.*\.dll$")) {
+              throw "AstraFlow.FluentValidation is missing lib/$tfm DLL assets."
+            }
+          }
+          if ($fluentValidationEntries -match "^lib/netstandard2.0/") {
+            throw "AstraFlow.FluentValidation should not ship netstandard2.0 assets in $version."
+          }
+
+          $cliEntries = tar -tf "src/AstraFlow.Cli/bin/Release/AstraFlow.Cli.$version.nupkg"
+          if (-not ($cliEntries -match "^tools/net10.0/any/")) {
+            throw "AstraFlow.Cli is missing .NET tool assets."
+          }
+
           $compilerPackages = @("AstraFlow.Analyzers", "AstraFlow.Generators")
           foreach ($compilerPackage in $compilerPackages) {
             $compilerEntries = tar -tf "src/$compilerPackage/bin/Release/$compilerPackage.$version.nupkg"
@@ -128,3 +171,43 @@ jobs:
           path: |
             src/**/bin/Release/*.nupkg
             src/**/bin/Release/*.snupkg
+
+      - name: Read release version
+        id: version
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content Directory.Build.props -Raw
+          $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw "Directory.Build.props does not define a package Version."
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=v$version" >> $env:GITHUB_OUTPUT
+
+      - name: Check existing GitHub release
+        id: release_exists
+        if: steps.version.outputs.tag != ''
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "${{ steps.version.outputs.tag }}" --repo "${{ github.repository }}" *> $null
+          if ($LASTEXITCODE -eq 0) {
+            "exists=true" >> $env:GITHUB_OUTPUT
+          } else {
+            "exists=false" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Create GitHub release
+        if: steps.version.outputs.tag != '' && steps.release_exists.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: AstraFlow ${{ steps.version.outputs.version }}
+          make_latest: true
+          files: |
+            src/**/bin/Release/*.nupkg
+            src/**/bin/Release/*.snupkg
+          body: |
+            Automated AstraFlow ${{ steps.version.outputs.version }} release created after CI passed.

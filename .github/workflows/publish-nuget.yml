@@ -62,6 +62,12 @@ jobs:
       - name: Pack diagnostics
         run: dotnet pack src/AstraFlow.Diagnostics/AstraFlow.Diagnostics.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Pack ASP.NET Core integration
+        run: dotnet pack src/AstraFlow.AspNetCore/AstraFlow.AspNetCore.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Pack FluentValidation integration
+        run: dotnet pack src/AstraFlow.FluentValidation/AstraFlow.FluentValidation.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
       - name: Pack testing
         run: dotnet pack src/AstraFlow.Testing/AstraFlow.Testing.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
@@ -70,6 +76,9 @@ jobs:
 
       - name: Pack generators
         run: dotnet pack src/AstraFlow.Generators/AstraFlow.Generators.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Pack CLI
+        run: dotnet pack src/AstraFlow.Cli/AstraFlow.Cli.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
       - name: Pack meta package
         run: dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
@@ -110,6 +119,29 @@ jobs:
           }
           if ($efEntries -match "^lib/(netstandard2.0|net8.0|net9.0)/") {
             throw "AstraFlow.Mapper.EntityFrameworkCore should remain net10.0-only in $version."
+          }
+
+          $aspNetCoreEntries = tar -tf "src/AstraFlow.AspNetCore/bin/Release/AstraFlow.AspNetCore.$version.nupkg"
+          if (-not ($aspNetCoreEntries -match "^lib/net10.0/.*\.dll$")) {
+            throw "AstraFlow.AspNetCore is missing lib/net10.0 DLL assets."
+          }
+          if ($aspNetCoreEntries -match "^lib/(netstandard2.0|net8.0|net9.0)/") {
+            throw "AstraFlow.AspNetCore should remain net10.0-only in $version."
+          }
+
+          $fluentValidationEntries = tar -tf "src/AstraFlow.FluentValidation/bin/Release/AstraFlow.FluentValidation.$version.nupkg"
+          foreach ($tfm in @("net8.0", "net9.0", "net10.0")) {
+            if (-not ($fluentValidationEntries -match "^lib/$tfm/.*\.dll$")) {
+              throw "AstraFlow.FluentValidation is missing lib/$tfm DLL assets."
+            }
+          }
+          if ($fluentValidationEntries -match "^lib/netstandard2.0/") {
+            throw "AstraFlow.FluentValidation should not ship netstandard2.0 assets in $version."
+          }
+
+          $cliEntries = tar -tf "src/AstraFlow.Cli/bin/Release/AstraFlow.Cli.$version.nupkg"
+          if (-not ($cliEntries -match "^tools/net10.0/any/")) {
+            throw "AstraFlow.Cli is missing .NET tool assets."
           }
 
           $compilerPackages = @("AstraFlow.Analyzers", "AstraFlow.Generators")
