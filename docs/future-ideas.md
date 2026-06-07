@@ -72,15 +72,15 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Old-version compatibility test suite | Candidate | Restore previous package versions and verify upgrade paths. |
 | Old-version upgrade smoke tests | Done, expand | `1.13.0` adds a previous-version clean-consumer upgrade smoke; future work can add more consumer shapes. |
 | Migration guides from popular mediator/mapping approaches | Planned | Keep public docs capability-focused rather than competitor-centered. |
-| Migration cookbook | Done, expand | `1.13.0` adds upgrade and package-reference migration guidance; future work can add richer before/after recipes. |
+| Migration cookbook | Done, expand | `1.13.0` adds upgrade and package-reference migration guidance; `1.13.1` adds a compile-checked cookbook sample. Future work can add richer before/after recipes. |
 | Migration scanner report | Done, expand | First MediatR and AutoMapper candidate scanner shipped in `1.10.0`; future work can add richer recipes. |
 | Package selector guide | Planned | Help users choose focused packages instead of always using meta package. |
 | Offline package verification script | Candidate | Validate `.nupkg` contents, README, icon, docs, symbols, and dependencies. |
 | Local install smoke-test template | Done | Shipped as `scripts/verify-package-install.ps1` in `1.2.3`. |
-| DI container compatibility matrix | Candidate | Test Microsoft.Extensions.DependencyInjection-compatible containers where practical. |
-| Host compatibility samples | Planned | Console, worker, ASP.NET Core, class library, test project, shared contracts/client project. |
-| Versioned documentation | Planned | Keep older package docs available after APIs expand. |
-| Package deprecation process | Planned | Define when and how packages/APIs are marked obsolete or deprecated. |
+| DI container compatibility matrix | Done, expand | `1.13.1` validates scoped Microsoft.Extensions.DependencyInjection consumption; third-party container matrices remain candidate work. |
+| Host compatibility samples | Done, expand | `1.13.1` adds console, worker, ASP.NET Core, class library, test project, shared contracts, and shared client sample coverage. |
+| Versioned documentation | Done, expand | `1.13.1` documents tag-based versioned docs strategy; hosted docs remain future platform work. |
+| Package deprecation process | Done, expand | `1.13.1` defines package/API deprecation rules; future work can automate obsolete API review. |
 
 ## Mediator Ideas
 
@@ -342,13 +342,13 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | --- | --- | --- |
 | API governance | Done, expand | `1.13.0` adds API compatibility verification and governance docs; future work can add richer baselines and breaking-change review automation. |
 | Version support policy | Done, expand | `1.13.0` documents latest-minor support and previous-version upgrade confidence policy. |
-| Deprecation policy | Planned | Obsolete APIs with replacement guidance. |
+| Deprecation policy | Done, expand | `1.13.1` documents package/API deprecation rules; future work can add analyzer or release checklist automation. |
 | Signed tags | Planned | Release integrity. |
 | Branch protection guide | Planned | Contributor/release safety. |
 | Changelog automation | Planned | Consistent release notes. |
-| Versioned documentation strategy | Planned | Keep docs aligned to package versions. |
+| Versioned documentation strategy | Done, expand | `1.13.1` documents tag-based versioned docs strategy; hosted docs remain future platform work. |
 | Release branch strategy | Planned | Support patching old release lines. |
-| Package deprecation process | Planned | Responsible retirement of APIs/packages. |
+| Package deprecation process | Done, expand | Responsible retirement of APIs/packages is documented in `1.13.1`; automation remains future work. |
 | Secret scanning release gate | Planned | Prevent publishing tokens, keys, or secret screenshots. |
 | Dependency vulnerability gate | Planned | Block high-severity known vulnerable dependencies where practical. |
 | Secure analyzer suppression policy | Planned | Require reasons for suppressing sensitive findings. |

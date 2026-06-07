@@ -2,6 +2,22 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.13.1
+
+### Added
+
+- Added compile-checked host compatibility samples for console, worker, class library, test project, and shared contracts/client project layouts.
+- Added a compile-checked migration cookbook sample that demonstrates AstraFlow mediator and mapper upgrade flows.
+- Added `scripts/verify-sample-builds.ps1` and publish workflow coverage so samples are an explicit release gate.
+- Added Microsoft.Extensions.DependencyInjection scoped consumer coverage for the combined AstraFlow registration path.
+- Added package deprecation and versioned documentation strategy guidance.
+
+### Changed
+
+- Updated package metadata, compatibility guidance, migration cookbook guidance, publishing guidance, and README package snippets for `1.13.1`.
+- Updated public API compatibility and upgrade smoke baselines to compare against the published `1.13.0` line.
+- Updated roadmap status to mark the v1.13 compatibility, migration, and consumer confidence lane complete through `1.13.1`.
+
 ## 1.13.0
 
 ### Added

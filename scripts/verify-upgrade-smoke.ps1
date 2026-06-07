@@ -1,6 +1,6 @@
 param(
     [string]$Configuration = "Release",
-    [string]$PreviousVersion = "1.12.0",
+    [string]$PreviousVersion = "1.13.0",
     [string]$CurrentVersion,
     [string]$WorkRoot = (Join-Path ([System.IO.Path]::GetTempPath()) "AstraFlowUpgradeSmoke")
 )

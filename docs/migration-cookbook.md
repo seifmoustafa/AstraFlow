@@ -1,6 +1,6 @@
 # Migration Cookbook
 
-This cookbook documents consumer-confidence checks introduced in `1.13.0`.
+This cookbook documents consumer-confidence checks introduced in `1.13.0` and expanded in `1.13.1`.
 
 ## Goal
 
@@ -11,7 +11,7 @@ Consumers should be able to upgrade from the previous stable AstraFlow package v
 After packing current packages, run:
 
 ```powershell
-.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 1.12.0 -CurrentVersion 1.13.0
+.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 1.13.0 -CurrentVersion 1.13.1
 ```
 
 The script:
@@ -23,6 +23,20 @@ The script:
 - restores, builds, and runs the same smoke flow again.
 
 The publish workflow runs this check after package asset verification and public API compatibility verification.
+
+## Compile-Checked Cookbook Sample
+
+`samples/MigrationCookbookSample` is the compile-checked companion for this guide. It exercises:
+
+- mediator request/handler usage through `ISender`,
+- explicit mapper registration through `AddAstraFlowMapper`,
+- a declared mapping rule with secure ID conversion.
+
+Build it directly when editing this guide:
+
+```powershell
+dotnet build .\samples\MigrationCookbookSample\MigrationCookbookSample.csproj -c Release
+```
 
 ## Local Project References To Package References
 
@@ -40,8 +54,8 @@ When validating a consumer migration from source references to NuGet packages:
 Use this flow for application projects that only depend on mediator behavior:
 
 ```powershell
-dotnet add package AstraFlow.Contracts --version 1.13.0
-dotnet add package AstraFlow.Mediator --version 1.13.0
+dotnet add package AstraFlow.Contracts --version 1.13.1
+dotnet add package AstraFlow.Mediator --version 1.13.1
 dotnet build
 dotnet test
 ```
@@ -53,8 +67,8 @@ Verify that response requests, void requests, stream requests, and notifications
 Use this flow for mapping-heavy consumers:
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.13.0
-dotnet add package AstraFlow.Mapper.Conventions --version 1.13.0
+dotnet add package AstraFlow.Mapper --version 1.13.1
+dotnet add package AstraFlow.Mapper.Conventions --version 1.13.1
 dotnet build
 dotnet test
 ```
@@ -66,9 +80,9 @@ Verify explicit mapping rules, convention profiles, projection registrations, an
 Install only the integration packages a consumer actually uses:
 
 ```powershell
-dotnet add package AstraFlow.AspNetCore --version 1.13.0
-dotnet add package AstraFlow.FluentValidation --version 1.13.0
-dotnet add package AstraFlow.OpenTelemetry --version 1.13.0
+dotnet add package AstraFlow.AspNetCore --version 1.13.1
+dotnet add package AstraFlow.FluentValidation --version 1.13.1
+dotnet add package AstraFlow.OpenTelemetry --version 1.13.1
 ```
 
 Then verify application startup, diagnostics endpoint safety, validation behavior, and telemetry configuration.
@@ -82,4 +96,4 @@ If an upgrade fails:
 - check analyzer diagnostics for newly visible compile-time issues,
 - compare the failing public API against `docs/api-reference.md`,
 - run `.\scripts\verify-api-compatibility.ps1` to detect accidental API removal,
-- run `.\scripts\verify-package-install.ps1 -Version 1.13.0` to isolate package install issues.
+- run `.\scripts\verify-package-install.ps1 -Version 1.13.1` to isolate package install issues.

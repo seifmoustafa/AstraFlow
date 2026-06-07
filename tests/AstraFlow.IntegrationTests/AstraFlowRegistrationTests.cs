@@ -22,6 +22,24 @@ public sealed class AstraFlowRegistrationTests
         mapped.Name.Should().Be("handled:Alpha");
     }
 
+    [Fact]
+    public async Task AddAstraFlow_WorksFromScopedMicrosoftDependencyInjectionConsumer()
+    {
+        var services = new ServiceCollection();
+        services.AddAstraFlow(assemblyMarkerTypes: typeof(AstraFlowRegistrationTests));
+
+        using var provider = services.BuildServiceProvider(validateScopes: true);
+        using var scope = provider.CreateScope();
+
+        var sender = scope.ServiceProvider.GetRequiredService<Mediator.ISender>();
+        var mapper = scope.ServiceProvider.GetRequiredService<Mapper.IMapper>();
+
+        var response = await sender.Send(new SampleRequest("Scoped"));
+        var mapped = mapper.Map<SampleResponse>(new SampleEntity(response));
+
+        mapped.Name.Should().Be("handled:Scoped");
+    }
+
     public sealed record SampleRequest(string Name) : Mediator.IRequest<string>;
 
     public sealed class SampleRequestHandler : Mediator.IRequestHandler<SampleRequest, string>

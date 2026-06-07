@@ -2,14 +2,14 @@
 
 This guide is for preparing AstraFlow releases for a public repository push and community consumption.
 
-## Current Release: v1.13.0
+## Current Release: v1.13.1
 
-v1.13.0 adds compatibility, migration confidence, and API governance preparation before larger v2 package expansion.
+v1.13.1 closes the compatibility, migration confidence, and API governance gaps left after v1.13.0 before larger v2 package expansion.
 
 Key message:
 
 ```text
-AstraFlow v1.13.0 adds release gates for public API compatibility and previous-version upgrade smoke verification, plus migration cookbook and API governance documentation.
+AstraFlow v1.13.1 adds compile-checked host compatibility samples, a compile-checked migration cookbook sample, sample-build verification, and package deprecation/versioned docs guidance.
 ```
 
 ## What Changed Since v1.11.0
@@ -19,8 +19,9 @@ AstraFlow v1.13.0 adds release gates for public API compatibility and previous-v
 | API compatibility gate | Added `scripts/verify-api-compatibility.ps1`. | Release owners can catch accidental public API removals before publishing. |
 | Upgrade smoke gate | Added `scripts/verify-upgrade-smoke.ps1`. | A clean consumer can prove the previous version upgrades to current locally packed packages. |
 | Publish workflow gates | Added API compatibility and previous-version upgrade smoke checks. | Package confidence is enforced before NuGet push. |
-| Migration docs | Added migration cookbook and API governance guide. | Consumers get clearer upgrade and compatibility expectations. |
+| Migration docs | Added migration cookbook, compile-checked migration sample, and API governance guide. | Consumers get clearer upgrade and compatibility expectations. |
 | Version support policy | Documented current support expectations. | Maintainers can explain which lines receive active validation. |
+| Host compatibility samples | Added console, worker, ASP.NET Core, class library, test project, shared contracts, and shared client samples. | Roadmap sample coverage is build-checked instead of prose-only. |
 
 ## Pre-Push Checklist
 
@@ -48,8 +49,8 @@ Expected result:
 - ASP.NET Core tests include 8 passing tests.
 - FluentValidation tests include 7 passing tests.
 - OpenTelemetry tests include 8 passing tests.
-- API compatibility verification passes against `1.12.0`.
-- Previous-version upgrade smoke verification passes from `1.12.0` to `1.13.0`.
+- API compatibility verification passes against `1.13.0`.
+- Previous-version upgrade smoke verification passes from `1.13.0` to `1.13.1`.
 - CLI tests include 10 passing tests.
 - generator package tests include 6 passing tests.
 - testing package tests include 22 passing tests.
@@ -78,52 +79,52 @@ dotnet pack src\AstraFlow\AstraFlow.csproj -c Release --no-build --no-restore -v
 
 Expected artifacts:
 
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.13.0.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.13.0.snupkg`
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.13.0.nupkg`
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.13.0.snupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.13.0.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.13.0.snupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.13.0.nupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.13.0.snupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.13.0.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.13.0.snupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.13.0.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.13.0.snupkg`
-- `src/AstraFlow.AspNetCore/bin/Release/AstraFlow.AspNetCore.1.13.0.nupkg`
-- `src/AstraFlow.AspNetCore/bin/Release/AstraFlow.AspNetCore.1.13.0.snupkg`
-- `src/AstraFlow.FluentValidation/bin/Release/AstraFlow.FluentValidation.1.13.0.nupkg`
-- `src/AstraFlow.FluentValidation/bin/Release/AstraFlow.FluentValidation.1.13.0.snupkg`
-- `src/AstraFlow.OpenTelemetry/bin/Release/AstraFlow.OpenTelemetry.1.13.0.nupkg`
-- `src/AstraFlow.OpenTelemetry/bin/Release/AstraFlow.OpenTelemetry.1.13.0.snupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.13.0.nupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.13.0.snupkg`
-- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.13.0.nupkg`
-- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.13.0.snupkg`
-- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.13.0.nupkg`
-- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.13.0.snupkg`
-- `src/AstraFlow.Cli/bin/Release/AstraFlow.Cli.1.13.0.nupkg`
-- `src/AstraFlow.Cli/bin/Release/AstraFlow.Cli.1.13.0.snupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.13.0.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.13.0.snupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.13.1.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.13.1.snupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.13.1.nupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.13.1.snupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.13.1.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.13.1.snupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.13.1.nupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.13.1.snupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.13.1.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.13.1.snupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.13.1.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.13.1.snupkg`
+- `src/AstraFlow.AspNetCore/bin/Release/AstraFlow.AspNetCore.1.13.1.nupkg`
+- `src/AstraFlow.AspNetCore/bin/Release/AstraFlow.AspNetCore.1.13.1.snupkg`
+- `src/AstraFlow.FluentValidation/bin/Release/AstraFlow.FluentValidation.1.13.1.nupkg`
+- `src/AstraFlow.FluentValidation/bin/Release/AstraFlow.FluentValidation.1.13.1.snupkg`
+- `src/AstraFlow.OpenTelemetry/bin/Release/AstraFlow.OpenTelemetry.1.13.1.nupkg`
+- `src/AstraFlow.OpenTelemetry/bin/Release/AstraFlow.OpenTelemetry.1.13.1.snupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.13.1.nupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.13.1.snupkg`
+- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.13.1.nupkg`
+- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.13.1.snupkg`
+- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.13.1.nupkg`
+- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.13.1.snupkg`
+- `src/AstraFlow.Cli/bin/Release/AstraFlow.Cli.1.13.1.nupkg`
+- `src/AstraFlow.Cli/bin/Release/AstraFlow.Cli.1.13.1.snupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.13.1.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.13.1.snupkg`
 
 Inspect package contents:
 
 ```powershell
-tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.13.0.nupkg
-tar -tf src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.13.0.nupkg
-tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.13.0.nupkg
-tar -tf src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.13.0.nupkg
-tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.13.0.nupkg
-tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.13.0.nupkg
-tar -tf src\AstraFlow.AspNetCore\bin\Release\AstraFlow.AspNetCore.1.13.0.nupkg
-tar -tf src\AstraFlow.FluentValidation\bin\Release\AstraFlow.FluentValidation.1.13.0.nupkg
-tar -tf src\AstraFlow.OpenTelemetry\bin\Release\AstraFlow.OpenTelemetry.1.13.0.nupkg
-tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.13.0.nupkg
-tar -tf src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.13.0.nupkg
-tar -tf src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.13.0.nupkg
-tar -tf src\AstraFlow.Cli\bin\Release\AstraFlow.Cli.1.13.0.nupkg
-tar -tf src\AstraFlow\bin\Release\AstraFlow.1.13.0.nupkg
+tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.13.1.nupkg
+tar -tf src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.13.1.nupkg
+tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.13.1.nupkg
+tar -tf src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.13.1.nupkg
+tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.13.1.nupkg
+tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.13.1.nupkg
+tar -tf src\AstraFlow.AspNetCore\bin\Release\AstraFlow.AspNetCore.1.13.1.nupkg
+tar -tf src\AstraFlow.FluentValidation\bin\Release\AstraFlow.FluentValidation.1.13.1.nupkg
+tar -tf src\AstraFlow.OpenTelemetry\bin\Release\AstraFlow.OpenTelemetry.1.13.1.nupkg
+tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.13.1.nupkg
+tar -tf src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.13.1.nupkg
+tar -tf src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.13.1.nupkg
+tar -tf src\AstraFlow.Cli\bin\Release\AstraFlow.Cli.1.13.1.nupkg
+tar -tf src\AstraFlow\bin\Release\AstraFlow.1.13.1.nupkg
 ```
 
 Each `.nupkg` should include:
@@ -182,20 +183,20 @@ $root = Resolve-Path '.'
 $localSource = Join-Path $root '.dotnet-cli-home\local-packages'
 New-Item -ItemType Directory -Force -Path $localSource | Out-Null
 
-Copy-Item '.\src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.AspNetCore\bin\Release\AstraFlow.AspNetCore.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.FluentValidation\bin\Release\AstraFlow.FluentValidation.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.OpenTelemetry\bin\Release\AstraFlow.OpenTelemetry.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Cli\bin\Release\AstraFlow.Cli.1.13.0.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.13.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.AspNetCore\bin\Release\AstraFlow.AspNetCore.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.FluentValidation\bin\Release\AstraFlow.FluentValidation.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.OpenTelemetry\bin\Release\AstraFlow.OpenTelemetry.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Cli\bin\Release\AstraFlow.Cli.1.13.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.13.1.nupkg' -Destination $localSource -Force
 
 $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 @"
@@ -209,24 +210,24 @@ $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 </configuration>
 "@ | Set-Content -LiteralPath $config -Encoding UTF8
 
-$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.13.0'
+$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.13.1'
 New-Item -ItemType Directory -Force -Path $sampleRoot | Out-Null
 $sample = Join-Path $sampleRoot ('AstraFlowInstallCheck-' + [guid]::NewGuid().ToString('N'))
 dotnet new console --framework net10.0 --output $sample --no-restore
 $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-dotnet add $project.FullName package AstraFlow.Contracts --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Mediator --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.AspNetCore --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.FluentValidation --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.OpenTelemetry --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Testing --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Analyzers --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow.Generators --version 1.13.0 --no-restore
-dotnet add $project.FullName package AstraFlow --version 1.13.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Contracts --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Mediator --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.AspNetCore --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.FluentValidation --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.OpenTelemetry --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Testing --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Analyzers --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Generators --version 1.13.1 --no-restore
+dotnet add $project.FullName package AstraFlow --version 1.13.1 --no-restore
 dotnet restore $project.FullName --configfile $config
 dotnet build $project.FullName --no-restore
 ```
@@ -246,15 +247,15 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
     $template = if ($framework -eq 'netstandard2.0') { 'classlib' } else { 'console' }
     dotnet new $template --framework $framework --output $sample --no-restore
     $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-    dotnet add $project.FullName package AstraFlow.Contracts --version 1.13.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mediator --version 1.13.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper --version 1.13.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.13.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.13.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Testing --version 1.13.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Analyzers --version 1.13.0 --no-restore
-    dotnet add $project.FullName package AstraFlow.Generators --version 1.13.0 --no-restore
-    dotnet add $project.FullName package AstraFlow --version 1.13.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Contracts --version 1.13.1 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mediator --version 1.13.1 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper --version 1.13.1 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.13.1 --no-restore
+    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.13.1 --no-restore
+    dotnet add $project.FullName package AstraFlow.Testing --version 1.13.1 --no-restore
+    dotnet add $project.FullName package AstraFlow.Analyzers --version 1.13.1 --no-restore
+    dotnet add $project.FullName package AstraFlow.Generators --version 1.13.1 --no-restore
+    dotnet add $project.FullName package AstraFlow --version 1.13.1 --no-restore
     dotnet restore $project.FullName --configfile $config
     dotnet build $project.FullName --no-restore
 }
@@ -264,7 +265,7 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
 
 ```powershell
 git add .
-git commit -m "Release AstraFlow v1.13.0 compatibility confidence"
+git commit -m "Release AstraFlow v1.13.1 compatibility confidence"
 ```
 
 Before committing, confirm no package artifacts are staged:
@@ -285,9 +286,9 @@ Do not commit:
 ## Suggested Tag
 
 ```powershell
-git tag v1.13.0
+git tag v1.13.1
 git push origin main
-git push origin v1.13.0
+git push origin v1.13.1
 ```
 
 Only tag after local verification passes.
@@ -295,16 +296,17 @@ Only tag after local verification passes.
 ## Suggested GitHub Release Notes
 
 ```markdown
-## AstraFlow v1.13.0
+## AstraFlow v1.13.1
 
-This release adds compatibility, migration confidence, and API governance preparation for AstraFlow consumers.
+This release closes the v1.13 compatibility, migration confidence, and API governance gaps for AstraFlow consumers.
 
 ### Changed
 
 - Add public API compatibility verification against the previous published package version.
-- Add previous-version upgrade smoke verification from `1.12.0` to `1.13.0`.
-- Add migration cookbook and API governance documentation.
-- Update docs, package metadata, release automation, and release checklist for `1.13.0`.
+- Add previous-version upgrade smoke verification from `1.13.0` to `1.13.1`.
+- Add compile-checked host compatibility and migration cookbook samples.
+- Add package deprecation and versioned documentation strategy guidance.
+- Update docs, package metadata, release automation, and release checklist for `1.13.1`.
 
 ### Verification
 
@@ -313,7 +315,7 @@ This release adds compatibility, migration confidence, and API governance prepar
 - API compatibility verification passed.
 - Previous-version upgrade smoke verification passed.
 - CLI tool install smoke passed.
-- All fourteen packages packed as `1.13.0`.
+- All fourteen packages packed as `1.13.1`.
 - Package contents include README, CHANGELOG, LICENSE, icon, XML docs, DLLs for expected target frameworks, nuspec files, and symbol packages.
 ```
 
