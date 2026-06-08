@@ -19,7 +19,8 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
 }
 
 $localSource = Join-Path $repoRoot ".dotnet-cli-home\local-packages\$Version"
-$checkRoot = Join-Path $WorkRoot $Version
+$checkRootName = if ($NoRestore) { $Version } else { "$Version-$([guid]::NewGuid().ToString("N"))" }
+$checkRoot = Join-Path $WorkRoot $checkRootName
 $restorePackages = Join-Path $checkRoot "packages"
 $config = Join-Path $checkRoot "nuget.config"
 
@@ -98,13 +99,38 @@ function New-ConsumerProject {
         [string]$Template
     )
 
-    $sample = Join-Path $checkRoot ("AstraFlowInstallCheck-$Framework-" + [guid]::NewGuid().ToString("N"))
-    Invoke-DotNetStep "Create $Framework $Template sample" @("new", $Template, "--framework", $Framework, "--output", $sample, "--no-restore")
+    $frameworkName = $Framework.Replace(".", "")
+    $sample = Join-Path $checkRoot ("af-$frameworkName-" + [guid]::NewGuid().ToString("N").Substring(0, 8))
+    Invoke-DotNetStep "Create $Framework $Template sample" @("new", $Template, "--output", $sample, "--no-restore")
 
     $project = Get-ChildItem -LiteralPath $sample -Filter "*.csproj" | Select-Object -First 1
     if ($null -eq $project) {
         throw "Could not find generated project in $sample."
     }
+
+    [xml]$projectXml = Get-Content -LiteralPath $project.FullName
+    $propertyGroup = $projectXml.SelectSingleNode("/Project/PropertyGroup")
+    if ($null -eq $propertyGroup) {
+        $propertyGroup = $projectXml.CreateElement("PropertyGroup")
+        [void]$projectXml.Project.AppendChild($propertyGroup)
+    }
+
+    $targetFrameworkNode = $projectXml.SelectSingleNode("/Project/PropertyGroup/TargetFramework")
+    if ($null -eq $targetFrameworkNode) {
+        $targetFrameworkNode = $projectXml.CreateElement("TargetFramework")
+        [void]$propertyGroup.AppendChild($targetFrameworkNode)
+    }
+
+    $targetFrameworkNode.InnerText = $Framework
+
+    $langVersionNode = $projectXml.SelectSingleNode("/Project/PropertyGroup/LangVersion")
+    if ($null -eq $langVersionNode) {
+        $langVersionNode = $projectXml.CreateElement("LangVersion")
+        [void]$propertyGroup.AppendChild($langVersionNode)
+    }
+
+    $langVersionNode.InnerText = "latest"
+    $projectXml.Save($project.FullName)
 
     return $project.FullName
 }

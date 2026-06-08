@@ -173,6 +173,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Provider-specific warning codes | Planned | Stable diagnostics. |
 | Projection plan export | Done | Shipped in `1.7.0` through `IProjectionPlanProvider`. |
 | Projection plan assertions | Done | Shipped in `1.7.1` through `AstraFlow.Testing`. |
+| Projection parameter assertions | Done | Shipped in `1.7.2` through `AstraFlow.Testing`. |
 | Projection diffing | Candidate | Review read-model changes in CI. |
 | Projection parameter object model | Planned | Pass explicit query parameters without complex closure captures. |
 | Projection raw-ID policy checks | Planned | Warn when public read models expose raw IDs while secure ID policy is enabled. |

@@ -135,6 +135,63 @@ public static class ProjectionPlanAssertions
     }
 
     /// <summary>
+    /// Asserts that a projection plan contains a parameter member with the supplied type display name.
+    /// </summary>
+    public static ProjectionParameterMember ShouldHaveProjectionParameter(
+        this ProjectionPlan plan,
+        string parameterName,
+        string parameterType)
+    {
+        if (string.IsNullOrWhiteSpace(parameterType))
+        {
+            throw new ArgumentException("Parameter type is required.", nameof(parameterType));
+        }
+
+        var parameter = plan.ShouldHaveProjectionParameter(parameterName);
+        if (!string.Equals(parameter.Type, parameterType, StringComparison.Ordinal))
+        {
+            throw new AstraFlowAssertionException(
+                $"Expected projection parameter '{parameterName}' to use type '{parameterType}', but found '{parameter.Type}'.");
+        }
+
+        return parameter;
+    }
+
+    /// <summary>
+    /// Asserts that a projection plan contains a sensitive parameter member.
+    /// </summary>
+    public static ProjectionParameterMember ShouldHaveSensitiveProjectionParameter(
+        this ProjectionPlan plan,
+        string parameterName)
+    {
+        var parameter = plan.ShouldHaveProjectionParameter(parameterName);
+        if (!parameter.IsSensitive)
+        {
+            throw new AstraFlowAssertionException(
+                $"Expected projection parameter '{parameterName}' to be marked sensitive, but it was not.");
+        }
+
+        return parameter;
+    }
+
+    /// <summary>
+    /// Asserts that a projection plan contains a non-sensitive parameter member.
+    /// </summary>
+    public static ProjectionParameterMember ShouldHaveNonSensitiveProjectionParameter(
+        this ProjectionPlan plan,
+        string parameterName)
+    {
+        var parameter = plan.ShouldHaveProjectionParameter(parameterName);
+        if (parameter.IsSensitive)
+        {
+            throw new AstraFlowAssertionException(
+                $"Expected projection parameter '{parameterName}' to be marked non-sensitive, but it was sensitive.");
+        }
+
+        return parameter;
+    }
+
+    /// <summary>
     /// Asserts that a projection plan contains a destination member decision.
     /// </summary>
     public static ProjectionPlanMember ShouldHaveProjectionMember(

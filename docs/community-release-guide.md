@@ -2,14 +2,14 @@
 
 This guide is for preparing AstraFlow releases for a public repository push and community consumption.
 
-## Current Release: v1.7.1
+## Current Release: v1.7.2
 
-v1.7.1 is the first projection stabilization patch on the v1.7.x lane. It keeps the v1.7.0 parameterized projection and EF provider parity baseline, then adds projection plan assertion helpers for test projects.
+v1.7.2 is a projection stabilization patch on the v1.7.x lane. It keeps the v1.7.0 parameterized projection and EF provider parity baseline, then adds projection plan parameter type and sensitivity assertion helpers for test projects.
 
 Key message:
 
 ```text
-AstraFlow v1.7.1 adds framework-neutral projection plan assertions so teams can test parameterized projection plans, member decisions, and projection findings without depending on a specific test runner.
+AstraFlow v1.7.2 adds framework-neutral projection parameter assertions so teams can test parameter metadata, parameter types, and sensitive parameter flags without depending on a specific test runner.
 ```
 
 ## What Changed Since v1.6.2
@@ -19,6 +19,7 @@ AstraFlow v1.7.1 adds framework-neutral projection plan assertions so teams can 
 | Parameterized projections | Added `IParameterizedProjection`, named parameterized projections, registry lookup, and `ProjectWith` overloads. | Tenant, user, culture, and current-time values are explicit instead of hidden in complex closures. |
 | Projection plans | Added `IProjectionPlanProvider` and deterministic `ProjectionPlan` output. | CI and review tools can inspect projection shape without payload values. |
 | Projection plan tests | Added `ProjectionPlanAssertions` to `AstraFlow.Testing`. | Test projects can assert parameterized plans, parameter members, destination member decisions, and plan findings. |
+| Projection parameter tests | Added parameter type and sensitivity assertions to `ProjectionPlanAssertions`. | Tests can verify parameter metadata without inspecting plan records manually. |
 | Projection diagnostics | Added `AFP106` and `AFP107`. | Raw public IDs and secure ID infrastructure inside queries are surfaced before release. |
 | EF validation | Added parameter sample support plus provider metadata and `AFPEF002`/`AFPEF003`. | Provider validation is clearer and parameterized projections can be checked without executing queries. |
 | Docs | Updated projection, EF Core, compatibility, package selection, API reference, and roadmap docs. | Public docs match the shipped package version. |
@@ -45,7 +46,7 @@ Expected result:
 - mapper tests include 23 passing tests,
 - convention mapper tests include 38 passing tests,
 - integration tests include 1 passing test.
-- testing package tests include 18 passing tests.
+- testing package tests include 20 passing tests.
 
 ## Package Verification
 
@@ -64,34 +65,34 @@ dotnet pack src\AstraFlow\AstraFlow.csproj -c Release --no-build --no-restore -v
 
 Expected artifacts:
 
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.7.1.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.7.1.snupkg`
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.7.1.nupkg`
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.7.1.snupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.7.1.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.7.1.snupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.7.1.nupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.7.1.snupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.7.1.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.7.1.snupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.7.1.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.7.1.snupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.7.1.nupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.7.1.snupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.7.1.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.7.1.snupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.7.2.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.7.2.snupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.7.2.nupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.7.2.snupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.7.2.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.7.2.snupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.7.2.nupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.7.2.snupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.7.2.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.7.2.snupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.7.2.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.7.2.snupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.7.2.nupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.7.2.snupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.7.2.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.7.2.snupkg`
 
 Inspect package contents:
 
 ```powershell
-tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.7.1.nupkg
-tar -tf src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.7.1.nupkg
-tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.7.1.nupkg
-tar -tf src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.7.1.nupkg
-tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.7.1.nupkg
-tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.7.1.nupkg
-tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.7.1.nupkg
-tar -tf src\AstraFlow\bin\Release\AstraFlow.1.7.1.nupkg
+tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.7.2.nupkg
+tar -tf src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.7.2.nupkg
+tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.7.2.nupkg
+tar -tf src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.7.2.nupkg
+tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.7.2.nupkg
+tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.7.2.nupkg
+tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.7.2.nupkg
+tar -tf src\AstraFlow\bin\Release\AstraFlow.1.7.2.nupkg
 ```
 
 Each `.nupkg` should include:
@@ -130,14 +131,14 @@ $root = Resolve-Path '.'
 $localSource = Join-Path $root '.dotnet-cli-home\local-packages'
 New-Item -ItemType Directory -Force -Path $localSource | Out-Null
 
-Copy-Item '.\src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.7.1.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.7.1.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.7.1.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.7.1.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.7.1.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.7.1.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.7.1.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.7.1.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.7.2.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.7.2.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.7.2.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.7.2.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.7.2.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.7.2.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.7.2.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.7.2.nupkg' -Destination $localSource -Force
 
 $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 @"
@@ -151,19 +152,19 @@ $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 </configuration>
 "@ | Set-Content -LiteralPath $config -Encoding UTF8
 
-$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.7.1'
+$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.7.2'
 New-Item -ItemType Directory -Force -Path $sampleRoot | Out-Null
 $sample = Join-Path $sampleRoot ('AstraFlowInstallCheck-' + [guid]::NewGuid().ToString('N'))
 dotnet new console --framework net10.0 --output $sample --no-restore
 $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-dotnet add $project.FullName package AstraFlow.Contracts --version 1.7.1 --no-restore
-dotnet add $project.FullName package AstraFlow.Mediator --version 1.7.1 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper --version 1.7.1 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.7.1 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.1 --no-restore
-dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.7.1 --no-restore
-dotnet add $project.FullName package AstraFlow.Testing --version 1.7.1 --no-restore
-dotnet add $project.FullName package AstraFlow --version 1.7.1 --no-restore
+dotnet add $project.FullName package AstraFlow.Contracts --version 1.7.2 --no-restore
+dotnet add $project.FullName package AstraFlow.Mediator --version 1.7.2 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper --version 1.7.2 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.7.2 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.7.2 --no-restore
+dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.7.2 --no-restore
+dotnet add $project.FullName package AstraFlow.Testing --version 1.7.2 --no-restore
+dotnet add $project.FullName package AstraFlow --version 1.7.2 --no-restore
 dotnet restore $project.FullName --configfile $config
 dotnet build $project.FullName --no-restore
 ```
@@ -182,13 +183,13 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
     $template = if ($framework -eq 'netstandard2.0') { 'classlib' } else { 'console' }
     dotnet new $template --framework $framework --output $sample --no-restore
     $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-    dotnet add $project.FullName package AstraFlow.Contracts --version 1.7.1 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mediator --version 1.7.1 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper --version 1.7.1 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.7.1 --no-restore
-    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.7.1 --no-restore
-    dotnet add $project.FullName package AstraFlow.Testing --version 1.7.1 --no-restore
-    dotnet add $project.FullName package AstraFlow --version 1.7.1 --no-restore
+    dotnet add $project.FullName package AstraFlow.Contracts --version 1.7.2 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mediator --version 1.7.2 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper --version 1.7.2 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.7.2 --no-restore
+    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.7.2 --no-restore
+    dotnet add $project.FullName package AstraFlow.Testing --version 1.7.2 --no-restore
+    dotnet add $project.FullName package AstraFlow --version 1.7.2 --no-restore
     dotnet restore $project.FullName --configfile $config
     dotnet build $project.FullName --no-restore
 }
@@ -198,7 +199,7 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
 
 ```powershell
 git add .
-git commit -m "Release AstraFlow v1.7.1 projection testing"
+git commit -m "Release AstraFlow v1.7.2 projection parameter testing"
 ```
 
 Before committing, confirm no package artifacts are staged:
@@ -219,9 +220,9 @@ Do not commit:
 ## Suggested Tag
 
 ```powershell
-git tag v1.7.1
+git tag v1.7.2
 git push origin main
-git push origin v1.7.1
+git push origin v1.7.2
 ```
 
 Only tag after local verification passes.
@@ -229,9 +230,9 @@ Only tag after local verification passes.
 ## Suggested GitHub Release Notes
 
 ```markdown
-## AstraFlow v1.7.1
+## AstraFlow v1.7.2
 
-This patch adds projection plan assertion helpers for the v1.7.x stabilization lane while preserving the v1.7.0 parameterized projection and EF provider parity baseline.
+This patch adds projection plan parameter type and sensitivity assertion helpers for the v1.7.x stabilization lane while preserving the v1.7.0 parameterized projection and EF provider parity baseline.
 
 ### Changed
 
@@ -239,15 +240,16 @@ This patch adds projection plan assertion helpers for the v1.7.x stabilization l
 - Add `ProjectWith` overloads for parameterized projections.
 - Add deterministic projection plan export through `IProjectionPlanProvider`.
 - Add projection plan assertions for plan lookup, parameter metadata, member decisions, and plan findings.
+- Add projection parameter assertions for expected type and sensitive/non-sensitive flags.
 - Add `AFP106` raw public ID diagnostics and `AFP107` secure ID projection diagnostics.
 - Add EF Core parameter sample support, provider metadata, `AFPEF002`, and `AFPEF003`.
-- Update docs, package metadata, tests, and clean-install verification for `1.7.1`.
+- Update docs, package metadata, tests, and clean-install verification for `1.7.2`.
 
 ### Verification
 
 - Release build passed.
 - Full test suite passed.
-- All eight packages packed as `1.7.1`.
+- All eight packages packed as `1.7.2`.
 - Package contents include README, CHANGELOG, LICENSE, icon, XML docs, DLLs for expected target frameworks, nuspec files, and symbol packages.
 ```
 
@@ -260,6 +262,7 @@ Use this positioning consistently:
 - It is not tied to a web framework, validation framework, ORM, result type, or application-specific encryption.
 - It prioritizes clear startup/runtime failures over hidden behavior.
 - Future packages may add target-framework compatibility work, testing support, mediator parity features, optional convention mapping, advanced mapping parity, analyzers, CLI/templates, broader provider checks, integrations, and observability, but the explicit core remains first-class.
+
 
 
 

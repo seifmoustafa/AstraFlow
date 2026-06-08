@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.7.1</Version>
-    <AssemblyVersion>1.7.1.0</AssemblyVersion>
-    <FileVersion>1.7.1.0</FileVersion>
+    <Version>1.7.2</Version>
+    <AssemblyVersion>1.7.2.0</AssemblyVersion>
+    <FileVersion>1.7.2.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,8 +18,8 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.7.1:
-      - Adds projection plan assertion helpers to AstraFlow.Testing.
+    <PackageReleaseNotes>AstraFlow 1.7.2:
+      - Adds projection plan parameter type and sensitivity assertion helpers to AstraFlow.Testing.
       - Keeps the 1.7.x stabilization lane focused on projection review and package verification polish.
       - Builds on the 1.7.0 parameterized projection, projection plan, and EF provider validation baseline.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
