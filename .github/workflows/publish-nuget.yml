@@ -1,4 +1,4 @@
-﻿name: Publish AstraFlow Packages
+name: Publish AstraFlow Packages
 
 on:
   workflow_dispatch:
@@ -87,7 +87,6 @@ jobs:
             "src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.$version.nupkg",
             "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.$version.nupkg",
             "src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.$version.nupkg",
-            "src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.$version.nupkg",
             "src/AstraFlow/bin/Release/AstraFlow.$version.nupkg"
           )
           foreach ($package in $corePackages) {
