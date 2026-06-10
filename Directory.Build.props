@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.7.2</Version>
-    <AssemblyVersion>1.7.2.0</AssemblyVersion>
-    <FileVersion>1.7.2.0</FileVersion>
+    <Version>1.8.0</Version>
+    <AssemblyVersion>1.8.0.0</AssemblyVersion>
+    <FileVersion>1.8.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.7.2:
-      - Adds projection plan parameter type and sensitivity assertion helpers to AstraFlow.Testing.
-      - Keeps the 1.7.x stabilization lane focused on projection review and package verification polish.
-      - Builds on the 1.7.0 parameterized projection, projection plan, and EF provider validation baseline.
+    <PackageReleaseNotes>AstraFlow 1.8.0:
+      - Adds the AstraFlow.Analyzers package foundation with stable analyzer rule IDs and severity metadata.
+      - Adds analyzer test infrastructure without shipping generator dependencies or code fixes.
+      - Documents analyzer rule IDs, severity policy, suppression guidance, and the rule documentation pattern.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

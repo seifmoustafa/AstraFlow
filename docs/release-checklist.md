@@ -19,6 +19,7 @@
 - Package contents include `README.md`, `CHANGELOG.md`, `LICENSE`, package icon, repository docs, `.nuspec`, library DLL, PDB, and XML docs.
 - Package contents include `docs/compatibility.md`, `docs/package-selection.md`, and `docs/future-ideas.md`.
 - Package dependency groups match the supported target frameworks.
+- Analyzer packages include analyzer assets under `analyzers/dotnet/cs` and do not include unintended runtime `lib/` assets.
 - No `bin/`, `obj/`, temporary logs, local SDK cache folders, `.nupkg`, or `.snupkg` files are committed.
 
 ## Compatibility
@@ -63,6 +64,7 @@
 - A clean sample project can install `AstraFlow.Diagnostics`.
 - A clean sample project can install `AstraFlow.Testing`.
 - A clean sample project can install `AstraFlow.Mapper.EntityFrameworkCore`.
+- A clean sample project can install `AstraFlow.Analyzers`.
 - A clean sample project can restore each package using the documented package versions.
 - A clean sample project can build after installing the focused package set recommended in `docs/package-selection.md`.
 - A clean sample consumer can migrate from local AstraFlow project references to NuGet package references.

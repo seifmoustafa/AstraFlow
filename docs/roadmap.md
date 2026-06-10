@@ -819,7 +819,7 @@ What must NOT be included:
 
 ### v1.6 Advanced Mapping Parity
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -1114,7 +1114,7 @@ Harden the `v1.7.0` projection and EF provider parity baseline without expanding
 Patch releases:
 
 - `v1.7.1`: projection plan assertion helpers in `AstraFlow.Testing`, plus release-facing documentation and package metadata updates.
-- `v1.7.2`: projection plan parameter type and sensitivity assertion helpers in `AstraFlow.Testing`.
+- `v1.8.0`: projection plan parameter type and sensitivity assertion helpers in `AstraFlow.Testing`.
 
 Packages affected:
 
@@ -1178,7 +1178,7 @@ Risk level:
 
 #### v1.8.0 Analyzer Foundation
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -1198,6 +1198,7 @@ Features included:
 - Analyzer documentation pattern.
 - Analyzer test infrastructure.
 - Suppression guidance.
+- Analyzer package asset verification.
 
 Acceptance gates:
 
@@ -1205,6 +1206,7 @@ Acceptance gates:
 - Analyzer tests can run in CI.
 - Suppression guidance exists.
 - Rule documentation template exists.
+- Analyzer package ships compiler analyzer assets without runtime `lib/` assets.
 
 What must NOT be included:
 

@@ -65,6 +65,9 @@ jobs:
       - name: Pack testing
         run: dotnet pack src/AstraFlow.Testing/AstraFlow.Testing.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Pack analyzers
+        run: dotnet pack src/AstraFlow.Analyzers/AstraFlow.Analyzers.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
       - name: Pack meta package
         run: dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
@@ -84,6 +87,7 @@ jobs:
             "src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.$version.nupkg",
             "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.$version.nupkg",
             "src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.$version.nupkg",
+            "src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.$version.nupkg",
             "src/AstraFlow/bin/Release/AstraFlow.$version.nupkg"
           )
           foreach ($package in $corePackages) {
@@ -104,6 +108,14 @@ jobs:
           }
           if ($efEntries -match "^lib/(netstandard2.0|net8.0|net9.0)/") {
             throw "AstraFlow.Mapper.EntityFrameworkCore should remain net10.0-only in $version."
+          }
+
+          $analyzerEntries = tar -tf "src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.$version.nupkg"
+          if (-not ($analyzerEntries -match "^analyzers/dotnet/cs/AstraFlow.Analyzers.dll$")) {
+            throw "AstraFlow.Analyzers is missing analyzer DLL assets."
+          }
+          if ($analyzerEntries -match "^lib/") {
+            throw "AstraFlow.Analyzers should ship analyzer assets, not runtime lib assets."
           }
 
       - name: Verify clean package install

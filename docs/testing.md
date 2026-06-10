@@ -1,4 +1,4 @@
-﻿# Testing
+# Testing
 
 `AstraFlow.Testing` is an optional test-helper package for projects that use AstraFlow mediator, mapper, projections, diagnostics, or secure ID flows.
 
@@ -7,7 +7,7 @@ It has no dependency on xUnit, NUnit, MSTest, FluentAssertions, or a mocking fra
 Install:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.7.2
+dotnet add package AstraFlow.Testing --version 1.8.0
 ```
 
 ## Fake Mediator

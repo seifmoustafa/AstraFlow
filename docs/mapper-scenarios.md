@@ -1,4 +1,4 @@
-﻿# Mapper Scenarios
+# Mapper Scenarios
 
 This guide describes what should happen in common and edge-case mapper scenarios.
 
@@ -119,7 +119,7 @@ Expected behavior:
 - Missing item rules fail with the same missing-rule error.
 - Strings are not treated as collections.
 
-Supported destination shapes in `1.7.2`:
+Supported destination shapes in `1.8.0`:
 
 - arrays
 - `List<T>`
@@ -195,7 +195,7 @@ Expected behavior:
 
 - `ProjectWith` applies the expression to the query.
 - The LINQ provider receives the expression.
-- AstraFlow `1.7.2` validates projection registrations and high-risk expression patterns through `IProjectionValidator`.
+- AstraFlow `1.8.0` validates projection registrations and high-risk expression patterns through `IProjectionValidator`.
 - The optional `AstraFlow.Mapper.EntityFrameworkCore` package can ask EF Core to generate SQL for registered projections without executing the query.
 
 For named projection and EF Core cases, see [Projection Scenarios](projection-scenarios.md) and [Entity Framework Core](entity-framework-core.md).

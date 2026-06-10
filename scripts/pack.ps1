@@ -35,6 +35,7 @@ try {
     Invoke-DotNetStep "Pack AstraFlow.Mapper.EntityFrameworkCore" @("pack", ".\src\AstraFlow.Mapper.EntityFrameworkCore\AstraFlow.Mapper.EntityFrameworkCore.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Diagnostics" @("pack", ".\src\AstraFlow.Diagnostics\AstraFlow.Diagnostics.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Testing" @("pack", ".\src\AstraFlow.Testing\AstraFlow.Testing.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Pack AstraFlow.Analyzers" @("pack", ".\src\AstraFlow.Analyzers\AstraFlow.Analyzers.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow" @("pack", ".\src\AstraFlow\AstraFlow.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
 
     Write-Host "==> Verify package install"
