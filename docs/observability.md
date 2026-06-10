@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.OpenTelemetry --version 1.13.1
+dotnet add package AstraFlow.OpenTelemetry --version 2.0.0
 ```
 
 Register it after mediator registration:
@@ -46,6 +46,8 @@ Metrics:
 ## Payload Safety
 
 By default AstraFlow telemetry does not emit request payload values, DTO payload values, secrets, tokens, connection strings, or object contents.
+
+`AstraFlowDefaultTelemetryRedactor` uses the shared `AstraFlow.Security` redaction policy. If a future or custom telemetry tag name looks sensitive, its value is replaced with `[redacted]`.
 
 Type names are omitted by default to avoid high-cardinality tags:
 

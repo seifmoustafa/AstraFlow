@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AstraFlow.Mapper\AstraFlow.Mapper.csproj" />
+    <ProjectReference Include="..\AstraFlow.Security\AstraFlow.Security.csproj" />
   </ItemGroup>
 
   <ItemGroup>

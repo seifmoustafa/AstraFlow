@@ -1,6 +1,6 @@
 # API Reference
 
-This reference describes the public AstraFlow `1.13.1` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow `2.0.0` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
@@ -11,6 +11,7 @@ This reference describes the public AstraFlow `1.13.1` API surface. It is intent
 | `AstraFlow.Mapper` | `AstraFlow.Mapper` | Explicit object mapping, mapping validation, projection registry, projection validation, and secure ID abstractions. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers. |
 | `AstraFlow.Diagnostics` | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reporting for AstraFlow registrations and validation findings. |
+| `AstraFlow.Security` | `AstraFlow.Security` | Shared sensitive-name classification and redaction policy primitives for secure DTO governance. |
 | `AstraFlow.Testing` | `AstraFlow.Testing` | Framework-neutral fake dispatchers, harnesses, assertions, and test secure ID helpers. |
 | `AstraFlow.Analyzers` | `AstraFlow.Analyzers` | Roslyn analyzer descriptors, stable rule IDs, severity metadata, and build-time diagnostics infrastructure. |
 | `AstraFlow.Generators` | `AstraFlow.Generators` | Source generators for deterministic mediator component registration and mapper/projection metadata. |
@@ -27,7 +28,23 @@ This reference describes the public AstraFlow `1.13.1` API surface. It is intent
 | `AstraFlowAnalyzerRule` | Record | Describes rule ID, title, category, severity, default enabled state, documentation anchor, and Roslyn descriptor. | No. |
 | `AstraFlowAnalyzerRules` | Static class | Central descriptor catalog for analyzer tests, docs, and future tooling. | No. |
 
-`1.13.1` intentionally keeps analyzers source-only and code-fix-free. Source generator work lives in the separate `AstraFlow.Generators` package.
+`2.0.0` intentionally keeps analyzers source-only and code-fix-free. Source generator work lives in the separate `AstraFlow.Generators` package.
+
+## Security Types
+
+| Type | Kind | Purpose | Consumer Implements? |
+| --- | --- | --- | --- |
+| `AstraFlowSensitiveDataPolicy` | Class | Classifies member, parameter, diagnostic field, and telemetry tag names using the shared AstraFlow sensitive-name taxonomy. | No, instantiate or configure it. |
+| `AstraFlowRedactionPolicy` | Class | Redacts values when the associated name is classified as sensitive. | No, instantiate or pass into integrations. |
+
+## Security Methods And Properties
+
+| API | Signature | What Happens | Important Notes |
+| --- | --- | --- | --- |
+| `AstraFlowSensitiveDataPolicy.DefaultSensitiveNameFragments` | `IReadOnlyList<string>` | Returns the default fragments used by security-aware packages. | Includes password, secret, token, API key, access key, private key, secret key, credential, connection string, hash, salt, and recovery code shapes. |
+| `AstraFlowSensitiveDataPolicy.IsSensitiveName` | `bool IsSensitiveName(string? name)` | Returns true when a name matches the configured sensitive taxonomy. | Compares normalized names and ignores underscores, dashes, dots, and spaces. |
+| `AstraFlowSensitiveDataPolicy.NormalizeName` | `string NormalizeName(string name)` | Normalizes a name for comparison. | Throws `ArgumentNullException` when `name` is null. |
+| `AstraFlowRedactionPolicy.RedactValue` | `string RedactValue(string? name, string? value)` | Returns `[redacted]` for sensitive names, otherwise returns the original value or an empty string for null. | Does not inspect object payloads. Redaction is based on the associated field/tag/member name. |
 
 ## Registration APIs
 
