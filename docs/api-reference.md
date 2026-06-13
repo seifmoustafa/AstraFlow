@@ -1,6 +1,6 @@
 # API Reference
 
-This reference describes the public AstraFlow `1.8.0` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow `1.8.1` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
@@ -19,14 +19,14 @@ This reference describes the public AstraFlow `1.8.0` API surface. It is intenti
 
 | Type | Kind | Purpose | Consumer Implements? |
 | --- | --- | --- | --- |
-| `AstraFlowAnalyzerFoundationAnalyzer` | Roslyn analyzer | Exposes the `1.8.0` analyzer descriptor catalog without reporting feature diagnostics yet. | No. The compiler loads it from the analyzer package. |
+| `AstraFlowAnalyzerFoundationAnalyzer` | Roslyn analyzer | Exposes the analyzer descriptor catalog and reports `1.8.1` mediator diagnostics for missing handlers, duplicate handlers, ambiguous request contracts, missing stream handlers, and singleton handler registrations. | No. The compiler loads it from the analyzer package. |
 | `AstraFlowAnalyzerRuleIds` | Static class | Holds stable analyzer rule ID constants. | No. |
 | `AstraFlowAnalyzerCategories` | Static class | Holds analyzer diagnostic category constants. | No. |
 | `AstraFlowAnalyzerRuleSeverity` | Enum | Describes AstraFlow analyzer severity policy: `Info`, `Warning`, and `Error`. | No. |
 | `AstraFlowAnalyzerRule` | Record | Describes rule ID, title, category, severity, default enabled state, documentation anchor, and Roslyn descriptor. | No. |
 | `AstraFlowAnalyzerRules` | Static class | Central descriptor catalog for analyzer tests, docs, and future tooling. | No. |
 
-`1.8.0` intentionally exposes analyzer infrastructure before mediator, mapper, and projection rules expand. It does not ship source generators or code fixes.
+`1.8.1` intentionally keeps analyzers source-only and code-fix-free. Mapper, projection, and generator work remains in later `1.8.x` releases.
 
 ## Registration APIs
 

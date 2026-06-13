@@ -1114,7 +1114,7 @@ Harden the `v1.7.0` projection and EF provider parity baseline without expanding
 Patch releases:
 
 - `v1.7.1`: projection plan assertion helpers in `AstraFlow.Testing`, plus release-facing documentation and package metadata updates.
-- `v1.8.0`: projection plan parameter type and sensitivity assertion helpers in `AstraFlow.Testing`.
+- `v1.7.2`: projection plan parameter type and sensitivity assertion helpers in `AstraFlow.Testing`.
 
 Packages affected:
 
@@ -1142,7 +1142,7 @@ What must NOT be included:
 
 ### v1.8 Early Analyzers and Source Generators
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -1235,7 +1235,7 @@ Features included:
 - Ambiguous request contract analyzer.
 - Missing stream handler analyzer.
 - Unsafe lifetime analyzer.
-- Behavior order analyzer candidate.
+- Behavior order analyzer remains a later candidate.
 
 Acceptance gates:
 

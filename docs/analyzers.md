@@ -1,37 +1,37 @@
 # AstraFlow Analyzers
 
-AstraFlow `1.8.0` introduces the `AstraFlow.Analyzers` package foundation.
+AstraFlow `1.8.0` introduced the `AstraFlow.Analyzers` package foundation. AstraFlow `1.8.1` adds the first mediator analyzer rules on top of that foundation.
 
-This release intentionally ships the analyzer package structure, rule ID model, severity policy, documentation pattern, and test infrastructure before mediator, mapper, and projection rules expand in later `1.8.x` releases.
+This release intentionally keeps the analyzer package source-only, generator-free, and code-fix-free while adding build-time warnings for common mediator wiring risks.
 
 ## Install
 
 Use the analyzer package from application, library, or test projects where you want build-time AstraFlow guidance:
 
 ```powershell
-dotnet add package AstraFlow.Analyzers --version 1.8.0
+dotnet add package AstraFlow.Analyzers --version 1.8.1
 ```
 
 Analyzer packages should be referenced privately so they do not flow transitively to consumers:
 
 ```xml
-<PackageReference Include="AstraFlow.Analyzers" Version="1.8.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Analyzers" Version="1.8.1" PrivateAssets="all" />
 ```
 
-## Scope In 1.8.0
+## Scope In 1.8.1
 
-`1.8.0` is the foundation release. It includes:
+`1.8.1` includes:
 
-- analyzer package structure,
-- stable rule ID catalog,
-- severity metadata,
-- analyzer documentation pattern,
-- analyzer test infrastructure,
+- the analyzer package foundation from `1.8.0`,
+- mediator request handler coverage warnings,
+- duplicate request handler warnings,
+- ambiguous request contract warnings,
+- stream request handler coverage warnings,
+- singleton handler lifetime warnings,
 - suppression guidance.
 
 It does not include:
 
-- mediator wiring rules,
 - mapper or projection rules,
 - source generators,
 - code fixes,
@@ -118,11 +118,75 @@ Each future rule should include:
 
 It is not reported for user source code.
 
+### AFAN0101
+
+| Field | Value |
+| --- | --- |
+| Title | Request has no handler |
+| Category | `AstraFlow.Mediator` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0101` reports a concrete `IRequest` or `IRequest<TResponse>` implementation when the current compilation does not contain a matching `IRequestHandler<TRequest>` or `IRequestHandler<TRequest, TResponse>` implementation.
+
+Recommended fix: add the missing handler, move the handler into the project being compiled, or suppress the diagnostic if the handler is intentionally supplied by another assembly.
+
+### AFAN0102
+
+| Field | Value |
+| --- | --- |
+| Title | Request has duplicate handlers |
+| Category | `AstraFlow.Mediator` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0102` reports when the current compilation contains more than one concrete handler implementation for the same closed request handler contract.
+
+Recommended fix: keep one handler for the request contract or split the request contracts so each handler owns a distinct request type.
+
+### AFAN0103
+
+| Field | Value |
+| --- | --- |
+| Title | Request has ambiguous contracts |
+| Category | `AstraFlow.Mediator` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0103` reports a concrete request type that implements more than one request contract, such as multiple `IRequest<TResponse>` contracts or a mix of void and response request contracts.
+
+Recommended fix: model one request type per response shape.
+
+### AFAN0104
+
+| Field | Value |
+| --- | --- |
+| Title | Stream request has no handler |
+| Category | `AstraFlow.Mediator` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0104` reports a concrete `IStreamRequest<TResponse>` implementation when the current compilation does not contain a matching `IStreamRequestHandler<TRequest, TResponse>` implementation.
+
+Recommended fix: add the missing stream handler, move it into the project being compiled, or suppress the diagnostic if the handler is intentionally supplied by another assembly.
+
+### AFAN0105
+
+| Field | Value |
+| --- | --- |
+| Title | Handler registered as singleton |
+| Category | `AstraFlow.Mediator` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0105` reports `AddSingleton` registrations that include a concrete AstraFlow request or stream handler implementation.
+
+Recommended fix: prefer scoped or transient handler registration unless the handler has been reviewed as stateless and singleton-safe.
+
 ## Roadmap
 
-After `1.8.0`, the roadmap continues with:
+After `1.8.1`, the roadmap continues with:
 
-- `1.8.1`: mediator analyzers,
 - `1.8.2`: mapper and projection analyzers,
 - `1.8.3`: generated registration foundation,
 - `1.8.4`: generated mapping and projection metadata.

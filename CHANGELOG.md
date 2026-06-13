@@ -2,6 +2,43 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.8.1
+
+### Added
+
+- Added mediator analyzer warnings `AFAN0101` through `AFAN0105`.
+- Added missing request handler diagnostics for concrete `IRequest` and `IRequest<TResponse>` types without matching handlers in the current compilation.
+- Added duplicate request handler diagnostics for multiple concrete handlers of the same closed handler contract.
+- Added ambiguous request contract diagnostics for requests that implement multiple AstraFlow request contracts.
+- Added missing stream handler diagnostics for concrete `IStreamRequest<TResponse>` types without matching stream handlers.
+- Added singleton handler lifetime diagnostics for `AddSingleton` registrations that include concrete AstraFlow request or stream handlers.
+
+### Changed
+
+- Release-facing documentation now points current package install examples at `1.8.1`.
+- Marked `v1.8.1` mediator analyzer work as complete in the roadmap and future ideas bank.
+- Analyzer documentation now lists the mediator rule catalog and recommended fixes.
+
+### Fixed
+
+- None.
+
+### Docs
+
+- Expanded analyzer, package selection, API reference, roadmap, future ideas, and release guidance for the first mediator analyzer rule set.
+
+### Tests
+
+- Added analyzer tests for handled requests, missing handlers, duplicate handlers, ambiguous request contracts, missing stream handlers, and singleton handler registrations.
+
+### Packaging
+
+- Updated package metadata and release notes for `1.8.1`.
+
+### Breaking changes
+
+- None.
+
 ## 1.8.0
 
 ### Added
