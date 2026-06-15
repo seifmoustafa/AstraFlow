@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.8.1</Version>
-    <AssemblyVersion>1.8.1.0</AssemblyVersion>
-    <FileVersion>1.8.1.0</FileVersion>
+    <Version>1.8.2</Version>
+    <AssemblyVersion>1.8.2.0</AssemblyVersion>
+    <FileVersion>1.8.2.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,9 +18,9 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.8.1:
-      - Adds mediator analyzer warnings for missing handlers, duplicate handlers, ambiguous request contracts, missing stream handlers, and singleton handler lifetime risks.
-      - Keeps analyzer rules source-only, generator-free, and code-fix-free.
+    <PackageReleaseNotes>AstraFlow 1.8.2:
+      - Adds mapper and projection analyzer warnings for undeclared mapping rules, reverse sensitive writes, raw public IDs, mapper calls inside query expressions, custom projection methods, and complex projection captures.
+      - Keeps analyzer rules source-only, generator-free, code-fix-free, and conservative about provider translation limits.
       - Expands analyzer docs, tests, and release verification for the 1.8.x analyzer lane.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>

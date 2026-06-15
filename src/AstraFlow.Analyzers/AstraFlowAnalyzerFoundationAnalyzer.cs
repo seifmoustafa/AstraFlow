@@ -25,13 +25,14 @@ public sealed class AstraFlowAnalyzerFoundationAnalyzer : DiagnosticAnalyzer
 
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterCompilationStartAction(StartMediatorAnalysis);
+        context.RegisterCompilationStartAction(StartAnalysis);
     }
 
-    private static void StartMediatorAnalysis(CompilationStartAnalysisContext context)
+    private static void StartAnalysis(CompilationStartAnalysisContext context)
     {
-        var symbols = MediatorSymbols.Create(context.Compilation);
-        if (!symbols.HasRequiredSymbols)
+        var mediatorSymbols = MediatorSymbols.Create(context.Compilation);
+        var mapperSymbols = MapperSymbols.Create(context.Compilation);
+        if (!mediatorSymbols.HasRequiredSymbols && !mapperSymbols.HasCoreSymbols)
         {
             return;
         }
@@ -49,62 +50,179 @@ public sealed class AstraFlowAnalyzerFoundationAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            var request = RequestCandidate.Create(type, symbols);
-            if (request is not null)
+            if (mediatorSymbols.HasRequiredSymbols)
             {
-                lock (requests)
+                var request = RequestCandidate.Create(type, mediatorSymbols);
+                if (request is not null)
                 {
-                    requests.Add(request);
+                    lock (requests)
+                    {
+                        requests.Add(request);
+                    }
+                }
+
+                foreach (var handler in HandlerCandidate.Create(type, mediatorSymbols))
+                {
+                    lock (handlers)
+                    {
+                        handlers.Add(handler);
+                    }
                 }
             }
 
-            foreach (var handler in HandlerCandidate.Create(type, symbols))
+            if (mapperSymbols.HasCoreSymbols)
             {
-                lock (handlers)
-                {
-                    handlers.Add(handler);
-                }
+                ReportMapperSymbolDiagnostics(symbolContext, type, mapperSymbols);
             }
         }, SymbolKind.NamedType);
 
         context.RegisterOperationAction(operationContext =>
         {
             var invocation = (IInvocationOperation)operationContext.Operation;
-            if (!string.Equals(invocation.TargetMethod.Name, "AddSingleton", StringComparison.Ordinal))
+
+            if (mediatorSymbols.HasRequiredSymbols)
+            {
+                ReportSingletonHandlerLifetime(operationContext, invocation, mediatorSymbols);
+            }
+
+            if (mapperSymbols.HasCoreSymbols)
+            {
+                ReportMapperInvocationDiagnostics(operationContext, invocation, mapperSymbols);
+            }
+        }, OperationKind.Invocation);
+
+        context.RegisterOperationAction(operationContext =>
+        {
+            if (!mapperSymbols.HasCoreSymbols)
             {
                 return;
             }
 
-            var singletonHandler = FindSingletonHandlerType(invocation, symbols);
-            if (singletonHandler is null)
+            var fieldReference = (IFieldReferenceOperation)operationContext.Operation;
+            if (!IsInsideProjectionExpressionGetter(operationContext.ContainingSymbol, mapperSymbols) ||
+                fieldReference.Instance is null ||
+                IsSimpleValue(fieldReference.Field.Type))
             {
                 return;
             }
 
             operationContext.ReportDiagnostic(Diagnostic.Create(
-                AstraFlowAnalyzerRules.SingletonHandlerLifetime.Descriptor,
-                invocation.Syntax.GetLocation(),
-                GetDisplayName(singletonHandler)));
-        }, OperationKind.Invocation);
+                AstraFlowAnalyzerRules.ComplexProjectionCapture.Descriptor,
+                fieldReference.Syntax.GetLocation(),
+                fieldReference.Field.Name,
+                GetDisplayName(fieldReference.Field.Type)));
+        }, OperationKind.FieldReference);
 
-        context.RegisterCompilationEndAction(endContext =>
+        if (mediatorSymbols.HasRequiredSymbols)
         {
-            RequestCandidate[] requestSnapshot;
-            HandlerCandidate[] handlerSnapshot;
-            lock (requests)
+            context.RegisterCompilationEndAction(endContext =>
             {
-                requestSnapshot = requests.ToArray();
-            }
+                RequestCandidate[] requestSnapshot;
+                HandlerCandidate[] handlerSnapshot;
+                lock (requests)
+                {
+                    requestSnapshot = requests.ToArray();
+                }
 
-            lock (handlers)
+                lock (handlers)
+                {
+                    handlerSnapshot = handlers.ToArray();
+                }
+
+                ReportAmbiguousRequests(endContext, requestSnapshot);
+                ReportDuplicateHandlers(endContext, handlerSnapshot);
+                ReportMissingHandlers(endContext, requestSnapshot, handlerSnapshot);
+            });
+        }
+    }
+
+    private static void ReportMapperSymbolDiagnostics(
+        SymbolAnalysisContext context,
+        INamedTypeSymbol type,
+        MapperSymbols symbols)
+    {
+        if (symbols.IsUndeclaredMappingRule(type))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                AstraFlowAnalyzerRules.UndeclaredMappingRule.Descriptor,
+                GetLocation(type),
+                GetDisplayName(type)));
+        }
+
+        var rawPublicIdMembers = symbols.GetRawPublicIdProjectionMembers(type).ToArray();
+        if (rawPublicIdMembers.Length > 0)
+        {
+            var destination = symbols.GetProjectionDestinationType(type);
+            context.ReportDiagnostic(Diagnostic.Create(
+                AstraFlowAnalyzerRules.RawPublicIdProjection.Descriptor,
+                GetLocation(type),
+                GetDisplayName(type),
+                destination is null ? "unknown destination" : GetDisplayName(destination),
+                string.Join(", ", rawPublicIdMembers)));
+        }
+    }
+
+    private static void ReportSingletonHandlerLifetime(
+        OperationAnalysisContext context,
+        IInvocationOperation invocation,
+        MediatorSymbols symbols)
+    {
+        if (!string.Equals(invocation.TargetMethod.Name, "AddSingleton", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        var singletonHandler = FindSingletonHandlerType(invocation, symbols);
+        if (singletonHandler is null)
+        {
+            return;
+        }
+
+        context.ReportDiagnostic(Diagnostic.Create(
+            AstraFlowAnalyzerRules.SingletonHandlerLifetime.Descriptor,
+            invocation.Syntax.GetLocation(),
+            GetDisplayName(singletonHandler)));
+    }
+
+    private static void ReportMapperInvocationDiagnostics(
+        OperationAnalysisContext context,
+        IInvocationOperation invocation,
+        MapperSymbols symbols)
+    {
+        if (symbols.IsReverseMapInvocation(invocation))
+        {
+            var destinationType = invocation.TargetMethod.ContainingType.TypeArguments.FirstOrDefault() as INamedTypeSymbol;
+            var sensitiveMembers = destinationType is null
+                ? Array.Empty<string>()
+                : GetSensitiveMemberNames(destinationType).ToArray();
+
+            if (destinationType is not null && sensitiveMembers.Length > 0)
             {
-                handlerSnapshot = handlers.ToArray();
+                context.ReportDiagnostic(Diagnostic.Create(
+                    AstraFlowAnalyzerRules.ReverseMapSensitiveWrite.Descriptor,
+                    invocation.Syntax.GetLocation(),
+                    GetDisplayName(destinationType),
+                    string.Join(", ", sensitiveMembers)));
             }
+        }
 
-            ReportAmbiguousRequests(endContext, requestSnapshot);
-            ReportDuplicateHandlers(endContext, handlerSnapshot);
-            ReportMissingHandlers(endContext, requestSnapshot, handlerSnapshot);
-        });
+        if (symbols.IsMapperMapInvocation(invocation) &&
+            (IsInsideQueryableLambda(invocation) || IsInsideProjectionExpressionGetter(context.ContainingSymbol, symbols)))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                AstraFlowAnalyzerRules.MapperCallInsideQuery.Descriptor,
+                invocation.Syntax.GetLocation(),
+                $"{GetDisplayName(invocation.TargetMethod.ContainingType)}.{invocation.TargetMethod.Name}"));
+        }
+
+        if (IsInsideProjectionExpressionGetter(context.ContainingSymbol, symbols) &&
+            IsCustomProjectionMethod(invocation.TargetMethod, symbols))
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                AstraFlowAnalyzerRules.CustomMethodInProjection.Descriptor,
+                invocation.Syntax.GetLocation(),
+                $"{GetDisplayName(invocation.TargetMethod.ContainingType)}.{invocation.TargetMethod.Name}"));
+        }
     }
 
     private static void ReportAmbiguousRequests(
@@ -209,6 +327,106 @@ public sealed class AstraFlowAnalyzerFoundationAnalyzer : DiagnosticAnalyzer
             .Replace("global::", string.Empty);
     }
 
+    private static IEnumerable<string> GetSensitiveMemberNames(INamedTypeSymbol type)
+    {
+        return type.GetMembers()
+            .Where(member => member is IPropertySymbol or IFieldSymbol)
+            .Select(member => member.Name)
+            .Where(IsSensitiveName)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(name => name, StringComparer.Ordinal);
+    }
+
+    private static bool IsSensitiveName(string name)
+    {
+        return name.IndexOf("password", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               name.IndexOf("token", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               name.IndexOf("secret", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               name.IndexOf("credential", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               name.IndexOf("apiKey", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               name.IndexOf("key", StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private static bool IsInsideQueryableLambda(IInvocationOperation invocation)
+    {
+        var sawLambda = false;
+        for (IOperation? current = invocation.Parent; current is not null; current = current.Parent)
+        {
+            if (current is IAnonymousFunctionOperation)
+            {
+                sawLambda = true;
+                continue;
+            }
+
+            if (sawLambda &&
+                current is IInvocationOperation parentInvocation &&
+                string.Equals(parentInvocation.TargetMethod.ContainingType?.ToDisplayString(), "System.Linq.Queryable", StringComparison.Ordinal))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsInsideProjectionExpressionGetter(ISymbol? containingSymbol, MapperSymbols symbols)
+    {
+        var property = containingSymbol switch
+        {
+            IPropertySymbol directProperty => directProperty,
+            IMethodSymbol { AssociatedSymbol: IPropertySymbol associatedProperty } => associatedProperty,
+            _ => null
+        };
+
+        return property is { Name: "Expression", ContainingType: { } containingType } &&
+               symbols.IsProjectionImplementation(containingType);
+    }
+
+    private static bool IsCustomProjectionMethod(IMethodSymbol method, MapperSymbols symbols)
+    {
+        var containingType = method.ContainingType;
+        if (containingType is null ||
+            symbols.IsMapperMapInvocation(method) ||
+            method.MethodKind is MethodKind.PropertyGet or MethodKind.PropertySet)
+        {
+            return false;
+        }
+
+        var namespaceName = containingType.ContainingNamespace?.ToDisplayString();
+        return namespaceName is null ||
+               (!namespaceName.Equals("System", StringComparison.Ordinal) &&
+                !namespaceName.StartsWith("System.", StringComparison.Ordinal) &&
+                !namespaceName.Equals("Microsoft", StringComparison.Ordinal) &&
+                !namespaceName.StartsWith("Microsoft.", StringComparison.Ordinal));
+    }
+
+    private static bool IsSimpleValue(ITypeSymbol type)
+    {
+        if (type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullableType)
+        {
+            type = nullableType.TypeArguments[0];
+        }
+
+        return type.SpecialType is
+            SpecialType.System_Boolean or
+            SpecialType.System_Byte or
+            SpecialType.System_Char or
+            SpecialType.System_DateTime or
+            SpecialType.System_Decimal or
+            SpecialType.System_Double or
+            SpecialType.System_Int16 or
+            SpecialType.System_Int32 or
+            SpecialType.System_Int64 or
+            SpecialType.System_SByte or
+            SpecialType.System_Single or
+            SpecialType.System_String or
+            SpecialType.System_UInt16 or
+            SpecialType.System_UInt32 or
+            SpecialType.System_UInt64 ||
+            type.TypeKind == TypeKind.Enum ||
+            string.Equals(type.ToDisplayString(), "System.Guid", StringComparison.Ordinal);
+    }
+
     private sealed class MediatorSymbols
     {
         private MediatorSymbols(
@@ -269,6 +487,141 @@ public sealed class AstraFlowAnalyzerFoundationAnalyzer : DiagnosticAnalyzer
             return SymbolEqualityComparer.Default.Equals(definition, VoidRequestHandler) ||
                    SymbolEqualityComparer.Default.Equals(definition, ResponseRequestHandler) ||
                    SymbolEqualityComparer.Default.Equals(definition, StreamRequestHandler);
+        }
+    }
+
+    private sealed class MapperSymbols
+    {
+        private MapperSymbols(
+            INamedTypeSymbol? objectMappingRule,
+            INamedTypeSymbol? declaredObjectMappingRule,
+            INamedTypeSymbol? mapper,
+            INamedTypeSymbol? projection,
+            INamedTypeSymbol? conventionMappingExpression)
+        {
+            ObjectMappingRule = objectMappingRule;
+            DeclaredObjectMappingRule = declaredObjectMappingRule;
+            Mapper = mapper;
+            Projection = projection;
+            ConventionMappingExpression = conventionMappingExpression;
+        }
+
+        public INamedTypeSymbol? ObjectMappingRule { get; }
+
+        public INamedTypeSymbol? DeclaredObjectMappingRule { get; }
+
+        public INamedTypeSymbol? Mapper { get; }
+
+        public INamedTypeSymbol? Projection { get; }
+
+        public INamedTypeSymbol? ConventionMappingExpression { get; }
+
+        public bool HasCoreSymbols =>
+            ObjectMappingRule is not null &&
+            DeclaredObjectMappingRule is not null &&
+            Mapper is not null &&
+            Projection is not null;
+
+        public static MapperSymbols Create(Compilation compilation)
+        {
+            return new MapperSymbols(
+                compilation.GetTypeByMetadataName("AstraFlow.Mapper.IObjectMappingRule"),
+                compilation.GetTypeByMetadataName("AstraFlow.Mapper.IDeclaredObjectMappingRule"),
+                compilation.GetTypeByMetadataName("AstraFlow.Mapper.IMapper"),
+                compilation.GetTypeByMetadataName("AstraFlow.Mapper.IProjection`2"),
+                compilation.GetTypeByMetadataName("AstraFlow.Mapper.Conventions.ConventionMappingExpression`2"));
+        }
+
+        public bool IsUndeclaredMappingRule(INamedTypeSymbol type)
+        {
+            return ObjectMappingRule is not null &&
+                   DeclaredObjectMappingRule is not null &&
+                   type.AllInterfaces.Any(candidate => SymbolEqualityComparer.Default.Equals(candidate, ObjectMappingRule)) &&
+                   !type.AllInterfaces.Any(candidate => SymbolEqualityComparer.Default.Equals(candidate, DeclaredObjectMappingRule));
+        }
+
+        public INamedTypeSymbol? GetProjectionDestinationType(INamedTypeSymbol type)
+        {
+            return type.AllInterfaces
+                .FirstOrDefault(IsProjectionContract)
+                ?.TypeArguments[1] as INamedTypeSymbol;
+        }
+
+        public IEnumerable<string> GetRawPublicIdProjectionMembers(INamedTypeSymbol type)
+        {
+            var destinationType = GetProjectionDestinationType(type);
+            if (destinationType is null)
+            {
+                return [];
+            }
+
+            return destinationType.GetMembers()
+                .Where(member => member is IPropertySymbol or IFieldSymbol)
+                .Where(member => member.Name.EndsWith("PublicId", StringComparison.OrdinalIgnoreCase))
+                .Where(member => IsGuidLike(GetMemberType(member)))
+                .Select(member => member.Name)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name, StringComparer.Ordinal);
+        }
+
+        public bool IsProjectionImplementation(INamedTypeSymbol type)
+        {
+            return type.AllInterfaces.Any(IsProjectionContract);
+        }
+
+        public bool IsReverseMapInvocation(IInvocationOperation invocation)
+        {
+            return ConventionMappingExpression is not null &&
+                   string.Equals(invocation.TargetMethod.Name, "ReverseMap", StringComparison.Ordinal) &&
+                   (SymbolEqualityComparer.Default.Equals(
+                        invocation.TargetMethod.ContainingType.OriginalDefinition,
+                        ConventionMappingExpression) ||
+                    invocation.TargetMethod.ContainingType.OriginalDefinition.ToDisplayString()
+                        .StartsWith("AstraFlow.Mapper.Conventions.ConventionMappingExpression<", StringComparison.Ordinal));
+        }
+
+        public bool IsMapperMapInvocation(IInvocationOperation invocation)
+        {
+            return IsMapperMapInvocation(invocation.TargetMethod);
+        }
+
+        public bool IsMapperMapInvocation(IMethodSymbol method)
+        {
+            return Mapper is not null &&
+                   string.Equals(method.Name, "Map", StringComparison.Ordinal) &&
+                   (SymbolEqualityComparer.Default.Equals(method.ContainingType, Mapper) ||
+                    string.Equals(method.ContainingType.ToDisplayString(), "AstraFlow.Mapper.IMapper", StringComparison.Ordinal) ||
+                    method.ContainingType.AllInterfaces.Any(candidate => SymbolEqualityComparer.Default.Equals(candidate, Mapper)));
+        }
+
+        private bool IsProjectionContract(INamedTypeSymbol candidate)
+        {
+            return Projection is not null &&
+                   (SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, Projection) ||
+                    candidate.OriginalDefinition.ToDisplayString()
+                        .StartsWith("AstraFlow.Mapper.IProjection<", StringComparison.Ordinal));
+        }
+
+        private static ITypeSymbol? GetMemberType(ISymbol member)
+        {
+            return member switch
+            {
+                IPropertySymbol property => property.Type,
+                IFieldSymbol field => field.Type,
+                _ => null
+            };
+        }
+
+        private static bool IsGuidLike(ITypeSymbol? type)
+        {
+            if (type is INamedTypeSymbol { OriginalDefinition.SpecialType: SpecialType.System_Nullable_T } nullableType)
+            {
+                type = nullableType.TypeArguments[0];
+            }
+
+            return type is not null &&
+                   (string.Equals(type.ToDisplayString(), "System.Guid", StringComparison.Ordinal) ||
+                    string.Equals(type.Name, "Guid", StringComparison.Ordinal));
         }
     }
 

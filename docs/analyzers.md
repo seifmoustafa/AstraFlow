@@ -1,26 +1,26 @@
 # AstraFlow Analyzers
 
-AstraFlow `1.8.0` introduced the `AstraFlow.Analyzers` package foundation. AstraFlow `1.8.1` adds the first mediator analyzer rules on top of that foundation.
+AstraFlow `1.8.0` introduced the `AstraFlow.Analyzers` package foundation. AstraFlow `1.8.1` added mediator analyzer rules. AstraFlow `1.8.2` adds mapper and projection analyzer rules on top of that foundation.
 
-This release intentionally keeps the analyzer package source-only, generator-free, and code-fix-free while adding build-time warnings for common mediator wiring risks.
+This release intentionally keeps the analyzer package source-only, generator-free, and code-fix-free while adding build-time warnings for common mapper and projection risks.
 
 ## Install
 
 Use the analyzer package from application, library, or test projects where you want build-time AstraFlow guidance:
 
 ```powershell
-dotnet add package AstraFlow.Analyzers --version 1.8.1
+dotnet add package AstraFlow.Analyzers --version 1.8.2
 ```
 
 Analyzer packages should be referenced privately so they do not flow transitively to consumers:
 
 ```xml
-<PackageReference Include="AstraFlow.Analyzers" Version="1.8.1" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Analyzers" Version="1.8.2" PrivateAssets="all" />
 ```
 
-## Scope In 1.8.1
+## Scope In 1.8.2
 
-`1.8.1` includes:
+`1.8.2` includes:
 
 - the analyzer package foundation from `1.8.0`,
 - mediator request handler coverage warnings,
@@ -28,11 +28,16 @@ Analyzer packages should be referenced privately so they do not flow transitivel
 - ambiguous request contract warnings,
 - stream request handler coverage warnings,
 - singleton handler lifetime warnings,
+- undeclared mapping rule warnings,
+- reverse mapping sensitive-write warnings,
+- raw public ID projection warnings,
+- mapper-call-inside-query warnings,
+- custom projection method warnings,
+- complex projection capture warnings,
 - suppression guidance.
 
 It does not include:
 
-- mapper or projection rules,
 - source generators,
 - code fixes,
 - automatic rewrites.
@@ -183,10 +188,97 @@ Recommended fix: add the missing stream handler, move it into the project being 
 
 Recommended fix: prefer scoped or transient handler registration unless the handler has been reviewed as stateless and singleton-safe.
 
+### AFAN0201
+
+| Field | Value |
+| --- | --- |
+| Title | Mapping rule is undeclared |
+| Category | `AstraFlow.Mapper` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0201` reports a concrete `IObjectMappingRule` implementation that does not also implement `IDeclaredObjectMappingRule`.
+
+Recommended fix: implement `IDeclaredObjectMappingRule` and expose the owned `ObjectMappingPair` values so startup validation, diagnostics, tests, and future tooling can compare declared and implemented mapping behavior.
+
+### AFAN0202
+
+| Field | Value |
+| --- | --- |
+| Title | Reverse mapping may write sensitive members |
+| Category | `AstraFlow.Mapper` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0202` reports convention `ReverseMap` calls when the reverse destination type contains password, token, key, credential, or secret-style members.
+
+Recommended fix: avoid reverse mapping into sensitive domain or persistence types, ignore sensitive members explicitly, or replace the reverse map with a reviewed update mapping path.
+
+### AFAN0301
+
+| Field | Value |
+| --- | --- |
+| Title | Projection exposes raw public ID |
+| Category | `AstraFlow.Projection` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0301` reports an `IProjection<TSource, TDestination>` whose destination type exposes `Guid` members ending with `PublicId`.
+
+Recommended fix: project safe DTO identifiers, encode public IDs after materialization, or document why raw public IDs are acceptable for that DTO.
+
+### AFAN0302
+
+| Field | Value |
+| --- | --- |
+| Title | Mapper call is inside query expression |
+| Category | `AstraFlow.Projection` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0302` reports `IMapper.Map` calls inside `IQueryable` lambdas or projection expressions.
+
+Recommended fix: use explicit provider-visible projection expressions instead of runtime object mapping inside the query.
+
+### AFAN0303
+
+| Field | Value |
+| --- | --- |
+| Title | Projection calls custom method |
+| Category | `AstraFlow.Projection` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0303` reports custom user methods called inside projection expressions.
+
+Recommended fix: keep the projection expression provider-translatable, validate with the target EF provider, or move custom transformation after materialization.
+
+### AFAN0304
+
+| Field | Value |
+| --- | --- |
+| Title | Projection captures complex value |
+| Category | `AstraFlow.Projection` |
+| Default severity | `Warning` |
+| Enabled by default | Yes |
+
+`AFAN0304` reports non-scalar instance fields captured inside projection expressions.
+
+Recommended fix: capture scalar values only, pass explicit projection parameter objects, or perform complex logic after materialization.
+
+## Static Analysis Limits
+
+`AFAN0301-AFAN0304` are early build-time warnings. They do not replace runtime projection validation, EF Core provider validation, provider matrix tests, or application-specific security review.
+
+Treat these rules as fast feedback for common risky shapes:
+
+- they do not prove an expression is provider-translatable,
+- they do not inspect every possible runtime mapping path,
+- they intentionally prefer documented warnings over automatic rewrites.
+
 ## Roadmap
 
-After `1.8.1`, the roadmap continues with:
+After `1.8.2`, the roadmap continues with:
 
-- `1.8.2`: mapper and projection analyzers,
 - `1.8.3`: generated registration foundation,
 - `1.8.4`: generated mapping and projection metadata.

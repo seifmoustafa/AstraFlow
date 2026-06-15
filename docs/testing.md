@@ -7,7 +7,7 @@ It has no dependency on xUnit, NUnit, MSTest, FluentAssertions, or a mocking fra
 Install:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.8.1
+dotnet add package AstraFlow.Testing --version 1.8.2
 ```
 
 ## Fake Mediator

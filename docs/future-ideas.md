@@ -240,11 +240,11 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Behavior ordering analyzer | Planned | Configurable order rules. |
 | Unsafe singleton lifetime analyzer | Done | Shipped in `1.8.1` as `AFAN0105` for request and stream handlers. |
 | Controller injects full mediator but only sends | Planned | Encourage narrow interfaces. |
-| Mapper declaration drift analyzer | Planned | Declared pairs versus implemented pairs. |
-| Sensitive field mapping analyzer | Planned | Convention and explicit mapping checks. |
-| Raw public ID analyzer | Planned | Secure DTO policy. |
-| Mapper call inside query analyzer | Planned | Suggest projections. |
-| Non-translatable projection analyzer | Planned | Static expression risk detection. |
+| Mapper declaration drift analyzer | Done | Shipped in `1.8.2` as `AFAN0201` for undeclared mapping rules. |
+| Sensitive field mapping analyzer | Done | Shipped in `1.8.2` as `AFAN0202` for reverse sensitive-write risks. |
+| Raw public ID analyzer | Done | Shipped in `1.8.2` as `AFAN0301` for raw `Guid` `PublicId` projection shapes. |
+| Mapper call inside query analyzer | Done | Shipped in `1.8.2` as `AFAN0302`. |
+| Non-translatable projection analyzer | Done | Shipped in `1.8.2` as `AFAN0303` and `AFAN0304` for custom methods and complex captures. |
 | Service locator in mapping rule analyzer | Planned | Maintainability rule. |
 | Broad exception catch in mapping rule analyzer | Candidate | Avoid hiding mapping failures. |
 | Analyzer suppression policy | Candidate | Require reasons for sensitive suppressions. |

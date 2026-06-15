@@ -66,7 +66,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 
 ## Target Framework
 
-Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. Since `1.5.0`, `AstraFlow.Mapper.Conventions` ships the same non-EF targets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line. Since `1.8.1`, `AstraFlow.Analyzers` ships compiler analyzer assets under `analyzers/dotnet/cs` instead of runtime `lib/` assets.
+Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. Since `1.5.0`, `AstraFlow.Mapper.Conventions` ships the same non-EF targets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line. Since `1.8.0`, `AstraFlow.Analyzers` ships compiler analyzer assets under `analyzers/dotnet/cs` instead of runtime `lib/` assets.
 
 ## Public API At A Glance
 
@@ -271,7 +271,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.8.1
+dotnet add package AstraFlow.Mapper.Conventions --version 1.8.2
 ```
 
 Register exact pairs through a profile:
@@ -313,7 +313,7 @@ Sensitive destination writes remain blocked unless explicitly allowed.
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.8.1
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.8.2
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -395,7 +395,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.8.1
+dotnet add package AstraFlow.Testing --version 1.8.2
 ```
 
 Use the fake mediator to record requests and notifications:
