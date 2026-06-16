@@ -2,6 +2,24 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.8.3
+
+### Added
+
+- Added the new `AstraFlow.Generators` compiler package.
+- Added deterministic generated mediator component registration through `AddAstraFlowGeneratedMediatorRegistrations`.
+- Generated registrations cover closed request handlers, notification handlers, stream handlers, request processors, post-processors, exception actions, and exception handlers.
+- Added generator tests for deterministic output, empty projects, open generic skipping, and inaccessible nested component skipping.
+
+### Changed
+
+- Kept runtime mediator scanning available as the fallback path while adding the generated registration foundation.
+- Updated clean install verification, packaging scripts, CI asset checks, and release documentation for ten packages.
+
+### Fixed
+
+- None.
+
 ## 1.8.2
 
 ### Added

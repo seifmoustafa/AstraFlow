@@ -254,17 +254,17 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| Handler registration generator | Planned | AOT/trimming support. |
-| Notification registration generator | Planned | AOT/trimming support. |
-| Stream registration generator | Planned | After streams. |
-| Processor/exception registration generator | Planned | After mediator parity. |
+| Handler registration generator | Done | Shipped in `1.8.3` through `AstraFlow.Generators`. |
+| Notification registration generator | Done | Shipped in `1.8.3` through `AstraFlow.Generators`. |
+| Stream registration generator | Done | Shipped in `1.8.3` through `AstraFlow.Generators`. |
+| Processor/exception registration generator | Done | Shipped in `1.8.3` through `AstraFlow.Generators`. |
 | Mapping dispatch table generator | Planned | Faster explicit mapping lookup. |
 | Convention mapping plan generator | Planned | Safer convention output. |
 | Collection mapping fast-path generator | Planned | Performance phase. |
 | Projection registry metadata generator | Planned | Faster registry and AOT support. |
 | Diagnostics metadata generator | Candidate | Avoid runtime reflection. |
 | Incremental generator diagnostics | Planned | Stable build messages. |
-| Generator snapshot tests | Planned | Deterministic output. |
+| Generator snapshot tests | Done, expand | First deterministic output tests shipped in `1.8.3`; expand with future generator lanes. |
 
 ## CLI And Template Ideas
 

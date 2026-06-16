@@ -65,6 +65,7 @@
 - A clean sample project can install `AstraFlow.Testing`.
 - A clean sample project can install `AstraFlow.Mapper.EntityFrameworkCore`.
 - A clean sample project can install `AstraFlow.Analyzers`.
+- A clean sample project can install `AstraFlow.Generators`.
 - A clean sample project can restore each package using the documented package versions.
 - A clean sample project can build after installing the focused package set recommended in `docs/package-selection.md`.
 - A clean sample consumer can migrate from local AstraFlow project references to NuGet package references.

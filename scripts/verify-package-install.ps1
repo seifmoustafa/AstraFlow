@@ -75,6 +75,7 @@ function Initialize-LocalSource {
     Copy-Package "AstraFlow.Diagnostics"
     Copy-Package "AstraFlow.Testing"
     Copy-Package "AstraFlow.Analyzers"
+    Copy-Package "AstraFlow.Generators"
     Copy-Package "AstraFlow"
 
     $lines = @(
@@ -274,6 +275,7 @@ function Test-CoreConsumer {
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Diagnostics"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Testing"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Analyzers"
+    Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Generators"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow"
 
     Invoke-DotNetStep "Restore $Framework core consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
@@ -290,6 +292,7 @@ function Test-AllConsumer {
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Diagnostics"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Testing"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Analyzers"
+    Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Generators"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mapper.EntityFrameworkCore"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow"
     Add-NuGetPackage -Project $project -PackageId "Microsoft.Extensions.DependencyInjection" -PackageVersion "10.0.2"

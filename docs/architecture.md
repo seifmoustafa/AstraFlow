@@ -4,7 +4,7 @@ AstraFlow is a small explicit application-flow package family. The core idea is 
 
 ## Design Goals
 
-| Goal | What It Means In `1.8.2` |
+| Goal | What It Means In `1.8.3` |
 | --- | --- |
 | Explicit flow | Requests declare response types. Handlers are concrete classes. Mapping rules are code, not naming magic. |
 | Clear failure modes | Missing handlers, duplicate handlers, ambiguous request contracts, missing mappings, duplicate mappings, and invalid mapping catalogs throw actionable exceptions. |
@@ -106,8 +106,8 @@ Diagnostics reports include type names, service categories, lifetimes, counts, a
 - No automatic convention mapping.
 - No automatic flattening.
 - No reverse-map generation.
-- No source generators.
-- No analyzers.
+- No source generators in the runtime core packages.
+- No analyzers in the runtime core packages.
 - No ASP.NET Core-specific runtime behavior.
 - No EF Core dependency in `AstraFlow.Mapper`.
 - No built-in ID encryption.
