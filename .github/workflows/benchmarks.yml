@@ -1,0 +1,27 @@
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: Benchmark smoke
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore AstraFlow.slnx
+
+      - name: Build benchmarks
+        run: dotnet build benchmarks/AstraFlow.Benchmarks/AstraFlow.Benchmarks.csproj --configuration Release --no-restore
+
+      - name: Run benchmark smoke
+        run: dotnet run --project benchmarks/AstraFlow.Benchmarks/AstraFlow.Benchmarks.csproj --configuration Release --no-build -- --smoke

@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.8.4</Version>
-    <AssemblyVersion>1.8.4.0</AssemblyVersion>
-    <FileVersion>1.8.4.0</FileVersion>
+    <Version>1.9.0</Version>
+    <AssemblyVersion>1.9.0.0</AssemblyVersion>
+    <FileVersion>1.9.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.8.4:
-      - Adds generated mapper and projection metadata through AstraFlow.Generators.
-      - Adds public generated mapper metadata provider contracts for mapping rules and projection metadata.
-      - Keeps runtime mapper/projection scanning as the fallback path while adding deterministic generator tests, docs, and release verification.
+    <PackageReleaseNotes>AstraFlow 1.9.0:
+      - Adds the non-packable AstraFlow.Benchmarks project with BenchmarkDotNet coverage for mediator, mapper, projection, and generated metadata paths.
+      - Adds benchmark smoke mode with allocation capture plus on-demand CI verification.
+      - Documents benchmark methodology, environment capture, and the no-speed-claims-without-repeatable-evidence policy.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

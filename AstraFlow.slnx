@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/AstraFlow.Benchmarks/AstraFlow.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/AspNetCoreSample/AspNetCoreSample.csproj" />
     <Project Path="samples/BasicMediatorSample/BasicMediatorSample.csproj" />

@@ -59,6 +59,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | [Testing Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/testing.md) | You want fake sender/publisher/mediator helpers, handler harnesses, and assertion helpers for tests. |
 | [Analyzer Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/analyzers.md) | You want the analyzer package scope, stable rule IDs, severity policy, suppression guidance, and rule documentation pattern. |
 | [Generator Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/generators.md) | You want generated mediator DI registrations or mapper/projection metadata with runtime scanning kept as the fallback. |
+| [Benchmark Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/benchmarks.md) | You want benchmark commands, methodology, environment capture, and the performance claim policy. |
 | [Troubleshooting](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/troubleshooting.md) | You hit an exception and want the likely cause and fix. |
 | [Community Release Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/community-release-guide.md) | You are preparing the repo push, tag, package verification, and community-facing release notes. |
 | [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | You want the completed v1.2 projection safety scope and the future testing, mediator-parity, mapping-parity, analyzer, generator, and ecosystem roadmap. |
@@ -275,7 +276,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.8.4
+dotnet add package AstraFlow.Mapper.Conventions --version 1.9.0
 ```
 
 Register exact pairs through a profile:
@@ -317,7 +318,7 @@ Sensitive destination writes remain blocked unless explicitly allowed.
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.8.4
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.9.0
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -399,7 +400,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.8.4
+dotnet add package AstraFlow.Testing --version 1.9.0
 ```
 
 Use the fake mediator to record requests and notifications:

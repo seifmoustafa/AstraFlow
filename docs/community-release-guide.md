@@ -2,24 +2,26 @@
 
 This guide is for preparing AstraFlow releases for a public repository push and community consumption.
 
-## Current Release: v1.8.4
+## Current Release: v1.9.0
 
-v1.8.4 expands `AstraFlow.Generators` with deterministic generated mapper and projection metadata for diagnostics, CLI, AOT, and future optimization.
+v1.9.0 adds the first AstraFlow benchmark suite, smoke allocation capture, and a benchmark claim policy so performance work is grounded in repeatable evidence.
 
 Key message:
 
 ```text
-AstraFlow v1.8.4 adds generated mapping rule and projection metadata while keeping runtime mapper/projection scanning available as the fallback path.
+AstraFlow v1.9.0 adds a non-packable BenchmarkDotNet project for mediator, mapper, projection, and generated metadata paths, plus smoke-mode allocation capture for release verification.
 ```
 
-## What Changed Since v1.8.3
+## What Changed Since v1.8.4
 
 | Area | Change | Why It Matters |
 | --- | --- | --- |
-| Mapper metadata | Added generated mapping rule metadata and declared-rule flags. | Diagnostics and future CLI/AOT paths can consume compile-time mapper facts. |
-| Projection metadata | Added generated projection, parameterized projection, and named projection metadata. | Projection catalogs gain deterministic compile-time metadata inputs. |
-| Runtime fallback | Kept mapper/projection runtime scanning available. | Apps can adopt generated metadata without changing runtime behavior. |
-| Tests | Added generator tests for mapper metadata output and unsupported shapes. | CI verifies deterministic generated output. |
+| Benchmark project | Added non-packable `AstraFlow.Benchmarks` with BenchmarkDotNet. | Performance work now has checked-in, repeatable scenarios before any speed claims. |
+| Mediator coverage | Added cold start, service registration, first dispatch, cached dispatch, pipeline depth, and notification fan-out benchmarks. | Request and notification costs can be measured against manual baselines. |
+| Mapper coverage | Added single object, collection, projection lookup, and generated metadata benchmarks. | Mapping and projection changes can be evaluated before optimization work. |
+| Smoke verification | Added `--smoke` mode and allocation-byte capture. | CI and release checks can compile and exercise benchmark paths quickly. |
+| Claim policy | Added benchmark methodology, environment template, and claim policy. | Release notes stay honest until repeatable numbers exist. |
+| CI | Added on-demand benchmark smoke workflow. | Benchmark paths can be verified without running the full suite on every push. |
 
 ## Pre-Push Checklist
 
@@ -30,6 +32,7 @@ $env:DOTNET_CLI_HOME='E:\packages\asp.net_packages\AstraFlow\.dotnet-cli-home'
 $env:HUSKY='0'
 dotnet build AstraFlow.slnx -c Release --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
 dotnet test AstraFlow.slnx -c Release --no-build --no-restore -v:minimal /m:1 /p:UseSharedCompilation=false
+.\scripts\run-benchmarks.ps1 -Smoke
 ```
 
 Expected result:
@@ -65,40 +68,40 @@ dotnet pack src\AstraFlow\AstraFlow.csproj -c Release --no-build --no-restore -v
 
 Expected artifacts:
 
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.8.4.nupkg`
-- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.8.4.snupkg`
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.8.4.nupkg`
-- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.8.4.snupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.8.4.nupkg`
-- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.8.4.snupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.8.4.nupkg`
-- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.8.4.snupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.8.4.nupkg`
-- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.8.4.snupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.8.4.nupkg`
-- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.8.4.snupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.8.4.nupkg`
-- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.8.4.snupkg`
-- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.8.4.nupkg`
-- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.8.4.snupkg`
-- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.8.4.nupkg`
-- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.8.4.snupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.8.4.nupkg`
-- `src/AstraFlow/bin/Release/AstraFlow.1.8.4.snupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.9.0.nupkg`
+- `src/AstraFlow.Mediator/bin/Release/AstraFlow.Mediator.1.9.0.snupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.9.0.nupkg`
+- `src/AstraFlow.Contracts/bin/Release/AstraFlow.Contracts.1.9.0.snupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.9.0.nupkg`
+- `src/AstraFlow.Mapper/bin/Release/AstraFlow.Mapper.1.9.0.snupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.9.0.nupkg`
+- `src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.1.9.0.snupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.9.0.nupkg`
+- `src/AstraFlow.Mapper.EntityFrameworkCore/bin/Release/AstraFlow.Mapper.EntityFrameworkCore.1.9.0.snupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.9.0.nupkg`
+- `src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.1.9.0.snupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.9.0.nupkg`
+- `src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.1.9.0.snupkg`
+- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.9.0.nupkg`
+- `src/AstraFlow.Analyzers/bin/Release/AstraFlow.Analyzers.1.9.0.snupkg`
+- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.9.0.nupkg`
+- `src/AstraFlow.Generators/bin/Release/AstraFlow.Generators.1.9.0.snupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.9.0.nupkg`
+- `src/AstraFlow/bin/Release/AstraFlow.1.9.0.snupkg`
 
 Inspect package contents:
 
 ```powershell
-tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.8.4.nupkg
-tar -tf src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.8.4.nupkg
-tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.8.4.nupkg
-tar -tf src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.8.4.nupkg
-tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.8.4.nupkg
-tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.8.4.nupkg
-tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.8.4.nupkg
-tar -tf src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.8.4.nupkg
-tar -tf src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.8.4.nupkg
-tar -tf src\AstraFlow\bin\Release\AstraFlow.1.8.4.nupkg
+tar -tf src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.9.0.nupkg
+tar -tf src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.9.0.nupkg
+tar -tf src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.9.0.nupkg
+tar -tf src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.9.0.nupkg
+tar -tf src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.9.0.nupkg
+tar -tf src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.9.0.nupkg
+tar -tf src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.9.0.nupkg
+tar -tf src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.9.0.nupkg
+tar -tf src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.9.0.nupkg
+tar -tf src\AstraFlow\bin\Release\AstraFlow.1.9.0.nupkg
 ```
 
 Each `.nupkg` should include:
@@ -147,16 +150,16 @@ $root = Resolve-Path '.'
 $localSource = Join-Path $root '.dotnet-cli-home\local-packages'
 New-Item -ItemType Directory -Force -Path $localSource | Out-Null
 
-Copy-Item '.\src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.8.4.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.8.4.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.8.4.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.8.4.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.8.4.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.8.4.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.8.4.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.8.4.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.8.4.nupkg' -Destination $localSource -Force
-Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.8.4.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Contracts\bin\Release\AstraFlow.Contracts.1.9.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mediator\bin\Release\AstraFlow.Mediator.1.9.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper\bin\Release\AstraFlow.Mapper.1.9.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.Conventions\bin\Release\AstraFlow.Mapper.Conventions.1.9.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Mapper.EntityFrameworkCore\bin\Release\AstraFlow.Mapper.EntityFrameworkCore.1.9.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Diagnostics\bin\Release\AstraFlow.Diagnostics.1.9.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Testing\bin\Release\AstraFlow.Testing.1.9.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Analyzers\bin\Release\AstraFlow.Analyzers.1.9.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow.Generators\bin\Release\AstraFlow.Generators.1.9.0.nupkg' -Destination $localSource -Force
+Copy-Item '.\src\AstraFlow\bin\Release\AstraFlow.1.9.0.nupkg' -Destination $localSource -Force
 
 $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 @"
@@ -170,21 +173,21 @@ $config = Join-Path $root '.dotnet-cli-home\installcheck.nuget.config'
 </configuration>
 "@ | Set-Content -LiteralPath $config -Encoding UTF8
 
-$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.8.4'
+$sampleRoot = 'C:\tmp\AstraFlowInstallCheck-1.9.0'
 New-Item -ItemType Directory -Force -Path $sampleRoot | Out-Null
 $sample = Join-Path $sampleRoot ('AstraFlowInstallCheck-' + [guid]::NewGuid().ToString('N'))
 dotnet new console --framework net10.0 --output $sample --no-restore
 $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-dotnet add $project.FullName package AstraFlow.Contracts --version 1.8.4 --no-restore
-dotnet add $project.FullName package AstraFlow.Mediator --version 1.8.4 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper --version 1.8.4 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.8.4 --no-restore
-dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.8.4 --no-restore
-dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.8.4 --no-restore
-dotnet add $project.FullName package AstraFlow.Testing --version 1.8.4 --no-restore
-dotnet add $project.FullName package AstraFlow.Analyzers --version 1.8.4 --no-restore
-dotnet add $project.FullName package AstraFlow.Generators --version 1.8.4 --no-restore
-dotnet add $project.FullName package AstraFlow --version 1.8.4 --no-restore
+dotnet add $project.FullName package AstraFlow.Contracts --version 1.9.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Mediator --version 1.9.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper --version 1.9.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.9.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Mapper.EntityFrameworkCore --version 1.9.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.9.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Testing --version 1.9.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Analyzers --version 1.9.0 --no-restore
+dotnet add $project.FullName package AstraFlow.Generators --version 1.9.0 --no-restore
+dotnet add $project.FullName package AstraFlow --version 1.9.0 --no-restore
 dotnet restore $project.FullName --configfile $config
 dotnet build $project.FullName --no-restore
 ```
@@ -203,15 +206,15 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
     $template = if ($framework -eq 'netstandard2.0') { 'classlib' } else { 'console' }
     dotnet new $template --framework $framework --output $sample --no-restore
     $project = Get-ChildItem -LiteralPath $sample -Filter '*.csproj' | Select-Object -First 1
-    dotnet add $project.FullName package AstraFlow.Contracts --version 1.8.4 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mediator --version 1.8.4 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper --version 1.8.4 --no-restore
-    dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.8.4 --no-restore
-    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.8.4 --no-restore
-    dotnet add $project.FullName package AstraFlow.Testing --version 1.8.4 --no-restore
-    dotnet add $project.FullName package AstraFlow.Analyzers --version 1.8.4 --no-restore
-    dotnet add $project.FullName package AstraFlow.Generators --version 1.8.4 --no-restore
-    dotnet add $project.FullName package AstraFlow --version 1.8.4 --no-restore
+    dotnet add $project.FullName package AstraFlow.Contracts --version 1.9.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mediator --version 1.9.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper --version 1.9.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Mapper.Conventions --version 1.9.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Diagnostics --version 1.9.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Testing --version 1.9.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Analyzers --version 1.9.0 --no-restore
+    dotnet add $project.FullName package AstraFlow.Generators --version 1.9.0 --no-restore
+    dotnet add $project.FullName package AstraFlow --version 1.9.0 --no-restore
     dotnet restore $project.FullName --configfile $config
     dotnet build $project.FullName --no-restore
 }
@@ -221,7 +224,7 @@ foreach ($framework in @('netstandard2.0', 'net8.0', 'net9.0')) {
 
 ```powershell
 git add .
-git commit -m "Release AstraFlow v1.8.4 generated mapper metadata"
+git commit -m "Release AstraFlow v1.9.0 benchmarks"
 ```
 
 Before committing, confirm no package artifacts are staged:
@@ -242,9 +245,9 @@ Do not commit:
 ## Suggested Tag
 
 ```powershell
-git tag v1.8.4
+git tag v1.9.0
 git push origin main
-git push origin v1.8.4
+git push origin v1.9.0
 ```
 
 Only tag after local verification passes.
@@ -252,25 +255,25 @@ Only tag after local verification passes.
 ## Suggested GitHub Release Notes
 
 ```markdown
-## AstraFlow v1.8.4
+## AstraFlow v1.9.0
 
-This patch adds generated mapper and projection metadata for diagnostics, CLI, AOT, and future optimization while preserving runtime mapper/projection scanning as the fallback path.
+This release adds the first AstraFlow benchmark suite, a smoke mode with allocation capture, and a benchmark claim policy so future performance work starts from repeatable evidence.
 
 ### Changed
 
-- Add generated mapping rule metadata.
-- Add generated declared-rule flags.
-- Add generated projection source/destination metadata.
-- Add generated parameterized projection metadata.
-- Add generated named projection flags.
-- Add public generated mapper metadata provider contracts.
-- Update docs, package metadata, tests, and clean-install verification for `1.8.4`.
+- Add non-packable `AstraFlow.Benchmarks` BenchmarkDotNet project.
+- Add mediator benchmarks for cold start, service registration, request dispatch, pipeline depth, and notification fan-out.
+- Add mapper/projection benchmarks for single mapping, collection mapping, projection lookup, and generated metadata lookup.
+- Add benchmark smoke mode with allocation capture.
+- Add benchmark methodology, environment template, and claim policy.
+- Update docs, package metadata, benchmark smoke verification, and clean-install verification for `1.9.0`.
 
 ### Verification
 
 - Release build passed.
 - Full test suite passed.
-- All ten packages packed as `1.8.4`.
+- Benchmark smoke run passed.
+- All ten packages packed as `1.9.0`.
 - Package contents include README, CHANGELOG, LICENSE, icon, XML docs, DLLs for expected target frameworks, nuspec files, and symbol packages.
 ```
 
