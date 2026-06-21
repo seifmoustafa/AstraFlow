@@ -4,7 +4,7 @@
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current implementation truth: AstraFlow is complete through `v1.8.3` in this repository. The next planned roadmap item is `v1.8.4` generated mapping and projection metadata.
+Current implementation truth: AstraFlow is complete through `v1.8.4` in this repository. The next planned roadmap item is `v1.9.0` performance and benchmarks.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -1326,7 +1326,7 @@ What must NOT be included:
 
 #### v1.8.4 Generated Mapping and Projection Metadata
 
-Status: `Planned`.
+Status: `Done`.
 
 Goal:
 
@@ -1341,18 +1341,19 @@ Packages affected:
 
 Features included:
 
-- Generated mapping dispatch tables.
-- Generated convention mapping plans.
-- Generated projection registry metadata.
-- Generated diagnostics metadata candidate.
-- Generator snapshot tests.
+- Generated mapping rule metadata.
+- Generated declared-rule metadata flags.
+- Generated projection metadata.
+- Generated parameterized projection metadata.
+- Generated named projection flags.
+- Generator snapshot-style tests.
 
 Acceptance gates:
 
 - Generated code is deterministic.
-- Snapshot tests cover generated output.
-- Runtime fallback remains unless explicitly documented.
-- Diagnostics can identify generated metadata origin.
+- Snapshot-style tests cover generated output.
+- Runtime fallback remains through `AddAstraFlowMapper(...)`.
+- Generated metadata provider identifies generated mapper/projection metadata origin.
 
 What must NOT be included:
 
@@ -2304,10 +2305,10 @@ Missing for MediatR-style parity:
 Missing for AutoMapper-style parity:
 
 - Mapping plan diffing.
-- Generated mapping plans and generated projection metadata.
+- Generated runtime mapping plans beyond the first generated metadata provider.
 - Provider matrix expansion beyond the current SQLite baseline.
 - Additional mapper/projection analyzer maturity beyond the first `1.8.2` warning set.
-- Generated mapping/projection metadata beyond the first `1.8.3` mediator registration generator.
+- Generated mapping/projection runtime fast paths beyond the first `1.8.4` metadata provider.
 - Migration guide and scanner from common mapper usage.
 
 Moved earlier:

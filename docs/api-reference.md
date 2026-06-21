@@ -1,6 +1,6 @@
 # API Reference
 
-This reference describes the public AstraFlow `1.8.3` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow `1.8.4` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
 
 ## Package Map
 
@@ -13,7 +13,7 @@ This reference describes the public AstraFlow `1.8.3` API surface. It is intenti
 | `AstraFlow.Diagnostics` | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reporting for AstraFlow registrations and validation findings. |
 | `AstraFlow.Testing` | `AstraFlow.Testing` | Framework-neutral fake dispatchers, harnesses, assertions, and test secure ID helpers. |
 | `AstraFlow.Analyzers` | `AstraFlow.Analyzers` | Roslyn analyzer descriptors, stable rule IDs, severity metadata, and build-time diagnostics infrastructure. |
-| `AstraFlow.Generators` | `AstraFlow.Generators` | Source generator for deterministic mediator component registration. |
+| `AstraFlow.Generators` | `AstraFlow.Generators` | Source generators for deterministic mediator component registration and mapper/projection metadata. |
 | `AstraFlow` | `AstraFlow` | Convenience registration for mediator and mapper together. |
 
 ## Analyzer Types
@@ -27,7 +27,7 @@ This reference describes the public AstraFlow `1.8.3` API surface. It is intenti
 | `AstraFlowAnalyzerRule` | Record | Describes rule ID, title, category, severity, default enabled state, documentation anchor, and Roslyn descriptor. | No. |
 | `AstraFlowAnalyzerRules` | Static class | Central descriptor catalog for analyzer tests, docs, and future tooling. | No. |
 
-`1.8.3` intentionally keeps analyzers source-only and code-fix-free. Source generator work starts in the separate `AstraFlow.Generators` package.
+`1.8.4` intentionally keeps analyzers source-only and code-fix-free. Source generator work lives in the separate `AstraFlow.Generators` package.
 
 ## Registration APIs
 
@@ -39,6 +39,7 @@ This reference describes the public AstraFlow `1.8.3` API surface. It is intenti
 | `AddAstraFlowGeneratedMediatorRegistrations` | `IServiceCollection AddAstraFlowGeneratedMediatorRegistrations(this IServiceCollection services)` | Closed request handlers, notification handlers, stream handlers, processors, exception actions, and exception handlers discovered at compile time. | Throws `ArgumentNullException` when `services` is null. |
 | `AddAstraFlowMapper` | `IServiceCollection AddAstraFlowMapper(this IServiceCollection services, params Type[] assemblyMarkerTypes)` | Mapper options, scoped `SecureIdMapper`, scoped `IMapper`, scoped `IObjectMappingValidator`, scoped `IProjectionRegistry`, scoped `IProjectionValidator`, startup validator hosted service, mapping rules, and projections from marker assemblies. | Throws `ArgumentNullException` when `services` is null. Startup validation may later throw mapping or strict projection catalog errors. |
 | `AddAstraFlowMapper` | `IServiceCollection AddAstraFlowMapper(this IServiceCollection services, IEnumerable<Type> assemblyMarkerTypes, Action<MappingOptions>? configure = null)` | Same as above, with options configuration. | Throws `ArgumentNullException` when `services` or marker collection is null. |
+| `AddAstraFlowGeneratedMapperMetadata` | `IServiceCollection AddAstraFlowGeneratedMapperMetadata(this IServiceCollection services)` | Generated `IGeneratedMapperMetadataProvider` for mapping rule and projection metadata discovered at compile time. | Throws `ArgumentNullException` when `services` is null. |
 | `AddAstraFlowDiagnostics` | `IServiceCollection AddAstraFlowDiagnostics(this IServiceCollection services, Action<AstraFlowDiagnosticsOptions>? configure = null)` | Diagnostics options, a captured service descriptor snapshot, and `IAstraFlowDiagnosticsReporter`. | Throws `ArgumentNullException` when `services` is null. Call after core AstraFlow registration for a complete report. |
 | `AddAstraFlow` | `IServiceCollection AddAstraFlow(this IServiceCollection services, bool validateRequestCoverage = false, params Type[] assemblyMarkerTypes)` | Calls mediator and mapper registration using the same marker assemblies. | Same failure cases as mediator and mapper registration. |
 

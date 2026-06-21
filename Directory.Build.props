@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.8.3</Version>
-    <AssemblyVersion>1.8.3.0</AssemblyVersion>
-    <FileVersion>1.8.3.0</FileVersion>
+    <Version>1.8.4</Version>
+    <AssemblyVersion>1.8.4.0</AssemblyVersion>
+    <FileVersion>1.8.4.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.8.3:
-      - Adds the AstraFlow.Generators package with deterministic generated mediator component registration.
-      - Generates readable DI registration code for request handlers, notification handlers, stream handlers, processors, and exception-flow components.
-      - Keeps runtime scanning as the fallback path while adding generator tests, docs, package verification, and compiler-asset checks.
+    <PackageReleaseNotes>AstraFlow 1.8.4:
+      - Adds generated mapper and projection metadata through AstraFlow.Generators.
+      - Adds public generated mapper metadata provider contracts for mapping rules and projection metadata.
+      - Keeps runtime mapper/projection scanning as the fallback path while adding deterministic generator tests, docs, and release verification.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
