@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageId>AstraFlow.Cli</PackageId>
+    <Title>AstraFlow CLI</Title>
+    <Description>Command-line inspection and reporting tools for AstraFlow applications.</Description>
+    <PackageTags>astraflow;cli;diagnostics;reporting;mediator;mapper;dotnet</PackageTags>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>astraflow</ToolCommandName>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

@@ -76,6 +76,7 @@ function Initialize-LocalSource {
     Copy-Package "AstraFlow.Testing"
     Copy-Package "AstraFlow.Analyzers"
     Copy-Package "AstraFlow.Generators"
+    Copy-Package "AstraFlow.Cli"
     Copy-Package "AstraFlow"
 
     $lines = @(
@@ -304,6 +305,40 @@ function Test-AllConsumer {
     Invoke-DotNetStep "Run net10.0 all-package consumer" @("run", "--project", $project, "--no-build")
 }
 
+function Test-CliTool {
+    $toolPath = Join-Path $checkRoot "tools"
+    New-Item -ItemType Directory -Force -Path $toolPath | Out-Null
+
+    Invoke-DotNetStep "Install AstraFlow.Cli tool" @(
+        "tool",
+        "install",
+        "AstraFlow.Cli",
+        "--version",
+        $Version,
+        "--tool-path",
+        $toolPath,
+        "--configfile",
+        $config,
+        "--add-source",
+        $localSource
+    )
+
+    $command = Join-Path $toolPath "astraflow.exe"
+    if (-not (Test-Path -LiteralPath $command)) {
+        $command = Join-Path $toolPath "astraflow"
+    }
+
+    if (-not (Test-Path -LiteralPath $command)) {
+        throw "Could not find installed astraflow tool in $toolPath."
+    }
+
+    Write-Host "==> Run AstraFlow.Cli inspect smoke"
+    & $command inspect $repoRoot
+    if ($LASTEXITCODE -ne 0) {
+        throw "AstraFlow.Cli inspect smoke failed with exit code $LASTEXITCODE."
+    }
+}
+
 if (-not $NoRestore) {
     Initialize-LocalSource
 }
@@ -312,5 +347,6 @@ Test-CoreConsumer -Framework "netstandard2.0" -Template "classlib"
 Test-CoreConsumer -Framework "net8.0" -Template "console"
 Test-CoreConsumer -Framework "net9.0" -Template "console"
 Test-AllConsumer
+Test-CliTool
 
 Write-Host "AstraFlow package install verification passed for version $Version."

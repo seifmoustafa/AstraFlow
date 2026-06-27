@@ -12,6 +12,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/AstraFlow.Analyzers/AstraFlow.Analyzers.csproj" />
+    <Project Path="src/AstraFlow.Cli/AstraFlow.Cli.csproj" />
     <Project Path="src/AstraFlow.Contracts/AstraFlow.Contracts.csproj" />
     <Project Path="src/AstraFlow.Diagnostics/AstraFlow.Diagnostics.csproj" />
     <Project Path="src/AstraFlow.Generators/AstraFlow.Generators.csproj" />
@@ -24,6 +25,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AstraFlow.Analyzers.Tests/AstraFlow.Analyzers.Tests.csproj" />
+    <Project Path="tests/AstraFlow.Cli.Tests/AstraFlow.Cli.Tests.csproj" />
     <Project Path="tests/AstraFlow.Diagnostics.Tests/AstraFlow.Diagnostics.Tests.csproj" />
     <Project Path="tests/AstraFlow.Generators.Tests/AstraFlow.Generators.Tests.csproj" />
     <Project Path="tests/AstraFlow.IntegrationTests/AstraFlow.IntegrationTests.csproj" />

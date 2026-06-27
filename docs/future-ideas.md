@@ -73,7 +73,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Old-version upgrade smoke tests | Planned | Prove patch/minor upgrades do not require source changes unless documented. |
 | Migration guides from popular mediator/mapping approaches | Planned | Keep public docs capability-focused rather than competitor-centered. |
 | Migration cookbook | Planned | Before/after examples for manual dispatch, mediator usage, mapper usage, and projection usage. |
-| Migration scanner report | Planned | CLI report that suggests replacements without rewriting code by default. |
+| Migration scanner report | Done, expand | First MediatR and AutoMapper candidate scanner shipped in `1.10.0`; future work can add richer recipes. |
 | Package selector guide | Planned | Help users choose focused packages instead of always using meta package. |
 | Offline package verification script | Candidate | Validate `.nupkg` contents, README, icon, docs, symbols, and dependencies. |
 | Local install smoke-test template | Done | Shipped as `scripts/verify-package-install.ps1` in `1.2.3`. |
@@ -190,9 +190,9 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Idea | Status | Notes |
 | --- | --- | --- |
 | Diagnostics diffing | Planned | Compare two reports. |
-| SARIF output | Planned | Useful for CI/code scanning. |
-| Mermaid graph output | Planned | Request/mapping/projection visualization. |
-| DOT graph output | Planned | Tool-compatible graph output. |
+| SARIF output | Done, expand | First CLI SARIF envelope shipped in `1.10.0`; future work can map richer diagnostics into SARIF rules. |
+| Mermaid graph output | Done, expand | First CLI Mermaid output shipped in `1.10.0`; future work can add richer graph metadata. |
+| DOT graph output | Done, expand | First CLI DOT output shipped in `1.10.0`; future work can add richer graph metadata. |
 | HTML diagnostics report | Candidate | Useful for humans. |
 | Diagnostics baseline approval | Candidate | CI fails when app flow changes unexpectedly. |
 | Redaction policy report | Planned | Explain what is emitted and redacted. |
@@ -272,13 +272,13 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| `astraflow inspect handlers` | Planned | Show request handlers. |
-| `astraflow inspect notifications` | Planned | Show notification handlers. |
-| `astraflow inspect mappings` | Planned | Show mapping plans. |
-| `astraflow inspect projections` | Planned | Show projection registry. |
+| `astraflow inspect handlers` | Done, expand | First handler inspection shipped in `1.10.0`; future work can add richer runtime metadata. |
+| `astraflow inspect notifications` | Done, expand | First notification inspection shipped in `1.10.0`; future work can add richer runtime metadata. |
+| `astraflow inspect mappings` | Done, expand | First mapping inspection shipped in `1.10.0`; future work can add mapping plan details. |
+| `astraflow inspect projections` | Done, expand | First projection inspection shipped in `1.10.0`; future work can add registry metadata. |
 | `astraflow validate` | Planned | Run catalog checks. |
-| `astraflow report` | Planned | JSON/Markdown/SARIF output. |
-| `astraflow graph` | Planned | Mermaid/DOT graph output. |
+| `astraflow report` | Done, expand | JSON/Markdown/SARIF output shipped in `1.10.0`. |
+| `astraflow graph` | Done, expand | Mermaid/DOT graph output shipped in `1.10.0`. |
 | `astraflow diff` | Planned | Compare reports. |
 | `astraflow pack-check` | Planned | Inspect `.nupkg` contents. |
 | `astraflow scaffold request` | Planned | Generate request and handler. |

@@ -1,4 +1,4 @@
-﻿name: AstraFlow CI
+name: AstraFlow CI
 
 on:
   push:
@@ -61,6 +61,9 @@ jobs:
 
       - name: Pack generators
         run: dotnet pack src/AstraFlow.Generators/AstraFlow.Generators.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Pack CLI tool
+        run: dotnet pack src/AstraFlow.Cli/AstraFlow.Cli.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
       - name: Pack meta package
         run: dotnet pack src/AstraFlow/AstraFlow.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
