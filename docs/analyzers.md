@@ -9,13 +9,13 @@ The analyzer package remains source-only and code-fix-free. Source generator wor
 Use the analyzer package from application, library, or test projects where you want build-time AstraFlow guidance:
 
 ```powershell
-dotnet add package AstraFlow.Analyzers --version 1.10.0
+dotnet add package AstraFlow.Analyzers --version 1.11.0
 ```
 
 Analyzer packages should be referenced privately so they do not flow transitively to consumers:
 
 ```xml
-<PackageReference Include="AstraFlow.Analyzers" Version="1.10.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Analyzers" Version="1.11.0" PrivateAssets="all" />
 ```
 
 ## Scope In 1.8.2
@@ -278,7 +278,7 @@ Treat these rules as fast feedback for common risky shapes:
 
 ## Roadmap
 
-After `1.10.0`, the roadmap continues with:
+After `1.11.0`, the roadmap continues with:
 
 - `1.11.0`: web and validation integrations.
 - `1.11.0`: ASP.NET Core and FluentValidation integrations.

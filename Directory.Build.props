@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.10.0</Version>
-    <AssemblyVersion>1.10.0.0</AssemblyVersion>
-    <FileVersion>1.10.0.0</FileVersion>
+    <Version>1.11.0</Version>
+    <AssemblyVersion>1.11.0.0</AssemblyVersion>
+    <FileVersion>1.11.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.10.0:
-      - Adds the AstraFlow.Cli .NET tool package with inspect, validate, report, diff, graph, and scan commands.
-      - Adds JSON, Markdown, SARIF, Mermaid, and DOT output paths for command-line inspection workflows.
-      - Adds CLI smoke tests, packaging, and clean tool-install verification.
+    <PackageReleaseNotes>AstraFlow 1.11.0:
+      - Adds AstraFlow.AspNetCore with minimal API helpers, controller helpers, endpoint filters, redacted diagnostics endpoints, problem details, and health summaries.
+      - Adds AstraFlow.FluentValidation with validation pipeline behaviors, aggregate errors, fail-fast validation, localization hooks, and validation diagnostics.
+      - Adds validation test helpers and updates the ASP.NET Core sample, documentation, packaging, and clean-install verification.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

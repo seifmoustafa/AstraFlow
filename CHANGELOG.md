@@ -2,6 +2,26 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.11.0
+
+### Added
+
+- Added `AstraFlow.AspNetCore` for minimal API helpers, controller helpers, endpoint filters, problem-details mapping, redacted diagnostics endpoints, and health summaries.
+- Added `AstraFlow.FluentValidation` for response and void request validation pipeline behaviors.
+- Added aggregate validation errors, fail-fast validation, a localization hook, validation diagnostics, and grouped problem-details error export.
+- Added framework-neutral validation assertions in `AstraFlow.Testing`.
+- Added ASP.NET Core and FluentValidation test projects covering the v1.11 integration gates.
+
+### Changed
+
+- Updated the ASP.NET Core sample to use the new integration package and diagnostics/health endpoints.
+- Updated package metadata, package selection guidance, release docs, and roadmap status for `1.11.0`.
+- Updated package scripts and clean-install verification to pack and install `AstraFlow.AspNetCore` and `AstraFlow.FluentValidation`.
+
+### Fixed
+
+- Fixed validation behavior so each FluentValidation validator receives a fresh validation context, preventing prior failures from leaking into later validator results.
+
 ## 1.10.0
 
 ### Added

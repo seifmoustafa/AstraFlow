@@ -1,4 +1,6 @@
 using AstraFlow;
+using AstraFlow.AspNetCore;
+using AstraFlow.Diagnostics;
 using AstraFlow.Mediator;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAstraFlow(
     validateRequestCoverage: true,
     assemblyMarkerTypes: typeof(Program));
+builder.Services.AddAstraFlowDiagnostics(options => options.AssemblyMarkerTypes.Add(typeof(Program)));
+builder.Services.AddAstraFlowAspNetCore();
 
 var app = builder.Build();
 
@@ -14,6 +18,9 @@ app.MapPost("/orders", async (CreateOrderRequest request, ISender sender) =>
     var response = await sender.Send(new CreateOrderCommand(request.Number));
     return Results.Created($"/orders/{response.Id:N}", response);
 });
+
+app.MapAstraFlowDiagnostics();
+app.MapAstraFlowHealthSummary();
 
 app.Run();
 

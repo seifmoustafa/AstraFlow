@@ -294,8 +294,8 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Package | Status | Candidate Features |
 | --- | --- | --- |
-| `AstraFlow.AspNetCore` | Planned | Minimal API helpers, controller helpers, problem details, diagnostics endpoint, health checks. |
-| `AstraFlow.FluentValidation` | Planned | Validation behavior, adapters, localization, severity mapping. |
+| `AstraFlow.AspNetCore` | Done, expand | Minimal API helpers, controller helpers, problem details, redacted diagnostics endpoint, and health summary shipped in `1.11.0`; future work can add richer adapters. |
+| `AstraFlow.FluentValidation` | Done, expand | Validation behavior, aggregate errors, fail-fast mode, localization hook, and validation diagnostics shipped in `1.11.0`; future work can add richer severity adapters. |
 | `AstraFlow.EntityFrameworkCore` | Planned | Transaction behavior, outbox/inbox candidates, query tags, provider matrix. |
 | `AstraFlow.OpenTelemetry` | Planned | Tracing and metrics hooks if core observability is not enough. |
 | `AstraFlow.Caching` | Candidate | Cache behavior, explicit keys, invalidation notifications. |
