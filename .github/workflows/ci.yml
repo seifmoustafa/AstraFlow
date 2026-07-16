@@ -1,4 +1,4 @@
-﻿name: AstraFlow CI
+name: AstraFlow CI
 
 on:
   push:
