@@ -192,15 +192,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $exists = "false"
-          try {
-            $null = gh release view "${{ steps.version.outputs.tag }}" --repo "${{ github.repository }}" 2>&1
-            if ($LASTEXITCODE -eq 0) {
-              $exists = "true"
-            }
-          } catch {
-            $exists = "false"
-          }
+          $tag = "${{ steps.version.outputs.tag }}"
+          $releases = gh release list --repo "${{ github.repository }}" --limit 100 --json tagName | ConvertFrom-Json
+          $tags = @($releases | ForEach-Object { $_.tagName })
+          $exists = if ($tags -contains $tag) { "true" } else { "false" }
           "exists=$exists" >> $env:GITHUB_OUTPUT
 
       - name: Create GitHub release
