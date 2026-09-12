@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.FluentValidation --version 1.11.0
+dotnet add package AstraFlow.FluentValidation --version 1.12.0
 ```
 
 Register AstraFlow and the validation behaviors:

@@ -16,11 +16,12 @@ This guide explains which AstraFlow package to install.
 | Build-time AstraFlow diagnostics and stable analyzer rule IDs | `AstraFlow.Analyzers` as a private analyzer reference |
 | Generated mediator registration and mapper/projection metadata | `AstraFlow.Generators` as a private analyzer/generator reference with `AstraFlow.Mediator` or `AstraFlow.Mapper` |
 | Command-line inspection, validation, reporting, diffing, graph output, and migration scanning | `AstraFlow.Cli` as a .NET tool |
+| ActivitySource tracing, duration/failure metrics, validation finding counts, redaction, and sampling controls | `AstraFlow.OpenTelemetry` |
 | Mediator and mapper together through one convenience registration | `AstraFlow` |
 
 Prefer focused packages when a project needs only one concern. Use the meta package when a project intentionally uses both mediator and mapper.
 
-Target support in `1.11.0`: `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows EF Core 10. `AstraFlow.Analyzers` and `AstraFlow.Generators` ship compiler assets under `analyzers/dotnet/cs` instead of runtime `lib/` assets.
+Target support in `1.12.0`: `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.OpenTelemetry` and `AstraFlow.FluentValidation` support `net8.0`, `net9.0`, and `net10.0`. `AstraFlow.Mapper.EntityFrameworkCore` and `AstraFlow.AspNetCore` remain `net10.0` integration packages. `AstraFlow.Analyzers` and `AstraFlow.Generators` ship compiler assets under `analyzers/dotnet/cs` instead of runtime `lib/` assets.
 
 `AstraFlow.Cli` targets `net10.0` as a .NET tool package.
 
@@ -37,7 +38,7 @@ Install this package in projects that only need shared mediator contract types:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Contracts --version 1.11.0
+dotnet add package AstraFlow.Contracts --version 1.12.0
 ```
 
 Use this in shared contracts, client contract assemblies, Blazor/shared projects, and modular boundaries that should not reference the mediator runtime.
@@ -61,7 +62,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mediator --version 1.11.0
+dotnet add package AstraFlow.Mediator --version 1.12.0
 ```
 
 Use this in application layers, worker services, APIs, and modular monolith modules that own request handling.
@@ -81,7 +82,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.11.0
+dotnet add package AstraFlow.Mapper --version 1.12.0
 ```
 
 Use this in application or contract-mapping layers that need auditable DTO conversion.
@@ -101,7 +102,7 @@ Install this package when you need opt-in convention mapping for simple DTOs:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.11.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.12.0
 ```
 
 Use this with `AstraFlow.Mapper`. Convention mapping is not enabled by the meta package and is never enabled by default.
@@ -113,7 +114,7 @@ Install this package only when you need EF Core relational projection validation
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.11.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.12.0
 ```
 
 This package references EF Core. Keep it out of projects that do not use EF Core.
@@ -125,7 +126,7 @@ Install this package when you want registration and validation reports.
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 1.11.0
+dotnet add package AstraFlow.Diagnostics --version 1.12.0
 ```
 
 Register diagnostics after mediator and mapper registrations so the reporter can inspect those service descriptors.
@@ -146,7 +147,7 @@ Install this package in test projects when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.11.0
+dotnet add package AstraFlow.Testing --version 1.12.0
 ```
 
 The package is test-framework-neutral. It does not depend on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework.
@@ -160,13 +161,13 @@ Install this package when you want build-time AstraFlow diagnostics.
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Analyzers --version 1.11.0
+dotnet add package AstraFlow.Analyzers --version 1.12.0
 ```
 
 For project files, prefer a private analyzer reference:
 
 ```xml
-<PackageReference Include="AstraFlow.Analyzers" Version="1.11.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Analyzers" Version="1.12.0" PrivateAssets="all" />
 ```
 
 The analyzer package includes analyzer infrastructure, stable rule IDs, severity metadata, suppression guidance, tests, mediator warnings, mapper warnings, and projection warnings. Mapper and projection rules cover undeclared mapping rules, reverse sensitive writes, raw public ID projection shapes, mapper calls inside query expressions, custom projection methods, and complex projection captures.
@@ -178,16 +179,16 @@ Install this package when you want compile-time generated mediator component reg
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Generators --version 1.11.0
+dotnet add package AstraFlow.Generators --version 1.12.0
 ```
 
 For project files, prefer a private generator reference:
 
 ```xml
-<PackageReference Include="AstraFlow.Generators" Version="1.11.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Generators" Version="1.12.0" PrivateAssets="all" />
 ```
 
-`1.11.0` includes `AddAstraFlowGeneratedMediatorRegistrations` for closed mediator components and adds `AddAstraFlowGeneratedMapperMetadata` plus `GetAstraFlowGeneratedMapperMetadata` for generated mapping rule and projection metadata. Runtime assembly scanning remains available through `AddAstraFlowMediator(...)` and `AddAstraFlowMapper(...)` and should stay as the fallback path.
+`1.12.0` includes `AddAstraFlowGeneratedMediatorRegistrations` for closed mediator components and adds `AddAstraFlowGeneratedMapperMetadata` plus `GetAstraFlowGeneratedMapperMetadata` for generated mapping rule and projection metadata. Runtime assembly scanning remains available through `AddAstraFlowMediator(...)` and `AddAstraFlowMapper(...)` and should stay as the fallback path.
 
 ## `AstraFlow.Cli`
 
@@ -196,10 +197,10 @@ Install this package as a .NET tool when you want command-line inspection and re
 Example:
 
 ```powershell
-dotnet tool install --global AstraFlow.Cli --version 1.11.0
+dotnet tool install --global AstraFlow.Cli --version 1.12.0
 ```
 
-`1.11.0` includes:
+`1.12.0` includes:
 
 - `astraflow inspect [path]`,
 - `astraflow inspect handlers|notifications|mappings|projections`,
@@ -219,7 +220,7 @@ Install this package in ASP.NET Core applications that want AstraFlow minimal AP
 Example:
 
 ```powershell
-dotnet add package AstraFlow.AspNetCore --version 1.11.0
+dotnet add package AstraFlow.AspNetCore --version 1.12.0
 ```
 
 Use this at the web application boundary. Core/domain projects should not reference it.
@@ -231,10 +232,29 @@ Install this package when you want FluentValidation validators to run through As
 Example:
 
 ```powershell
-dotnet add package AstraFlow.FluentValidation --version 1.11.0
+dotnet add package AstraFlow.FluentValidation --version 1.12.0
 ```
 
 Register validators separately as `IValidator<TRequest>`. The package provides the pipeline behavior and validation diagnostics, not automatic assembly scanning.
+
+## `AstraFlow.OpenTelemetry`
+
+Install this package when you want opt-in AstraFlow tracing and metrics without adding observability dependencies to the core runtime packages.
+
+Example:
+
+```powershell
+dotnet add package AstraFlow.OpenTelemetry --version 1.12.0
+```
+
+Register it after mediator registration:
+
+```csharp
+services.AddAstraFlowMediator(typeof(Program).Assembly);
+services.AddAstraFlowOpenTelemetry();
+```
+
+The package emits payload-free `ActivitySource` spans and `Meter` metrics for request dispatch, void requests, notification publishing, mapper validation, and projection validation. Type-name tags are opt-in. Telemetry can be disabled globally and request tracing can be sampled by operation name.
 
 ## `AstraFlow`
 
@@ -243,7 +263,7 @@ Install the meta package when a project intentionally uses mediator and mapper t
 Example:
 
 ```powershell
-dotnet add package AstraFlow --version 1.11.0
+dotnet add package AstraFlow --version 1.12.0
 ```
 
 The meta package is convenient, but focused packages keep dependency intent clearer in shared libraries and smaller projects.
@@ -264,6 +284,7 @@ The meta package is convenient, but focused packages keep dependency intent clea
 | Command-line inspection/reporting | `AstraFlow.Cli` as a .NET tool. |
 | ASP.NET Core API | `AstraFlow.AspNetCore` plus the runtime packages used by the app. |
 | FluentValidation request validation | `AstraFlow.FluentValidation` plus registered `IValidator<TRequest>` validators. |
+| App observability | `AstraFlow.OpenTelemetry` plus the runtime packages being observed. |
 
 ## Dependency Rules
 
@@ -274,6 +295,7 @@ The meta package is convenient, but focused packages keep dependency intent clea
 - Install `AstraFlow.Cli` as a .NET tool, not as an application runtime dependency.
 - Install `AstraFlow.AspNetCore` only in ASP.NET Core boundary projects.
 - Install `AstraFlow.FluentValidation` only where validators should participate in mediator pipelines.
+- Install `AstraFlow.OpenTelemetry` only in application or host projects that configure observability.
 - Do not install the meta package in a shared contract project unless both mediator and mapper are intentionally needed.
 - Do not install `AstraFlow.Mapper.Conventions` unless convention mapping is deliberately configured.
 - Keep integration packages at application boundaries.

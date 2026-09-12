@@ -36,6 +36,7 @@ try {
     Invoke-DotNetStep "Pack AstraFlow.Diagnostics" @("pack", ".\src\AstraFlow.Diagnostics\AstraFlow.Diagnostics.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.AspNetCore" @("pack", ".\src\AstraFlow.AspNetCore\AstraFlow.AspNetCore.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.FluentValidation" @("pack", ".\src\AstraFlow.FluentValidation\AstraFlow.FluentValidation.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Pack AstraFlow.OpenTelemetry" @("pack", ".\src\AstraFlow.OpenTelemetry\AstraFlow.OpenTelemetry.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Testing" @("pack", ".\src\AstraFlow.Testing\AstraFlow.Testing.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Analyzers" @("pack", ".\src\AstraFlow.Analyzers\AstraFlow.Analyzers.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Pack AstraFlow.Generators" @("pack", ".\src\AstraFlow.Generators\AstraFlow.Generators.csproj", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")

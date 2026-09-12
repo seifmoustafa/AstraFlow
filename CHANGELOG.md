@@ -2,6 +2,29 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.12.0
+
+### Added
+
+- Added `AstraFlow.OpenTelemetry`, a dependency-light observability package built on `ActivitySource` and `Meter`.
+- Added request and void-request telemetry pipeline behaviors.
+- Added notification publish telemetry through `AstraFlowTelemetryPublisher`.
+- Added stable telemetry names for activities and metrics.
+- Added request duration, request failure, notification duration, notification failure, and validation finding metrics.
+- Added telemetry disable and activity sampling switches.
+- Added redaction primitives and safe defaults that avoid request payloads, DTO payloads, and high-cardinality type tags by default.
+- Added mapper/projection validation telemetry helpers.
+- Added OpenTelemetry tests for activities, metrics, redaction defaults, disable switches, sampling, notification telemetry, and validation finding metrics.
+
+### Changed
+
+- Updated package metadata, package selection guidance, release docs, CI, publish workflow, package scripts, and clean-install verification for `1.12.0`.
+- Updated roadmap status to mark the v1.12 observability lane complete.
+
+### Fixed
+
+- None.
+
 ## 1.11.0
 
 ### Added

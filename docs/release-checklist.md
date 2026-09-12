@@ -64,6 +64,9 @@
 - A clean sample project can install `AstraFlow.Diagnostics`.
 - A clean sample project can install `AstraFlow.Testing`.
 - A clean sample project can install `AstraFlow.Mapper.EntityFrameworkCore`.
+- A clean sample project can install `AstraFlow.AspNetCore`.
+- A clean sample project can install `AstraFlow.FluentValidation`.
+- A clean sample project can install `AstraFlow.OpenTelemetry`.
 - A clean sample project can install `AstraFlow.Analyzers`.
 - A clean sample project can install `AstraFlow.Generators`.
 - A clean sample project can restore each package using the documented package versions.

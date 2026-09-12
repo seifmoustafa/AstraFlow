@@ -4,7 +4,7 @@
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current implementation truth: AstraFlow is complete through `v1.11.0` in this repository. The next planned roadmap item is `v1.12.0` observability and operational hooks.
+Current implementation truth: AstraFlow is complete through `v1.12.0` in this repository. The next planned roadmap item is `v1.13.0` compatibility, migration, and consumer confidence.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -1647,7 +1647,7 @@ What must NOT be included:
 
 ### v1.12 Observability and Operational Hooks
 
-Status: `Planned`.
+Status: `Done in v1.12.0`.
 
 Goal:
 
@@ -2471,7 +2471,7 @@ Moved later:
 | CLI inspection | Done | v1.10 | P1 | `AstraFlow.Cli` | Adoption tooling | Redacted reports | Moved earlier |
 | ASP.NET Core integration | Done | v1.11 | P1 | `AstraFlow.AspNetCore` | Common app integration | Dev-only diagnostics endpoint | After parity |
 | FluentValidation integration | Done | v1.11 | P1 | `AstraFlow.FluentValidation` | Common validation flow | Validation diagnostics | After parity |
-| Observability | Planned | v1.12 | P1 | `AstraFlow.OpenTelemetry` | Operational parity | No payload logging | After parity |
+| Observability | Done | v1.12 | P1 | `AstraFlow.OpenTelemetry` | Operational parity | No payload logging | After parity |
 | Compatibility confidence | Planned | v1.13 | P1 | all | Adoption confidence | API diff and matrix | Before v2 expansion |
 | Enterprise supply chain | Planned | v2.2 | P1 | CI/release | Enterprise review | SBOM/provenance/signing | Later |
 | Ecosystem packages | Planned | v3 | P2 | optional packages | Broader app flow | No core dependency leaks | Later |
