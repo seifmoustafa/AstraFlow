@@ -7,7 +7,7 @@
 - Samples compile.
 - Tests pass in Release configuration.
 - README, changelog, roadmap, security policy, and publishing docs are current.
-- API reference, architecture guide, package selection guide, compatibility guide, diagnostics guide, testing guide, mediator scenarios, mapper scenarios, projection guides, EF Core guide, troubleshooting docs, and community release guide are current.
+- API reference, architecture guide, package selection guide, compatibility guide, migration cookbook, API governance guide, diagnostics guide, testing guide, mediator scenarios, mapper scenarios, projection guides, EF Core guide, troubleshooting docs, and community release guide are current.
 - No competitor migration pages or retired package references exist in AstraFlow docs.
 - Current target framework support is documented accurately.
 - Candidate target framework support is not described as published support.
@@ -31,6 +31,8 @@
 - EF Core package target support is verified separately from core mapper target support.
 - No package advertises direct .NET Framework or `netstandard2.0` support until package assets exist for that target.
 - `scripts/verify-package-install.ps1` passes for the release version.
+- `scripts/verify-api-compatibility.ps1` passes against the previous published version.
+- `scripts/verify-upgrade-smoke.ps1` passes from the previous published version to the current packed version.
 - Clean install verification compiles and runs a mediator consumer that sends a response request, a void request, a stream request, and a notification.
 
 ## Consumer Validation

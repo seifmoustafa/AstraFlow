@@ -168,6 +168,20 @@ jobs:
             }
           }
 
+      - name: Verify public API compatibility
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content Directory.Build.props -Raw
+          $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
+          ./scripts/verify-api-compatibility.ps1 -PreviousVersion 1.12.0 -CurrentVersion $version
+
+      - name: Verify previous-version upgrade smoke
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content Directory.Build.props -Raw
+          $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
+          ./scripts/verify-upgrade-smoke.ps1 -PreviousVersion 1.12.0 -CurrentVersion $version
+
       - name: Verify clean package install
         shell: pwsh
         run: |

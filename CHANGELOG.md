@@ -2,6 +2,24 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 1.13.0
+
+### Added
+
+- Added `scripts/verify-api-compatibility.ps1` to compare public XML documentation member IDs against the previous published package version.
+- Added `scripts/verify-upgrade-smoke.ps1` to build a clean previous-version consumer, upgrade it to locally packed current packages, and run the same smoke flow.
+- Added publish workflow gates for public API compatibility and previous-version upgrade smoke verification.
+- Added API governance and migration cookbook documentation.
+
+### Changed
+
+- Updated package metadata, compatibility guidance, package selection guidance, release checklist, and README links for `1.13.0`.
+- Updated roadmap status to mark the v1.13 compatibility, migration, and consumer confidence lane complete.
+
+### Fixed
+
+- Fixed stale analyzer guide roadmap text that described ASP.NET Core and FluentValidation integration as `1.12.0` scope instead of `1.11.0`.
+
 ## 1.12.0
 
 ### Added
