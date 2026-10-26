@@ -44,6 +44,10 @@ jobs:
       - name: Test
         run: dotnet test AstraFlow.slnx -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Verify samples build
+        shell: pwsh
+        run: ./scripts/verify-sample-builds.ps1 -Configuration Release
+
       - name: Pack contracts
         run: dotnet pack src/AstraFlow.Contracts/AstraFlow.Contracts.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
@@ -173,14 +177,14 @@ jobs:
         run: |
           [xml]$props = Get-Content Directory.Build.props -Raw
           $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
-          ./scripts/verify-api-compatibility.ps1 -PreviousVersion 1.12.0 -CurrentVersion $version
+          ./scripts/verify-api-compatibility.ps1 -PreviousVersion 1.13.0 -CurrentVersion $version
 
       - name: Verify previous-version upgrade smoke
         shell: pwsh
         run: |
           [xml]$props = Get-Content Directory.Build.props -Raw
           $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
-          ./scripts/verify-upgrade-smoke.ps1 -PreviousVersion 1.12.0 -CurrentVersion $version
+          ./scripts/verify-upgrade-smoke.ps1 -PreviousVersion 1.13.0 -CurrentVersion $version
 
       - name: Verify clean package install
         shell: pwsh

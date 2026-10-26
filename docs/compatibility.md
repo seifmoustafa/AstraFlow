@@ -4,7 +4,7 @@ This guide documents AstraFlow target framework support, compatibility goals, an
 
 ## Current Support
 
-AstraFlow `1.13.0` currently targets:
+AstraFlow `1.13.1` currently targets:
 
 | Package | Current targets |
 | --- | --- |
@@ -42,12 +42,29 @@ Direct .NET Framework targets such as `net462` or `net471` are candidates only a
 
 ## Consumer Confidence Gates
 
-`1.13.0` adds two compatibility gates to release verification:
+`1.13.1` keeps the two compatibility gates introduced in `1.13.0` and adds sample-build coverage:
 
 - `scripts/verify-api-compatibility.ps1` compares public XML documentation member IDs from the previous published package version to the current packed packages.
 - `scripts/verify-upgrade-smoke.ps1` creates a clean consumer, builds it against the previous package version, upgrades it to the current locally packed version, and runs the same smoke flow again.
+- `scripts/verify-sample-builds.ps1` builds every sample project, including host compatibility and migration cookbook samples.
 
 These checks are intentionally conservative. They do not replace human review, but they make accidental public API removals and basic upgrade failures visible before publishing.
+
+## Host Compatibility Samples
+
+`1.13.1` includes compile-checked samples for the consumer shapes named in the roadmap:
+
+| Consumer shape | Sample |
+| --- | --- |
+| Console host | `samples/ConsoleHostCompatibilitySample` |
+| Worker-style host | `samples/WorkerHostCompatibilitySample` |
+| ASP.NET Core host | `samples/AspNetCoreSample` |
+| Class library | `samples/ClassLibraryCompatibilitySample` |
+| Test project | `samples/TestProjectCompatibilitySample` |
+| Shared contracts project | `samples/SharedContractsCompatibilitySample` |
+| Shared client project | `samples/SharedClientCompatibilitySample` |
+
+The integration test suite also validates the combined `AddAstraFlow(...)` registration path through a scoped Microsoft.Extensions.DependencyInjection consumer. Third-party container adapters remain candidate work until a specific container compatibility matrix is selected.
 
 ## Version Support Policy
 
@@ -87,7 +104,7 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Use AstraFlow `1.13.0` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
+Use AstraFlow `1.13.1` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
@@ -119,14 +136,15 @@ dotnet test AstraFlow.slnx -c Release
 .\scripts\pack.ps1
 ```
 
-For `1.13.0`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` and `AstraFlow.AspNetCore` include only `lib/net10.0/`. Confirm `AstraFlow.FluentValidation` and `AstraFlow.OpenTelemetry` include `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Analyzers` and `AstraFlow.Generators` include `analyzers/dotnet/cs/*.dll` and no runtime `lib/` assets.
+For `1.13.1`, inspect the `.nupkg` files and confirm `AstraFlow.Contracts`, the core packages, `AstraFlow.Mapper.Conventions`, and `AstraFlow.Testing` include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Mapper.EntityFrameworkCore` and `AstraFlow.AspNetCore` include only `lib/net10.0/`. Confirm `AstraFlow.FluentValidation` and `AstraFlow.OpenTelemetry` include `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`. Confirm `AstraFlow.Analyzers` and `AstraFlow.Generators` include `analyzers/dotnet/cs/*.dll` and no runtime `lib/` assets.
 
 Then run:
 
 ```powershell
-.\scripts\verify-package-install.ps1 -Version 1.13.0
-.\scripts\verify-api-compatibility.ps1 -PreviousVersion 1.12.0 -CurrentVersion 1.13.0
-.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 1.12.0 -CurrentVersion 1.13.0
+.\scripts\verify-package-install.ps1 -Version 1.13.1
+.\scripts\verify-api-compatibility.ps1 -PreviousVersion 1.13.0 -CurrentVersion 1.13.1
+.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 1.13.0 -CurrentVersion 1.13.1
+.\scripts\verify-sample-builds.ps1 -Configuration Release
 ```
 
 

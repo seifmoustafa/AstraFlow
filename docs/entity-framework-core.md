@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.13.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.13.1
 ```
 
 ## Validate One Projection
@@ -33,7 +33,7 @@ if (report.HasFindings)
 }
 ```
 
-Findings use `AFPEF...` codes. In `1.13.0`:
+Findings use `AFPEF...` codes. In `1.13.1`:
 
 | Code | Meaning |
 | --- | --- |
@@ -103,15 +103,15 @@ var report = db.ValidateProjectionTranslations(registry);
 report.Findings.Should().BeEmpty();
 ```
 
-SQLite is the recommended `1.13.0` baseline because it exercises a real relational provider without Docker or external database services.
+SQLite is the recommended `1.13.1` baseline because it exercises a real relational provider without Docker or external database services.
 
 ## Provider Matrix
 
-| Provider | Dependency location | Current `1.13.0` status |
+| Provider | Dependency location | Current `1.13.1` status |
 | --- | --- | --- |
 | SQLite | EF Core test project only | Covered by automated translation tests. |
-| SQL Server | Future provider-specific test project or optional package | Not required for `1.13.0`; dependency must stay isolated. |
-| PostgreSQL | Future provider-specific test project or optional package | Not required for `1.13.0`; dependency must stay isolated. |
-| MySQL | Future provider-specific test project or optional package | Not required for `1.13.0`; dependency must stay isolated. |
+| SQL Server | Future provider-specific test project or optional package | Not required for `1.13.1`; dependency must stay isolated. |
+| PostgreSQL | Future provider-specific test project or optional package | Not required for `1.13.1`; dependency must stay isolated. |
+| MySQL | Future provider-specific test project or optional package | Not required for `1.13.1`; dependency must stay isolated. |
 
 

@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.13.0</Version>
-    <AssemblyVersion>1.13.0.0</AssemblyVersion>
-    <FileVersion>1.13.0.0</FileVersion>
+    <Version>1.13.1</Version>
+    <AssemblyVersion>1.13.1.0</AssemblyVersion>
+    <FileVersion>1.13.1.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,10 +18,11 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.13.0:
-      - Adds public API compatibility verification against the previous published package version.
-      - Adds previous-version upgrade smoke verification for clean consumer projects.
-      - Adds migration cookbook and version support guidance for consumer confidence.
+    <PackageReleaseNotes>AstraFlow 1.13.1:
+      - Adds compile-checked host compatibility samples for console, worker, class library, test project, and shared contracts/client layouts.
+      - Adds a compile-checked migration cookbook sample for mediator and mapper upgrade flows.
+      - Documents package deprecation and versioned documentation strategy for release governance.
+      - Updates compatibility gates to compare against the 1.13.0 published line.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

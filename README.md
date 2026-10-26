@@ -290,7 +290,7 @@ Projection validation reports warnings by default. Set `ProjectionValidationMode
 Install the optional conventions package only where convention mapping is deliberate:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 1.13.0
+dotnet add package AstraFlow.Mapper.Conventions --version 1.13.1
 ```
 
 Register exact pairs through a profile:
@@ -332,7 +332,7 @@ Sensitive destination writes remain blocked unless explicitly allowed.
 Install the optional package only in projects that need EF Core validation:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.13.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 1.13.1
 ```
 
 Then ask EF Core to translate registered projections without executing the query:
@@ -414,7 +414,7 @@ Diagnostics are framework-neutral and do not expose request payloads, DTO payloa
 Install the optional testing package in test projects:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.13.0
+dotnet add package AstraFlow.Testing --version 1.13.1
 ```
 
 Use the fake mediator to record requests and notifications:

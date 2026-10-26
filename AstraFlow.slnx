@@ -5,10 +5,17 @@
   <Folder Name="/samples/">
     <Project Path="samples/AspNetCoreSample/AspNetCoreSample.csproj" />
     <Project Path="samples/BasicMediatorSample/BasicMediatorSample.csproj" />
+    <Project Path="samples/ClassLibraryCompatibilitySample/ClassLibraryCompatibilitySample.csproj" />
+    <Project Path="samples/ConsoleHostCompatibilitySample/ConsoleHostCompatibilitySample.csproj" />
     <Project Path="samples/ConventionMapperSample/ConventionMapperSample.csproj" />
     <Project Path="samples/DiagnosticsSample/DiagnosticsSample.csproj" />
     <Project Path="samples/ExplicitMapperSample/ExplicitMapperSample.csproj" />
     <Project Path="samples/GeneratedMediatorRegistrationSample/GeneratedMediatorRegistrationSample.csproj" />
+    <Project Path="samples/MigrationCookbookSample/MigrationCookbookSample.csproj" />
+    <Project Path="samples/SharedClientCompatibilitySample/SharedClientCompatibilitySample.csproj" />
+    <Project Path="samples/SharedContractsCompatibilitySample/SharedContractsCompatibilitySample.csproj" />
+    <Project Path="samples/TestProjectCompatibilitySample/TestProjectCompatibilitySample.csproj" />
+    <Project Path="samples/WorkerHostCompatibilitySample/WorkerHostCompatibilitySample.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/AstraFlow.Analyzers/AstraFlow.Analyzers.csproj" />
