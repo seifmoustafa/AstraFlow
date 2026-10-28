@@ -203,6 +203,21 @@ public static partial class @return { [AstraGenerateMapping] public static parti
     }
 
     [Fact]
+    public void Nullable_disabled_consumer_compiles_without_generated_nullability_warnings()
+    {
+        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp12);
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
+            .Select(path => MetadataReference.CreateFromFile(path)).ToList();
+        references.Add(MetadataReference.CreateFromFile(typeof(AstraGenerateMappingAttribute).Assembly.Location));
+        var compilation = CSharpCompilation.Create("NullableDisabled", [CSharpSyntaxTree.ParseText(Declaration, options)], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Disable));
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out var diagnostics);
+        diagnostics.Should().BeEmpty();
+        output.GetDiagnostics().Where(d => d.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error).Should().BeEmpty();
+    }
+
+    [Fact]
     public void Distinct_pairs_generate_independent_compilable_methods()
     {
         var source = Declaration + """
