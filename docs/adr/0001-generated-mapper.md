@@ -18,6 +18,14 @@ AstraFlow has explicit mapper rules, opt-in convention profiles, projections and
 - **R7: Known runtime cost.** Measure allocations, startup, build overhead, AOT viability and generated code size.
 - **R8: Honest boundary.** Compiler-visible declarations are not equivalent to arbitrary runtime delegates, profiles or service-resolved policies.
 
+## Source-level constraints verified before the spike
+
+At repository base `main` SHA `d078e34`, [`AstraFlowObjectMapper`](../../src/AstraFlow.Mapper/AstraFlowObjectMapper.cs) performs null handling, assignable-source identity return and collection mapping **before** rule matching; then scans scoped `IObjectMappingRule` services and fails on missing/duplicate rules. [`AstraFlowMapperRegistration`](../../src/AstraFlow.Mapper/AstraFlowMapperRegistration.cs) wires `IMapper` and rules scoped. A generated typed method does not automatically inherit these facade semantics.
+
+**Required design decision:** distinguish *generated direct mapping contract* (which may deliberately construct a new DTO) from *adapter-through-IMapper contract* (which must honor the facade's identity/collection and precedence semantics). Test both if both are shipped. Do not register a singleton generated rule or bypass existing pair validation.
+
+[`AstraFlowMapperMetadataGenerator`](../../src/AstraFlow.Generators/AstraFlowMapperMetadataGenerator.cs) is an `IIncrementalGenerator` fed by `CompilationProvider.Select` and walks the compilation to discover types. A new generator must **measure** incremental edit cost; do not assume Roslyn's interface ensures fine-grained incremental work.
+
 ## Candidate APIs (examples, NOT public AstraFlow APIs)
 
 **Option A — Partial mapping method:**
