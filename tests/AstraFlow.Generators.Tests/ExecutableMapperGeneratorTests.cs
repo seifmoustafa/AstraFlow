@@ -89,6 +89,42 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
     }
 
     [Fact]
+    public void Identical_enum_properties_compile()
+    {
+        var source = Declaration.Replace("public class Input", "public enum Status { Active }\npublic class Input")
+            .Replace("int Count", "Status Count");
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Different_enum_types_are_rejected()
+    {
+        var source = Declaration.Replace("public class Input", "public enum Status { Active }\npublic enum OtherStatus { Active }\npublic class Input")
+            .Replace("public class Input { public int Count", "public class Input { public Status Count")
+            .Replace("public class Output { public int Count", "public class Output { public OtherStatus Count");
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource);
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Cancellation_is_propagated_by_the_generator_driver()
+    {
+        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp12);
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
+            .Select(path => MetadataReference.CreateFromFile(path)).ToList();
+        references.Add(MetadataReference.CreateFromFile(typeof(AstraGenerateMappingAttribute).Assembly.Location));
+        var compilation = CSharpCompilation.Create("CancelledMapping", [CSharpSyntaxTree.ParseText(Declaration, options)], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        Assert.ThrowsAny<OperationCanceledException>(() => driver.RunGenerators(compilation, cancellation.Token));
+    }
+
+    [Fact]
     public void Keyword_namespace_type_method_parameter_and_member_compile()
     {
         const string source = """
