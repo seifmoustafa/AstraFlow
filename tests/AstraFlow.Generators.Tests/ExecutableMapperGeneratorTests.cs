@@ -279,9 +279,13 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         references.Add(MetadataReference.CreateFromFile(typeof(AstraGenerateMappingAttribute).Assembly.Location));
         var compilation = CSharpCompilation.Create("IncrementalPairs", [firstTree, secondTree], references,
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
-        GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options,
+            driverOptions: new GeneratorDriverOptions(IncrementalGeneratorOutputKind.None, trackIncrementalGeneratorSteps: true));
         driver = driver.RunGenerators(compilation);
         var before = driver.GetRunResult().Results.Single().GeneratedSources.Single(s => s.SourceText.ToString().Contains("namespace Other"));
+        driver = driver.RunGenerators(compilation);
+        driver.GetRunResult().Results.Single().TrackedOutputSteps.Values.SelectMany(steps => steps).SelectMany(step => step.Outputs)
+            .Should().ContainSingle(output => output.Reason == IncrementalStepRunReason.Cached);
         var changed = CSharpSyntaxTree.ParseText(Declaration.Replace("public class Input { public int Count", "public class Input { public long Count"), options);
         driver = driver.RunGenerators(compilation.ReplaceSyntaxTree(firstTree, changed));
         var result = driver.GetRunResult();
@@ -289,6 +293,8 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         var after = result.Results.Single().GeneratedSources.Should().ContainSingle().Subject;
         after.HintName.Should().Be(before.HintName);
         after.SourceText.ToString().Should().Be(before.SourceText.ToString());
+        var trackedOutputs = result.Results.Single().TrackedOutputSteps.Values.SelectMany(steps => steps).SelectMany(step => step.Outputs).ToArray();
+        trackedOutputs.Should().ContainSingle(output => output.Reason == IncrementalStepRunReason.Modified);
     }
 
     private static (Compilation Compilation, GeneratorDriverRunResult Result) Generate(string source)
