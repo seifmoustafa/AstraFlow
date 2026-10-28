@@ -9,6 +9,12 @@ Current generator documentation describes generated **DI registrations** for han
 ### User-visible outcome
 For a known request type a developer can see which handler is selected, what pipeline participates, which parts run through generated invocation, and why unsupported paths use an explicitly selected alternative (or fail strict mode). Existing mediator callers keep working unchanged.
 
+## Code-observed baseline, not a hypothetical empty dispatcher
+
+At base SHA `d078e34`, [`AstraFlowMediator`](../../src/AstraFlow.Mediator/AstraFlowMediator.cs) uses static `ConcurrentDictionary<Type, Func<...>>` caches for send, streams and notifications. Its send overloads share a `SendCache.GetOrAdd(request.GetType(), CreateSendDelegate)` path; `CreateSendDelegate` reflects and closes typed core methods on first use. That means **steady-state runtime dispatch is already cached**. Source generation may improve cold start and AOT viability while yielding a much smaller warm-call gain than expected.
+
+**Required benchmark split:** first new request type / cached request type / 0-1-N pipelines / typed vs object `Send`, with identical DI semantics. Never claim generated dispatch removes reflection everywhere until the packaged consumer and trimming output prove it.
+
 ## Feasibility questions before choosing technology
 
 1. What is the current typed `Send` path? What does object-based `Send` do?
