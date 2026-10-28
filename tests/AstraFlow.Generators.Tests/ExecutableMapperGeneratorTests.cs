@@ -53,6 +53,41 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         result.Results.Single().GeneratedSources.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("public Output(int value) { }", "parameterless constructor")]
+    [InlineData("private Output() { }", "parameterless constructor")]
+    public void Unsupported_constructors_are_reported(string constructor, string message)
+    {
+        var source = Declaration.Replace("public class Output {", "public class Output { " + constructor);
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource && d.GetMessage().Contains(message));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("public int Count;", "fields")]
+    [InlineData("public int this[int index] { get => 0; set { } }", "properties")]
+    [InlineData("public int Count { get; private set; }", "public settable")]
+    [InlineData("public System.Collections.Generic.List<int> Count { get; set; } = new();", "nested objects")]
+    public void Unsupported_destination_members_are_reported(string property, string message)
+    {
+        var source = Declaration.Replace("public int Count { get; set; } public string Name { get; set; } = \"\"; }\npublic static", property + " }\npublic static");
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains(message));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Sensitive_values_do_not_appear_in_generated_sources_or_diagnostics()
+    {
+        const string secret = "value-not-to-be-emitted-7b31";
+        var source = Declaration.Replace("public int Count { get; set; } public string Name { get; set; } = \"\"; }\npublic static", "public string Password { get; set; } = \"" + secret + "\"; }\npublic static");
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("sensitive"));
+        result.Diagnostics.Select(d => d.ToString()).Should().NotContain(text => text.Contains(secret));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
     [Fact]
     public void Keyword_namespace_type_method_parameter_and_member_compile()
     {
@@ -173,6 +208,36 @@ public static partial class OtherMaps { [AstraGenerateMapping] public static par
         driver = driver.RunGenerators(compilation.ReplaceSyntaxTree(tree, changed));
         driver.GetRunResult().Diagnostics.Should().Contain(d => d.Id == "AFM001");
         driver.GetRunResult().Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Editing_one_pair_preserves_the_other_generated_method()
+    {
+        const string second = """
+using AstraFlow.Mapper;
+namespace Other;
+public class Source { public int Value { get; set; } }
+public class Destination { public int Value { get; set; } }
+public static partial class Maps { [AstraGenerateMapping] public static partial Destination Convert(Source source); }
+""";
+        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp12);
+        var firstTree = CSharpSyntaxTree.ParseText(Declaration, options);
+        var secondTree = CSharpSyntaxTree.ParseText(second, options);
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
+            .Select(path => MetadataReference.CreateFromFile(path)).ToList();
+        references.Add(MetadataReference.CreateFromFile(typeof(AstraGenerateMappingAttribute).Assembly.Location));
+        var compilation = CSharpCompilation.Create("IncrementalPairs", [firstTree, secondTree], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
+        driver = driver.RunGenerators(compilation);
+        var before = driver.GetRunResult().Results.Single().GeneratedSources.Single(s => s.SourceText.ToString().Contains("namespace Other"));
+        var changed = CSharpSyntaxTree.ParseText(Declaration.Replace("public class Input { public int Count", "public class Input { public long Count"), options);
+        driver = driver.RunGenerators(compilation.ReplaceSyntaxTree(firstTree, changed));
+        var result = driver.GetRunResult();
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001");
+        var after = result.Results.Single().GeneratedSources.Should().ContainSingle().Subject;
+        after.HintName.Should().Be(before.HintName);
+        after.SourceText.ToString().Should().Be(before.SourceText.ToString());
     }
 
     private static (Compilation Compilation, GeneratorDriverRunResult Result) Generate(string source)
