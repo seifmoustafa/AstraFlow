@@ -2,6 +2,57 @@
 
 ## Executive Summary
 
+## Strategic direction after v2.0 — proposed 2026-10-29
+
+## Product ambition and evidence-backed execution sequence
+
+**Vision:** Build a .NET application-flow toolkit that developers trust for **clear intent, predictable execution, generated speed where proven, explainable architecture and painless adoption**. The long-term aim is world-class developer productivity; no current superiority or universal performance claim follows from the ambition.
+
+### The five product breakthroughs we want to earn
+
+| Breakthrough | Developer outcome | Concrete proof | Roadmap position |
+| --- | --- | --- | --- |
+| **Executable generated mapping** | DTO conversion is readable, type-checked and debuggable at build time | Real generated mapping in a clean consumer; unsafe cases diagnosed; published benchmark trade-offs | v2.1 proposed |
+| **Source-aware mediator dispatch** | Request execution is fast without losing scope, pipeline or exception semantics | Closed-request generated path parity, clean AOT execution, equal-workload benchmarks | v2.4 candidate |
+| **Explainable flows** | Review handler, behavior and mapping changes before merging | Versioned manifest, provenance/confidence markers, deterministic CI diff | v2.5 candidate |
+| **Trustworthy package ecosystem** | Upgrade without surprise; know what artifacts were built | Supply chain, compatibility API baselines and clean smoke consumers | v2.2–v2.3 existing planned |
+| **Composable integrations** | Avoid rewriting frequent infrastructure glue without adopting an application framework | Real demand, named maintainer, isolation, failure-mode and package tests | v3+ candidates |
+
+**Product boundary:** The family does not reinvent ASP.NET Identity, OpenIddict, EF Core, FluentValidation, Polly, background schedulers, or message brokers merely to accumulate features. Better Auth-inspired .NET authentication is *separate research*, not a core module.
+
+**Go/no-go principle:** When a generated route is slower end-to-end or materially hurts build cost without user benefit, improve the existing runtime rather than shipping codegen for marketing. When a feature adds more complexity than recurring user value, defer it. Every shipped claim requires evidence documented in [release gates](strategy/evidence-and-gates.md).
+
+### Documentation / decision map
+
+- [Blueprint](engineering-blueprint.md): architectural north star, execution modes, risk analysis and trade-offs.
+- [v2.1 implementation contract](plans/v2.1-generated-mapping.md): one release scope and measurable acceptance.
+- [Mapper ADR](adr/0001-generated-mapper.md) and [Mediator ADR](adr/0002-generated-mediator.md): alternative designs, failure conditions, and source review questions.
+- [Flow Intelligence ADR](adr/0003-flow-manifest.md) and [candidate plan](plans/v2.5-flow-intelligence.md).
+- [North Star](strategy/north-star.md), [Decision Log](strategy/decision-log.md), [Validation Matrix](strategy/validation-matrix.md), [Research Ledger](strategy/research-ledger.md), [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
+
+
+**Status: Proposed, not implemented or promised.** This index complements rather than replaces the completed release history below. Preserve the existing v2.2 enterprise supply-chain and v2.3 public-API governance commitments; do not silently repurpose their release numbers.
+
+**North star:** Become a leading, independently adoptable .NET application-flow ecosystem through verifiably productive mapping and dispatch, deterministic compile-time diagnostics, safe runtime extensibility, and trustworthy compatibility. Optimizing for feature count or promises of being “the greatest” is not a product acceptance criterion.
+
+| Track | Version | Status | Measurable exit evidence |
+| --- | --- | --- | --- |
+| Shared sensitive-name and redaction foundation | v2.0.0 | Source implementation described below; independently verify publication | Security regression tests and package checks |
+| **Generated mapping execution** | **v2.1** | **Proposed priority** | Real typed generated conversion; source diagnostics; clean consumer; AOT publish/run; manual/runtime/peer benchmark methodology |
+| Enterprise supply chain | v2.2 | Existing planned commitment | SBOM, provenance and SourceLink checks |
+| Public API governance | v2.3 | Existing planned commitment | API baseline enforcement and upgrade smoke |
+| Generated mediator dispatch | v2.4 | Candidate; only after source/benchmark feasibility | Closed-type generated invoker, DI scope/pipeline equivalence, AOT and comparative numbers |
+| Explainable flow manifest | v2.5 | Candidate | Deterministic schema, provenance and CI diff; known gaps labeled |
+| Reliability and independent adoption | v2.6+ | Research | Consumer pilots, measured saved time, compatibility and regression improvements |
+| Optional ecosystem | v3+ | Candidate per independent package | Specific demand, no dependency leakage, owner and security review |
+| Visual products | v4+ | Research | Validated manifest usefulness and actual adopter request |
+| Better Auth-inspired .NET identity | Separate project only | Research | Independent threat model, standards-compliant .NET component study and maintainer |
+
+**Read before implementation:** [Engineering North Star](strategy/north-star.md), [Generated Mapper ADR](adr/0001-generated-mapper.md), [v2.1 plan](plans/v2.1-generated-mapping.md), [Generated Mediator ADR](adr/0002-generated-mediator.md), [Flow Manifest ADR](adr/0003-flow-manifest.md), [Evidence and Release Gates](strategy/evidence-and-gates.md), [Decision Log](strategy/decision-log.md), and [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
+
+**Non-negotiable:** One release goal at a time; opt-in convention mapping remains separate, existing API and published consumers stay compatible, generated-only modes do not silently fall back, no DTO payload logs, no performance superiority without repeatable results. Review actual code and current release state before changing APIs. All unshipped entries are proposals, not functionality claims.
+
+
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
 Current implementation truth: AstraFlow is complete through `v1.13.1`, and `v2.0.0` secure governance foundation work has started in this repository. The first v2 slice adds `AstraFlow.Security` for shared sensitive-name taxonomy and redaction policy. The remaining v2 planned work is compile-time superiority, secure DTO governance enforcement, analyzer/generator maturity, and generated fast paths.
@@ -1914,72 +1965,45 @@ What must NOT be included:
 - Unsafe code fixes.
 - Marketing claims without evidence.
 
-## v2.1 Performance Optimization and Generated Fast Paths
+## v2.1 Generated Mapping Execution and Evidence-Based Performance
 
-Status: `Planned`.
+Status: `Proposed; not shipped`.
 
-Goal:
+**One primary objective:** execute a statically declared source-generated object mapping in a clean consumer without changing the behavior of existing explicit mapping or opted-in conventions. This is a narrow, testable step toward the previous generated-fast-path vision, not a full mapper rewrite.
 
-Improve performance only after measurement.
+### Why this milestone matters
 
-Why this version exists:
+The existing generator produces registration and mapping/projection *metadata*, but it does not document an actual generated **object conversion runtime**. Building one real conversion path creates a foundation for performance, AOT and compile-time diagnosis claims that can be tested.
 
-`v1.9` provides evidence. `v2.1` acts on that evidence without weakening diagnostics or safety.
+### Required before implementation
 
-Packages affected:
+- Audit current `IMapper`, `IObjectMappingRule`, DI ownership, conventions, generator/analyzer symbol discovery and package assets.
+- Record source SHA, actual NuGet/tag publication status and baseline build/test/pack/install/API compatibility results.
+- Prototype partial-method versus type-pair declaration and choose one minimal additive public surface.
+- Agree on a small explicit supported subset, secure member-write policy and unsupported-shape diagnostics.
 
-- `AstraFlow.Generators`
-- runtime packages
-- benchmark project
+### Included only if feasibility succeeds
 
-Features included:
+1. Compiler-visible explicit mapping declaration; one clearly documented API.
+2. Readable deterministic generated typed C# assignment for simple accessible, type-compatible scalar members.
+3. Source-located diagnostics for unsupported construction, nullability, missing required members, sensitive writes and duplicate ownership.
+4. No silent fallback when a generated-only route is requested.
+5. Existing explicit and convention mapping untouched; optional generated `IMapper` adapter **only** after DI/duplicate semantics review.
+6. Golden snapshots, incremental-generator tests, negative-security/constructor tests, clean package consumer and AOT publish/run.
+7. Fair benchmarks: manual, existing AstraFlow, generated typed call and comparable peer libraries; allocations plus build and binary overhead.
+8. Docs, compiled migration sample, public API diff, changelog, limitations and completion report.
 
-- Optimization based on `v1.9` benchmarks.
-- Generated mapping fast paths.
-- Generated collection fast paths.
-- Generated registration paths.
-- Allocation reductions.
-- CI performance regression checks.
+### Must not expand into
 
-Competitor-style parity covered:
+Generated mediator dispatch; deep polymorphic graph conversion; magical runtime resolvers; automatic reverse domain writes; provider-specific SQL generation; dashboard, auth, scheduling or broad ecosystem integration. Constructor/record destinations are stretch only after the basic vertical slice passes.
 
-- Performance-sensitive mediator and mapping scenarios.
+### Release decision
 
-AstraFlow advantage beyond parity:
+**Pass:** supported mapping correct and safe, deterministic and inspectable, clean consumer runs, published AOT test passes, compatibility gates pass and performance costs are measured.
 
-- Performance claims remain evidence-backed and reproducible.
+**Reduce/stop:** generator cannot safely express the semantics, duplicates or DI lifetimes regress, compiler overhead is unacceptable, or generated-only execution silently falls back.
 
-Acceptance gates:
-
-- Benchmarks show before/after numbers.
-- Manual baselines remain.
-- CI regression checks exist for stable benchmark groups.
-- Diagnostics and safety defaults remain intact.
-
-Test requirements:
-
-- Benchmark regression smoke tests.
-- Generated fast-path correctness tests.
-- Allocation checks where stable.
-
-Documentation requirements:
-
-- Benchmark results.
-- Optimization notes.
-- Limitations and environment details.
-
-Migration examples required:
-
-- Enabling generated fast paths where optional.
-
-Risk level:
-
-- Medium.
-
-What must NOT be included:
-
-- Speed claims without repeatable numbers.
-- Optimizations that reduce correctness checks by default.
+**Detailed acceptance matrix and execution plan:** [v2.1 Generated Mapping](plans/v2.1-generated-mapping.md), [ADR-0001](adr/0001-generated-mapper.md), [Evidence Gates](strategy/evidence-and-gates.md).
 
 ## v2.2 Enterprise Supply Chain
 
@@ -2121,9 +2145,37 @@ What must NOT be included:
 
 - Breaking changes without a major version and migration guide.
 
+## v2.4 Generated Mediator Dispatch (Candidate)
+
+Status: `Candidate; not committed or implemented`.
+
+**Goal:** a proven executable **closed-request** generated invocation path, not another registration metadata generator. First audit the existing mediator wrapper cache and dispatch costs. Compare optimizing the runtime with codegen before selecting a design. Preserve all DI lifetime, pipeline ordering, short-circuit, cancellation and exception semantics. Strict generated-only mode must report unsupported types; existing runtime remains supported.
+
+**Acceptance:** one clean consumer, parity/failure tests, deterministic source, AOT publish and execute, comparable direct/runtime/generated benchmarks including build and binary overhead, documented exclusions. **Out of scope:** streams/notifications in first slice, message brokers, retries, workflows and distributed transactions.
+
+See [ADR-0002](adr/0002-generated-mediator.md) and [v2.4 candidate plan](plans/v2.4-generated-mediator.md).
+
+## v2.5 Explainable Flow Intelligence (Candidate)
+
+Status: `Candidate; not implemented`.
+
+**Goal:** deterministic versioned flow manifest, human/CI semantic diff, and confidence/provenance labels on every relationship from existing registration/generator/diagnostics/CLI sources. A missing edge is not proof that runtime behavior cannot happen.
+
+**Acceptance:** repeatable JSON schema, safe partial/incomplete result, useful changed-registration or mapping-plan review, redaction tests, schema evolution and clean sample consumer. **Out of scope:** whole-program execution certainty, hosted dashboard, IDE extension or capturing application payloads.
+
+See [ADR-0003](adr/0003-flow-manifest.md) and [v2.5 candidate plan](plans/v2.5-flow-intelligence.md).
+
+## v2.6+ Reliability and Adoption Proof (Research)
+
+Status: `Research; no promised feature release`.
+
+**Goal:** demonstrate real developer time saved and ease of maintenance with two independent consumer pilots; improve migration, support matrices, diagnostics wording, compatibility and runtime performance according to observed bottlenecks. Prefer removing friction to introducing unused abstractions.
+
+**Promotion gate:** documented adopter evidence and explicit maintainer-approved release scope. [Research ledger](strategy/research-ledger.md).
+
 ## v3 Ecosystem Packages
 
-Status: `Moved later` and `Planned`.
+Status: `Candidate per package / research` (historical ideas retained; nothing newly approved by this strategy).
 
 Goal:
 
@@ -2136,7 +2188,6 @@ Caching, authorization, idempotency, resilience, background jobs, domain events,
 Packages affected:
 
 - `AstraFlow.EntityFrameworkCore`
-- `AstraFlow.OpenTelemetry`
 - `AstraFlow.Caching`
 - `AstraFlow.Authorization`
 - `AstraFlow.Idempotency`
@@ -2201,7 +2252,7 @@ What must NOT be included:
 
 ## v4 Platform-Level Tooling
 
-Status: `Moved later` and `Planned`.
+Status: `Research / moved later`.
 
 Goal:
 
