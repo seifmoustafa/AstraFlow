@@ -4,7 +4,36 @@
 
 AstraFlow is a MIT-licensed .NET package family for explicit CQRS dispatch and source-auditable object mapping.
 
-It was built to keep production applications free from runtime license checks, hidden mapping behavior, and framework lock-in. The v1 design is deliberately small: secure defaults, clear errors, explicit extension points, and package-quality diagnostics before optional convention layers are added.
+It was built to keep production applications free from runtime license checks, hidden mapping behavior, and framework lock-in. The explicit core design is deliberately focused: secure defaults, clear errors, explicit extension points, and package-quality diagnostics before optional convention layers are added.
+
+## The vision: make .NET application flow extraordinarily clear
+
+AstraFlow aims to be a **leading open-source .NET application-flow toolkit**: explicit where correctness matters, source-generated where the compiler can prove a supported mapping or dispatch shape, rich in actionable diagnostics, and flexible without hidden runtime behavior. The promise is **less boilerplate, fewer surprises and more inspectable execution**—supported by clean consumer tests and measurable engineering, not unverified "fastest" or "complete replacement" claims.
+
+### Current foundation versus future breakthroughs
+
+| Area | Existing documented foundation | Proposed future direction |
+| --- | --- | --- |
+| Mediator | Requests/streams/notifications, pipelines, generated DI registrations | **Executable generated dispatch** with DI/pipeline equivalence (candidate v2.4) |
+| Mapper | Explicit rules, opted-in conventions, projections, mapping plans, generated metadata | **Typed generated mapping execution** and compile-time safety (proposed v2.1) |
+| Diagnostics | Reports, analyzers, CLI inspection/diff/graph | Explainable versioned **flow manifest** (candidate v2.5) |
+| Security | Shared redaction and sensitive-name policies | Better compile-time governance with explicit limitations and threat tests |
+| Ecosystem | Separately installable core and current integrations | Demand-gated idempotency, caching, authz, EF and resilience adapters (v3+ research) |
+
+> **Important:** The right-hand column is **not shipped functionality**. Generator *registration/metadata* is not generator *execution*. Source-tree versions, NuGet publication and GitHub Releases can differ; verify each before announcing availability.
+
+### Strategy and implementation library
+
+- **[Canonical version roadmap](docs/roadmap.md)** — historical milestones, proposed upcoming milestones, acceptance gates and explicit exclusions.
+- **[Engineering blueprint](docs/engineering-blueprint.md)** — full technical vision, architecture, product trade-offs and failure pre-mortem.
+- **[Developer-experience North Star](docs/strategy/north-star.md)** — what remarkable onboarding, mapping, dispatch and maintenance should feel like.
+- **[v2.1 generated mapping release plan](docs/plans/v2.1-generated-mapping.md)** — exact first implementation scope, tests and measurable proof.
+- **[Architecture decisions](docs/adr/0001-generated-mapper.md)** — mapper, [mediator](docs/adr/0002-generated-mediator.md) and [flow intelligence](docs/adr/0003-flow-manifest.md).
+- **[Engineering evidence gates](docs/strategy/evidence-and-gates.md)** and **[validation matrix](docs/strategy/validation-matrix.md)** — compatibility, security, benchmarks, AOT and release proof.
+- **[Ecosystem portfolio](docs/strategy/ecosystem-portfolio.md)** and **[research ledger](docs/strategy/research-ledger.md)** — future integrations, competing alternatives and reasons to defer.
+- **[Decision log](docs/strategy/decision-log.md)** — assumptions to test and conditions that change direction.
+
+**Product rule:** each release has one primary outcome and demonstrates value. A larger roadmap is not a substitute for a stable public API or independent developer adoption.
 
 ## Release And Repository Links
 
@@ -461,7 +490,7 @@ The package folder includes CI, a gated publish workflow, security policy, contr
 - the API surface is reviewed for v1 stability,
 - NuGet Trusted Publishing is configured, or a scoped GitHub Actions publishing secret is configured in the release repository.
 
-For first publish setup, create a dedicated GitHub repository, copy this folder into the repository root, configure Trusted Publishing or the documented GitHub secret, and run the gated publish workflow. See `docs/publishing.md`.
+For new releases from this established repository, follow the current publishing and verification workflow in `docs/publishing.md`; do not treat initial repository setup instructions as a current release prerequisite.
 
 ## License
 

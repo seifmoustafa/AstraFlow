@@ -116,3 +116,12 @@ Diagnostics reports include type names, service categories, lifetimes, counts, a
 These are intentional boundaries, not missing implementation.
 
 
+## Post-v2 architecture direction (proposal, not current implementation)
+
+The historical design and public APIs documented above remain the implementation reference. Long-term architecture is described in [the engineering blueprint](engineering-blueprint.md).
+
+The intended evolution is **two explicit execution routes sharing demonstrably equivalent semantics where they overlap**: existing user-authored runtime mapping/mediator flows, and newly generated typed code where declarations are statically known. Generated mapper **metadata** must not be mistaken for generated conversion, and generated mediator **DI registrations** do not constitute generated request execution.
+
+Build-time analyzers should produce actionable source-located warnings; diagnostics and CLI should explain actual registration and mapping plans; a future versioned flow manifest would label observed, declared and potential relationships, never claim omniscience over runtime execution.
+
+Boundaries stay unchanged: convention mapping is opt-in; core has no ASP.NET, EF, telemetry or identity dependency; no secret payloads are logged by default. The proposed [v2.1 generated mapping plan](plans/v2.1-generated-mapping.md) requires a source-level API/DI audit before any new public contract is approved.

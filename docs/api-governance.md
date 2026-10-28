@@ -91,3 +91,21 @@ If a hosted docs site is added later, it should publish versioned docs from tags
 `1.13.1` uses the previously published `1.13.0` packages as the compatibility baseline.
 
 Future releases should compare against the latest stable published version unless a release owner explicitly chooses a different baseline and records the reason in the release notes.
+
+
+## Future generated execution API policy (proposed)
+
+Compiled generators can create public methods and service registration surfaces that consumers depend on. A new generator must therefore pass **both** source-level and *generated-public-surface* compatibility reviews.
+
+1. **Declaration shape:** one minimal explicit mapping declaration approved through [ADR-0001](adr/0001-generated-mapper.md); do not ship several mutually competing configuration DSLs.
+2. **Generated naming:** deterministic, collision-safe and non-breaking when unrelated source files are added.
+3. **Diagnostic codes:** stable IDs, severities and documented actionable fixes. Reclassifying a warning as build-breaking needs a release note and migration path.
+4. **Package asset contract:** analyzer references remain private to consumers where appropriate; runtime packages must not gain Roslyn dependencies.
+5. **Semantics:** generated vs runtime behavior documented and differential-tested in shared supported cases; no silent fallback.
+6. **Migration:** any newly obsolete declaration must include its replacement and compatible transition window; no unexpected generated method removal in a patch.
+7. **Policy ownership:** security-sensitive exceptions and suppression behavior require explicit review; a name heuristic is not a full data-leak proof.
+8. **AOT and build cost:** verify published sample execution and compilation costs before advertising guarantees.
+
+For breaking public changes, follow SemVer review and versioned migration docs. Internal code generation does not exempt a public symbol from normal API governance.
+
+See [validation matrix](strategy/validation-matrix.md) and [evidence gates](strategy/evidence-and-gates.md).
