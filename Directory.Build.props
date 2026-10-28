@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>1.13.1</Version>
-    <AssemblyVersion>1.13.1.0</AssemblyVersion>
-    <FileVersion>1.13.1.0</FileVersion>
+    <Version>2.0.0</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,11 +18,11 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 1.13.1:
-      - Adds compile-checked host compatibility samples for console, worker, class library, test project, and shared contracts/client layouts.
-      - Adds a compile-checked migration cookbook sample for mediator and mapper upgrade flows.
-      - Documents package deprecation and versioned documentation strategy for release governance.
-      - Updates compatibility gates to compare against the 1.13.0 published line.
+    <PackageReleaseNotes>AstraFlow 2.0.0:
+      - Starts the v2 secure governance lane with the new AstraFlow.Security package.
+      - Adds shared sensitive-name taxonomy and redaction policy primitives for diagnostics, CLI, observability, analyzers, and integrations.
+      - Wires OpenTelemetry redaction and convention mapping sensitive-name defaults to the shared policy.
+      - Adds security policy tests and release verification coverage for the new package.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

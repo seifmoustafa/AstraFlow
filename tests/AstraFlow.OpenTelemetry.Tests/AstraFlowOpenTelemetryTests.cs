@@ -117,6 +117,15 @@ public sealed class AstraFlowOpenTelemetryTests
     }
 
     [Fact]
+    public void DefaultRedactor_UsesSharedSensitiveNamePolicy()
+    {
+        var redactor = new AstraFlowDefaultTelemetryRedactor();
+
+        redactor.Redact("access.token", "secret-value").Should().Be("[redacted]");
+        redactor.Redact("astraflow.operation.type", typeof(Ping).FullName!).Should().Be(typeof(Ping).FullName);
+    }
+
+    [Fact]
     public void Registration_AddsBehaviorsTelemetryAndPublisherWrapper()
     {
         var services = new ServiceCollection();

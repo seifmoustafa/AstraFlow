@@ -1,6 +1,6 @@
 param(
     [string]$Configuration = "Release",
-    [string]$PreviousVersion = "1.13.0",
+    [string]$PreviousVersion = "1.13.1",
     [string]$CurrentVersion,
     [string]$WorkRoot = (Join-Path ([System.IO.Path]::GetTempPath()) "AstraFlowApiCompatibility"),
     [switch]$AllowMissingPreviousPackages
@@ -23,6 +23,7 @@ $packages = @(
     "AstraFlow.Contracts",
     "AstraFlow.Mediator",
     "AstraFlow.Mapper",
+    "AstraFlow.Security",
     "AstraFlow.Mapper.Conventions",
     "AstraFlow.Mapper.EntityFrameworkCore",
     "AstraFlow.Diagnostics",
@@ -34,6 +35,10 @@ $packages = @(
     "AstraFlow.Generators",
     "AstraFlow.Cli",
     "AstraFlow"
+)
+
+$newInCurrentVersionPackages = @(
+    "AstraFlow.Security"
 )
 
 function Expand-NuGetPackage {
@@ -109,7 +114,7 @@ foreach ($packageId in $packages) {
         Invoke-WebRequest -Uri $downloadUri -OutFile $previousPackage -UseBasicParsing
     }
     catch {
-        if ($AllowMissingPreviousPackages) {
+        if ($AllowMissingPreviousPackages -or $newInCurrentVersionPackages -contains $packageId) {
             Write-Warning "Skipping $packageId because previous package $PreviousVersion could not be downloaded."
             continue
         }

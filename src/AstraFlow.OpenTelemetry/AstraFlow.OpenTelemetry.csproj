@@ -11,6 +11,7 @@
     <ProjectReference Include="..\AstraFlow.Contracts\AstraFlow.Contracts.csproj" />
     <ProjectReference Include="..\AstraFlow.Mapper\AstraFlow.Mapper.csproj" />
     <ProjectReference Include="..\AstraFlow.Mediator\AstraFlow.Mediator.csproj" />
+    <ProjectReference Include="..\AstraFlow.Security\AstraFlow.Security.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -311,10 +311,10 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Idea | Status | Notes |
 | --- | --- | --- |
 | Secure DTO policy | Planned | Enforce raw-ID and sensitive-field rules. |
-| Redaction policy | Planned | Shared by diagnostics, CLI, and observability. |
+| Redaction policy | Done, expand | `2.0.0` adds shared redaction policy primitives through `AstraFlow.Security`; future work should apply the same policy more deeply across diagnostics, CLI, analyzers, and generated metadata. |
 | Security threat model | Planned | Package responsibilities and app responsibilities. |
 | Private security advisory process | Planned | Enterprise readiness. |
-| Sensitive field taxonomy | Planned | Passwords, tokens, keys, secrets, hashes, salts, credentials, recovery codes. |
+| Sensitive field taxonomy | Done, expand | `2.0.0` adds shared sensitive-name taxonomy through `AstraFlow.Security`; future work can tune package-specific policy and analyzer enforcement. |
 | Secure defaults test suite | Planned | Prove risky automation is off by default. |
 | Dependency review workflow | Planned | Supply-chain phase. |
 | SBOM generation | Planned | Enterprise supply chain. |

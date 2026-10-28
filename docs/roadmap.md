@@ -4,7 +4,7 @@
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current implementation truth: AstraFlow is complete through `v1.13.1` in this repository. The next planned roadmap item is `v2.0.0` compile-time superiority, secure DTO governance, and generated fast paths.
+Current implementation truth: AstraFlow is complete through `v1.13.1`, and `v2.0.0` secure governance foundation work has started in this repository. The first v2 slice adds `AstraFlow.Security` for shared sensitive-name taxonomy and redaction policy. The remaining v2 planned work is compile-time superiority, secure DTO governance enforcement, analyzer/generator maturity, and generated fast paths.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -1818,7 +1818,16 @@ What must NOT be included:
 
 ## v2 Compile-Time Superiority and Security Governance
 
-Status: `Planned`.
+Status: `Planned, started in v2.0.0`.
+
+Initial `v2.0.0` foundation slice:
+
+- Added `AstraFlow.Security`.
+- Added shared sensitive-name taxonomy.
+- Added shared redaction policy primitives.
+- Wired `AstraFlow.OpenTelemetry` default redaction to the shared policy.
+- Wired `AstraFlow.Mapper.Conventions` sensitive-member defaults to the shared taxonomy.
+- Added security policy tests and release verification coverage.
 
 Goal:
 

@@ -1,8 +1,9 @@
 param(
     [string]$Configuration = "Release",
-    [string]$PreviousVersion = "1.13.0",
+    [string]$PreviousVersion = "1.13.1",
     [string]$CurrentVersion,
-    [string]$WorkRoot = (Join-Path ([System.IO.Path]::GetTempPath()) "AstraFlowUpgradeSmoke")
+    [string]$WorkRoot = (Join-Path ([System.IO.Path]::GetTempPath()) "AstraFlowUpgradeSmoke"),
+    [switch]$AllowMissingPreviousPackages
 )
 
 $ErrorActionPreference = "Stop"
@@ -32,6 +33,10 @@ $packages = @(
     "AstraFlow.Analyzers",
     "AstraFlow.Generators",
     "AstraFlow"
+)
+
+$newInCurrentVersionPackages = @(
+    "AstraFlow.Security"
 )
 
 $runRoot = Join-Path $WorkRoot "$PreviousVersion-to-$CurrentVersion-$([guid]::NewGuid().ToString("N"))"
@@ -79,13 +84,14 @@ function Add-AstraFlowPackageVersion {
         [string]$Version
     )
 
+    $exactVersion = "[$Version]"
     Invoke-DotNetStep "Add $PackageId $Version" @(
         "add",
         $project.FullName,
         "package",
         $PackageId,
         "--version",
-        $Version,
+        $exactVersion,
         "--no-restore"
     )
 }
@@ -98,6 +104,10 @@ New-Item -ItemType Directory -Force -Path $localSource | Out-Null
 New-Item -ItemType Directory -Force -Path $restorePackages | Out-Null
 
 foreach ($packageId in $packages) {
+    Copy-CurrentPackage -PackageId $packageId
+}
+
+foreach ($packageId in $newInCurrentVersionPackages) {
     Copy-CurrentPackage -PackageId $packageId
 }
 
@@ -207,11 +217,25 @@ foreach ($packageId in $packages) {
     Add-AstraFlowPackageVersion -PackageId $packageId -Version $PreviousVersion
 }
 
-Invoke-DotNetStep "Restore previous-version consumer" @("restore", $project.FullName, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
-Invoke-DotNetStep "Build previous-version consumer" @("build", $project.FullName, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
-Invoke-DotNetStep "Run previous-version consumer" @("run", "--project", $project.FullName, "--no-build")
+try {
+    Invoke-DotNetStep "Restore previous-version consumer" @("restore", $project.FullName, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
+    Invoke-DotNetStep "Build previous-version consumer" @("build", $project.FullName, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Run previous-version consumer" @("run", "--project", $project.FullName, "--no-build")
+}
+catch {
+    if ($AllowMissingPreviousPackages) {
+        Write-Warning "Skipping previous-version upgrade smoke because the $PreviousVersion package set could not be restored. $($_.Exception.Message)"
+        return
+    }
+
+    throw
+}
 
 foreach ($packageId in $packages) {
+    Add-AstraFlowPackageVersion -PackageId $packageId -Version $CurrentVersion
+}
+
+foreach ($packageId in $newInCurrentVersionPackages) {
     Add-AstraFlowPackageVersion -PackageId $packageId -Version $CurrentVersion
 }
 

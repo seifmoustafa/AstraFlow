@@ -2,6 +2,24 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 2.0.0
+
+### Added
+
+- Added `AstraFlow.Security`, a shared secure governance package with sensitive-name classification and value redaction policy primitives.
+- Added default sensitive-name taxonomy coverage for passwords, secrets, tokens, API keys, credentials, connection strings, hashes, salts, and recovery codes.
+- Added tests for sensitive-name classification, value redaction, custom taxonomy, and custom redaction replacement.
+
+### Changed
+
+- Updated `AstraFlow.OpenTelemetry` so `AstraFlowDefaultTelemetryRedactor` uses the shared redaction policy.
+- Updated `AstraFlow.Mapper.Conventions` so convention sensitive-member defaults use the shared sensitive-name taxonomy.
+- Updated package scripts, install verification, API compatibility verification, upgrade smoke package lists, and GitHub workflows to include `AstraFlow.Security`.
+
+### Fixed
+
+- None.
+
 ## 1.13.1
 
 ### Added

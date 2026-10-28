@@ -1,3 +1,5 @@
+using AstraFlow.Security;
+
 namespace AstraFlow.Mapper.Conventions;
 
 /// <summary>
@@ -32,13 +34,5 @@ public sealed class ConventionMappingOptions
     /// Gets sensitive member name fragments blocked by default.
     /// </summary>
     public ICollection<string> SensitiveMemberNameFragments { get; } =
-    [
-        "password",
-        "secret",
-        "token",
-        "apikey",
-        "api_key",
-        "connectionstring",
-        "connection_string"
-    ];
+        AstraFlowSensitiveDataPolicy.DefaultSensitiveNameFragments.ToArray();
 }
