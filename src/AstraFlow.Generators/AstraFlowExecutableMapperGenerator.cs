@@ -55,13 +55,13 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
         if (syntax is null || syntax.Modifiers.Any(m => !m.IsKind(SyntaxKind.PublicKeyword) && !m.IsKind(SyntaxKind.InternalKeyword) && !m.IsKind(SyntaxKind.StaticKeyword) && !m.IsKind(SyntaxKind.PartialKeyword)) ||
             method.ReturnsByRef || method.ReturnsByRefReadonly || !method.IsStatic || !method.IsPartialDefinition || method.PartialImplementationPart is not null ||
             method.Parameters.Length != 1 || method.Parameters[0].RefKind != RefKind.None || method.IsGenericMethod ||
-            owner.ContainingType is not null || owner.IsGenericType || !owner.IsStatic ||
+            owner.ContainingType is not null || owner.IsGenericType || owner.IsFileLocal || !owner.IsStatic ||
             !owner.DeclaringSyntaxReferences.All(r => r.GetSyntax(context.CancellationToken) is TypeDeclarationSyntax t && t.Modifiers.Any(SyntaxKind.PartialKeyword)) ||
             method.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
-        { Fail("use a public or internal static partial method with one value parameter in a top-level non-generic static partial class"); return; }
+        { Fail("use a public or internal static partial method with one value parameter in a top-level non-generic, non-file-local static partial class"); return; }
         if (method.Parameters[0].Type is not INamedTypeSymbol source || method.ReturnType is not INamedTypeSymbol destination ||
             source.TypeKind != TypeKind.Class || destination.TypeKind != TypeKind.Class || source.IsGenericType || destination.IsGenericType ||
-            source.IsAbstract || destination.IsAbstract || source.ContainingType is not null || destination.ContainingType is not null ||
+            source.IsAbstract || destination.IsAbstract || source.IsFileLocal || destination.IsFileLocal || source.ContainingType is not null || destination.ContainingType is not null ||
             method.Parameters[0].NullableAnnotation == NullableAnnotation.Annotated || method.ReturnNullableAnnotation == NullableAnnotation.Annotated ||
             destination.IsRecord || source.BaseType?.SpecialType != SpecialType.System_Object || destination.BaseType?.SpecialType != SpecialType.System_Object)
         { Fail("source and destination must be non-nullable, non-generic, top-level classes without inheritance; records are unsupported"); return; }
@@ -95,6 +95,7 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
         text.Append(owner.DeclaredAccessibility == Accessibility.Public ? "public" : "internal").Append(" static partial class ").Append(Escape(owner.Name)).Append("\n{\n    ")
             .Append(method.DeclaredAccessibility == Accessibility.Public ? "public" : "internal").Append(" static partial ")
             .Append(destination.ToDisplayString(typeFormat)).Append(' ').Append(Escape(method.Name)).Append('(')
+            .Append(method.IsExtensionMethod ? "this " : "")
             .Append(source.ToDisplayString(typeFormat)).Append(' ').Append(Escape(method.Parameters[0].Name)).Append(")\n    {\n")
             .Append("        if (").Append(Escape(method.Parameters[0].Name)).Append(" is null) throw new global::System.ArgumentNullException(nameof(").Append(Escape(method.Parameters[0].Name)).Append("));\n")
             .Append("        return new ").Append(destination.ToDisplayString(typeFormat)).Append("\n        {\n");

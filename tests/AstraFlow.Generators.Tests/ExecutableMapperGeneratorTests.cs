@@ -54,6 +54,48 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
     }
 
     [Fact]
+    public void Keyword_namespace_type_method_parameter_and_member_compile()
+    {
+        const string source = """
+using AstraFlow.Mapper;
+namespace @namespace;
+public class @class { public int @event { get; set; } }
+public class @struct { public int @event { get; set; } }
+public static partial class @return { [AstraGenerateMapping] public static partial @struct @new(@class @params); }
+""";
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Extension_method_declaration_never_emits_invalid_implementation()
+    {
+        var source = Declaration.Replace("Convert(Input source)", "Convert(this Input source)");
+        var (compilation, result) = Generate(source);
+        var generatedErrors = compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error && d.Location.SourceTree?.FilePath.EndsWith(".g.cs", StringComparison.Ordinal) == true);
+        generatedErrors.Should().BeEmpty();
+        if (result.Diagnostics.IsEmpty)
+        {
+            compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        }
+        else
+        {
+            result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource);
+            result.Results.Single().GeneratedSources.Should().BeEmpty();
+        }
+    }
+
+    [Fact]
+    public void File_local_mapping_class_reports_error_instead_of_emitting_an_inaccessible_partial()
+    {
+        var source = Declaration.Replace("public static partial class Maps", "file static partial class Maps");
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource);
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
     public void Repeated_compilation_is_deterministic()
     {
         var first = Generate(Declaration).Result.Results.Single().GeneratedSources.Single();
@@ -78,6 +120,40 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         var source = Declaration.Replace("public string Name { get; set; } = \"\"; }\npublic class Output", "public string? Name { get; set; } }\npublic class Output");
         var (_, result) = Generate(source);
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("nullability"));
+    }
+
+    [Fact]
+    public void Nullable_source_can_map_to_nullable_destination()
+    {
+        var source = Declaration.Replace("public string Name", "public string? Name");
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Distinct_pairs_generate_independent_compilable_methods()
+    {
+        var source = Declaration + """
+
+public class SecondInput { public int Value { get; set; } }
+public class SecondOutput { public int Value { get; set; } }
+public static partial class OtherMaps { [AstraGenerateMapping] public static partial SecondOutput Convert(SecondInput source); }
+""";
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().BeEmpty();
+        result.Results.Single().GeneratedSources.Should().HaveCount(2);
+        compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Broken_types_do_not_crash_the_generator()
+    {
+        var source = Declaration.Replace("Output Convert(Input source)", "Missing Convert(Input source)");
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().Contain(d => d.Id == "AFM001");
+        result.Diagnostics.Should().NotContain(d => d.Id == "CS8785");
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
     }
 
     [Fact]
