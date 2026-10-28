@@ -2,6 +2,10 @@
 
 All notable AstraFlow changes are tracked here.
 
+## Unreleased — v2.1.0 (draft)
+
+- Experimental opt-in generated typed mapping methods with conservative unsupported-shape and sensitive-name diagnostics. Release verification is incomplete.
+
 ## 2.0.0
 
 ### Added

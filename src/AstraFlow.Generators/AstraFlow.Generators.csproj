@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.0.0" PrivateAssets="all" />
+    <Compile Include="..\AstraFlow.Security\AstraFlowSensitiveDataPolicy.cs" Link="Security\AstraFlowSensitiveDataPolicy.cs" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
   </ItemGroup>
 
   <ItemGroup>

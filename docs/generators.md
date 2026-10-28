@@ -151,3 +151,22 @@ The actual generated file uses fully qualified names to avoid relying on imports
 A generated `Add...Registrations` helper only wires DI—it is not proof that sending a request bypasses runtime dispatch overhead. Closed-request execution generation must preserve scoped DI, behavior ordering, cancellation, exception contracts and short-circuit behavior; direct/runtime/generated modes must be compared under identical workloads. Any AOT claim requires a published **and actually executed** clean consumer.
 
 See the [engineering blueprint](engineering-blueprint.md), [v2.1 one-release plan](plans/v2.1-generated-mapping.md), and [validation matrix](strategy/validation-matrix.md). Never use a proposed API from an ADR as if it already shipped.
+## Experimental executable mapping (v2.1 work in progress)
+
+Install both `AstraFlow.Mapper` and `AstraFlow.Generators`. Declare a direct mapping explicitly:
+
+```csharp
+using AstraFlow.Mapper;
+
+public static partial class CustomerMaps
+{
+    [AstraGenerateMapping]
+    public static partial CustomerDto ToDto(Customer source);
+}
+```
+
+The generator emits a typed method that constructs a new destination and assigns matching properties. A null source throws `ArgumentNullException`. The method does not call `IMapper`, register a rule, execute profiles, or apply runtime configuration. Unlike the runtime facade, it always constructs a destination instead of returning an assignable source or applying collection-before-rule precedence.
+
+The current experimental subset requires a top-level non-generic static partial class, a public or internal static partial method, non-nullable top-level non-generic classes without inheritance, and a non-record destination with a public parameterless constructor. All destination instance data members must be public settable non-required properties, with exactly named public source getters and identical scalar types. Nullable reference values cannot flow to non-nullable properties. Nested objects, collections, fields, init-only properties, required properties and conversions are rejected with error `AFM001`. Duplicate source/destination pairs within the compilation are rejected. A sensitive name under the default `AstraFlow.Security` taxonomy is blocked; use explicit application code where authorized. Name classification is not proof that a mapping is safe, and runtime policies and authorization are not evaluated by the compiler.
+
+This remains a draft feature: packaging, compatibility, AOT, incremental build cost and broader compiler edge cases require further verification before release.
