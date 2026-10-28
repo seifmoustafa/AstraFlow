@@ -1,30 +1,87 @@
-# Evidence, acceptance gates and claims policy
+# Engineering Evidence, Release Gates & Claims Policy
 
-**Status: proposed policy for roadmap review.**
+> **Proposed engineering policy, not certification or proof of existing releases.** This document establishes how AstraFlow earns a quality, performance, security or AOT claim.
 
-## Evidence hierarchy
-- **Implemented:** complete source and automated tests at an identified SHA.
-- **Consumer validated:** clean package install and executable sample outside the repository's internals.
-- **Operationally validated:** documented failure/upgrade/security/AOT checks.
-- **Competitive claim:** reproducible controlled comparison with public versions, hardware and methodology.
-- **Adoption proven:** independent consumer feedback and repeat usage, not download counts alone.
+## 1. Evidence ladder
 
-Record **source SHA**, NuGet versions, SDK/runtime/OS/CPU, configuration, raw BenchmarkDotNet artifacts, command results, limits, and known failures. Distinguish source-tree version from published NuGet and GitHub Releases.
+| Level | What exists | Public wording permitted |
+| --- | --- | --- |
+| Research | Idea, competitor research, architecture sketch | “Researching” |
+| Proposed | Approved direction with acceptance criteria | “Planned/proposed” |
+| Implemented in source | Identified SHA + passing relevant tests | “Implemented on branch/SHA” |
+| Consumer validated | Packed NuGet, clean install, executable consumer | “Validated in tested consumer” |
+| Operationally validated | Failure/security/upgrade/AOT tests and documented limits | Qualified supported scenarios |
+| Benchmark-verified | Reproducible equal-workload measurements | Scoped comparative numbers with environment |
+| Adoption validated | Independent pilot users, repeat usage and issues | Carefully evidenced real-world usage |
 
-## Release gates (each release)
-1. Pin main SHA and confirm published package state.
-2. Run restore/build/test/pack and clean NuGet consumer verification. Build all documented sample hosts.
-3. Review public API baseline and SemVer; document migrations and obsoletions if relevant.
-4. Test negative paths: cancellation, nullability, duplicate registrations, concurrency where relevant, security-sensitive writes and diagnostics redaction.
-5. Keep integration dependencies out of core; validate supported TFMs and consumer environments.
-6. Update docs, examples, changelog, rule catalog/generator snapshots, package metadata and support matrix when applicable.
-7. For generator releases: repeat-build deterministic output, incremental edits, diagnosable unsupported shapes, clean consumer and package analyzer assets.
-8. For AOT claims: publish **and run** a clean supported AOT consumer; record warnings.
-9. For performance claims: manual and previous-runtime baselines, allocation numbers and build overhead; report unfavourable results too.
-10. Completion report lists pass/fail, environment, remaining risks and maintainer sign-off. **One primary goal per release.**
+A version number in repository source **does not** establish NuGet publication, tag availability or real-world production adoption.
 
-## Comparison rules
-Compare like-for-like APIs and semantics. Report typed generated calls separately from interface/object dispatch, cold start separately from steady state, and default security/validation overhead. Benchmark mapping: manual, existing AstraFlow, generated AstraFlow, Mapster, Mapperly, AutoMapper. Dispatch: direct handler, existing/generated AstraFlow, and established generated/runtime mediators where comparable. Do not infer a speed win from generated code existing.
+## 2. Release gate matrix
 
-## Forbidden public claims without evidence
-“fastest”, “production-proven”, “complete replacement”, “enterprise-ready”, “fully AOT-compatible”, “100% secure”, or “drop-in replacement”. Qualified claims must link to their reproducible evidence.
+| Gate | Evidence required | Blocker |
+| --- | --- | --- |
+| G0 Baseline | Source SHA, SDK, package/channel versions, current failures | Unmeasured baseline |
+| G1 Correctness | Release build + appropriate complete tests and negative cases | Unexplained failures |
+| G2 Packaging | `dotnet pack` + clean NuGet consumer installs by advertised TFM | Unverifiable package |
+| G3 API | Public API diff, SemVer classification, obsolete/migration docs | Unapproved break |
+| G4 Security | Threat analysis, secret/payload-negative tests, redaction | Silent exposure/bypass |
+| G5 Generation | Deterministic snapshots, incremental edits, compiler diagnostics | Nonrepeatable or silent fallback |
+| G6 Runtime behavior | Differential equivalence for supported generated/runtime semantics | Changed observable behavior |
+| G7 DI lifetime | Scope, disposal, duplicate ownership, concurrent instances | Captive/disposed handler or silent override |
+| G8 AOT, when promised | Clean publish **and execute**, warning review | Unresolved dynamic dependency |
+| G9 Benchmark, when claimed | Equal workload, raw data, environment and build cost | Cherry-picked comparison |
+| G10 Docs/migration | Compiling examples, migration/limitations and changelog | Unsupported instructions |
+| G11 Supply chain | SourceLink/SBOM/provenance/signing where introduced | Unsupported enterprise claims |
+| G12 Maintainer | Owner approval, change log, risks, release artifacts | Missing accountability |
+
+Docs-only PRs apply link consistency, source-status accuracy, markdown structure and non-contradiction checks. They do not magically satisfy build, AOT, runtime or performance gates.
+
+## 3. Required release evidence artifact
+
+Use a versioned document (or release artifact) recording:
+- repository SHA and changes since last release;
+- NuGet/GitHub-release/source version *as three independent statuses*;
+- SDK, OS, CPU, runtime, compiler, target frameworks and commands;
+- build/test/pack/install/sample result table, failures and exclusions;
+- API additions/deprecations and migration notes;
+- diagnostics IDs and new security-sensitive scenarios;
+- benchmark raw artifact links plus workload and setup reproducibility;
+- AOT publish/run commands, warnings and actual execution result;
+- reviewer sign-off and any narrowly-scoped waivers with expiration.
+
+No “all tests passed” without recorded command output from a complete checkout.
+
+## 4. Fair performance specification
+
+**Mapper:** manual baseline; existing AstraFlow explicit; opted-in conventions; generated typed call; generated `IMapper` adapter only if implemented; AutoMapper, Mapster, Mapperly where semantics and versions are comparable.
+
+**Mediator:** direct handler call; existing runtime AstraFlow; generated dispatch if implemented; established runtime/generated mediator variants. Keep registration/pipeline depth, exception behavior, DI scope and compiler/runtime identical where possible.
+
+Report startup/cold vs warmed, median/mean and distribution where relevant, allocations, GC, throughput, build time (clean/incremental), binary size, AOT/trimming behavior, hardware, OS, SDK, package versions and confidence limitations. Reproduce runs; publish unfavorable cases. Avoid misleading comparisons between generated typed calls and interface-based runtime dispatch.
+
+## 5. Security review checklist
+
+- No secret, request payload, mapped DTO values, access token or connection string in diagnostic messages, telemetry, generated plans or benchmark artifacts by default.
+- Classifiers based on member names are **heuristics**, not a complete security or authorization proof.
+- Sensitive read DTO and sensitive domain write paths evaluated separately.
+- Generated code must not bypass explicit allow policies, nor silently assume runtime policies are compile-time verified.
+- Tenant isolation checked for caching/idempotency candidates, and replay/race behavior for transactional adapters.
+- An explicit waiver must identify the risk, affected path, owner and review date.
+
+## 6. Adoption proof template
+
+Test with at least two independent consumer applications of different shapes (e.g. API and worker, not two trivial copies of the same sample). Capture:
+- baseline library/approach and feature implemented;
+- time to install and first correct mapping/dispatch;
+- developer minutes spent on configuration, diagnostics and migration;
+- tests/bugs prevented and error messages users found unclear;
+- runtime/build cost where material;
+- willingness to keep using, obstacles and prioritized missing APIs.
+
+Do **not** equate package download totals or stars with production use.
+
+## 7. Decision rule
+
+A performance optimization is rejected or narrowed if it worsens supported semantics, makes builds unreasonably expensive, breaks AOT without mitigation, or creates a second fragmented API. A proposed integration is deferred if no owner or real usage. A claim remains qualified until its evidence is published.
+
+See [North Star](north-star.md), [Validation Matrix](validation-matrix.md), [Release Plan](../plans/v2.1-generated-mapping.md).
