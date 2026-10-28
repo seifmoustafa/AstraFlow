@@ -4,7 +4,11 @@
 
 AstraFlow is a MIT-licensed .NET package family for explicit CQRS dispatch and source-auditable object mapping.
 
-It was built to keep production applications free from runtime license checks, hidden mapping behavior, and framework lock-in. The v1 design is deliberately small: secure defaults, clear errors, explicit extension points, and package-quality diagnostics before optional convention layers are added.
+It was built to keep production applications free from runtime license checks, hidden mapping behavior, and framework lock-in. The explicit core design is deliberately focused: secure defaults, clear errors, explicit extension points, and package-quality diagnostics before optional convention layers are added.
+
+## Product strategy and roadmap
+
+The [product roadmap](docs/roadmap.md) tracks implemented releases and clearly labels future proposals. The [2026 engineering north star](docs/strategy/north-star.md), [generated-mapper v2.1 plan](docs/plans/v2.1-generated-mapping.md), [engineering evidence gates](docs/strategy/evidence-and-gates.md) and [ecosystem candidate policy](docs/strategy/ecosystem-portfolio.md) explain how to evaluate the next work. **Source version, published NuGet package and GitHub Releases can differ.** Proposed generator or dispatch features are not yet available by reading the roadmap.
 
 ## Release And Repository Links
 
