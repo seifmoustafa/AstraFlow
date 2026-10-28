@@ -45,6 +45,18 @@ Priorities are therefore:
 
 Unverified by this documentation PR: end-to-end compile/test/pack status, generator engine internals, benchmark outcomes, true AOT compatibility or independent adoption.
 
+## Source reconnaissance: concrete implementation constraints (main at d078e34)
+
+These are **code-observed facts** from files on the checked repository `main` at the documented base SHA, not performance results:
+
+- [`AstraFlowObjectMapper`](../src/AstraFlow.Mapper/AstraFlowObjectMapper.cs) returns `null` for a null source; returns the original source when `destinationType.IsAssignableFrom(sourceType)`; tries collection mapping before scanning registered `IObjectMappingRule` instances and rejects zero/multiple matches. **Implication:** generated-to-runtime parity must consider the identity/collection short circuits, not only property assignments.
+- [Mapper DI registration](../src/AstraFlow.Mapper/AstraFlowMapperRegistration.cs) registers `IMapper` and mapping rules as **scoped**, along with validation/projection services. **Implication:** any generated adapter must preserve scoped ownership and duplicate-rule semantics; no singleton-cached rule instances.
+- [`AstraFlowMediator`](../src/AstraFlow.Mediator/AstraFlowMediator.cs) already has static `ConcurrentDictionary<Type, Func<...>>` send/stream/publish caches and resolves handlers via the mediator's current service provider. Initial dispatch constructs delegates using reflection; warmed calls reuse cached delegates. **Implication:** only a controlled benchmark can show whether generated dispatch is worthwhile beyond the first call.
+- [Mapper metadata generator](../src/AstraFlow.Generators/AstraFlowMapperMetadataGenerator.cs) and [mediator registration generator](../src/AstraFlow.Generators/AstraFlowMediatorRegistrationGenerator.cs) currently use `CompilationProvider.Select(...)` and compilation-wide symbol traversal to produce their outputs. **Implication:** “incremental generator” as an interface does **not** prove granular incremental rebuild performance; measure changed-file recompilation and investigate syntax/semantic tracking.
+- [`IMapper`](../src/AstraFlow.Mapper/IMapper.cs) exposes an object-source generic destination method and an object destination-type overload. **Implication:** a direct typed generated method is a different invocation API and must be benchmarked separately.
+
+These findings sharpen the experimental hypotheses; they are **not** a complete source audit, compiled test result or benchmark. Version changes after that SHA require revalidation.
+
 ## 3. Architecture: generated where provable, runtime where necessary
 
 ```text
