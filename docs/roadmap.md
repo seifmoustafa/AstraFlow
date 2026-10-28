@@ -2,6 +2,30 @@
 
 ## Executive Summary
 
+## Strategic direction after v2.0 — proposed 2026-10-28
+
+**Status: Proposed, not implemented or promised.** This index complements rather than replaces the completed release history below. Preserve the existing v2.2 enterprise supply-chain and v2.3 public-API governance commitments; do not silently repurpose their release numbers.
+
+**North star:** Become a leading, independently adoptable .NET application-flow ecosystem through verifiably productive mapping and dispatch, deterministic compile-time diagnostics, safe runtime extensibility, and trustworthy compatibility. Optimizing for feature count or promises of being “the greatest” is not a product acceptance criterion.
+
+| Track | Version | Status | Measurable exit evidence |
+| --- | --- | --- | --- |
+| Shared sensitive-name and redaction foundation | v2.0.0 | Source implementation described below; independently verify publication | Security regression tests and package checks |
+| **Generated mapping execution** | **v2.1** | **Proposed priority** | Real typed generated conversion; source diagnostics; clean consumer; AOT publish/run; manual/runtime/peer benchmark methodology |
+| Enterprise supply chain | v2.2 | Existing planned commitment | SBOM, provenance and SourceLink checks |
+| Public API governance | v2.3 | Existing planned commitment | API baseline enforcement and upgrade smoke |
+| Generated mediator dispatch | v2.4 | Candidate; only after source/benchmark feasibility | Closed-type generated invoker, DI scope/pipeline equivalence, AOT and comparative numbers |
+| Explainable flow manifest | v2.5 | Candidate | Deterministic schema, provenance and CI diff; known gaps labeled |
+| Reliability and independent adoption | v2.6+ | Research | Consumer pilots, measured saved time, compatibility and regression improvements |
+| Optional ecosystem | v3+ | Candidate per independent package | Specific demand, no dependency leakage, owner and security review |
+| Visual products | v4+ | Research | Validated manifest usefulness and actual adopter request |
+| Better Auth-inspired .NET identity | Separate project only | Research | Independent threat model, standards-compliant .NET component study and maintainer |
+
+**Read before implementation:** [Engineering North Star](strategy/north-star.md), [Generated Mapper ADR](adr/0001-generated-mapper.md), [v2.1 plan](plans/v2.1-generated-mapping.md), [Generated Mediator ADR](adr/0002-generated-mediator.md), [Flow Manifest ADR](adr/0003-flow-manifest.md), [Evidence and Release Gates](strategy/evidence-and-gates.md), [Decision Log](strategy/decision-log.md), and [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
+
+**Non-negotiable:** One release goal at a time; opt-in convention mapping remains separate, existing API and published consumers stay compatible, generated-only modes do not silently fall back, no DTO payload logs, no performance superiority without repeatable results. Review actual code and current release state before changing APIs. All unshipped entries are proposals, not functionality claims.
+
+
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
 Current implementation truth: AstraFlow is complete through `v1.13.1`, and `v2.0.0` secure governance foundation work has started in this repository. The first v2 slice adds `AstraFlow.Security` for shared sensitive-name taxonomy and redaction policy. The remaining v2 planned work is compile-time superiority, secure DTO governance enforcement, analyzer/generator maturity, and generated fast paths.
