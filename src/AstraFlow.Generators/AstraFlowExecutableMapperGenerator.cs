@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using AstraFlow.Security;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -27,32 +29,142 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
             "AstraFlow.Mapper.AstraGenerateMappingAttribute",
             static (node, _) => node is MethodDeclarationSyntax,
             static (ctx, _) => (IMethodSymbol)ctx.TargetSymbol);
-        context.RegisterSourceOutput(methods.Collect(), static (output, declarations) =>
+        var candidates = methods
+            .Select(static (method, cancellationToken) => CreateCandidate(method, cancellationToken))
+            .WithComparer(MappingCandidateComparer.Instance);
+        var duplicatePairs = candidates.Collect()
+            .Select(static (declarations, cancellationToken) => FindDuplicatePairs(declarations, cancellationToken))
+            .WithComparer(DuplicatePairSetComparer.Instance);
+        context.RegisterSourceOutput(candidates.Combine(duplicatePairs), static (output, mapping) =>
         {
-            var pairCounts = new Dictionary<MappingPair, int>();
-            foreach (var method in declarations)
+            output.CancellationToken.ThrowIfCancellationRequested();
+            var candidate = mapping.Left;
+            var method = candidate.Method;
+            if (candidate.PairKey is not null && mapping.Right.Contains(candidate.PairKey))
             {
-                output.CancellationToken.ThrowIfCancellationRequested();
-                if (method.Parameters.Length != 1)
-                    continue;
-
-                var pair = new MappingPair(method.Parameters[0].Type, method.ReturnType);
-                pairCounts.TryGetValue(pair, out var count);
-                pairCounts[pair] = count + 1;
+                output.ReportDiagnostic(Diagnostic.Create(Unsupported, method.Locations.FirstOrDefault(), "declare each source and destination pair only once"));
+                return;
             }
 
-            foreach (var method in declarations)
-            {
-                output.CancellationToken.ThrowIfCancellationRequested();
-                if (method.Parameters.Length == 1 &&
-                    pairCounts[new MappingPair(method.Parameters[0].Type, method.ReturnType)] > 1)
-                {
-                    output.ReportDiagnostic(Diagnostic.Create(Unsupported, method.Locations.FirstOrDefault(), "declare each source and destination pair only once"));
-                    continue;
-                }
-                Generate(output, method);
-            }
+            Generate(output, method);
         });
+    }
+
+    private static MappingCandidate CreateCandidate(IMethodSymbol method, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return new MappingCandidate(method, GetFingerprint(method, cancellationToken), GetPairKey(method));
+    }
+
+    private static HashSet<string> FindDuplicatePairs(ImmutableArray<MappingCandidate> declarations, CancellationToken cancellationToken)
+    {
+        var pairCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var candidate in declarations)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (candidate.PairKey is null)
+                continue;
+
+            pairCounts.TryGetValue(candidate.PairKey, out var count);
+            pairCounts[candidate.PairKey] = count + 1;
+        }
+
+        var duplicates = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var pair in pairCounts)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (pair.Value > 1)
+                duplicates.Add(pair.Key);
+        }
+
+        return duplicates;
+    }
+
+    private static string? GetPairKey(IMethodSymbol method)
+    {
+        if (method.Parameters.Length != 1)
+            return null;
+
+        return GetTypeIdentity(method.Parameters[0].Type) + "->" + GetTypeIdentity(method.ReturnType);
+    }
+
+    private static string GetTypeIdentity(ITypeSymbol type) =>
+        (type.ContainingAssembly?.Identity.ToString() ?? string.Empty) + "|" +
+        type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMiscellaneousOptions(
+            SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers | SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier));
+
+    private static string GetFingerprint(IMethodSymbol method, CancellationToken cancellationToken)
+    {
+        var text = new StringBuilder();
+        text.Append(method.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)).Append('|')
+            .Append(method.DeclaredAccessibility).Append('|').Append(method.IsStatic).Append('|')
+            .Append(method.IsPartialDefinition).Append('|').Append(method.PartialImplementationPart is not null)
+            .Append('|').Append(method.ReturnNullableAnnotation).Append('|').Append(method.ReturnsByRef).Append('|').Append(method.ReturnsByRefReadonly);
+        var owner = method.ContainingType;
+        text.Append("|OWNER|").Append(owner.DeclaredAccessibility).Append('|').Append(owner.IsStatic).Append('|')
+            .Append(owner.IsGenericType).Append('|').Append(owner.IsFileLocal).Append('|')
+            .Append(owner.ContainingType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+        foreach (var declaration in owner.DeclaringSyntaxReferences)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (declaration.GetSyntax(cancellationToken) is TypeDeclarationSyntax typeDeclaration)
+                text.Append("|OWNER-SYNTAX|").Append(typeDeclaration.Modifiers.ToFullString());
+        }
+        foreach (var declaration in method.DeclaringSyntaxReferences)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            text.Append('|').Append(declaration.GetSyntax(cancellationToken).ToFullString());
+        }
+
+        AppendTypeFingerprint(text, method.Parameters.Length == 1 ? method.Parameters[0].Type : null, cancellationToken);
+        AppendTypeFingerprint(text, method.ReturnType, cancellationToken);
+        return text.ToString();
+    }
+
+    private static void AppendTypeFingerprint(StringBuilder text, ITypeSymbol? type, CancellationToken cancellationToken)
+    {
+        if (type is null)
+        {
+            text.Append("|<missing>");
+            return;
+        }
+
+        text.Append("|TYPE|").Append(GetTypeIdentity(type)).Append('|').Append(type.TypeKind).Append('|').Append(type.IsAbstract);
+        if (type is not INamedTypeSymbol named)
+            return;
+
+        text.Append('|').Append(named.IsRecord).Append('|').Append(named.IsGenericType).Append('|').Append(named.IsFileLocal)
+            .Append('|').Append(named.BaseType?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+        foreach (var constructor in named.InstanceConstructors)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            text.Append("|CTOR|").Append(constructor.DeclaredAccessibility).Append('|').Append(constructor.Parameters.Length);
+        }
+
+        foreach (var member in named.GetMembers().OrderBy(static member => member.MetadataName, StringComparer.Ordinal))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            text.Append("|MEMBER|").Append(member.Kind).Append('|').Append(member.MetadataName).Append('|')
+                .Append(member.IsStatic).Append('|').Append(member.IsImplicitlyDeclared).Append('|').Append(member.DeclaredAccessibility);
+            AppendAttributeFingerprint(text, member.GetAttributes());
+            if (member is not IPropertySymbol property)
+                continue;
+
+            text.Append('|').Append(GetTypeIdentity(property.Type)).Append('|').Append(property.NullableAnnotation)
+                .Append('|').Append(property.IsIndexer).Append('|').Append(property.IsRequired)
+                .Append('|').Append(property.GetMethod?.DeclaredAccessibility).Append('|')
+                .Append(property.SetMethod?.DeclaredAccessibility).Append('|').Append(property.SetMethod?.IsInitOnly);
+            if (property.GetMethod is not null)
+                AppendAttributeFingerprint(text, property.GetMethod.GetReturnTypeAttributes());
+            if (property.SetMethod?.Parameters.LastOrDefault() is { } setterValue)
+                AppendAttributeFingerprint(text, setterValue.GetAttributes());
+        }
+    }
+
+    private static void AppendAttributeFingerprint(StringBuilder text, IEnumerable<AttributeData> attributes)
+    {
+        foreach (var attribute in attributes.OrderBy(static attribute => attribute.AttributeClass?.ToDisplayString(), StringComparer.Ordinal))
+            text.Append("|ATTR|").Append(attribute.AttributeClass?.ToDisplayString());
     }
 
     private static void Generate(SourceProductionContext context, IMethodSymbol method)
@@ -74,11 +186,13 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
         var syntax = method.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken) as MethodDeclarationSyntax;
         if (syntax is null || syntax.Modifiers.Any(m => !m.IsKind(SyntaxKind.PublicKeyword) && !m.IsKind(SyntaxKind.InternalKeyword) && !m.IsKind(SyntaxKind.StaticKeyword) && !m.IsKind(SyntaxKind.PartialKeyword)) ||
             method.ReturnsByRef || method.ReturnsByRefReadonly || !method.IsStatic || !method.IsPartialDefinition || method.PartialImplementationPart is not null ||
-            method.Parameters.Length != 1 || method.Parameters[0].RefKind != RefKind.None || method.IsGenericMethod ||
+            method.Parameters.Length != 1 || method.Parameters[0].RefKind != RefKind.None ||
+            method.Parameters[0].IsOptional || method.Parameters[0].IsParams ||
+            method.Parameters[0].ScopedKind != ScopedKind.None || method.IsGenericMethod ||
             owner.ContainingType is not null || owner.IsGenericType || owner.IsFileLocal || !owner.IsStatic ||
             !owner.DeclaringSyntaxReferences.All(r => r.GetSyntax(context.CancellationToken) is TypeDeclarationSyntax t && t.Modifiers.Any(SyntaxKind.PartialKeyword)) ||
             method.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
-        { Fail("use a public or internal static partial method with one value parameter in a top-level non-generic, non-file-local static partial class"); return; }
+        { Fail("use a public or internal static partial method with one value parameter that is required and not params in a top-level non-generic, non-file-local static partial class"); return; }
         if (method.Parameters[0].Type is not INamedTypeSymbol source || method.ReturnType is not INamedTypeSymbol destination ||
             source.TypeKind != TypeKind.Class || destination.TypeKind != TypeKind.Class || source.IsGenericType || destination.IsGenericType ||
             source.IsAbstract || destination.IsAbstract || source.IsFileLocal || destination.IsFileLocal || source.ContainingType is not null || destination.ContainingType is not null ||
@@ -143,30 +257,43 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
         (property.SetMethod?.Parameters.LastOrDefault()?.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.DisallowNullAttribute") ?? false);
     private static string Escape(string value) => SyntaxFacts.GetKeywordKind(value) != SyntaxKind.None || SyntaxFacts.GetContextualKeywordKind(value) != SyntaxKind.None ? "@" + value : value;
 
-    private readonly struct MappingPair : IEquatable<MappingPair>
+    private sealed class MappingCandidate
     {
-        public MappingPair(ITypeSymbol source, ITypeSymbol destination)
+        public MappingCandidate(IMethodSymbol method, string fingerprint, string? pairKey)
         {
-            Source = source;
-            Destination = destination;
+            Method = method;
+            Fingerprint = fingerprint;
+            PairKey = pairKey;
         }
 
-        private ITypeSymbol Source { get; }
-        private ITypeSymbol Destination { get; }
+        public IMethodSymbol Method { get; }
+        public string Fingerprint { get; }
+        public string? PairKey { get; }
+    }
 
-        public bool Equals(MappingPair other) =>
-            SymbolEqualityComparer.Default.Equals(Source, other.Source) &&
-            SymbolEqualityComparer.Default.Equals(Destination, other.Destination);
+    private sealed class MappingCandidateComparer : IEqualityComparer<MappingCandidate>
+    {
+        public static MappingCandidateComparer Instance { get; } = new();
 
-        public override bool Equals(object? obj) => obj is MappingPair other && Equals(other);
+        public bool Equals(MappingCandidate? left, MappingCandidate? right) =>
+            ReferenceEquals(left, right) || (left is not null && right is not null && StringComparer.Ordinal.Equals(left.Fingerprint, right.Fingerprint));
 
-        public override int GetHashCode()
+        public int GetHashCode(MappingCandidate candidate) => StringComparer.Ordinal.GetHashCode(candidate.Fingerprint);
+    }
+
+    private sealed class DuplicatePairSetComparer : IEqualityComparer<HashSet<string>>
+    {
+        public static DuplicatePairSetComparer Instance { get; } = new();
+
+        public bool Equals(HashSet<string>? left, HashSet<string>? right) =>
+            ReferenceEquals(left, right) || (left is not null && right is not null && left.SetEquals(right));
+
+        public int GetHashCode(HashSet<string> pairs)
         {
-            unchecked
-            {
-                return (SymbolEqualityComparer.Default.GetHashCode(Source) * 397) ^
-                    SymbolEqualityComparer.Default.GetHashCode(Destination);
-            }
+            var hash = pairs.Count;
+            foreach (var pair in pairs)
+                hash ^= StringComparer.Ordinal.GetHashCode(pair);
+            return hash;
         }
     }
 }

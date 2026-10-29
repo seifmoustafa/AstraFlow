@@ -214,6 +214,25 @@ public static partial class @return { [AstraGenerateMapping] public static parti
     }
 
     [Fact]
+    public void Generated_mapping_compiles_with_CSharp9()
+    {
+        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp9);
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
+            .Select(path => MetadataReference.CreateFromFile(path)).ToList();
+        references.Add(MetadataReference.CreateFromFile(typeof(AstraGenerateMappingAttribute).Assembly.Location));
+        var source = Declaration.Replace("namespace Example;", "namespace Example {") + "\n}";
+        var compilation = CSharpCompilation.Create("CSharp9Mapping", [CSharpSyntaxTree.ParseText(source, options)], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
+        driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out var diagnostics);
+
+        diagnostics.Should().BeEmpty();
+        output.GetDiagnostics().Where(d => d.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error).Should().BeEmpty();
+        using var stream = new MemoryStream();
+        output.Emit(stream).Success.Should().BeTrue();
+    }
+
+    [Fact]
     public void Duplicate_pairs_are_rejected_without_emission()
     {
         var source = Declaration.Replace("public static partial Output Convert(Input source);", "public static partial Output Convert(Input source); [AstraGenerateMapping] public static partial Output Other(Input source);");
@@ -314,6 +333,20 @@ public static partial class Maps
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource && d.GetMessage().Contains("one value parameter"));
         result.Diagnostics.Should().NotContain(d => d.Id == "CS8785");
         result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("params Input[] source")]
+    [InlineData("Input source = default")]
+    [InlineData("scoped Input source")]
+    public void Parameter_shapes_the_generator_cannot_reproduce_are_diagnosed(string parameter)
+    {
+        var source = Declaration.Replace("Input source", parameter);
+        var (compilation, result) = Generate(source);
+
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource && d.GetMessage().Contains("one value parameter"));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+        compilation.GetDiagnostics().Should().NotContain(d => d.Id == "CS8826" || d.Id == "CS8785");
     }
 
     [Fact]
@@ -423,8 +456,8 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         driver = driver.RunGenerators(compilation);
         var before = driver.GetRunResult().Results.Single().GeneratedSources.Single(s => s.SourceText.ToString().Contains("namespace Other"));
         driver = driver.RunGenerators(compilation);
-        driver.GetRunResult().Results.Single().TrackedOutputSteps.Values.SelectMany(steps => steps).SelectMany(step => step.Outputs)
-            .Should().ContainSingle(output => output.Reason == IncrementalStepRunReason.Cached);
+        var incrementalOutputs = driver.GetRunResult().Results.Single().TrackedOutputSteps.Values.SelectMany(steps => steps).SelectMany(step => step.Outputs).ToArray();
+        incrementalOutputs.Count(output => output.Reason == IncrementalStepRunReason.Cached).Should().BeGreaterThanOrEqualTo(2);
         var changed = CSharpSyntaxTree.ParseText(Declaration.Replace("public class Input { public int Count", "public class Input { public long Count"), options);
         driver = driver.RunGenerators(compilation.ReplaceSyntaxTree(firstTree, changed));
         var result = driver.GetRunResult();
