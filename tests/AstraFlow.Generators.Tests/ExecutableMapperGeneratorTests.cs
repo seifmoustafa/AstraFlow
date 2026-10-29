@@ -54,6 +54,43 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
     }
 
     [Theory]
+    [InlineData("public long Count { get; set; }", "Count")]
+    [InlineData("public int Missing { get; set; }", "Missing")]
+    [InlineData("public string Password { get; set; } = \"\";", "Password")]
+    [InlineData("public int Count;", "Count")]
+    public void Member_errors_identify_the_destination_member_and_mapping(string property, string memberName)
+    {
+        var source = Declaration.Replace("public int Count { get; set; } public string Name { get; set; } = \"\"; }\npublic static", property + " }\npublic static");
+        var (_, result) = Generate(source);
+        var diagnostic = result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001").Subject;
+        diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan).Should().Be(memberName);
+        diagnostic.AdditionalLocations.Should().ContainSingle();
+        var declaration = diagnostic.AdditionalLocations.Single();
+        declaration.SourceTree!.GetText().ToString(declaration.SourceSpan).Should().Be("Convert");
+    }
+
+    [Fact]
+    public void Referenced_destination_member_error_falls_back_to_mapping_declaration()
+    {
+        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp12);
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
+            .Select(path => MetadataReference.CreateFromFile(path)).ToList();
+        var models = CSharpCompilation.Create("ReferencedModels", [CSharpSyntaxTree.ParseText("public class Input { public int Value { get; set; } } public class Output { public long Value { get; set; } }", options)], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        using var stream = new MemoryStream();
+        models.Emit(stream).Success.Should().BeTrue();
+        references.Add(MetadataReference.CreateFromImage(stream.ToArray()));
+        references.Add(MetadataReference.CreateFromFile(typeof(AstraGenerateMappingAttribute).Assembly.Location));
+        var tree = CSharpSyntaxTree.ParseText("using AstraFlow.Mapper; public static partial class Maps { [AstraGenerateMapping] public static partial Output Convert(Input source); }", options);
+        var compilation = CSharpCompilation.Create("Consumer", [tree], references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
+        var result = driver.RunGenerators(compilation).GetRunResult();
+        var diagnostic = result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001").Subject;
+        diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan).Should().Be("Convert");
+        diagnostic.AdditionalLocations.Should().BeEmpty();
+    }
+
+    [Theory]
     [InlineData("public Output(int value) { }", "parameterless constructor")]
     [InlineData("private Output() { }", "parameterless constructor")]
     public void Unsupported_constructors_are_reported(string constructor, string message)

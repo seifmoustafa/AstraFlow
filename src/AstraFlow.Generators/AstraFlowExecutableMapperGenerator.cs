@@ -50,6 +50,16 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
         context.CancellationToken.ThrowIfCancellationRequested();
         var location = method.Locations.FirstOrDefault();
         void Fail(string reason) => context.ReportDiagnostic(Diagnostic.Create(Unsupported, location, reason));
+        void FailMember(ISymbol member, string reason)
+        {
+            var memberLocation = member.Locations.FirstOrDefault(l => l.IsInSource);
+            if (memberLocation is null || location is null || !location.IsInSource)
+            {
+                Fail(reason);
+                return;
+            }
+            context.ReportDiagnostic(Diagnostic.Create(Unsupported, memberLocation, new[] { location }, reason));
+        }
         var owner = method.ContainingType;
         var syntax = method.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(context.CancellationToken) as MethodDeclarationSyntax;
         if (syntax is null || syntax.Modifiers.Any(m => !m.IsKind(SyntaxKind.PublicKeyword) && !m.IsKind(SyntaxKind.InternalKeyword) && !m.IsKind(SyntaxKind.StaticKeyword) && !m.IsKind(SyntaxKind.PartialKeyword)) ||
@@ -75,14 +85,14 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
             if (member is IMethodSymbol or INamedTypeSymbol or IEventSymbol) continue;
             if (member is not IPropertySymbol target || target.IsIndexer || target.IsRequired || target.SetMethod is null ||
                 target.SetMethod.IsInitOnly || target.SetMethod.DeclaredAccessibility != Accessibility.Public)
-            { Fail("destination members must be non-required public settable properties; fields and init-only properties are unsupported"); return; }
-            if (policy.IsSensitiveName(target.Name)) { Fail("sensitive members cannot be copied by generated mappings; map them explicitly after authorization"); return; }
+            { FailMember(member, "destination members must be non-required public settable properties; fields and init-only properties are unsupported"); return; }
+            if (policy.IsSensitiveName(target.Name)) { FailMember(target, "sensitive members cannot be copied by generated mappings; map them explicitly after authorization"); return; }
             var matches = source.GetMembers(target.Name).OfType<IPropertySymbol>().Where(p => !p.IsStatic && !p.IsIndexer && p.GetMethod?.DeclaredAccessibility == Accessibility.Public).ToArray();
-            if (matches.Length != 1) { Fail("each destination property needs exactly one public readable source property with the same name"); return; }
+            if (matches.Length != 1) { FailMember(target, "each destination property needs exactly one public readable source property with the same name"); return; }
             var input = matches[0];
             if (!SymbolEqualityComparer.Default.Equals(input.Type, target.Type) || !IsScalar(target.Type) ||
                 (input.NullableAnnotation != NullableAnnotation.NotAnnotated && target.NullableAnnotation == NullableAnnotation.NotAnnotated && target.Type.IsReferenceType))
-            { Fail("member types must be identical supported scalars with compatible nullability; nested objects, collections and conversions are unsupported"); return; }
+            { FailMember(target, "member types must be identical supported scalars with compatible nullability; nested objects, collections and conversions are unsupported"); return; }
             var identifier = Escape(target.Name);
             assignments.Add("            " + identifier + " = " + Escape(method.Parameters[0].Name) + "." + Escape(input.Name) + ",");
         }
