@@ -276,6 +276,25 @@ public static partial class Maps
     }
 
     [Fact]
+    public void MaybeNull_source_can_flow_to_nullable_destination()
+    {
+        var source = Declaration.Replace("public string Name { get; set; } = \"\"; }\npublic class Output", "[System.Diagnostics.CodeAnalysis.MaybeNull] public string Name { get; set; } = \"\"; }\npublic class Output")
+            .Replace("public class Output { public int Count { get; set; } public string Name", "public class Output { public int Count { get; set; } public string? Name");
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(d => d.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Nonnullable_source_can_flow_to_disallow_null_destination()
+    {
+        var source = Declaration.Replace("public class Output { public int Count { get; set; } public string Name", "public class Output { public int Count { get; set; } [System.Diagnostics.CodeAnalysis.DisallowNull] public string? Name");
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(d => d.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error).Should().BeEmpty();
+    }
+
+    [Fact]
     public void Nullable_source_can_map_to_nullable_destination()
     {
         var source = Declaration.Replace("public string Name", "public string? Name");
