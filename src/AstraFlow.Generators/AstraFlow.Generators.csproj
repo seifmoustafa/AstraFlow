@@ -3,8 +3,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>AstraFlow.Generators</PackageId>
     <Title>AstraFlow Generators</Title>
-    <Description>Source generator foundation for deterministic AstraFlow mediator registration.</Description>
-    <PackageTags>astraflow;source-generator;roslyn;mediator;cqrs;di;dotnet</PackageTags>
+    <Description>Compile-time AstraFlow mediator and mapper metadata, plus opt-in typed mapping methods.</Description>
+    <PackageTags>astraflow;source-generator;roslyn;mediator;mapper;cqrs;di;dotnet</PackageTags>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <NoWarn>$(NoWarn);RS1036</NoWarn>
