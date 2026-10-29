@@ -233,6 +233,22 @@ public static partial class OtherMaps { [AstraGenerateMapping] public static par
     }
 
     [Fact]
+    public void Invalid_mapping_does_not_prevent_a_valid_mapping_from_being_generated()
+    {
+        var source = Declaration + """
+
+public class BadInput { public int Value { get; set; } }
+public class BadOutput { public long Value { get; set; } }
+public static partial class BadMaps { [AstraGenerateMapping] public static partial BadOutput Convert(BadInput source); }
+""";
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("identical"));
+        var generated = result.Results.Single().GeneratedSources.Should().ContainSingle().Subject;
+        generated.SourceText.ToString().Should().Contain("partial class Maps").And.Contain("Count = source.Count");
+        compilation.GetDiagnostics().Should().NotContain(d => d.Id == "CS8785");
+    }
+
+    [Fact]
     public void Broken_types_do_not_crash_the_generator()
     {
         var source = Declaration.Replace("Output Convert(Input source)", "Missing Convert(Input source)");
