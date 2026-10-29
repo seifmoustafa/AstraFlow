@@ -171,4 +171,6 @@ The current experimental subset requires a top-level non-generic, non-file-local
 
 For a member-specific error, `AFM001` points to the destination member when its source is part of the compilation, with the mapping method as a related location. If the destination comes from a referenced assembly, the diagnostic points to the mapping method instead. Declaration and construction errors also point to the mapping method.
 
+The method parameter must be passed by value; `ref`, `in`, and `out` parameters are unsupported. Nullable value-type properties such as `int?` are currently rejected, including when both sides have the same nullable type. Nullable reference-type properties are supported when the source-to-destination nullability is compatible.
+
 This remains a draft feature: packaging, compatibility, AOT, incremental build cost and broader compiler edge cases require further verification before release.

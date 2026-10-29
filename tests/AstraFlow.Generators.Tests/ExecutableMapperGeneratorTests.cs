@@ -262,6 +262,28 @@ public static partial class Maps
         compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData("ref Input source")]
+    [InlineData("in Input source")]
+    [InlineData("out Input source")]
+    public void By_reference_parameters_are_rejected_without_generated_implementation(string parameter)
+    {
+        var source = Declaration.Replace("Input source", parameter);
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource && d.GetMessage().Contains("one value parameter"));
+        result.Diagnostics.Should().NotContain(d => d.Id == "CS8785");
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Nullable_value_members_are_explicitly_rejected()
+    {
+        var source = Declaration.Replace("int Count", "int? Count");
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource && d.GetMessage().Contains("supported scalars"));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
     [Fact]
     public void Nullable_disabled_consumer_compiles_without_generated_nullability_warnings()
     {
