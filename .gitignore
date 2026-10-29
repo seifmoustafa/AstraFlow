@@ -12,3 +12,4 @@ artifacts/
 .idea/
 .dotnet-cli-home/
 .vscode/
+.artifacts/
