@@ -31,6 +31,44 @@ foreach ($count in @(25, 100, 400)) {
             if ($exit -ne 0) { throw "Build failed: $dir" }
             "RESULT count=$count mode=$mode iteration=$iteration ms=$($watch.ElapsedMilliseconds)"
         }
+        for ($iteration = 1; $iteration -le 3; $iteration++) {
+            $watch = [Diagnostics.Stopwatch]::StartNew()
+            & dotnet build (Join-Path $dir 'Scale.csproj') -c Release --no-restore /m:1 /p:UseSharedCompilation=false -v:q
+            $exit = $LASTEXITCODE
+            $watch.Stop()
+            if ($exit -ne 0) { throw "No-op incremental build failed: $dir" }
+            "INCREMENTAL count=$count mode=$mode kind=noop iteration=$iteration ms=$($watch.ElapsedMilliseconds)"
+        }
+
+        $mapsPath = Join-Path $dir 'Maps.cs'
+        $original = [IO.File]::ReadAllText($mapsPath)
+        try {
+            for ($iteration = 1; $iteration -le 3; $iteration++) {
+                $edited = [Text.RegularExpressions.Regex]::Replace(
+                    $original,
+                    'Convert\(Input0 source\)',
+                    "Convert(Input0 source$iteration)",
+                    1)
+                if ($edited -eq $original) { throw "Could not isolate the first mapping declaration: $dir" }
+                $edited = [Text.RegularExpressions.Regex]::Replace(
+                    $edited,
+                    'Output0 \{ Value = source\.Value \}',
+                    "Output0 { Value = source$iteration.Value }",
+                    1)
+                [IO.File]::WriteAllText($mapsPath, $edited, [Text.UTF8Encoding]::new($false))
+                $watch = [Diagnostics.Stopwatch]::StartNew()
+                & dotnet build (Join-Path $dir 'Scale.csproj') -c Release --no-restore /m:1 /p:UseSharedCompilation=false -v:q
+                $exit = $LASTEXITCODE
+                $watch.Stop()
+                if ($exit -ne 0) { throw "Single-declaration incremental build failed: $dir" }
+                "INCREMENTAL count=$count mode=$mode kind=one-declaration-edit iteration=$iteration ms=$($watch.ElapsedMilliseconds)"
+            }
+        }
+        finally {
+            [IO.File]::WriteAllText($mapsPath, $original, [Text.UTF8Encoding]::new($false))
+            & dotnet build (Join-Path $dir 'Scale.csproj') -c Release --no-restore /m:1 /p:UseSharedCompilation=false -v:q
+            if ($LASTEXITCODE -ne 0) { throw "Could not restore baseline build state: $dir" }
+        }
         if ($mode -eq 'generated') {
             $files = @(Get-ChildItem (Join-Path $dir 'obj\Release\net10.0\generated') -Recurse -Filter '*.g.cs')
             "SOURCES count=$count files=$($files.Count) bytes=$(($files | Measure-Object Length -Sum).Sum)"

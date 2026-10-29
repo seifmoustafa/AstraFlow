@@ -25,6 +25,12 @@ AstraFlow `2.0.0` currently targets:
 
 This means applications, shared libraries, contracts projects, security policy projects, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the contracts package, core packages, `AstraFlow.Mapper.Conventions`, `AstraFlow.Security`, and `AstraFlow.Testing`. EF Core projection translation validation and ASP.NET Core helpers require a `net10.0` project. FluentValidation and OpenTelemetry integration packages support `net8.0`, `net9.0`, and `net10.0`. Analyzer and generator assets are consumed by the compiler rather than referenced as runtime libraries.
 
+### v2.1.0 generated mapping release candidate
+
+The current release candidate adds `AstraGenerateMappingAttribute` to `AstraFlow.Mapper` and executable output to the private `AstraFlow.Generators` compiler package. The generated mapping consumer sample is built for `net8.0`, `net9.0`, and `net10.0` with C# 9, the minimum language version needed for accessible partial method implementations. These are branch checks; NuGet 2.1.0 has not been published, so they do not change the published support table above.
+
+A clean generated-mapping-only PackageReference consumer was published and executed as win-x64 Native AOT. This validates direct generated mapping only. It does not establish that `IMapper` assembly scanning or mediator reflection scanning is trimming/AOT-safe. The latter scan path emitted trim/AOT warnings and failed to discover a handler in a broader smoke app. Do not infer AOT support for the whole package family from the generated mapper result; see [v2.1 evidence](decisions/v2.1-draft-evidence.md).
+
 ## Compatibility Goal
 
 The roadmap goal is broader package reach without weakening the current explicit-core behavior.

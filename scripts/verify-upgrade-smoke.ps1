@@ -164,30 +164,47 @@ if (!values.SequenceEqual(new[] { 0, 1 }))
 await mediator.Publish(new UpgradeNotification());
 Console.WriteLine("AstraFlow upgrade smoke passed.");
 
+/// <summary>Request used to verify upgraded mediator dispatch.</summary>
+/// <param name="Value">The request value.</param>
 public sealed record UpgradeQuery(string Value) : IRequest<string>;
 
+/// <summary>Handles the upgrade smoke query.</summary>
 public sealed class UpgradeQueryHandler : IRequestHandler<UpgradeQuery, string>
 {
+    /// <summary>Returns the query value with the smoke handler marker.</summary>
+    /// <param name="request">The incoming query.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public Task<string> Handle(UpgradeQuery request, CancellationToken cancellationToken)
     {
         return Task.FromResult($"handled:{request.Value}");
     }
 }
 
+/// <summary>Command used to verify upgraded command dispatch.</summary>
 public sealed record UpgradeCommand : IRequest;
 
+/// <summary>Handles the upgrade smoke command.</summary>
 public sealed class UpgradeCommandHandler : IRequestHandler<UpgradeCommand>
 {
+    /// <summary>Completes the command without side effects.</summary>
+    /// <param name="request">The incoming command.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public Task Handle(UpgradeCommand request, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }
 }
 
+/// <summary>Stream request used to verify upgraded streaming dispatch.</summary>
+/// <param name="Count">The number of values to produce.</param>
 public sealed record UpgradeStream(int Count) : IStreamRequest<int>;
 
+/// <summary>Handles the upgrade smoke stream request.</summary>
 public sealed class UpgradeStreamHandler : IStreamRequestHandler<UpgradeStream, int>
 {
+    /// <summary>Produces the requested sequence of values.</summary>
+    /// <param name="request">The incoming stream request.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public async IAsyncEnumerable<int> Handle(
         UpgradeStream request,
         [EnumeratorCancellation] CancellationToken cancellationToken)
@@ -201,10 +218,15 @@ public sealed class UpgradeStreamHandler : IStreamRequestHandler<UpgradeStream, 
     }
 }
 
+/// <summary>Notification used to verify upgraded publish dispatch.</summary>
 public sealed record UpgradeNotification : INotification;
 
+/// <summary>Handles the upgrade smoke notification.</summary>
 public sealed class UpgradeNotificationHandler : INotificationHandler<UpgradeNotification>
 {
+    /// <summary>Completes notification handling without side effects.</summary>
+    /// <param name="notification">The published notification.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public Task Handle(UpgradeNotification notification, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;

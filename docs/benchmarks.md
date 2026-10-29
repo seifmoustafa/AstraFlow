@@ -46,6 +46,14 @@ The `AstraFlow.Benchmarks` project covers:
 - generated mapper/projection metadata lookup,
 - allocation measurements through BenchmarkDotNet `MemoryDiagnoser` and smoke-run allocation capture.
 
+## v2.1 draft: executable generated mapping
+
+`GeneratedMappingBenchmarks` compares equivalent two-property mapping calls over the same non-null input: handwritten construction, an explicitly registered runtime `IMapper` rule, and the generated typed method. This does not compare null behavior or interface dispatch parity for the generated method; the generated path deliberately has its own direct typed call contract.
+
+The final-source BenchmarkDotNet short run used 3 warmups and 3 measured iterations on Windows 11 10.0.26300.9818, SDK 10.0.400, .NET 10.0.13 x64 AVX2, BenchmarkDotNet 0.14.0. It measured Manual 4.808 ns / 32 B, Runtime 63.849 ns / 264 B, and Generated 5.056 ns / 32 B. The confidence intervals are wide for the direct methods, so this one short run does not support a general performance claim. The [raw CSV](benchmark-results/v2.1-draft/generated-mapping-bdn-short.csv), [BenchmarkDotNet summary](benchmark-results/v2.1-draft/generated-mapping-bdn-short.md), and [full release evidence](decisions/v2.1-draft-evidence.md) retain results and limitations.
+
+The synthetic [map-scale experiment](benchmark-results/v2.1-draft/map-scale-experiment.ps1) records three-run Release rebuild, no-op incremental build, and one-declaration-edit build times for 25, 100, and 400 simple pairs. The [raw output](benchmark-results/v2.1-draft/map-scale-incremental-results-final.log) and release evidence report the samples. These are end-to-end wall times that include process startup, compiler time, and all generators; they are not an isolated generator profile or a general scaling claim.
+
 ## Environment Template
 
 Copy this block into release notes, GitHub releases, or benchmark evidence files:

@@ -34,7 +34,7 @@ This reference describes the public AstraFlow `2.1.0` API surface. It is intenti
 
 | API | Kind | Behavior | Failure cases |
 | --- | --- | --- | --- |
-| `AstraGenerateMappingAttribute` | Method attribute | Opts one public or internal static partial method into generated direct mapping. | Unsupported method/member shapes, duplicate source/destination pairs, unsafe nullability, and sensitive-name matches report `AFM001`. The generator package must be referenced for the method implementation. |
+| `AstraGenerateMappingAttribute` | Method attribute | Opts one public or internal static partial method into generated direct mapping. The method must have exactly one required, by-value, non-`params`, non-`scoped` parameter. | Unsupported method/member shapes, duplicate source/destination pairs, unsafe nullability, and sensitive-name matches report `AFM001`. The generator package must be referenced for the method implementation. |
 
 Reference `AstraFlow.Mapper` and `AstraFlow.Generators`, then declare an explicit partial method:
 
@@ -46,7 +46,7 @@ public static partial class CustomerMaps
 }
 ```
 
-The generator implements this method as direct typed assignments. It supports top-level non-generic class pairs, an accessible parameterless destination constructor, and exact-name public properties whose scalar types and nullability are compatible. Unsupported declarations produce the `AFM001` compiler error and no generated mapping; they do not fall back to `IMapper` or convention mapping. Nested objects, collections, conversions, records, fields, required/init-only members, and sensitive-name matches are unsupported. The generated method is a separate opt-in API and does not register or replace runtime mapper rules. See [Generators](generators.md) for all shape constraints and security limitations.
+The generator implements this method as direct typed assignments. It supports top-level non-generic class pairs, a public parameterless destination constructor, and exact-name public properties whose scalar types and nullability are compatible. Unsupported declarations produce the `AFM001` compiler error and no generated mapping; they do not fall back to `IMapper` or convention mapping. Nested objects, collections, conversions, records, fields, required/init-only members, and sensitive-name matches are unsupported. The generated method is a separate opt-in API and does not register or replace runtime mapper rules. See [Generators](generators.md) for all shape constraints and security limitations.
 
 ## Security Types
 
