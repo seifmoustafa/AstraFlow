@@ -91,7 +91,8 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
             if (matches.Length != 1) { FailMember(target, "each destination property needs exactly one public readable source property with the same name"); return; }
             var input = matches[0];
             if (!SymbolEqualityComparer.Default.Equals(input.Type, target.Type) || !IsScalar(target.Type) ||
-                (input.NullableAnnotation != NullableAnnotation.NotAnnotated && target.NullableAnnotation == NullableAnnotation.NotAnnotated && target.Type.IsReferenceType))
+                ((input.NullableAnnotation != NullableAnnotation.NotAnnotated || HasMaybeNull(input)) &&
+                 (target.NullableAnnotation == NullableAnnotation.NotAnnotated || HasDisallowNull(target)) && target.Type.IsReferenceType))
             { FailMember(target, "member types must be identical supported scalars with compatible nullability; nested objects, collections and conversions are unsupported"); return; }
             var identifier = Escape(target.Name);
             assignments.Add("            " + identifier + " = " + Escape(method.Parameters[0].Name) + "." + Escape(input.Name) + ",");
@@ -122,5 +123,13 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
         SpecialType.System_Boolean or SpecialType.System_Byte or SpecialType.System_SByte or SpecialType.System_Int16 or SpecialType.System_UInt16 or
         SpecialType.System_Int32 or SpecialType.System_UInt32 or SpecialType.System_Int64 or SpecialType.System_UInt64 or SpecialType.System_Char or
         SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal or SpecialType.System_String;
+    private static bool HasMaybeNull(IPropertySymbol property) =>
+        property.GetAttributes().Any(IsMaybeNull) ||
+        (property.GetMethod?.GetReturnTypeAttributes().Any(IsMaybeNull) ?? false);
+    private static bool IsMaybeNull(AttributeData attribute) =>
+        attribute.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.MaybeNullAttribute";
+    private static bool HasDisallowNull(IPropertySymbol property) =>
+        property.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.DisallowNullAttribute") ||
+        (property.SetMethod?.Parameters.LastOrDefault()?.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.DisallowNullAttribute") ?? false);
     private static string Escape(string value) => SyntaxFacts.GetKeywordKind(value) != SyntaxKind.None || SyntaxFacts.GetContextualKeywordKind(value) != SyntaxKind.None ? "@" + value : value;
 }

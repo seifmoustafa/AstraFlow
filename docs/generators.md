@@ -173,4 +173,6 @@ For a member-specific error, `AFM001` points to the destination member when its 
 
 The method parameter must be passed by value; `ref`, `in`, and `out` parameters are unsupported. Nullable value-type properties such as `int?` are currently rejected, including when both sides have the same nullable type. Nullable reference-type properties are supported when the source-to-destination nullability is compatible.
 
+For reference properties, the generator treats `[MaybeNull]` on a source property or getter return as potentially null, and `[DisallowNull]` on a destination property or setter value as non-nullable. Unsafe flows produce `AFM001` even when the declared property types alone would permit them.
+
 This remains a draft feature: packaging, compatibility, AOT, incremental build cost and broader compiler edge cases require further verification before release.

@@ -253,6 +253,28 @@ public static partial class Maps
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("nullability"));
     }
 
+    [Theory]
+    [InlineData("[System.Diagnostics.CodeAnalysis.MaybeNull] public string Name { get; set; } = \"\";")]
+    [InlineData("public string Name { [return: System.Diagnostics.CodeAnalysis.MaybeNull] get; set; } = \"\";")]
+    public void MaybeNull_source_getter_cannot_flow_to_nonnullable_destination(string property)
+    {
+        var source = Declaration.Replace("public string Name { get; set; } = \"\"; }\npublic class Output", property + " }\npublic class Output");
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("nullability"));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+        compilation.GetDiagnostics().Should().NotContain(d => d.Id == "CS8785");
+    }
+
+    [Fact]
+    public void Nullable_source_cannot_flow_to_disallow_null_destination()
+    {
+        var source = Declaration.Replace("public string Name", "public string? Name")
+            .Replace("public class Output { public int Count { get; set; } public string? Name", "public class Output { public int Count { get; set; } [System.Diagnostics.CodeAnalysis.DisallowNull] public string? Name");
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("nullability"));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
     [Fact]
     public void Nullable_source_can_map_to_nullable_destination()
     {
