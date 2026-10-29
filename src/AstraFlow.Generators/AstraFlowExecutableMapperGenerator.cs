@@ -29,13 +29,23 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
             static (ctx, _) => (IMethodSymbol)ctx.TargetSymbol);
         context.RegisterSourceOutput(methods.Collect(), static (output, declarations) =>
         {
+            var pairCounts = new Dictionary<MappingPair, int>();
             foreach (var method in declarations)
             {
                 output.CancellationToken.ThrowIfCancellationRequested();
-                if (method.Parameters.Length == 1 && declarations.Count(other =>
-                    other.Parameters.Length == 1 &&
-                    SymbolEqualityComparer.Default.Equals(other.Parameters[0].Type, method.Parameters[0].Type) &&
-                    SymbolEqualityComparer.Default.Equals(other.ReturnType, method.ReturnType)) > 1)
+                if (method.Parameters.Length != 1)
+                    continue;
+
+                var pair = new MappingPair(method.Parameters[0].Type, method.ReturnType);
+                pairCounts.TryGetValue(pair, out var count);
+                pairCounts[pair] = count + 1;
+            }
+
+            foreach (var method in declarations)
+            {
+                output.CancellationToken.ThrowIfCancellationRequested();
+                if (method.Parameters.Length == 1 &&
+                    pairCounts[new MappingPair(method.Parameters[0].Type, method.ReturnType)] > 1)
                 {
                     output.ReportDiagnostic(Diagnostic.Create(Unsupported, method.Locations.FirstOrDefault(), "declare each source and destination pair only once"));
                     continue;
@@ -132,4 +142,31 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
         property.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.DisallowNullAttribute") ||
         (property.SetMethod?.Parameters.LastOrDefault()?.GetAttributes().Any(attribute => attribute.AttributeClass?.ToDisplayString() == "System.Diagnostics.CodeAnalysis.DisallowNullAttribute") ?? false);
     private static string Escape(string value) => SyntaxFacts.GetKeywordKind(value) != SyntaxKind.None || SyntaxFacts.GetContextualKeywordKind(value) != SyntaxKind.None ? "@" + value : value;
+
+    private readonly struct MappingPair : IEquatable<MappingPair>
+    {
+        public MappingPair(ITypeSymbol source, ITypeSymbol destination)
+        {
+            Source = source;
+            Destination = destination;
+        }
+
+        private ITypeSymbol Source { get; }
+        private ITypeSymbol Destination { get; }
+
+        public bool Equals(MappingPair other) =>
+            SymbolEqualityComparer.Default.Equals(Source, other.Source) &&
+            SymbolEqualityComparer.Default.Equals(Destination, other.Destination);
+
+        public override bool Equals(object? obj) => obj is MappingPair other && Equals(other);
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (SymbolEqualityComparer.Default.GetHashCode(Source) * 397) ^
+                    SymbolEqualityComparer.Default.GetHashCode(Destination);
+            }
+        }
+    }
 }
