@@ -223,6 +223,29 @@ public static partial class @return { [AstraGenerateMapping] public static parti
     }
 
     [Fact]
+    public void Duplicate_pairs_do_not_prevent_other_pairs_from_compiling()
+    {
+        const string source = """
+using AstraFlow.Mapper;
+public class Input { public int Value { get; set; } }
+public class Output { public int Value { get; set; } }
+public class OtherInput { public int Value { get; set; } }
+public class OtherOutput { public int Value { get; set; } }
+public static partial class Maps
+{
+    [AstraGenerateMapping] public static partial Output Map(Input source);
+    [AstraGenerateMapping] public static partial Output Again(Input source);
+    [AstraGenerateMapping] public static partial OtherOutput Map(OtherInput source);
+}
+""";
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().HaveCount(2).And.OnlyContain(d => d.Id == "AFM001" && d.GetMessage().Contains("only once"));
+        var generated = result.Results.Single().GeneratedSources.Should().ContainSingle().Subject;
+        generated.SourceText.ToString().Should().Contain("global::OtherOutput Map(global::OtherInput source)");
+        compilation.GetDiagnostics().Should().NotContain(d => d.Id == "CS8785" || (d.Severity == DiagnosticSeverity.Error && d.Location.SourceTree != null && d.Location.SourceTree.FilePath.EndsWith(".g.cs", StringComparison.Ordinal)));
+    }
+
+    [Fact]
     public void Nullable_source_member_cannot_flow_to_nonnullable_destination()
     {
         var source = Declaration.Replace("public string Name { get; set; } = \"\"; }\npublic class Output", "public string? Name { get; set; } }\npublic class Output");
