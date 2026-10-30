@@ -104,15 +104,53 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         diagnostic.AdditionalLocations.Should().BeEmpty();
     }
 
+    [Fact]
+    public void Internal_destination_constructor_from_another_assembly_is_not_accessible()
+    {
+        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.CSharp12);
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
+            .Select(path => MetadataReference.CreateFromFile(path)).ToList();
+        var models = CSharpCompilation.Create("ReferencedModels", [CSharpSyntaxTree.ParseText(
+                "public class Input { public int Value { get; set; } } public class Output { internal Output() { } public int Value { get; set; } }", options)], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        using var stream = new MemoryStream();
+        models.Emit(stream).Success.Should().BeTrue();
+        references.Add(MetadataReference.CreateFromImage(stream.ToArray()));
+        references.Add(MetadataReference.CreateFromFile(typeof(AstraGenerateMappingAttribute).Assembly.Location));
+        var tree = CSharpSyntaxTree.ParseText("using AstraFlow.Mapper; public static partial class Maps { [AstraGenerateMapping] public static partial Output Convert(Input source); }", options);
+        var compilation = CSharpCompilation.Create("Consumer", [tree], references, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
+
+        var result = driver.RunGenerators(compilation).GetRunResult();
+
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" &&
+            d.GetMessage().Contains("accessible parameterless constructor", StringComparison.Ordinal));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
     [Theory]
-    [InlineData("public Output(int value) { }", "parameterless constructor")]
-    [InlineData("private Output() { }", "parameterless constructor")]
+    [InlineData("public Output(int value) { }", "accessible parameterless constructor")]
+    [InlineData("private Output() { }", "accessible parameterless constructor")]
     public void Unsupported_constructors_are_reported(string constructor, string message)
     {
         var source = Declaration.Replace("public class Output {", "public class Output { " + constructor);
         var (_, result) = Generate(source);
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource && d.GetMessage().Contains(message));
         result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Internal_destination_constructor_is_accessible_to_generated_code_in_the_same_assembly()
+    {
+        var source = Declaration
+            .Replace("public class Input", "internal class Input", StringComparison.Ordinal)
+            .Replace("public class Output", "internal class Output", StringComparison.Ordinal)
+            .Replace("public static partial class Maps", "internal static partial class Maps", StringComparison.Ordinal)
+            .Replace("public static partial Output Convert", "internal static partial Output Convert", StringComparison.Ordinal);
+
+        var (compilation, result) = Generate(source);
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
     }
 
     [Theory]

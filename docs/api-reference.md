@@ -46,7 +46,7 @@ public static partial class CustomerMaps
 }
 ```
 
-The generator implements this method as direct typed assignments. It supports top-level non-generic class pairs, a public parameterless destination constructor, and exact-name public properties whose scalar types and nullability are compatible. Unsupported declarations produce the `AFM001` compiler error and no generated mapping; they do not fall back to `IMapper` or convention mapping. Nested objects, collections, conversions, records, fields, required/init-only members, and sensitive-name matches are unsupported. The generated method is a separate opt-in API and does not register or replace runtime mapper rules. See [Generators](generators.md) for all shape constraints and security limitations.
+The generator implements this method as direct typed assignments. It supports top-level non-generic class pairs, a destination parameterless constructor accessible from the generated code, and exact-name public properties whose scalar types and nullability are compatible. Unsupported declarations produce the `AFM001` compiler error and no generated mapping; they do not fall back to `IMapper` or convention mapping. Nested objects, collections, conversions, records, fields, required/init-only members, and sensitive-name matches are unsupported. The generated method is a separate opt-in API and does not register or replace runtime mapper rules. See [Generators](generators.md) for all shape constraints and security limitations.
 
 ## Security Types
 

@@ -199,8 +199,8 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
             method.Parameters[0].NullableAnnotation == NullableAnnotation.Annotated || method.ReturnNullableAnnotation == NullableAnnotation.Annotated ||
             destination.IsRecord || source.BaseType?.SpecialType != SpecialType.System_Object || destination.BaseType?.SpecialType != SpecialType.System_Object)
         { Fail("source and destination must be non-nullable, non-generic, top-level classes without inheritance; records are unsupported"); return; }
-        if (!destination.InstanceConstructors.Any(c => c.Parameters.Length == 0 && c.DeclaredAccessibility == Accessibility.Public))
-        { Fail("destination needs a public parameterless constructor"); return; }
+        if (!destination.InstanceConstructors.Any(c => c.Parameters.Length == 0 && IsAccessibleConstructor(c, method.ContainingAssembly)))
+        { Fail("destination needs an accessible parameterless constructor"); return; }
         var assignments = new List<string>();
         var policy = new AstraFlowSensitiveDataPolicy();
         foreach (var member in destination.GetMembers().Where(m => !m.IsStatic && !m.IsImplicitlyDeclared))
@@ -247,6 +247,10 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
         SpecialType.System_Boolean or SpecialType.System_Byte or SpecialType.System_SByte or SpecialType.System_Int16 or SpecialType.System_UInt16 or
         SpecialType.System_Int32 or SpecialType.System_UInt32 or SpecialType.System_Int64 or SpecialType.System_UInt64 or SpecialType.System_Char or
         SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal or SpecialType.System_String;
+    private static bool IsAccessibleConstructor(IMethodSymbol constructor, IAssemblySymbol mappingAssembly) =>
+        constructor.DeclaredAccessibility == Accessibility.Public ||
+        (SymbolEqualityComparer.Default.Equals(constructor.ContainingAssembly, mappingAssembly) &&
+         constructor.DeclaredAccessibility is Accessibility.Internal or Accessibility.ProtectedOrInternal);
     private static bool HasMaybeNull(IPropertySymbol property) =>
         property.GetAttributes().Any(IsMaybeNull) ||
         (property.GetMethod?.GetReturnTypeAttributes().Any(IsMaybeNull) ?? false);

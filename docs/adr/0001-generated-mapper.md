@@ -61,7 +61,7 @@ public partial class ApplicationMappingCatalog { }
 | Mapping aspect | Required behavior |
 | --- | --- |
 | Source | Accessible named type in compilation/reference metadata |
-| Destination | Concrete top-level class with a public parameterless constructor and compatible mutable properties; structs are unsupported |
+| Destination | Concrete top-level class with a parameterless constructor accessible from generated code (public across assemblies, or internal within the consuming compilation) and compatible mutable properties; structs are unsupported |
 | Member match | Exact-name and statically assignable scalar property; *no implicit convention scan of every pair* |
 | Missing destination required member | Diagnostic; no silent default |
 | Nullable source/member | Document exact semantics; compile diagnostic if semantics cannot be guaranteed |
