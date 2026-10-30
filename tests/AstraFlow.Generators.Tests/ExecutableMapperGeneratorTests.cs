@@ -154,6 +154,72 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
     }
 
     [Theory]
+    [InlineData("public static partial Output Convert<T>(Input source)", "one value parameter")]
+    [InlineData("public static partial Output? Convert(Input source)", "source and destination must be non-nullable")]
+    [InlineData("public static partial Output Convert(Input? source)", "source and destination must be non-nullable")]
+    public void Unsupported_mapping_method_shapes_have_actionable_diagnostics(string signature, string message)
+    {
+        var source = Declaration.Replace("public static partial Output Convert(Input source)", signature, StringComparison.Ordinal);
+
+        var (_, result) = Generate(source);
+
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" &&
+            d.Location.IsInSource && d.GetMessage().Contains(message, StringComparison.Ordinal));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Generic_source_mapping_shape_is_rejected()
+    {
+        var inputType = "public class Input<T> { public int Count { get; set; } public string Name { get; set; } = \"\"; }";
+        var source = ReplaceInput(inputType)
+            .Replace("Convert(Input source)", "Convert(Input<int> source)", StringComparison.Ordinal);
+
+        var (_, result) = Generate(source);
+
+        result.Diagnostics.Should().Contain(d => d.Id == "AFM001" && d.Location.IsInSource);
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Generic_destination_mapping_shape_is_rejected()
+    {
+        var outputType = "public class Output<T> { public int Count { get; set; } public string Name { get; set; } = \"\"; }";
+        var source = ReplaceOutput(outputType)
+            .Replace("Output Convert(Input source)", "Output<int> Convert(Input source)", StringComparison.Ordinal);
+
+        var (_, result) = Generate(source);
+
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource);
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Generic_mapping_container_is_rejected()
+    {
+        var source = Declaration.Replace("public static partial class Maps", "public static partial class Maps<T>", StringComparison.Ordinal);
+
+        var (_, result) = Generate(source);
+
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource);
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Nested_mapping_types_are_rejected()
+    {
+        var source = Declaration
+            .Replace(DefaultInput, "public class Models { public class Input { public int Count { get; set; } public string Name { get; set; } = \"\"; } public class Output { public int Count { get; set; } public string Name { get; set; } = \"\"; } }", StringComparison.Ordinal)
+            .Replace(DefaultOutput, string.Empty, StringComparison.Ordinal)
+            .Replace("Output Convert(Input source)", "Models.Output Convert(Models.Input source)", StringComparison.Ordinal);
+
+        var (_, result) = Generate(source);
+
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource);
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Theory]
     [InlineData("public int Count;", "fields")]
     [InlineData("public int this[int index] { get => 0; set { } }", "properties")]
     [InlineData("public int Count { get; private set; }", "public settable")]
