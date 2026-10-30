@@ -219,6 +219,34 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         result.Results.Single().GeneratedSources.Should().BeEmpty();
     }
 
+    [Fact]
+    public void Valid_overloads_for_different_type_pairs_compile()
+    {
+        var source = Declaration + """
+
+public class SecondInput { public int Value { get; set; } }
+public class SecondOutput { public int Value { get; set; } }
+public static partial class Maps { [AstraGenerateMapping] public static partial SecondOutput Convert(SecondInput source); }
+""";
+
+        var (compilation, result) = Generate(source);
+
+        result.Diagnostics.Should().BeEmpty();
+        result.Results.Single().GeneratedSources.Should().HaveCount(2);
+        compilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Incomplete_mapping_declaration_does_not_crash_the_generator()
+    {
+        var source = Declaration.Replace("Output Convert(Input source);", "Output Convert(Input source;", StringComparison.Ordinal);
+
+        var (compilation, result) = Generate(source);
+
+        result.Diagnostics.Should().NotContain(d => d.Id == "CS8785");
+        compilation.GetDiagnostics().Should().Contain(d => d.Severity == DiagnosticSeverity.Error);
+    }
+
     [Theory]
     [InlineData("public int Count;", "fields")]
     [InlineData("public int this[int index] { get => 0; set { } }", "properties")]
