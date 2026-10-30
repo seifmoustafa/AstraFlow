@@ -12,7 +12,7 @@
 
 | Breakthrough | Developer outcome | Concrete proof | Roadmap position |
 | --- | --- | --- | --- |
-| **Executable generated mapping** | DTO conversion is readable, type-checked and debuggable at build time | Real generated mapping in a clean consumer; unsafe cases diagnosed; published benchmark trade-offs | v2.1 proposed |
+| **Executable generated mapping** | DTO conversion is readable, type-checked and debuggable at build time | Real generated mapping in a clean consumer; unsafe cases diagnosed; published benchmark trade-offs | v2.1 draft implementation in PR #34 |
 | **Source-aware mediator dispatch** | Request execution is fast without losing scope, pipeline or exception semantics | Closed-request generated path parity, clean AOT execution, equal-workload benchmarks | v2.4 candidate |
 | **Explainable flows** | Review handler, behavior and mapping changes before merging | Versioned manifest, provenance/confidence markers, deterministic CI diff | v2.5 candidate |
 | **Trustworthy package ecosystem** | Upgrade without surprise; know what artifacts were built | Supply chain, compatibility API baselines and clean smoke consumers | v2.2–v2.3 existing planned |
@@ -31,14 +31,14 @@
 - [North Star](strategy/north-star.md), [Decision Log](strategy/decision-log.md), [Validation Matrix](strategy/validation-matrix.md), [Research Ledger](strategy/research-ledger.md), [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
 
 
-**Status: Proposed, not implemented or promised.** This index complements rather than replaces the completed release history below. Preserve the existing v2.2 enterprise supply-chain and v2.3 public-API governance commitments; do not silently repurpose their release numbers.
+**Status: The strategic direction remains proposed. The v2.1 mapper execution is implemented on draft PR #34, but is not merged or published.** This index complements rather than replaces the completed release history below. Preserve the existing v2.2 enterprise supply-chain and v2.3 public-API governance commitments; do not silently repurpose their release numbers.
 
 **North star:** Become a leading, independently adoptable .NET application-flow ecosystem through verifiably productive mapping and dispatch, deterministic compile-time diagnostics, safe runtime extensibility, and trustworthy compatibility. Optimizing for feature count or promises of being “the greatest” is not a product acceptance criterion.
 
 | Track | Version | Status | Measurable exit evidence |
 | --- | --- | --- | --- |
 | Shared sensitive-name and redaction foundation | v2.0.0 | Source implementation described below; independently verify publication | Security regression tests and package checks |
-| **Generated mapping execution** | **v2.1** | **Proposed priority** | Real typed generated conversion; source diagnostics; clean consumer; AOT publish/run; manual/runtime/peer benchmark methodology |
+| **Generated mapping execution** | **v2.1** | **Draft implementation in PR #34; not shipped** | Real typed generated conversion; source diagnostics; clean consumer; AOT publish/run; manual/runtime/peer benchmark methodology |
 | Enterprise supply chain | v2.2 | Existing planned commitment | SBOM, provenance and SourceLink checks |
 | Public API governance | v2.3 | Existing planned commitment | API baseline enforcement and upgrade smoke |
 | Generated mediator dispatch | v2.4 | Candidate; only after source/benchmark feasibility | Closed-type generated invoker, DI scope/pipeline equivalence, AOT and comparative numbers |
@@ -55,7 +55,7 @@
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current implementation truth: AstraFlow is complete through `v1.13.1`, and `v2.0.0` secure governance foundation work has started in this repository. The first v2 slice adds `AstraFlow.Security` for shared sensitive-name taxonomy and redaction policy. The remaining v2 planned work is compile-time superiority, secure DTO governance enforcement, analyzer/generator maturity, and generated fast paths.
+Current implementation truth: the latest published baseline remains v2.0.0. The v2.1 generated-mapping execution is implemented on draft PR #34 but is not merged or published. The first v2 slice adds `AstraFlow.Security` for shared sensitive-name taxonomy and redaction policy; future planned work includes compile-time governance, analyzer/generator maturity, and additional generated fast paths.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -1967,13 +1967,13 @@ What must NOT be included:
 
 ## v2.1 Generated Mapping Execution and Evidence-Based Performance
 
-Status: `Proposed; not shipped`.
+Status: `Implemented on draft PR #34; not merged or published`.
 
 **One primary objective:** execute a statically declared source-generated object mapping in a clean consumer without changing the behavior of existing explicit mapping or opted-in conventions. This is a narrow, testable step toward the previous generated-fast-path vision, not a full mapper rewrite.
 
 ### Why this milestone matters
 
-The existing generator produces registration and mapping/projection *metadata*, but it does not document an actual generated **object conversion runtime**. Building one real conversion path creates a foundation for performance, AOT and compile-time diagnosis claims that can be tested.
+The existing released generator produces registration and mapping/projection *metadata*. The v2.1 draft branch now adds an explicitly opted-in generated **object conversion method**. It establishes a narrow execution path for direct behavior, AOT, build cost, and compile-time diagnostics to be tested; it does not provide general mapper parity.
 
 ### Required before implementation
 
@@ -1999,7 +1999,7 @@ Generated mediator dispatch; deep polymorphic graph conversion; magical runtime 
 
 ### Release decision
 
-**Pass:** supported mapping correct and safe, deterministic and inspectable, clean consumer runs, published AOT test passes, compatibility gates pass and performance costs are measured.
+**Pass:** supported mapping is correct and safe, deterministic and inspectable; a clean consumer and Native AOT publish/run pass; compatibility gates pass; and runtime/build costs are measured. The draft branch has evidence for the generated mapping consumer and AOT route, while broader package/compiler coverage and mediator scanning behavior remain limited in [the release evidence](decisions/v2.1-draft-evidence.md).
 
 **Reduce/stop:** generator cannot safely express the semantics, duplicates or DI lifetimes regress, compiler overhead is unacceptable, or generated-only execution silently falls back.
 

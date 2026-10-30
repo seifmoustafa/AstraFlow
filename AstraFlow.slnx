@@ -10,6 +10,7 @@
     <Project Path="samples/ConventionMapperSample/ConventionMapperSample.csproj" />
     <Project Path="samples/DiagnosticsSample/DiagnosticsSample.csproj" />
     <Project Path="samples/ExplicitMapperSample/ExplicitMapperSample.csproj" />
+    <Project Path="samples/GeneratedMappingSample/GeneratedMappingSample.csproj" />
     <Project Path="samples/GeneratedMediatorRegistrationSample/GeneratedMediatorRegistrationSample.csproj" />
     <Project Path="samples/MigrationCookbookSample/MigrationCookbookSample.csproj" />
     <Project Path="samples/SharedClientCompatibilitySample/SharedClientCompatibilitySample.csproj" />

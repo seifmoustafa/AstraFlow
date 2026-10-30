@@ -179,6 +179,7 @@ function Set-MediatorSmokeProgram {
     $programPath = Join-Path $projectDirectory "Program.cs"
     $program = @'
 using AstraFlow.Mediator;
+using AstraFlow.Mapper;
 using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.CompilerServices;
 
@@ -209,7 +210,14 @@ if (!streamValues.SequenceEqual(new[] { 0, 1, 2 }))
 
 await mediator.Publish(new SmokeNotification("notification"));
 
+var mapped = SmokeMaps.Map(new SmokeMappingSource { Name = "Ada", Count = 3 });
+if (mapped.Name != "Ada" || mapped.Count != 3)
+{
+    throw new InvalidOperationException("Generated mapping failed.");
+}
+
 Console.WriteLine("AstraFlow mediator package smoke passed.");
+Console.WriteLine("AstraFlow generated mapping package smoke passed.");
 
 public sealed record SmokeQuery(string Value) : IRequest<string>;
 
@@ -256,6 +264,24 @@ public sealed class SmokeNotificationHandler : INotificationHandler<SmokeNotific
     {
         return Task.CompletedTask;
     }
+}
+
+public sealed class SmokeMappingSource
+{
+    public string Name { get; set; } = "";
+    public int Count { get; set; }
+}
+
+public sealed class SmokeMappingDestination
+{
+    public string Name { get; set; } = "";
+    public int Count { get; set; }
+}
+
+public static partial class SmokeMaps
+{
+    [AstraGenerateMapping]
+    public static partial SmokeMappingDestination Map(SmokeMappingSource source);
 }
 '@
 
