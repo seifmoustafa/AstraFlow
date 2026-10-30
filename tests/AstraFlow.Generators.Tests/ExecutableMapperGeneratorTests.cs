@@ -10,6 +10,9 @@ namespace AstraFlow.Generators.Tests;
 
 public sealed class ExecutableMapperGeneratorTests
 {
+    private const string DefaultInput = "public class Input { public int Count { get; set; } public string Name { get; set; } = \"\"; }";
+    private const string DefaultOutput = "public class Output { public int Count { get; set; } public string Name { get; set; } = \"\"; }";
+
     private const string Declaration = """
 using AstraFlow.Mapper;
 namespace Example;
@@ -17,6 +20,17 @@ public class Input { public int Count { get; set; } public string Name { get; se
 public class Output { public int Count { get; set; } public string Name { get; set; } = ""; }
 public static partial class Maps { [AstraGenerateMapping] public static partial Output Convert(Input source); }
 """;
+
+    [Fact]
+    public void Negative_fixture_substitution_is_independent_of_windows_line_endings()
+    {
+        var windowsDeclaration = Declaration.Replace("\n", "\r\n", StringComparison.Ordinal);
+        var source = ReplaceDeclaration(windowsDeclaration, DefaultOutput, "public class Output { public long Count { get; set; } public string Name { get; set; } = \"\"; }");
+
+        source.Should().Contain("public class Output { public long Count");
+        var (_, result) = Generate(source);
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("identical"));
+    }
 
     [Fact]
     public void Generated_method_compiles_and_executes_and_guards_null()
@@ -47,7 +61,7 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
     [InlineData("public int Missing { get; set; }", "same name")]
     public void Unsafe_shapes_report_located_errors_and_emit_no_mapping(string property, string message)
     {
-        var source = Declaration.Replace("public int Count { get; set; } public string Name { get; set; } = \"\"; }\npublic static", property + " }\npublic static");
+        var source = ReplaceOutput("public class Output { " + property + " }");
         var (_, result) = Generate(source);
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource && d.GetMessage().Contains(message));
         result.Results.Single().GeneratedSources.Should().BeEmpty();
@@ -60,7 +74,7 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
     [InlineData("public int Count;", "Count")]
     public void Member_errors_identify_the_destination_member_and_mapping(string property, string memberName)
     {
-        var source = Declaration.Replace("public int Count { get; set; } public string Name { get; set; } = \"\"; }\npublic static", property + " }\npublic static");
+        var source = ReplaceOutput("public class Output { " + property + " }");
         var (_, result) = Generate(source);
         var diagnostic = result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001").Subject;
         diagnostic.Location.SourceTree!.GetText().ToString(diagnostic.Location.SourceSpan).Should().Be(memberName);
@@ -108,7 +122,7 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
     [InlineData("public System.Collections.Generic.List<int> Count { get; set; } = new();", "nested objects")]
     public void Unsupported_destination_members_are_reported(string property, string message)
     {
-        var source = Declaration.Replace("public int Count { get; set; } public string Name { get; set; } = \"\"; }\npublic static", property + " }\npublic static");
+        var source = ReplaceOutput("public class Output { " + property + " }");
         var (_, result) = Generate(source);
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains(message));
         result.Results.Single().GeneratedSources.Should().BeEmpty();
@@ -118,7 +132,7 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
     public void Sensitive_values_do_not_appear_in_generated_sources_or_diagnostics()
     {
         const string secret = "value-not-to-be-emitted-7b31";
-        var source = Declaration.Replace("public int Count { get; set; } public string Name { get; set; } = \"\"; }\npublic static", "public string Password { get; set; } = \"" + secret + "\"; }\npublic static");
+        var source = ReplaceOutput("public class Output { public string Password { get; set; } = \"" + secret + "\"; }");
         var (_, result) = Generate(source);
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("sensitive"));
         result.Diagnostics.Select(d => d.ToString()).Should().NotContain(text => text.Contains(secret));
@@ -267,7 +281,7 @@ public static partial class Maps
     [Fact]
     public void Nullable_source_member_cannot_flow_to_nonnullable_destination()
     {
-        var source = Declaration.Replace("public string Name { get; set; } = \"\"; }\npublic class Output", "public string? Name { get; set; } }\npublic class Output");
+        var source = ReplaceInput("public class Input { public int Count { get; set; } public string? Name { get; set; } }");
         var (_, result) = Generate(source);
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("nullability"));
     }
@@ -277,7 +291,7 @@ public static partial class Maps
     [InlineData("public string Name { [return: System.Diagnostics.CodeAnalysis.MaybeNull] get; set; } = \"\";")]
     public void MaybeNull_source_getter_cannot_flow_to_nonnullable_destination(string property)
     {
-        var source = Declaration.Replace("public string Name { get; set; } = \"\"; }\npublic class Output", property + " }\npublic class Output");
+        var source = ReplaceInput("public class Input { public int Count { get; set; } " + property + " }");
         var (compilation, result) = Generate(source);
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("nullability"));
         result.Results.Single().GeneratedSources.Should().BeEmpty();
@@ -287,8 +301,8 @@ public static partial class Maps
     [Fact]
     public void Nullable_source_cannot_flow_to_disallow_null_destination()
     {
-        var source = Declaration.Replace("public string Name", "public string? Name")
-            .Replace("public class Output { public int Count { get; set; } public string? Name", "public class Output { public int Count { get; set; } [System.Diagnostics.CodeAnalysis.DisallowNull] public string? Name");
+        var source = ReplaceInput("public class Input { public int Count { get; set; } public string? Name { get; set; } = \"\"; }");
+        source = ReplaceOutput(source, "public class Output { public int Count { get; set; } [System.Diagnostics.CodeAnalysis.DisallowNull] public string? Name { get; set; } = \"\"; }");
         var (_, result) = Generate(source);
         result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.GetMessage().Contains("nullability"));
         result.Results.Single().GeneratedSources.Should().BeEmpty();
@@ -297,8 +311,8 @@ public static partial class Maps
     [Fact]
     public void MaybeNull_source_can_flow_to_nullable_destination()
     {
-        var source = Declaration.Replace("public string Name { get; set; } = \"\"; }\npublic class Output", "[System.Diagnostics.CodeAnalysis.MaybeNull] public string Name { get; set; } = \"\"; }\npublic class Output")
-            .Replace("public class Output { public int Count { get; set; } public string Name", "public class Output { public int Count { get; set; } public string? Name");
+        var source = ReplaceInput("public class Input { public int Count { get; set; } [System.Diagnostics.CodeAnalysis.MaybeNull] public string Name { get; set; } = \"\"; }");
+        source = ReplaceOutput(source, "public class Output { public int Count { get; set; } public string? Name { get; set; } = \"\"; }");
         var (compilation, result) = Generate(source);
         result.Diagnostics.Should().BeEmpty();
         compilation.GetDiagnostics().Where(d => d.Severity is DiagnosticSeverity.Warning or DiagnosticSeverity.Error).Should().BeEmpty();
@@ -480,5 +494,23 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out _);
         return (output, driver.GetRunResult());
+    }
+
+    private static string ReplaceInput(string inputDeclaration) => ReplaceInput(Declaration, inputDeclaration);
+
+    private static string ReplaceInput(string source, string inputDeclaration) =>
+        ReplaceDeclaration(source, DefaultInput, inputDeclaration);
+
+    private static string ReplaceOutput(string outputDeclaration) => ReplaceOutput(Declaration, outputDeclaration);
+
+    private static string ReplaceOutput(string source, string outputDeclaration) =>
+        ReplaceDeclaration(source, DefaultOutput, outputDeclaration);
+
+    private static string ReplaceDeclaration(string source, string original, string replacement)
+    {
+        if (!source.Contains(original, StringComparison.Ordinal))
+            throw new InvalidOperationException("The generated mapping test fixture declaration was not found.");
+
+        return source.Replace(original, replacement, StringComparison.Ordinal);
     }
 }
