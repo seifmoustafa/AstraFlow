@@ -61,9 +61,18 @@ try {
 
             if (-not $VerifyRemoteSources) {
                 $commit = (& git -C $repositoryRoot rev-parse HEAD).Trim()
-                if ([string]::IsNullOrWhiteSpace($output) -or
-                    $output -notmatch "github\.com/seifmoustafa/AstraFlow" -or
-                    $output -notmatch [regex]::Escape($commit)) {
+                try {
+                    $sourceLinkMetadata = $output | ConvertFrom-Json
+                    $sourceUrls = @($sourceLinkMetadata.documents.PSObject.Properties | ForEach-Object { [string]$_.Value })
+                } catch {
+                    throw "Could not parse SourceLink metadata in '$($package.Name)' / '$($pdb.Name)'. Output:`n$output"
+                }
+
+                $expectedSourcePrefix = "https://raw.githubusercontent.com/seifmoustafa/AstraFlow/$commit/"
+                $hasCommitPinnedSource = @($sourceUrls | Where-Object {
+                    $_.StartsWith($expectedSourcePrefix, [System.StringComparison]::OrdinalIgnoreCase)
+                }).Count -gt 0
+                if (-not $hasCommitPinnedSource) {
                     throw "SourceLink metadata in '$($package.Name)' / '$($pdb.Name)' must map to the AstraFlow repository and exact source commit '$commit'. Output:`n$output"
                 }
             }
