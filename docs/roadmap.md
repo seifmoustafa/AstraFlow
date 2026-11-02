@@ -12,7 +12,7 @@
 
 | Breakthrough | Developer outcome | Concrete proof | Roadmap position |
 | --- | --- | --- | --- |
-| **Executable generated mapping** | DTO conversion is readable, type-checked and debuggable at build time | Real generated mapping in a clean consumer; unsafe cases diagnosed; published benchmark trade-offs | v2.1 draft implementation in PR #34 |
+| **Executable generated mapping** | DTO conversion is readable, type-checked and debuggable at build time | Real generated mapping in a clean consumer; unsafe cases diagnosed; published benchmark trade-offs | v2.1.0 source merged and GitHub release created; NuGet publication unverified |
 | **Source-aware mediator dispatch** | Request execution is fast without losing scope, pipeline or exception semantics | Closed-request generated path parity, clean AOT execution, equal-workload benchmarks | v2.4 candidate |
 | **Explainable flows** | Review handler, behavior and mapping changes before merging | Versioned manifest, provenance/confidence markers, deterministic CI diff | v2.5 candidate |
 | **Trustworthy package ecosystem** | Upgrade without surprise; know what artifacts were built | Supply chain, compatibility API baselines and clean smoke consumers | v2.2–v2.3 existing planned |
@@ -31,15 +31,15 @@
 - [North Star](strategy/north-star.md), [Decision Log](strategy/decision-log.md), [Validation Matrix](strategy/validation-matrix.md), [Research Ledger](strategy/research-ledger.md), [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
 
 
-**Status: The strategic direction remains proposed. The v2.1 mapper execution is implemented on draft PR #34, but is not merged or published.** This index complements rather than replaces the completed release history below. Preserve the existing v2.2 enterprise supply-chain and v2.3 public-API governance commitments; do not silently repurpose their release numbers.
+**Status: The strategic direction remains proposed. v2.1.0 source is merged and a GitHub release exists; NuGet publication has not been verified.** This index complements rather than replaces the completed release history below. Preserve the existing v2.2 enterprise supply-chain and v2.3 public-API governance commitments; do not silently repurpose their release numbers.
 
 **North star:** Become a leading, independently adoptable .NET application-flow ecosystem through verifiably productive mapping and dispatch, deterministic compile-time diagnostics, safe runtime extensibility, and trustworthy compatibility. Optimizing for feature count or promises of being “the greatest” is not a product acceptance criterion.
 
 | Track | Version | Status | Measurable exit evidence |
 | --- | --- | --- | --- |
 | Shared sensitive-name and redaction foundation | v2.0.0 | Source implementation described below; independently verify publication | Security regression tests and package checks |
-| **Generated mapping execution** | **v2.1** | **Draft implementation in PR #34; not shipped** | Real typed generated conversion; source diagnostics; clean consumer; AOT publish/run; manual/runtime/peer benchmark methodology |
-| Enterprise supply chain | v2.2 | Existing planned commitment | SBOM, provenance and SourceLink checks |
+| **Generated mapping execution** | **v2.1.0** | **Merged; GitHub release exists; NuGet publication unverified** | Real typed generated conversion; source diagnostics; clean consumer; AOT publish/run; manual/runtime/peer benchmark methodology |
+| Enterprise supply chain | v2.2.0 | Approved for implementation in this release branch | Reproducible packages, SourceLink verification, SBOM, provenance, signed tag, dependency review, and security/release governance |
 | Public API governance | v2.3 | Existing planned commitment | API baseline enforcement and upgrade smoke |
 | Generated mediator dispatch | v2.4 | Candidate; only after source/benchmark feasibility | Closed-type generated invoker, DI scope/pipeline equivalence, AOT and comparative numbers |
 | Explainable flow manifest | v2.5 | Candidate | Deterministic schema, provenance and CI diff; known gaps labeled |
@@ -48,14 +48,14 @@
 | Visual products | v4+ | Research | Validated manifest usefulness and actual adopter request |
 | Better Auth-inspired .NET identity | Separate project only | Research | Independent threat model, standards-compliant .NET component study and maintainer |
 
-**Read before implementation:** [Engineering North Star](strategy/north-star.md), [Generated Mapper ADR](adr/0001-generated-mapper.md), [v2.1 plan](plans/v2.1-generated-mapping.md), [Generated Mediator ADR](adr/0002-generated-mediator.md), [Flow Manifest ADR](adr/0003-flow-manifest.md), [Evidence and Release Gates](strategy/evidence-and-gates.md), [Decision Log](strategy/decision-log.md), and [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
+**Read before implementation:** [Engineering North Star](strategy/north-star.md), [Generated Mapper ADR](adr/0001-generated-mapper.md), [v2.1 plan](plans/v2.1-generated-mapping.md), [v2.2 supply-chain plan](plans/v2.2-enterprise-supply-chain.md), [Generated Mediator ADR](adr/0002-generated-mediator.md), [Flow Manifest ADR](adr/0003-flow-manifest.md), [Evidence and Release Gates](strategy/evidence-and-gates.md), [Decision Log](strategy/decision-log.md), and [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
 
 **Non-negotiable:** One release goal at a time; opt-in convention mapping remains separate, existing API and published consumers stay compatible, generated-only modes do not silently fall back, no DTO payload logs, no performance superiority without repeatable results. Review actual code and current release state before changing APIs. All unshipped entries are proposals, not functionality claims.
 
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current implementation truth: the latest published baseline remains v2.0.0. The v2.1 generated-mapping execution is implemented on draft PR #34 but is not merged or published. The first v2 slice adds `AstraFlow.Security` for shared sensitive-name taxonomy and redaction policy; future planned work includes compile-time governance, analyzer/generator maturity, and additional generated fast paths.
+Current release truth: v2.1.0 source is merged and a GitHub release exists, but successful NuGet publication has not been verified; therefore do not describe v2.1.0 as available from NuGet. The prior verified NuGet baseline is v2.0.0. The first v2 slice adds `AstraFlow.Security` for shared sensitive-name taxonomy and redaction policy; future planned work includes compile-time governance, analyzer/generator maturity, and additional generated fast paths.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -1967,7 +1967,7 @@ What must NOT be included:
 
 ## v2.1 Generated Mapping Execution and Evidence-Based Performance
 
-Status: `Implemented on draft PR #34; not merged or published`.
+Status: `Source merged and GitHub Release v2.1.0 exists; NuGet publication remains unverified`.
 
 **One primary objective:** execute a statically declared source-generated object mapping in a clean consumer without changing the behavior of existing explicit mapping or opted-in conventions. This is a narrow, testable step toward the previous generated-fast-path vision, not a full mapper rewrite.
 
@@ -2007,7 +2007,7 @@ Generated mediator dispatch; deep polymorphic graph conversion; magical runtime 
 
 ## v2.2 Enterprise Supply Chain
 
-Status: `Planned`.
+Status: `Approved for implementation on feat/v2.2.0-enterprise-supply-chain`; no v2.2.0 package, tag, or release has been created.
 
 Goal:
 
@@ -2015,7 +2015,7 @@ Make AstraFlow credible for enterprise package review.
 
 Why this version exists:
 
-Enterprise adoption requires signing, provenance, SBOMs, dependency review, and documented security handling.
+Enterprise adoption requires inspectable package contents and dependencies, traceable builds, verifiable package signatures, dependency review, and documented security handling. NuGet.org repository signing is the selected package-signature model; AstraFlow will not introduce an author-signing private key.
 
 Packages affected:
 
@@ -2051,6 +2051,8 @@ Acceptance gates:
 - SourceLink verifies.
 - Dependency review runs.
 - Security advisory path is documented.
+
+The implementation details, verification commands, and maintainer-controlled GitHub settings are in the [v2.2 supply-chain plan](plans/v2.2-enterprise-supply-chain.md). This roadmap entry describes approved work, not completed or released functionality.
 
 Test requirements:
 

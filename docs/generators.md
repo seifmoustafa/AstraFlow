@@ -126,7 +126,7 @@ The actual generated file uses fully qualified names to avoid relying on imports
 
 ## v2.1 generated mapping execution (draft)
 
-This feature is implemented on the v2.1.0 branch and reviewed in [PR #34](https://github.com/seifmoustafa/AstraFlow/pull/34), which remains Draft. The source version and local packages are 2.1.0; NuGet 2.1.0 is not published. The older generator APIs above are the released mediator-registration and mapper/projection-metadata foundation.
+Executable mapping was implemented in [PR #34](https://github.com/seifmoustafa/AstraFlow/pull/34) and merged. A GitHub Release v2.1.0 exists, but NuGet publication has not been verified. The older generator APIs above form the existing mediator-registration and mapper/projection-metadata foundation. Use the generated mapping example only with a package version that is available to your consumer.
 
 Reference `AstraFlow.Mapper` and `AstraFlow.Generators` (as a private analyzer) and explicitly declare a mapping method:
 

@@ -1,6 +1,6 @@
 # ADR-0001 — Executable Generated Object Mapping
 
-**Status:** Accepted for the v2.1.0 draft implementation on PR #34; not merged or published.
+**Status:** Accepted and implemented in source merged by PR #34; GitHub Release v2.1.0 exists. NuGet publication remains unverified.
 **Primary target:** v2.1.0 generated-mapping vertical slice.
 **Owners:** Maintainer to assign. **Reviewed against:** current generator, mapper contracts, tests, sample, and package evidence; release gates remain open as recorded in [draft evidence](../decisions/v2.1-draft-evidence.md).
 
