@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: astraflow-ci-${{ github.ref }}
@@ -22,12 +22,25 @@ env:
 jobs:
   build-test-pack:
     runs-on: windows-latest
+    permissions:
+      contents: read
+    env:
+      CI: true
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      - name: Set deterministic package timestamp
+        shell: pwsh
+        run: |
+          $sourceDateEpoch = (git log -1 --format=%ct).Trim()
+          if ($sourceDateEpoch -notmatch '^\d+$') {
+            throw "Could not determine SOURCE_DATE_EPOCH from the checked out commit."
+          }
+          "SOURCE_DATE_EPOCH=$sourceDateEpoch" >> $env:GITHUB_ENV
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -45,6 +58,10 @@ jobs:
 
       - name: Test
         run: dotnet test AstraFlow.slnx -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Verify changelog entry
+        shell: pwsh
+        run: ./scripts/verify-changelog-entry.ps1
 
       - name: Pack contracts
         run: dotnet pack src/AstraFlow.Contracts/AstraFlow.Contracts.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
@@ -181,6 +198,14 @@ jobs:
           $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
           ./scripts/verify-package-install.ps1 -Version $version
 
+      - name: Verify repeat package output
+        shell: pwsh
+        run: ./scripts/verify-package-reproducibility.ps1 -Configuration Release
+
+      - name: Verify packaged SourceLink metadata
+        shell: pwsh
+        run: ./scripts/verify-package-sourcelink.ps1 -Configuration Release
+
       - name: Upload packages
         uses: actions/upload-artifact@v7
         with:
@@ -189,41 +214,134 @@ jobs:
             src/**/bin/Release/*.nupkg
             src/**/bin/Release/*.snupkg
 
+
+  release-evidence:
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
+    needs: build-test-pack
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Download verified package artifacts
+        uses: actions/download-artifact@v7
+        with:
+          name: astraflow-packages
+          path: release-artifacts
+
+      - name: Verify SourceLink URLs resolve to this source commit
+        shell: pwsh
+        run: ./scripts/verify-package-sourcelink.ps1 -PackageRoot release-artifacts -VerifyRemoteSources
+
       - name: Read release version
         id: version
-        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/'))
-        shell: pwsh
+        shell: bash
         run: |
-          [xml]$props = Get-Content Directory.Build.props -Raw
-          $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
-          if ([string]::IsNullOrWhiteSpace($version)) {
-            throw "Directory.Build.props does not define a package Version."
-          }
-          "version=$version" >> $env:GITHUB_OUTPUT
-          "tag=v$version" >> $env:GITHUB_OUTPUT
+          version="$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' Directory.Build.props | head -n 1 | xargs)"
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
 
-      - name: Check existing GitHub release
+      - name: Check whether release already exists
         id: release_exists
-        if: steps.version.outputs.tag != ''
-        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = "${{ steps.version.outputs.tag }}"
-          $releases = gh release list --repo "${{ github.repository }}" --limit 100 --json tagName | ConvertFrom-Json
-          $tags = @($releases | ForEach-Object { $_.tagName })
-          $exists = if ($tags -contains $tag) { "true" } else { "false" }
-          "exists=$exists" >> $env:GITHUB_OUTPUT
+          tag='${{ steps.version.outputs.tag }}'
+          if gh api "repos/${GITHUB_REPOSITORY}/releases/tags/$tag" >/dev/null 2>release-lookup-error.txt; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            if grep -q 'HTTP 404' release-lookup-error.txt; then
+              echo "exists=false" >> "$GITHUB_OUTPUT"
+            else
+              cat release-lookup-error.txt >&2
+              exit 1
+            fi
+          fi
 
-      - name: Create GitHub release
-        if: steps.version.outputs.tag != '' && steps.release_exists.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v2
+      - name: Generate SPDX SBOM
+        if: steps.release_exists.outputs.exists == 'false'
+        uses: anchore/sbom-action@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: AstraFlow ${{ steps.version.outputs.version }}
-          make_latest: true
-          files: |
-            src/**/bin/Release/*.nupkg
-            src/**/bin/Release/*.snupkg
-          body: |
-            Automated AstraFlow ${{ steps.version.outputs.version }} release created after CI passed.
+          path: ./release-artifacts
+          format: spdx-json
+          output-file: ./release-artifacts/astraflow-${{ steps.version.outputs.version }}.spdx.json
+          upload-artifact: false
+
+      - name: Attest packages and SBOM
+        if: steps.release_exists.outputs.exists == 'false'
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            release-artifacts/**/*.nupkg
+            release-artifacts/**/*.snupkg
+            release-artifacts/*.spdx.json
+
+      - name: Attest SBOM contents
+        if: steps.release_exists.outputs.exists == 'false'
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            release-artifacts/**/*.nupkg
+            release-artifacts/**/*.snupkg
+          sbom-path: release-artifacts/astraflow-${{ steps.version.outputs.version }}.spdx.json
+
+      - name: Install gitsign
+        if: steps.release_exists.outputs.exists == 'false'
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.25.x'
+
+      - name: Sign and verify release tag
+        if: steps.release_exists.outputs.exists == 'false'
+        shell: bash
+        env:
+          GITSIGN_TOKEN_PROVIDER: github-actions
+          GITSIGN_CONNECTOR_ID: https://github.com/login/oauth
+        run: |
+          go install github.com/sigstore/gitsign@v0.17.1
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          tag='${{ steps.version.outputs.tag }}'
+          if git ls-remote --tags origin "refs/tags/$tag" | grep -q .; then
+            git fetch --no-tags origin "refs/tags/$tag:refs/tags/$tag"
+            if [ "$(git rev-list -n 1 "$tag")" != "$(git rev-parse HEAD)" ]; then
+              echo "Release tag $tag already points at a different commit; refusing to replace it."
+              exit 1
+            fi
+          else
+            git config --local gpg.x509.program gitsign
+            git config --local gpg.format x509
+            git tag -s "$tag" -m "AstraFlow ${{ steps.version.outputs.version }}"
+            git push origin "$tag"
+          fi
+          gitsign verify --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/ci.yml@refs/heads/${GITHUB_REF_NAME}" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" "$tag"
+
+      - name: Create GitHub release with generated notes and evidence
+        if: steps.release_exists.outputs.exists == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mapfile -t assets < <(find release-artifacts -type f \( -name '*.nupkg' -o -name '*.snupkg' -o -name '*.spdx.json' \) -print)
+          test "${#assets[@]}" -gt 0
+          if gh release view '${{ steps.version.outputs.tag }}' --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            gh release upload '${{ steps.version.outputs.tag }}' "${assets[@]}" --repo '${{ github.repository }}' --clobber
+          else
+            gh release create '${{ steps.version.outputs.tag }}' "${assets[@]}" \
+              --repo '${{ github.repository }}' \
+              --title 'AstraFlow ${{ steps.version.outputs.version }}' \
+              --generate-notes
+          fi

@@ -1,6 +1,6 @@
 # API Reference
 
-This reference describes the public AstraFlow `2.1.0` API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails.
+This reference describes the public AstraFlow `2.2.0` source API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails. Package availability is tracked separately in [compatibility](compatibility.md).
 
 ## Package Map
 
@@ -28,7 +28,7 @@ This reference describes the public AstraFlow `2.1.0` API surface. It is intenti
 | `AstraFlowAnalyzerRule` | Record | Describes rule ID, title, category, severity, default enabled state, documentation anchor, and Roslyn descriptor. | No. |
 | `AstraFlowAnalyzerRules` | Static class | Central descriptor catalog for analyzer tests, docs, and future tooling. | No. |
 
-`2.1.0` intentionally keeps analyzers source-only and code-fix-free. Source generator work lives in the separate `AstraFlow.Generators` package.
+The `2.2.0` source intentionally keeps analyzers source-only and code-fix-free. Source generator work lives in the separate `AstraFlow.Generators` package.
 
 ## Executable Generated Mapping
 

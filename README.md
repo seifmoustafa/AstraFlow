@@ -30,6 +30,8 @@ AstraFlow aims to be a **leading open-source .NET application-flow toolkit**: ex
 - **[v2.1 generated mapping release plan](docs/plans/v2.1-generated-mapping.md)** — exact first implementation scope, tests and measurable proof.
 - **[Architecture decisions](docs/adr/0001-generated-mapper.md)** — mapper, [mediator](docs/adr/0002-generated-mediator.md) and [flow intelligence](docs/adr/0003-flow-manifest.md).
 - **[Engineering evidence gates](docs/strategy/evidence-and-gates.md)** and **[validation matrix](docs/strategy/validation-matrix.md)** — compatibility, security, benchmarks, AOT and release proof.
+- **[v2.2 enterprise supply-chain plan](docs/plans/v2.2-enterprise-supply-chain.md)** — reproducible package, SourceLink, SBOM, provenance, signing and dependency review gates.
+- **[Security and supply-chain guidance](docs/security-and-supply-chain.md)** — vulnerability reporting, artifact verification and repository settings.
 - **[Ecosystem portfolio](docs/strategy/ecosystem-portfolio.md)** and **[research ledger](docs/strategy/research-ledger.md)** — future integrations, competing alternatives and reasons to defer.
 - **[Decision log](docs/strategy/decision-log.md)** — assumptions to test and conditions that change direction.
 

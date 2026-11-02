@@ -25,9 +25,9 @@ AstraFlow `2.0.0` currently targets:
 
 This means applications, shared libraries, contracts projects, security policy projects, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the contracts package, core packages, `AstraFlow.Mapper.Conventions`, `AstraFlow.Security`, and `AstraFlow.Testing`. EF Core projection translation validation and ASP.NET Core helpers require a `net10.0` project. FluentValidation and OpenTelemetry integration packages support `net8.0`, `net9.0`, and `net10.0`. Analyzer and generator assets are consumed by the compiler rather than referenced as runtime libraries.
 
-### v2.1.0 generated mapping release candidate
+### v2.1.0 generated mapping
 
-The current release candidate adds `AstraGenerateMappingAttribute` to `AstraFlow.Mapper` and executable output to the private `AstraFlow.Generators` compiler package. The generated mapping consumer sample is built for `net8.0`, `net9.0`, and `net10.0` with C# 9, the minimum language version needed for accessible partial method implementations. These are branch checks; NuGet 2.1.0 has not been published, so they do not change the published support table above.
+The merged v2.1.0 source adds `AstraGenerateMappingAttribute` to `AstraFlow.Mapper` and executable output to `AstraFlow.Generators`. The generated mapping consumer sample is built for `net8.0`, `net9.0`, and `net10.0` with C# 9, the minimum language version needed for accessible partial method implementations. A GitHub Release exists, but NuGet 2.1.0 publication is unverified, so this does not change the published support table above.
 
 A clean generated-mapping-only PackageReference consumer was published and executed as win-x64 Native AOT. This validates direct generated mapping only. It does not establish that `IMapper` assembly scanning or mediator reflection scanning is trimming/AOT-safe. The latter scan path emitted trim/AOT warnings and failed to discover a handler in a broader smoke app. Do not infer AOT support for the whole package family from the generated mapper result; see [v2.1 evidence](decisions/v2.1-draft-evidence.md).
 
@@ -79,7 +79,7 @@ AstraFlow supports the latest published minor version for normal package adoptio
 
 Patch releases should be applied within the same minor line when they are available. Minor releases should preserve source compatibility unless a breaking change is explicitly documented and moved to a major version.
 
-Older minor versions remain installable from NuGet, but active validation, upgrade smoke testing, and API compatibility comparison focus on the previous stable published version and the current release candidate.
+Older minor versions remain installable from NuGet, but active validation, upgrade smoke testing, and API compatibility comparison focus on the last verified NuGet baseline (`2.0.0`) and the current source version. The v2.1.0 NuGet publication status must be resolved before using it as an upgrade baseline.
 
 Security fixes should be released on the latest stable line first. Backporting to older minor lines is discretionary and depends on severity, compatibility risk, and maintainer capacity.
 
