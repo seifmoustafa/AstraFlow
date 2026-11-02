@@ -1,0 +1,129 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.05
+RESULT count=25 mode=manual iteration=1 ms=3650
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.93
+RESULT count=25 mode=manual iteration=2 ms=3382
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.17
+RESULT count=25 mode=manual iteration=3 ms=3636
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.69
+RESULT count=25 mode=generated iteration=1 ms=5463
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:13.24
+RESULT count=25 mode=generated iteration=2 ms=19206
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:05.95
+RESULT count=25 mode=generated iteration=3 ms=6734
+SOURCES count=25 files=25 bytes=8785
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.04
+RESULT count=100 mode=manual iteration=1 ms=4887
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.87
+RESULT count=100 mode=manual iteration=2 ms=3274
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.50
+RESULT count=100 mode=manual iteration=3 ms=4152
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.81
+RESULT count=100 mode=generated iteration=1 ms=4326
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.56
+RESULT count=100 mode=generated iteration=2 ms=8293
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.12
+RESULT count=100 mode=generated iteration=3 ms=4625
+SOURCES count=100 files=100 bytes=35260
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.17
+RESULT count=400 mode=manual iteration=1 ms=4686
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.81
+RESULT count=400 mode=manual iteration=2 ms=4544
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.81
+RESULT count=400 mode=manual iteration=3 ms=4303
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:05.40
+RESULT count=400 mode=generated iteration=1 ms=6053
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.59
+RESULT count=400 mode=generated iteration=2 ms=5103
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:05.65
+RESULT count=400 mode=generated iteration=3 ms=6320
+SOURCES count=400 files=400 bytes=142360

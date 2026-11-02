@@ -2,6 +2,10 @@
 
 All notable AstraFlow changes are tracked here.
 
+## 2.1.0 (draft)
+
+- Draft v2.1 API: opt-in `[AstraGenerateMapping]` partial methods emit direct typed assignments for a conservative scalar-property subset; unsupported and sensitive-name declarations report `AFM001`. Release verification is still in progress; this version is not published.
+
 ## 2.0.0
 
 ### Added

@@ -1,8 +1,8 @@
 # ADR-0001 — Executable Generated Object Mapping
 
-**Status:** Proposed; **not** an API decision or shipped feature.  
-**Primary target:** v2.1.0 design spike and vertical slice.  
-**Owners:** Maintainer to assign. **Reviewed against:** repository documentation, not a complete implementation audit.
+**Status:** Accepted for the v2.1.0 draft implementation on PR #34; not merged or published.
+**Primary target:** v2.1.0 generated-mapping vertical slice.
+**Owners:** Maintainer to assign. **Reviewed against:** current generator, mapper contracts, tests, sample, and package evidence; release gates remain open as recorded in [draft evidence](../decisions/v2.1-draft-evidence.md).
 
 ## Problem statement
 
@@ -28,12 +28,12 @@ At repository base `main` SHA `d078e34`, [`AstraFlowObjectMapper`](../../src/Ast
 
 ## Candidate APIs (examples, NOT public AstraFlow APIs)
 
-**Option A — Partial mapping method:**
+**Option A — Partial mapping method (selected for v2.1):**
 
 ```csharp
 public static partial class OrderMaps
 {
-    [AstraGenerateMapping] // illustrative symbol, not currently shipped
+    [AstraGenerateMapping]
     public static partial OrderDto ToDto(OrderEntity source);
 }
 ```
@@ -52,21 +52,21 @@ public partial class ApplicationMappingCatalog { }
 | Duplicate rules | By declaration and optional DI adapter | By catalog and optional adapter |
 | AOT posture | Direct typed method potentially ideal | Depends on generated invocation API |
 | Existing rule compatibility | Adapter may be necessary | Adapter may be necessary |
-| Decision | **Preferred experiment**, not final | Compare during source audit |
+| Decision | **Selected: direct, explicitly opted-in call site** | Rejected for v2.1: catalog plus dispatch/registration would add a second API and runtime ownership questions |
 
-**Decision process:** inspect actual compiler target and existing mapper registration; prototype both with one sample; select **one** additive surface or reject generation if neither is maintainable. Do not publish dual DSLs in the first release.
+**Decision:** use the partial method declaration as the typed call site. The method's source and return types are compiler-checked, the generator implements that exact declaration, and consumers need neither a runtime registry nor an `IMapper` adapter. A pair catalog would need a separate generated method naming convention or dispatch/registration API, so it adds complexity without a v2.1 use case. The implementation rejects unsupported forms with `AFM001`; it does not silently use runtime conventions. Do not add a second declaration DSL in this release.
 
 ## Behavioral contract: v2.1 minimum
 
 | Mapping aspect | Required behavior |
 | --- | --- |
 | Source | Accessible named type in compilation/reference metadata |
-| Destination | Accessible constructible mutable class/struct with compatible members |
+| Destination | Concrete top-level class with a parameterless constructor accessible from generated code (public across assemblies, or internal within the consuming compilation) and compatible mutable properties; structs are unsupported |
 | Member match | Exact-name and statically assignable scalar property; *no implicit convention scan of every pair* |
 | Missing destination required member | Diagnostic; no silent default |
 | Nullable source/member | Document exact semantics; compile diagnostic if semantics cannot be guaranteed |
 | Type mismatch | Explicit error; no lossy numeric/enum conversion |
-| Sensitive member | Block/require explicit compile-visible allowance under selected policy |
+| Sensitive member | Block destination property names classified by the shared default policy; no compile-time override or runtime-policy inference |
 | Duplicate pair | Error by default; no `last registration wins` |
 | Nested object | Unsupported or separately declared explicit map; no automatic deep traversal |
 | Constructor/record | **Stretch**, only after determinism and required-member semantics are proven |
@@ -74,7 +74,7 @@ public partial class ApplicationMappingCatalog { }
 | EF projection | Not generated SQL; existing IQueryable abstractions unchanged |
 
 ### Generated output contract
-- Generated names are stable and collision-free for supported type identifiers and generic parameters.
+- Generated hint names are stable for supported declarations; identifiers are escaped and type references are fully qualified.
 - Escape C# keywords and fully qualify emitted type references.
 - Do not generate reflection hooks, arbitrary dynamic invocation or external runtime dependencies to make the fast path work.
 - Avoid embedding potentially sensitive member **values**, request data or secrets; member names/type info are metadata and may still require redaction in reports.

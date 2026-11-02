@@ -1,0 +1,417 @@
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.27
+RESULT count=25 mode=manual iteration=1 ms=2596
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.14
+RESULT count=25 mode=manual iteration=2 ms=2470
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.19
+RESULT count=25 mode=manual iteration=3 ms=2494
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.67
+INCREMENTAL count=25 mode=manual kind=noop iteration=1 ms=993
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.65
+INCREMENTAL count=25 mode=manual kind=noop iteration=2 ms=961
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.64
+INCREMENTAL count=25 mode=manual kind=noop iteration=3 ms=953
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.99
+INCREMENTAL count=25 mode=manual kind=one-declaration-edit iteration=1 ms=2321
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.01
+INCREMENTAL count=25 mode=manual kind=one-declaration-edit iteration=2 ms=2319
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.01
+INCREMENTAL count=25 mode=manual kind=one-declaration-edit iteration=3 ms=2333
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.01
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.32
+RESULT count=25 mode=generated iteration=1 ms=2627
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.21
+RESULT count=25 mode=generated iteration=2 ms=2529
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.26
+RESULT count=25 mode=generated iteration=3 ms=2591
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.67
+INCREMENTAL count=25 mode=generated kind=noop iteration=1 ms=993
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.71
+INCREMENTAL count=25 mode=generated kind=noop iteration=2 ms=1036
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.64
+INCREMENTAL count=25 mode=generated kind=noop iteration=3 ms=981
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.18
+INCREMENTAL count=25 mode=generated kind=one-declaration-edit iteration=1 ms=2487
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.15
+INCREMENTAL count=25 mode=generated kind=one-declaration-edit iteration=2 ms=2454
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.15
+INCREMENTAL count=25 mode=generated kind=one-declaration-edit iteration=3 ms=2452
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.15
+SOURCES count=25 files=25 bytes=8785
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.30
+RESULT count=100 mode=manual iteration=1 ms=2602
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.28
+RESULT count=100 mode=manual iteration=2 ms=2579
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.14
+RESULT count=100 mode=manual iteration=3 ms=2455
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.64
+INCREMENTAL count=100 mode=manual kind=noop iteration=1 ms=999
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.67
+INCREMENTAL count=100 mode=manual kind=noop iteration=2 ms=1002
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.66
+INCREMENTAL count=100 mode=manual kind=noop iteration=3 ms=1018
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.00
+INCREMENTAL count=100 mode=manual kind=one-declaration-edit iteration=1 ms=2309
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.04
+INCREMENTAL count=100 mode=manual kind=one-declaration-edit iteration=2 ms=2344
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.02
+INCREMENTAL count=100 mode=manual kind=one-declaration-edit iteration=3 ms=2332
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.16
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.42
+RESULT count=100 mode=generated iteration=1 ms=2738
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.51
+RESULT count=100 mode=generated iteration=2 ms=2826
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.67
+RESULT count=100 mode=generated iteration=3 ms=2996
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.68
+INCREMENTAL count=100 mode=generated kind=noop iteration=1 ms=1022
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.73
+INCREMENTAL count=100 mode=generated kind=noop iteration=2 ms=1055
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.67
+INCREMENTAL count=100 mode=generated kind=noop iteration=3 ms=975
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.37
+INCREMENTAL count=100 mode=generated kind=one-declaration-edit iteration=1 ms=2685
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.38
+INCREMENTAL count=100 mode=generated kind=one-declaration-edit iteration=2 ms=2703
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.36
+INCREMENTAL count=100 mode=generated kind=one-declaration-edit iteration=3 ms=2666
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.33
+SOURCES count=100 files=100 bytes=35260
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.57
+RESULT count=400 mode=manual iteration=1 ms=2929
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.34
+RESULT count=400 mode=manual iteration=2 ms=2849
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.42
+RESULT count=400 mode=manual iteration=3 ms=2732
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.70
+INCREMENTAL count=400 mode=manual kind=noop iteration=1 ms=1063
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.70
+INCREMENTAL count=400 mode=manual kind=noop iteration=2 ms=1052
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.66
+INCREMENTAL count=400 mode=manual kind=noop iteration=3 ms=969
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.34
+INCREMENTAL count=400 mode=manual kind=one-declaration-edit iteration=1 ms=2669
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.41
+INCREMENTAL count=400 mode=manual kind=one-declaration-edit iteration=2 ms=2740
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.30
+INCREMENTAL count=400 mode=manual kind=one-declaration-edit iteration=3 ms=2609
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.28
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.23
+RESULT count=400 mode=generated iteration=1 ms=3550
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.31
+RESULT count=400 mode=generated iteration=2 ms=3693
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.14
+RESULT count=400 mode=generated iteration=3 ms=3455
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.65
+INCREMENTAL count=400 mode=generated kind=noop iteration=1 ms=945
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.64
+INCREMENTAL count=400 mode=generated kind=noop iteration=2 ms=942
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.64
+INCREMENTAL count=400 mode=generated kind=noop iteration=3 ms=945
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.06
+INCREMENTAL count=400 mode=generated kind=one-declaration-edit iteration=1 ms=3375
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.07
+INCREMENTAL count=400 mode=generated kind=one-declaration-edit iteration=2 ms=3380
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.33
+INCREMENTAL count=400 mode=generated kind=one-declaration-edit iteration=3 ms=3679
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.19
+SOURCES count=400 files=400 bytes=142360

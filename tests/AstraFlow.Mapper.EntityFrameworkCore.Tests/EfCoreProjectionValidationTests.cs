@@ -11,6 +11,16 @@ namespace AstraFlow.Mapper.EntityFrameworkCore.Tests;
 public sealed class EfCoreProjectionValidationTests
 {
     [Fact]
+    public void Sqlite_native_library_is_new_enough_to_include_cve_2025_6965_fix()
+    {
+        using var connection = CreateConnection();
+        using var command = connection.CreateCommand();
+        command.CommandText = "select sqlite_version()";
+        var version = Version.Parse((string)command.ExecuteScalar()!);
+        version.Should().BeGreaterThanOrEqualTo(new Version(3, 50, 2));
+    }
+
+    [Fact]
     public void ValidateProjectionTranslation_WithSqliteProjection_ReturnsSql()
     {
         using var connection = CreateConnection();
