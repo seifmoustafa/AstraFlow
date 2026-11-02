@@ -12,6 +12,8 @@ The maintainer should acknowledge a report within 72 hours, assess impact agains
 
 `.github/workflows/dependency-review.yml` checks dependency changes in pull requests and fails when a newly introduced dependency has a high or critical vulnerability. The workflow uses a reviewed, commit-pinned action and read-only repository permissions. Dependabot checks both NuGet dependencies and GitHub Actions weekly, including updates to commit-pinned actions. Review updates for compatibility and security before merging them.
 
+GitHub requires the repository's **Dependency graph** to be enabled for Dependency Review. Enable it under **Settings → Code security and analysis → Dependency graph**. If it is disabled, the action fails before it can assess the pull request; this is a repository setting and cannot be enabled by the workflow.
+
 ## Release artifact verification
 
 The release workflow verifies the following evidence:

@@ -51,6 +51,7 @@
 - CI passes on `main`.
 - Branch protection is configured before public contribution begins.
 - Dependency Review passes for the PR and its status check is configured as a required check in GitHub branch protection.
+- GitHub's Dependency graph is enabled under repository **Settings → Code security and analysis** so Dependency Review can run.
 - The GitHub Release includes an SPDX SBOM and OIDC attestations for packages and SBOM.
 - The release workflow identity-verifies a Sigstore/gitsign signed annotated tag before creating the GitHub Release.
 - Private vulnerability reporting is enabled in GitHub repository settings.
