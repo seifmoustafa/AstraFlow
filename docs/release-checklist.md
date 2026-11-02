@@ -54,8 +54,8 @@
 - Version is final.
 - Changelog entry exists.
 - Git tag exists.
-- Trusted Publishing is configured, or a scoped GitHub Actions secret named `NUGET_API_KEY` exists.
-- NuGet key scope is limited to `AstraFlow*` for first publish or exact package IDs after first publish.
+- An active NuGet Trusted Publishing policy matches the repository owner, repository, workflow filename (`publish-nuget.yml`), and GitHub environment (`nuget`).
+- Trusted Publishing is scoped to the AstraFlow package family (`AstraFlow*`) and push of new packages and package versions only.
 - Publish workflow is run manually by a release owner.
 - Packages are verified on NuGet after publishing.
 - Any exposed key is revoked immediately.
