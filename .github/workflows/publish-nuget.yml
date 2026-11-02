@@ -14,6 +14,9 @@ jobs:
   publish:
     runs-on: windows-latest
     environment: nuget
+    permissions:
+      contents: read
+      id-token: write
 
     steps:
       - name: Validate publish confirmation
@@ -197,13 +200,19 @@ jobs:
           $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
           ./scripts/verify-package-install.ps1 -Version $version
 
+      - name: NuGet login (Trusted Publishing)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: ${{ github.repository_owner }}
+
       - name: Publish
         shell: pwsh
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-            throw "NUGET_API_KEY repository secret is not configured."
+            throw "NuGet Trusted Publishing did not return a temporary API key."
           }
 
           $packages = Get-ChildItem -Path "src" -Recurse -Filter "*.nupkg" |

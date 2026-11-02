@@ -25,21 +25,26 @@ Do not keep the release repository as a nested Git repository inside another pro
 
 Use NuGet Trusted Publishing when it is available for the final GitHub repository. Trusted Publishing is preferred because it avoids long-lived API keys.
 
-If Trusted Publishing is not available, use a scoped NuGet API key stored only as a GitHub Actions repository secret.
+The `Publish AstraFlow Packages` workflow uses GitHub Actions OIDC with `NuGet/login@v1` to obtain a short-lived NuGet API key immediately before pushing. No `NUGET_API_KEY` GitHub secret is required for this workflow.
 
-## GitHub Secret Name
+### NuGet Trusted Publishing policy
 
-The workflow expects a repository secret named:
+Create an active Trusted Publishing policy for the `seifmoustafa/AstraFlow` GitHub repository with these values:
 
-```text
-NUGET_API_KEY
-```
+- Package owner: the NuGet account that owns the AstraFlow packages.
+- Publisher: GitHub Actions.
+- Repository owner: `seifmoustafa`.
+- Repository: `AstraFlow`.
+- Workflow file: `publish-nuget.yml` (filename only; do not enter the GitHub URL or `.github/workflows/` path).
+- Environment: `nuget`, matching `environment: nuget` in `.github/workflows/publish-nuget.yml`.
+- Package glob: `AstraFlow*`.
+- Scope: Push new packages and package versions. Leave unlist/relist disabled.
 
-This is the secret name only. It is not a key value. Never commit the real value to source control or documentation.
+The workflow grants `id-token: write` only to its publishing job. NuGet's OIDC login mints a temporary API key for the publish step; the workflow does not read a long-lived NuGet key from GitHub secrets.
 
-## NuGet API Key Setup
+### Manual API key fallback
 
-Create the key at `nuget.org/account/apikeys` with the narrowest practical scope:
+If Trusted Publishing cannot be used, a release owner may use the local manual publishing script with a narrowly scoped key. Do not add that key to the repository or workflow. Create the key at `nuget.org/account/apikeys` with:
 
 - Key Name: `AstraFlow GitHub Actions Publish`
 - Expires In: shortest practical period; rotate before expiry.
@@ -66,11 +71,7 @@ The first publish needs to cover:
 
 After the first publish, tighten the key to exact package IDs if NuGet offers them in the package list.
 
-Store the copied key value only in:
-
-`GitHub repository -> Settings -> Secrets and variables -> Actions -> New repository secret`
-
-Use the exact secret name `NUGET_API_KEY`.
+Supply the key only to the `ApiKey` parameter of `scripts/publish-nuget.ps1` during an explicitly approved manual publish. Treat the parameter as a secret: do not save the command in scripts, shell history, logs, or chat, and revoke the key after use.
 
 ## Secret Handling Rules
 

@@ -488,7 +488,7 @@ The package folder includes CI, a gated publish workflow, security policy, contr
 - representative consumer applications build against the package projects or packed packages successfully,
 - package artifacts build with XML docs and symbols,
 - the API surface is reviewed for v1 stability,
-- NuGet Trusted Publishing is configured, or a scoped GitHub Actions publishing secret is configured in the release repository.
+- NuGet Trusted Publishing is configured for the GitHub Actions publishing workflow.
 
 For new releases from this established repository, follow the current publishing and verification workflow in `docs/publishing.md`; do not treat initial repository setup instructions as a current release prerequisite.
 
