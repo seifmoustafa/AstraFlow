@@ -10,17 +10,17 @@ It was built to keep production applications free from runtime license checks, h
 
 AstraFlow aims to be a **leading open-source .NET application-flow toolkit**: explicit where correctness matters, source-generated where the compiler can prove a supported mapping or dispatch shape, rich in actionable diagnostics, and flexible without hidden runtime behavior. The promise is **less boilerplate, fewer surprises and more inspectable execution**—supported by clean consumer tests and measurable engineering, not unverified "fastest" or "complete replacement" claims.
 
-### Current foundation versus future breakthroughs
+### Current capabilities and future directions
 
-| Area | Existing documented foundation | v2.1 branch candidate (draft) |
+| Area | Current foundation | Future direction |
 | --- | --- | --- |
 | Mediator | Requests/streams/notifications, pipelines, generated DI registrations | **Executable generated dispatch** with DI/pipeline equivalence (candidate v2.4) |
-| Mapper | Explicit rules, opted-in conventions, projections, mapping plans, generated metadata | **Opt-in typed mapping execution** is implemented on draft PR #34; not yet published |
+| Mapper | Explicit rules, opted-in conventions, projections, mapping plans, generated metadata, and **opt-in typed mapping execution** (v2.1.0) | Broader generated-mapping scenarios beyond the supported v2.1.0 subset |
 | Diagnostics | Reports, analyzers, CLI inspection/diff/graph | Explainable versioned **flow manifest** (candidate v2.5) |
 | Security | Shared redaction and sensitive-name policies | Better compile-time governance with explicit limitations and threat tests |
 | Ecosystem | Separately installable core and current integrations | Demand-gated idempotency, caching, authz, EF and resilience adapters (v3+ research) |
 
-> **Important:** The v2.1 mapper entry is present on this branch but is not merged or published; PR #34 remains Draft. Installing the current NuGet package does not provide it. Generator *registration/metadata* is distinct from generated *execution*. Source-tree versions, NuGet publication and GitHub Releases can differ; verify each before announcing availability.
+> **Generated mapping:** v2.1.0 adds explicitly declared, statically typed mapping methods implemented by `AstraFlow.Generators`. This is a separate execution path from `IMapper`, convention mapping, and projections. Generated mediator registration wires dependency injection; it does not generate mediator dispatch.
 
 ### Strategy and implementation library
 
@@ -58,14 +58,14 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | --- | --- |
 | `AstraFlow.Contracts` | Shared mediator contracts for requests, notifications, streams, senders, publishers, processors, and exception flow. |
 | `AstraFlow.Mediator` | Request/response dispatch, void commands, stream requests, notification publishing, pipeline behaviors, processors, exception flow, handler scanning, duplicate handler detection, and optional handler coverage validation. |
-| `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named and parameterized projection registries, projection plan export, projection validation, secure ID mapping abstractions, and the v2.1 draft mapping declaration attribute. |
+| `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named and parameterized projection registries, projection plan export, projection validation, secure ID mapping abstractions, and the opt-in generated mapping declaration attribute. |
 | `AstraFlow.Mapper.Conventions` | Optional convention mapping with exact pair registration, profiles, strict mapping plans, flattening, explicit reverse mapping, inheritance, polymorphic dispatch, custom paths, resolvers, value transformers, hooks, and sensitive-field safeguards. |
 | `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
 | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
 | `AstraFlow.Security` | Shared sensitive-name taxonomy and redaction policy primitives for secure DTO governance across diagnostics, CLI, observability, analyzers, and integrations. |
 | `AstraFlow.Testing` | Framework-neutral test helpers for fake mediator flows, handler harnesses, mapper/projection assertions, diagnostics assertions, and test secure IDs. |
 | `AstraFlow.Analyzers` | Roslyn analyzer package with stable AstraFlow rule IDs, severity metadata, suppression guidance, and mediator build-time diagnostics. |
-| `AstraFlow.Generators` | Source generator package for deterministic mediator registration and mapper/projection metadata; the v2.1 draft adds opt-in executable typed mapping. |
+| `AstraFlow.Generators` | Source generator package for deterministic mediator registration, mapper/projection metadata, and opt-in executable typed mapping. |
 | `AstraFlow.Cli` | Command-line inspection, validation, reporting, diffing, graph output, and migration scanning. |
 | `AstraFlow.AspNetCore` | ASP.NET Core helpers for minimal APIs, controllers, endpoint filters, problem details, redacted diagnostics endpoints, and health summaries. |
 | `AstraFlow.FluentValidation` | FluentValidation pipeline behaviors for AstraFlow requests with aggregate errors, fail-fast validation, localization hooks, and diagnostics. |
