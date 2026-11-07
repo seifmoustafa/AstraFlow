@@ -68,7 +68,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | `AstraFlow.Contracts` | Done | Shared contracts without DI/runtime packages, shipped in `1.4.0`. |
 | Package compatibility matrix | Done, expand | Current TFM and package support is documented; future releases can add richer dependency and host matrices. |
 | API compatibility baselines | Done, expand | `1.13.0` compares public XML member IDs against the previous published package version; future work can add richer binary compatibility analysis. |
-| Public API diff in CI | Done, expand | `1.13.0` publish workflow runs API compatibility verification before publishing. |
+| Public API diff in CI | In progress in v2.3.0 | v1.13.0 checks published XML IDs before publish; v2.3 adds checked-in target-specific baselines to pull request CI. |
 | Old-version compatibility test suite | Candidate | Restore previous package versions and verify upgrade paths. |
 | Old-version upgrade smoke tests | Done, expand | `1.13.0` adds a previous-version clean-consumer upgrade smoke; future work can add more consumer shapes. |
 | Migration guides from popular mediator/mapping approaches | Planned | Keep public docs capability-focused rather than competitor-centered. |
@@ -223,7 +223,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Diagnostics assertions | Done | Shipped in `1.3.0`; report error and finding assertions. |
 | Diagnostics snapshot helper | Candidate | Golden report tests. |
 | Upgrade smoke-test harness | Planned | Restore previous packages, upgrade, then build/test representative consumers. |
-| Public API approval tests | Planned | Detect accidental public API changes before publish. |
+| Public API approval tests | In progress in v2.3.0 | `scripts/verify-public-api-baselines.ps1` gates target-specific API ID drift in CI. |
 | Analyzer/generator snapshot helpers | Planned | Required once compile-time packages exist. |
 | Test fixture builders | Candidate | Useful if minimal and optional. |
 | Compatibility smoke-test harness | Done | `scripts/verify-package-install.ps1` verifies supported target combinations before release. |
@@ -340,9 +340,9 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 
 | Idea | Status | Notes |
 | --- | --- | --- |
-| API governance | Done, expand | `1.13.0` adds API compatibility verification and governance docs; future work can add richer baselines and breaking-change review automation. |
-| Version support policy | Done, expand | `1.13.0` documents latest-minor support and previous-version upgrade confidence policy. |
-| Deprecation policy | Done, expand | `1.13.1` documents package/API deprecation rules; future work can add analyzer or release checklist automation. |
+| API governance | In progress in v2.3.0 | v1.13 provides the published-package guard; v2.3 adds pull request baselines, explicit SemVer review, and a required changelog taxonomy. |
+| Version support policy | In progress in v2.3.0 | v1.13 documented the latest-minor policy; v2.3 defines an explicit 90-day previous-minor security/critical-fix consideration window. |
+| Deprecation policy | In progress in v2.3.0 | Existing guidance is now backed by a CI check requiring an actionable replacement name in every Obsolete message. |
 | Signed tags | Planned | Release integrity. |
 | Branch protection guide | Planned | Contributor/release safety. |
 | Changelog automation | Planned | Consistent release notes. |

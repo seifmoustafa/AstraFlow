@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>2.2.0</Version>
-    <AssemblyVersion>2.2.0.0</AssemblyVersion>
-    <FileVersion>2.2.0.0</FileVersion>
+    <Version>2.3.0</Version>
+    <AssemblyVersion>2.3.0.0</AssemblyVersion>
+    <FileVersion>2.3.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,11 +18,10 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 2.2.0:
-      - Adds deterministic package and SourceLink verification to release validation.
-      - Adds SPDX SBOMs, GitHub artifact attestations, and signed release tag verification.
-      - Adds dependency review and post-publish NuGet repository signature verification.
-      - Documents security reporting, release verification, and recommended repository controls.
+    <PackageReleaseNotes>AstraFlow 2.3.0:
+      - Tracks target-specific public XML API IDs in version-controlled baselines.
+      - Enforces public API review and compatibility rules during CI builds.
+      - Documents SemVer, obsolete API replacement guidance, release branches, and support windows.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

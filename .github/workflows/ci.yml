@@ -59,6 +59,18 @@ jobs:
       - name: Test
         run: dotnet test AstraFlow.slnx -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Test public API baseline verifier
+        shell: pwsh
+        run: ./scripts/tests/verify-public-api-baselines.Tests.ps1
+
+      - name: Verify public API baselines
+        shell: pwsh
+        run: ./scripts/verify-public-api-baselines.ps1 -Configuration Release
+
+      - name: Verify obsolete API replacement guidance
+        shell: pwsh
+        run: ./scripts/verify-obsolete-guidance.ps1
+
       - name: Verify changelog entry
         shell: pwsh
         run: ./scripts/verify-changelog-entry.ps1

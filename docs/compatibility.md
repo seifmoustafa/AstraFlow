@@ -4,7 +4,7 @@ This guide documents AstraFlow target framework support, compatibility goals, an
 
 ## Current Support
 
-AstraFlow `2.0.0` currently targets:
+The source package projects currently target the frameworks below. This table describes checked-in source assets; it does not prove that a particular package version is available on NuGet. Verify exact publication status independently before using a version as a consumer baseline.
 
 | Package | Current targets |
 | --- | --- |
@@ -55,7 +55,7 @@ Direct .NET Framework targets such as `net462` or `net471` are candidates only a
 - `scripts/verify-upgrade-smoke.ps1` creates a clean consumer, builds it against the previous package version, upgrades it to the current locally packed version, and runs the same smoke flow again.
 - `scripts/verify-sample-builds.ps1` builds every sample project, including host compatibility and migration cookbook samples.
 
-These checks are intentionally conservative. They do not replace human review, but they make accidental public API removals and basic upgrade failures visible before publishing.
+These checks are intentionally conservative. `scripts/verify-public-api-baselines.ps1` is the per-target pull request gate. The NuGet comparison and upgrade smoke are release checks and require a verified prior package. The baselines cover XML documentation member IDs and do not prove binary compatibility, nullable compatibility, behavior, or undocumented member stability.
 
 ## Host Compatibility Samples
 
@@ -79,7 +79,9 @@ AstraFlow supports the latest published minor version for normal package adoptio
 
 Patch releases should be applied within the same minor line when they are available. Minor releases should preserve source compatibility unless a breaking change is explicitly documented and moved to a major version.
 
-Older minor versions remain installable from NuGet, but active validation, upgrade smoke testing, and API compatibility comparison focus on the last verified NuGet baseline (`2.0.0`) and the current source version. The v2.1.0 NuGet publication status must be resolved before using it as an upgrade baseline.
+The latest stable minor receives active validation. When a successor minor becomes stable, the previous minor receives security and critical-fix consideration for 90 days; after that, fixes target the latest line. This is a maintainer support window, not a promise that old packages are removed from NuGet. The exact policy is in [API governance](api-governance.md).
+
+The last independently verified NuGet baseline remains `2.0.0` until publication of later versions is checked. NuGet publication for v2.1.0 and v2.2.0 must be verified independently before either becomes an upgrade baseline.
 
 Security fixes should be released on the latest stable line first. Backporting to older minor lines is discretionary and depends on severity, compatibility risk, and maintainer capacity.
 
@@ -111,7 +113,7 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Use AstraFlow `2.0.0` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
+Use the latest verified AstraFlow NuGet version from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers. The source version in `Directory.Build.props` is a release candidate until its package publication is verified.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
@@ -157,5 +159,3 @@ Then run:
 ```
 
 Use `-AllowMissingPreviousPackages` for the first public package-family publish, when earlier AstraFlow package versions may not exist on NuGet. After a public baseline exists, omit the flag to make previous-version API and upgrade checks strict.
-
-

@@ -39,8 +39,8 @@
 | --- | --- | --- | --- |
 | Shared sensitive-name and redaction foundation | v2.0.0 | Source implementation described below; independently verify publication | Security regression tests and package checks |
 | **Generated mapping execution** | **v2.1.0** | **Merged; GitHub release exists; NuGet publication unverified** | Real typed generated conversion; source diagnostics; clean consumer; AOT publish/run; manual/runtime/peer benchmark methodology |
-| Enterprise supply chain | v2.2.0 | Approved for implementation in this release branch | Reproducible packages, SourceLink verification, SBOM, provenance, signed tag, dependency review, and security/release governance |
-| Public API governance | v2.3 | Existing planned commitment | API baseline enforcement and upgrade smoke |
+| Enterprise supply chain | v2.2.0 | Source merged on main; tag and package publication not verified | Reproducible packages, SourceLink verification, SBOM, provenance, signed tag, dependency review, and security/release governance |
+| **Public API governance** | **v2.3.0** | **In progress on `feat/v2.3.0-public-api-governance`** | Reviewed target-specific API baselines, CI diff enforcement, compatibility checks, SemVer and obsolete guidance, release branch and support policy |
 | Generated mediator dispatch | v2.4 | Candidate; only after source/benchmark feasibility | Closed-type generated invoker, DI scope/pipeline equivalence, AOT and comparative numbers |
 | Explainable flow manifest | v2.5 | Candidate | Deterministic schema, provenance and CI diff; known gaps labeled |
 | Reliability and independent adoption | v2.6+ | Research | Consumer pilots, measured saved time, compatibility and regression improvements |
@@ -49,6 +49,8 @@
 | Better Auth-inspired .NET identity | Separate project only | Research | Independent threat model, standards-compliant .NET component study and maintainer |
 
 **Read before implementation:** [Engineering North Star](strategy/north-star.md), [Generated Mapper ADR](adr/0001-generated-mapper.md), [v2.1 plan](plans/v2.1-generated-mapping.md), [v2.2 supply-chain plan](plans/v2.2-enterprise-supply-chain.md), [Generated Mediator ADR](adr/0002-generated-mediator.md), [Flow Manifest ADR](adr/0003-flow-manifest.md), [Evidence and Release Gates](strategy/evidence-and-gates.md), [Decision Log](strategy/decision-log.md), and [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
+
+The v2.3.0 scope and implementation decisions are recorded in the [Public API Governance plan](plans/v2.3-public-api-governance.md).
 
 **Non-negotiable:** One release goal at a time; opt-in convention mapping remains separate, existing API and published consumers stay compatible, generated-only modes do not silently fall back, no DTO payload logs, no performance superiority without repeatable results. Review actual code and current release state before changing APIs. All unshipped entries are proposals, not functionality claims.
 
@@ -2007,7 +2009,7 @@ Generated mediator dispatch; deep polymorphic graph conversion; magical runtime 
 
 ## v2.2 Enterprise Supply Chain
 
-Status: `Approved for implementation on feat/v2.2.0-enterprise-supply-chain`; no v2.2.0 package, tag, or release has been created.
+Status: source merged on `main`; no v2.2.0 tag or release is recorded, and NuGet publication is unverified.
 
 Goal:
 
@@ -2082,7 +2084,7 @@ What must NOT be included:
 
 ## v2.3 Public API Governance
 
-Status: `Planned`.
+Status: `In progress on feat/v2.3.0-public-api-governance`; the implementation is not yet released.
 
 Goal:
 
@@ -2090,11 +2092,11 @@ Protect consumers from accidental breaking changes.
 
 Why this version exists:
 
-The package surface grows after parity. Public API governance must become enforceable before the ecosystem expands further.
+The repository already has a conservative historical NuGet/XML-ID comparison from v1.13. v2.3 makes API intent durable and reviewable in source control, catches per-target drift on every pull request, and documents what the baseline does not prove. This governance step should land before generated mediator and other package surfaces expand.
 
 Packages affected:
 
-- all packages
+- all XML-documented library packages; CLI command/output contracts stay covered by CLI tests
 - CI
 - docs
 
@@ -2125,8 +2127,9 @@ Acceptance gates:
 
 Test requirements:
 
-- API baseline tests.
-- Compatibility tests.
+- Baseline verifier tests for additions, removals, missing target files, and intentional updates.
+- Existing published-package compatibility and upgrade-smoke checks, when a prior package is independently verified.
+- Clean package and sample checks for the release version.
 
 Documentation requirements:
 

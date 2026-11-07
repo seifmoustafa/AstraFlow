@@ -3,6 +3,9 @@
 ## Source
 
 - Public APIs have XML documentation.
+- `scripts/verify-public-api-baselines.ps1` passes for every library target and the API baseline diff is reviewed in the pull request.
+- `scripts/verify-obsolete-guidance.ps1` passes; each obsolete declaration names its replacement.
+- The current changelog classifies breaking changes, additions, changes, fixes, deprecations, removals, and security work.
 - Package projects build with warnings as errors.
 - Samples compile.
 - Tests pass in Release configuration.

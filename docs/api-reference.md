@@ -1,6 +1,6 @@
 # API Reference
 
-This reference describes the public AstraFlow `2.2.0` source API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails. Package availability is tracked separately in [compatibility](compatibility.md).
+This reference describes the public AstraFlow `2.3.0` source API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails. Package availability is tracked separately in [compatibility](compatibility.md).
 
 ## Package Map
 
@@ -28,7 +28,7 @@ This reference describes the public AstraFlow `2.2.0` source API surface. It is 
 | `AstraFlowAnalyzerRule` | Record | Describes rule ID, title, category, severity, default enabled state, documentation anchor, and Roslyn descriptor. | No. |
 | `AstraFlowAnalyzerRules` | Static class | Central descriptor catalog for analyzer tests, docs, and future tooling. | No. |
 
-The `2.2.0` source intentionally keeps analyzers source-only and code-fix-free. Source generator work lives in the separate `AstraFlow.Generators` package.
+The `2.3.0` source intentionally keeps analyzers source-only and code-fix-free. Source generator work lives in the separate `AstraFlow.Generators` package.
 
 ## Executable Generated Mapping
 
@@ -407,5 +407,3 @@ Each item is mapped through the same explicit rule lookup. Collection mapping do
 | `ShouldHaveDiagnosticFinding(code)` | Diagnostics report contains a finding code. |
 | `ShouldThrowAsync<TException>()` | Async operation throws the expected exception type. |
 | `ShouldRoundTripSecureId()` | Secure ID codec encodes and decodes the supplied `Guid`. |
-
-

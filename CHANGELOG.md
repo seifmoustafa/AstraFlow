@@ -2,7 +2,41 @@
 
 All notable AstraFlow changes are tracked here.
 
-## 2.2.0 (in progress)
+## 2.3.0 (in progress)
+
+### Breaking Changes
+
+- None.
+
+### Added
+
+- Add target-specific, version-controlled public API baselines for all documented library packages.
+- Fail CI when public XML documentation member IDs differ from their reviewed baselines.
+- Add regression tests for baseline drift detection and Obsolete replacement guidance.
+- Require release changelog entries to classify breaking changes, additions, changes, fixes, deprecations, removals, and security work.
+
+### Changed
+
+- Update API governance, release branch, support window, and API review guidance for the v2.3.0 governance release.
+- Advance package source metadata to 2.3.0.
+
+### Fixed
+
+- None.
+
+### Deprecated
+
+- None.
+
+### Removed
+
+- None.
+
+### Security
+
+- None.
+
+## 2.2.0 (source merged; release not verified)
 
 - Enable `CI=true` and verify repeat package hashes and packaged SourceLink metadata before release.
 - Add an SPDX SBOM and GitHub OIDC/Sigstore provenance for release package artifacts.

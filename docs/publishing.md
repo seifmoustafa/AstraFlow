@@ -137,8 +137,10 @@ Use local packing only to verify artifacts before release:
 
 ```powershell
 .\scripts\pack.ps1
-.\scripts\verify-api-compatibility.ps1 -PreviousVersion 2.0.0 -CurrentVersion 2.2.0 -AllowMissingPreviousPackages
-.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 2.0.0 -CurrentVersion 2.2.0 -AllowMissingPreviousPackages
+.\scripts\verify-public-api-baselines.ps1 -Configuration Release
+.\scripts\verify-obsolete-guidance.ps1
+.\scripts\verify-api-compatibility.ps1 -PreviousVersion 2.0.0 -CurrentVersion 2.3.0 -AllowMissingPreviousPackages
+.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 2.0.0 -CurrentVersion 2.3.0 -AllowMissingPreviousPackages
 .\scripts\verify-sample-builds.ps1 -Configuration Release
 .\scripts\verify-package-reproducibility.ps1 -Configuration Release
 .\scripts\verify-package-sourcelink.ps1 -Configuration Release
