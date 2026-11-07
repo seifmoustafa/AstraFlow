@@ -233,6 +233,7 @@ jobs:
             if ($LASTEXITCODE -ne 0) {
               throw "Publishing $($package.Name) failed with exit code $LASTEXITCODE."
             }
+          }
 
       - name: Verify NuGet repository signatures
         shell: pwsh
@@ -240,4 +241,3 @@ jobs:
           [xml]$props = Get-Content Directory.Build.props -Raw
           $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
           ./scripts/verify-nuget-signatures.ps1 -Version $version
-          }
