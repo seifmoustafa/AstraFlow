@@ -303,7 +303,7 @@ jobs:
         if: steps.release_exists.outputs.exists == 'false'
         uses: actions/setup-go@v6
         with:
-          go-version: '1.25.x'
+          go-version: '1.26.x'
 
       - name: Sign and verify release tag
         if: steps.release_exists.outputs.exists == 'false'
