@@ -94,7 +94,9 @@ Supply the key only to the `ApiKey` parameter of `scripts/publish-nuget.ps1` dur
 9. Install the packages into a clean sample project.
 10. Verify a clean sample consumer can migrate from local AstraFlow project references to NuGet `PackageReference` entries after package verification succeeds.
 
-`AstraFlow CI` reads the package version from `Directory.Build.props`, creates the `v{Version}` GitHub Release/tag after tests, package checks, and clean install verification pass, and skips release creation when that version already has a release. This keeps one GitHub Release per package version.
+`AstraFlow CI` reads the package version from `Directory.Build.props`, verifies repeat package hashes and SourceLink, creates SPDX SBOM and OIDC attestations, signs and verifies a keyless Sigstore/gitsign tag, then creates a GitHub Release with generated notes. Release creation occurs only after the build, tests, package checks, and clean install pass. The signed tag is immutable: if a run created the tag but failed before the GitHub Release, rerunning the same commit verifies and reuses that tag.
+
+Before a public release, review [security and supply-chain guidance](security-and-supply-chain.md) and ensure the required GitHub repository settings are enabled. The CI release job needs `contents: write`, `id-token: write`, `attestations: write`, and `artifact-metadata: write`; build and pull request jobs retain read-only contents permissions.
 
 Published NuGet package versions are immutable. If a package is already visible on NuGet and its README, release notes, icon, tags, or repository metadata need to change, publish a new patch version with the corrected metadata instead of trying to replace the existing version.
 
@@ -135,9 +137,11 @@ Use local packing only to verify artifacts before release:
 
 ```powershell
 .\scripts\pack.ps1
-.\scripts\verify-api-compatibility.ps1 -PreviousVersion 1.13.1 -CurrentVersion 2.0.0 -AllowMissingPreviousPackages
-.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 1.13.1 -CurrentVersion 2.0.0 -AllowMissingPreviousPackages
+.\scripts\verify-api-compatibility.ps1 -PreviousVersion 2.0.0 -CurrentVersion 2.2.0 -AllowMissingPreviousPackages
+.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 2.0.0 -CurrentVersion 2.2.0 -AllowMissingPreviousPackages
 .\scripts\verify-sample-builds.ps1 -Configuration Release
+.\scripts\verify-package-reproducibility.ps1 -Configuration Release
+.\scripts\verify-package-sourcelink.ps1 -Configuration Release
 ```
 
 For the first public NuGet publish, previous AstraFlow package versions may not exist on NuGet yet. The `-AllowMissingPreviousPackages` flag makes that explicit: current package install and sample verification still run, while previous-version API and upgrade comparison become warnings until a published baseline exists.
@@ -160,7 +164,7 @@ Expected package artifacts:
 - `src/AstraFlow.Cli/bin/Release/AstraFlow.Cli.2.0.0.nupkg`
 - `src/AstraFlow/bin/Release/AstraFlow.2.0.0.nupkg`
 
-For `2.0.0`, inspect the packages before publishing:
+For the previous `2.0.0` baseline, inspect the packages before publishing. The current version is read from `Directory.Build.props` by release scripts:
 
 - each package should include `README.md`, `CHANGELOG.md`, `LICENSE`, the package icon, XML docs, DLLs, and `.nuspec`,
 - `AstraFlow.Contracts`, core packages, `AstraFlow.Mapper.Conventions`, `AstraFlow.Security`, and `AstraFlow.Testing` must include `lib/netstandard2.0/`, `lib/net8.0/`, `lib/net9.0/`, and `lib/net10.0/`,

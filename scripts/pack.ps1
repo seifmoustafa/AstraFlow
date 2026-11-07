@@ -24,6 +24,13 @@ function Invoke-DotNetStep {
 }
 
 try {
+    $previousSourceDateEpoch = $env:SOURCE_DATE_EPOCH
+    $sourceDateEpoch = (& git -C $repoRoot.Path log -1 --format=%ct).Trim()
+    if ($LASTEXITCODE -ne 0 -or $sourceDateEpoch -notmatch '^\d+$') {
+        throw "Could not determine a reproducible SOURCE_DATE_EPOCH from the checked out commit."
+    }
+    $env:SOURCE_DATE_EPOCH = $sourceDateEpoch
+
     Invoke-DotNetStep "Restore" @("restore", ".\AstraFlow.slnx", "--configfile", ".\NuGet.Config", "--disable-parallel")
     Invoke-DotNetStep "Build" @("build", ".\AstraFlow.slnx", "-c", $Configuration, "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Test" @("test", ".\AstraFlow.slnx", "-c", $Configuration, "--no-build", "--no-restore", "/m:1", "/p:UseSharedCompilation=false")
@@ -56,5 +63,10 @@ try {
     Get-ChildItem .\src -Recurse -Filter "*.$version.nupkg" | Select-Object -ExpandProperty FullName
 }
 finally {
+    if ($null -eq $previousSourceDateEpoch) {
+        Remove-Item Env:\SOURCE_DATE_EPOCH -ErrorAction SilentlyContinue
+    } else {
+        $env:SOURCE_DATE_EPOCH = $previousSourceDateEpoch
+    }
     Pop-Location
 }
