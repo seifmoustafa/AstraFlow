@@ -27,8 +27,40 @@ try {
         $flatContainerVersion = $Version.ToLowerInvariant()
         $uri = "https://api.nuget.org/v3-flatcontainer/$flatContainerId/$flatContainerVersion/$flatContainerId.$flatContainerVersion.nupkg"
         $download = Join-Path $verificationDirectory $package.Name
-        Write-Host "Downloading NuGet package for signature verification: $($package.Name)"
-        Invoke-WebRequest -Uri $uri -OutFile $download
+        $downloaded = $false
+        $lastDownloadError = $null
+        for ($attempt = 1; $attempt -le 30; $attempt++) {
+            Remove-Item -LiteralPath $download -Force -ErrorAction SilentlyContinue
+            $retryable = $true
+            try {
+                $response = Invoke-WebRequest -Uri $uri -OutFile $download -TimeoutSec 30 -SkipHttpErrorCheck
+                if ([int]$response.StatusCode -eq 200) {
+                    $downloaded = $true
+                    break
+                }
+
+                if ([int]$response.StatusCode -notin @(404, 429) -and [int]$response.StatusCode -lt 500) {
+                    $retryable = $false
+                    throw "NuGet returned HTTP $([int]$response.StatusCode) while downloading '$($package.Name)'."
+                }
+
+                $lastDownloadError = "NuGet returned HTTP $([int]$response.StatusCode)."
+            } catch {
+                if (-not $retryable) {
+                    throw
+                }
+                $lastDownloadError = $_.Exception.Message
+            }
+
+            if ($attempt -lt 30) {
+                Write-Host "Package $($package.Name) is not available for signature verification yet (attempt $attempt/30): $lastDownloadError Retrying in 30 seconds."
+                Start-Sleep -Seconds 30
+            }
+        }
+
+        if (-not $downloaded) {
+            throw "NuGet package '$($package.Name)' did not become available for signature verification after 30 attempts. Last error: $lastDownloadError"
+        }
 
         & dotnet nuget verify --all $download
         if ($LASTEXITCODE -ne 0) {
