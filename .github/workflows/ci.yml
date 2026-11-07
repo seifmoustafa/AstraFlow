@@ -210,6 +210,14 @@ jobs:
           $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
           ./scripts/verify-package-install.ps1 -Version $version
 
+      - name: Verify previous-version compatibility and upgrade smoke
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content Directory.Build.props -Raw
+          $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
+          ./scripts/verify-api-compatibility.ps1 -PreviousVersion 2.0.0 -CurrentVersion $version -AllowMissingPreviousPackages
+          ./scripts/verify-upgrade-smoke.ps1 -PreviousVersion 2.0.0 -CurrentVersion $version -AllowMissingPreviousPackages
+
       - name: Verify repeat package output
         shell: pwsh
         run: ./scripts/verify-package-reproducibility.ps1 -Configuration Release

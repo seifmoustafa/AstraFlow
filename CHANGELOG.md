@@ -14,6 +14,7 @@ All notable AstraFlow changes are tracked here.
 - Fail CI when public XML documentation member IDs differ from their reviewed baselines.
 - Add regression tests for baseline drift detection and Obsolete replacement guidance.
 - Require release changelog entries to classify breaking changes, additions, changes, fixes, deprecations, removals, and security work.
+- Run published-package API compatibility and previous-version upgrade smoke checks in pull request CI.
 
 ### Changed
 
