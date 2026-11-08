@@ -39,7 +39,7 @@ try {
                     break
                 }
 
-                if ([int]$response.StatusCode -notin @(404, 429) -and [int]$response.StatusCode -lt 500) {
+                if ([int]$response.StatusCode -notin @(0, 404, 429) -and [int]$response.StatusCode -lt 500) {
                     $retryable = $false
                     throw "NuGet returned HTTP $([int]$response.StatusCode) while downloading '$($package.Name)'."
                 }
