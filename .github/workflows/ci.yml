@@ -317,8 +317,10 @@ jobs:
           tag='${{ steps.version.outputs.tag }}'
           if git ls-remote --tags origin "refs/tags/$tag" | grep -q .; then
             git fetch --no-tags origin "refs/tags/$tag:refs/tags/$tag"
-            if [ "$(git rev-list -n 1 "$tag")" != "$(git rev-parse HEAD)" ]; then
-              echo "Release tag $tag already points at a different commit; refusing to replace it."
+            tag_commit="$(git rev-parse "$tag^{commit}")"
+            if [ "$tag_commit" != "$(git rev-parse HEAD)" ] &&
+              ! git diff --quiet "$tag_commit" HEAD -- . ':(exclude).github/workflows/ci.yml'; then
+              echo "Release tag $tag already exists and source files differ; refusing to replace it."
               exit 1
             fi
           else
@@ -329,7 +331,7 @@ jobs:
             git tag -s "$tag" -m "AstraFlow ${{ steps.version.outputs.version }}"
             git push origin "$tag"
           fi
-          gitsign verify --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/ci.yml@refs/heads/${GITHUB_REF_NAME}" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" "$tag"
+          gitsign verify-tag --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/ci.yml@refs/heads/${GITHUB_REF_NAME}" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" "$tag"
 
       - name: Create GitHub release with generated notes and evidence
         if: steps.release_exists.outputs.exists == 'false'
