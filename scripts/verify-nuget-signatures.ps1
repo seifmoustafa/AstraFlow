@@ -33,18 +33,32 @@ try {
             Remove-Item -LiteralPath $download -Force -ErrorAction SilentlyContinue
             $retryable = $true
             try {
-                $response = Invoke-WebRequest -Uri $uri -OutFile $download -TimeoutSec 30 -SkipHttpErrorCheck
-                if ([int]$response.StatusCode -eq 200) {
+                $curlOutput = @(
+                    & curl.exe --location --silent --show-error --fail --max-time 30 --output $download --write-out "%{http_code}" $uri 2>&1
+                )
+                $curlExitCode = $LASTEXITCODE
+                $statusCodeText = [string]($curlOutput | Where-Object { "$($_)".Trim() -match '^\d{3}$' } | Select-Object -Last 1)
+                $statusCode = 0
+                if ($statusCodeText.Trim() -match '^\d{3}$') {
+                    $statusCode = [int]$statusCodeText.Trim()
+                }
+                $curlError = ($curlOutput | Where-Object { "$($_)".Trim() -notmatch '^\d{3}$' } | ForEach-Object { "$($_)".Trim() }) -join " "
+
+                if ($curlExitCode -eq 0 -and $statusCode -eq 200) {
                     $downloaded = $true
                     break
                 }
 
-                if ([int]$response.StatusCode -notin @(404, 429) -and [int]$response.StatusCode -lt 500) {
+                if ($statusCode -notin @(0, 404, 429) -and $statusCode -lt 500) {
                     $retryable = $false
-                    throw "NuGet returned HTTP $([int]$response.StatusCode) while downloading '$($package.Name)'."
+                    throw "NuGet returned HTTP $statusCode while downloading '$($package.Name)'."
                 }
 
-                $lastDownloadError = "NuGet returned HTTP $([int]$response.StatusCode)."
+                if ($curlExitCode -ne 0) {
+                    $lastDownloadError = "curl.exe exited with code $curlExitCode (HTTP $statusCode): $curlError"
+                } else {
+                    $lastDownloadError = "NuGet returned HTTP $statusCode."
+                }
             } catch {
                 if (-not $retryable) {
                     throw
