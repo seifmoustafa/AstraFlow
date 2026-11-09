@@ -52,6 +52,40 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         error.InnerException.Should().BeOfType<ArgumentNullException>();
     }
 
+    [Fact]
+    public void Generated_method_projects_collections_of_matching_scalar_models()
+    {
+        var source = """
+using AstraFlow.Mapper;
+public class InputItem { public string Name { get; set; } = ""; }
+public class OutputItem { public string Name { get; set; } = ""; }
+public class Input { public System.Collections.Generic.IEnumerable<InputItem> Items { get; set; } = System.Array.Empty<InputItem>(); }
+public class Output { public System.Collections.Generic.IReadOnlyList<OutputItem> Items { get; set; } = System.Array.Empty<OutputItem>(); }
+public static partial class Maps { [AstraGenerateMapping] public static partial Output Convert(Input source); }
+""";
+
+        var (compilation, result) = Generate(source);
+
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        result.Results.Single().GeneratedSources.Single().SourceText.ToString().Should().Contain("Enumerable.Select(source.Items, item => new global::OutputItem");
+        using var stream = new MemoryStream();
+        compilation.Emit(stream).Success.Should().BeTrue();
+        var assembly = Assembly.Load(stream.ToArray());
+        var inputType = assembly.GetType("Input")!;
+        var itemType = assembly.GetType("InputItem")!;
+        var input = Activator.CreateInstance(inputType)!;
+        var item = Activator.CreateInstance(itemType)!;
+        itemType.GetProperty("Name")!.SetValue(item, "Court 1");
+        var inputItems = Array.CreateInstance(itemType, 1);
+        inputItems.SetValue(item, 0);
+        inputType.GetProperty("Items")!.SetValue(input, inputItems);
+        var mapped = assembly.GetType("Maps")!.GetMethod("Convert")!.Invoke(null, [input])!;
+        var outputItems = (System.Collections.IEnumerable)mapped.GetType().GetProperty("Items")!.GetValue(mapped)!;
+        var outputItem = outputItems.Cast<object>().Single();
+        outputItem.GetType().GetProperty("Name")!.GetValue(outputItem).Should().Be("Court 1");
+    }
+
     [Theory]
     [InlineData("public string Password { get; set; } = \"\";", "sensitive")]
     [InlineData("public required string Name { get; set; }", "non-required")]

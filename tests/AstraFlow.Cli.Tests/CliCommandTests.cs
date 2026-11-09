@@ -108,7 +108,69 @@ public sealed class CliCommandTests
         var output = Run("graph", FindRepoDirectory("src"), "--format", "mermaid", "--direction", "LR");
 
         output.Should().StartWith("flowchart LR");
-        output.Should().Contain("root -->");
+        output.Should().Contain("request_");
+        output.Should().Contain("handler_");
+    }
+
+    [Fact]
+    public void GraphMermaid_Builds_relational_chains_and_cycle_free_clusters()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "ConfirmReservationCommandHandler.cs"),
+            "public sealed class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservationCommand, Result<ConfirmReservationResult>> { }");
+
+        var output = Run("graph", temp.Path, "--format", "mermaid");
+
+        output.Should().Contain("subgraph cluster_module_Core_feature_");
+        output.Should().Contain("CMD: ConfirmReservationCommand");
+        output.Should().Contain("ConfirmReservationResult");
+        output.Should().Contain("ConfirmReservationCommandHandler");
+        output.Should().NotContain("subgraph handlers");
+    }
+
+    [Fact]
+    public void GraphCanvasJson_Contains_nodes_edges_ports_and_unescaped_generic_text()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "ConfirmReservationCommandHandler.cs"),
+            "public sealed class ConfirmReservationCommandHandler : IRequestHandler<ConfirmReservationCommand, Result<ConfirmReservationResult>> { }");
+
+        var output = Run("graph", temp.Path, "--format", "canvas-json");
+
+        using var document = JsonDocument.Parse(output);
+        var root = document.RootElement;
+        root.GetProperty("version").GetString().Should().Be("2.3.0");
+        root.GetProperty("nodes").GetArrayLength().Should().Be(3);
+        root.GetProperty("edges").GetArrayLength().Should().Be(2);
+        root.GetProperty("nodes")[1].GetProperty("ports").GetProperty("in").GetArrayLength().Should().Be(1);
+        output.Should().Contain("ConfirmReservationResult");
+        output.Should().Contain("IRequestHandler<ConfirmReservationCommand");
+    }
+
+    [Fact]
+    public void MarkdownReport_escapes_pipes_and_wraps_signatures_as_inline_code()
+    {
+        var report = new CliReport("report", FixedTimestamp.ToString("O"), "scope", "ok",
+            [new CliSection("handlers", [new CliItem("Handler", "request-handler", "Handler.cs", "IRequestHandler<Request, Result<Response>> | detail")])], []);
+
+        var output = Program.FormatReport(report, OutputFormat.Markdown);
+
+        output.Should().Contain("`IRequestHandler<Request, Result<Response>> \\| detail`");
+    }
+
+    [Fact]
+    public void GraphPipelineStyle_Emits_five_stages()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "Handler.cs"), "public sealed class Handler : IRequestHandler<Request, Result<Response>> { }");
+
+        var output = Run("graph", temp.Path, "--style", "pipeline", "--format", "mermaid");
+
+        output.Should().Contain("1. Inbound Dispatch");
+        output.Should().Contain("2. Pipeline Behaviors");
+        output.Should().Contain("3. Core Execution");
+        output.Should().Contain("4. Domain Events / Outbox");
+        output.Should().Contain("5. Projections &amp; Mappers");
     }
 
     [Fact]

@@ -29,8 +29,8 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
             "AstraFlow.Mapper.AstraGenerateMappingAttribute",
             static (node, _) => node is MethodDeclarationSyntax,
             static (ctx, _) => (IMethodSymbol)ctx.TargetSymbol);
-        var candidates = methods
-            .Select(static (method, cancellationToken) => CreateCandidate(method, cancellationToken))
+        var candidates = methods.Combine(context.CompilationProvider)
+            .Select(static (value, cancellationToken) => CreateCandidate(value.Left, value.Right, cancellationToken))
             .WithComparer(MappingCandidateComparer.Instance);
         var duplicatePairs = candidates.Collect()
             .Select(static (declarations, cancellationToken) => FindDuplicatePairs(declarations, cancellationToken))
@@ -46,14 +46,14 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
                 return;
             }
 
-            Generate(output, method);
+            Generate(output, method, candidate.Compilation);
         });
     }
 
-    private static MappingCandidate CreateCandidate(IMethodSymbol method, CancellationToken cancellationToken)
+    private static MappingCandidate CreateCandidate(IMethodSymbol method, Compilation compilation, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return new MappingCandidate(method, GetFingerprint(method, cancellationToken), GetPairKey(method));
+        return new MappingCandidate(method, compilation, GetFingerprint(method, cancellationToken), GetPairKey(method));
     }
 
     private static HashSet<string> FindDuplicatePairs(ImmutableArray<MappingCandidate> declarations, CancellationToken cancellationToken)
@@ -167,7 +167,7 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
             text.Append("|ATTR|").Append(attribute.AttributeClass?.ToDisplayString());
     }
 
-    private static void Generate(SourceProductionContext context, IMethodSymbol method)
+    private static void Generate(SourceProductionContext context, IMethodSymbol method, Compilation compilation)
     {
         context.CancellationToken.ThrowIfCancellationRequested();
         var location = method.Locations.FirstOrDefault();
@@ -214,11 +214,21 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
             var matches = source.GetMembers(target.Name).OfType<IPropertySymbol>().Where(p => !p.IsStatic && !p.IsIndexer && p.GetMethod?.DeclaredAccessibility == Accessibility.Public).ToArray();
             if (matches.Length != 1) { FailMember(target, "each destination property needs exactly one public readable source property with the same name"); return; }
             var input = matches[0];
+            var identifier = Escape(target.Name);
+            if (IsCollection(input.Type, compilation, out var sourceElement) &&
+                IsCollection(target.Type, compilation, out var targetElement))
+            {
+                if (!TryBuildCollectionProjection(input, target, sourceElement!, targetElement!, Escape(method.Parameters[0].Name), compilation, out var projection, out var reason))
+                { FailMember(target, reason); return; }
+                assignments.Add("            " + identifier + " = " + Escape(method.Parameters[0].Name) + "." + Escape(input.Name) + " is null ? " +
+                    (target.NullableAnnotation == NullableAnnotation.Annotated ? "null" : "new global::System.Collections.Generic.List<" + targetElement!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) + ">()") +
+                    " : " + projection + ",");
+                continue;
+            }
             if (!SymbolEqualityComparer.Default.Equals(input.Type, target.Type) || !IsScalar(target.Type) ||
                 ((input.NullableAnnotation != NullableAnnotation.NotAnnotated || HasMaybeNull(input)) &&
                  (target.NullableAnnotation == NullableAnnotation.NotAnnotated || HasDisallowNull(target)) && target.Type.IsReferenceType))
-            { FailMember(target, "member types must be identical supported scalars with compatible nullability; nested objects, collections and conversions are unsupported"); return; }
-            var identifier = Escape(target.Name);
+            { FailMember(target, "member types must be identical supported scalars with compatible nullability or supported collections; nested objects and conversions are unsupported"); return; }
             assignments.Add("            " + identifier + " = " + Escape(method.Parameters[0].Name) + "." + Escape(input.Name) + ",");
         }
         if (assignments.Count == 0) { Fail("destination must have at least one supported property"); return; }
@@ -247,6 +257,109 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
         SpecialType.System_Boolean or SpecialType.System_Byte or SpecialType.System_SByte or SpecialType.System_Int16 or SpecialType.System_UInt16 or
         SpecialType.System_Int32 or SpecialType.System_UInt32 or SpecialType.System_Int64 or SpecialType.System_UInt64 or SpecialType.System_Char or
         SpecialType.System_Single or SpecialType.System_Double or SpecialType.System_Decimal or SpecialType.System_String;
+
+    private static bool IsCollection(ITypeSymbol type, Compilation compilation, out ITypeSymbol? elementType)
+    {
+        if (type.SpecialType == SpecialType.System_String)
+        {
+            elementType = null;
+            return false;
+        }
+
+        if (type is IArrayTypeSymbol array)
+        {
+            elementType = array.ElementType;
+            return true;
+        }
+
+        if (type is INamedTypeSymbol named)
+        {
+            var enumerable = compilation.GetTypeByMetadataName("System.Collections.Generic.IEnumerable`1");
+            var contract = enumerable is null ? null : named.AllInterfaces.Concat([named])
+                .FirstOrDefault(candidate => SymbolEqualityComparer.Default.Equals(candidate.OriginalDefinition, enumerable));
+            if (contract is not null)
+            {
+                elementType = contract.TypeArguments[0];
+                return true;
+            }
+        }
+
+        elementType = null;
+        return false;
+    }
+
+    private static bool TryBuildCollectionProjection(
+        IPropertySymbol source,
+        IPropertySymbol destination,
+        ITypeSymbol sourceElement,
+        ITypeSymbol destinationElement,
+        string sourceVariable,
+        Compilation compilation,
+        out string projection,
+        out string reason)
+    {
+        projection = string.Empty;
+        reason = "collections must expose compatible enumerable element types and map to a list-compatible destination";
+        if (sourceElement.NullableAnnotation == NullableAnnotation.Annotated && destinationElement.NullableAnnotation != NullableAnnotation.Annotated)
+        {
+            reason = "nullable collection elements cannot flow to non-nullable destination elements";
+            return false;
+        }
+        var listDefinition = compilation.GetTypeByMetadataName("System.Collections.Generic.List`1");
+        if (listDefinition is null)
+            return false;
+        var listType = listDefinition.Construct(destinationElement);
+        if (!compilation.ClassifyConversion(listType, destination.Type).IsImplicit)
+            return false;
+
+        string selector;
+        if (SymbolEqualityComparer.Default.Equals(sourceElement, destinationElement) && IsScalar(sourceElement))
+        {
+            selector = "item => item";
+        }
+        else if (sourceElement is INamedTypeSymbol sourceModel && destinationElement is INamedTypeSymbol destinationModel &&
+                 sourceModel.TypeKind == TypeKind.Class && destinationModel.TypeKind == TypeKind.Class &&
+                 !sourceModel.IsAbstract && !destinationModel.IsAbstract && !destinationModel.IsGenericType &&
+                 destinationModel.InstanceConstructors.Any(constructor => constructor.Parameters.Length == 0 &&
+                     IsAccessibleConstructor(constructor, source.ContainingAssembly)))
+        {
+            var members = new List<string>();
+            foreach (var targetMember in destinationModel.GetMembers().OfType<IPropertySymbol>().Where(property => !property.IsStatic && !property.IsImplicitlyDeclared))
+            {
+                if (targetMember.IsIndexer || targetMember.IsRequired || targetMember.SetMethod?.DeclaredAccessibility != Accessibility.Public || targetMember.SetMethod.IsInitOnly ||
+                    new AstraFlowSensitiveDataPolicy().IsSensitiveName(targetMember.Name))
+                {
+                    reason = "collection element destinations need public settable non-sensitive properties";
+                    return false;
+                }
+                var sourceMembers = sourceModel.GetMembers(targetMember.Name).OfType<IPropertySymbol>()
+                    .Where(property => !property.IsStatic && !property.IsIndexer && property.GetMethod?.DeclaredAccessibility == Accessibility.Public).ToArray();
+                if (sourceMembers.Length != 1 || !SymbolEqualityComparer.Default.Equals(sourceMembers[0].Type, targetMember.Type) || !IsScalar(targetMember.Type) ||
+                    ((sourceMembers[0].NullableAnnotation != NullableAnnotation.NotAnnotated || HasMaybeNull(sourceMembers[0])) &&
+                     (targetMember.NullableAnnotation == NullableAnnotation.NotAnnotated || HasDisallowNull(targetMember)) && targetMember.Type.IsReferenceType))
+                {
+                    reason = "collection element properties need exact-name scalar source properties with identical types and safe nullability";
+                    return false;
+                }
+                members.Add(Escape(targetMember.Name) + " = item." + Escape(sourceMembers[0].Name));
+            }
+            if (members.Count == 0)
+            {
+                reason = "collection element destinations need at least one supported scalar property";
+                return false;
+            }
+            members.Sort(StringComparer.Ordinal);
+            selector = "item => new " + destinationElement.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) + " { " + string.Join(", ", members) + " }";
+        }
+        else
+        {
+            reason = "collection elements must have the same scalar type or compatible class properties";
+            return false;
+        }
+
+        projection = "global::System.Linq.Enumerable.ToList(global::System.Linq.Enumerable.Select(" + sourceVariable + "." + Escape(source.Name) + ", " + selector + "))";
+        return true;
+    }
     private static bool IsAccessibleConstructor(IMethodSymbol constructor, IAssemblySymbol mappingAssembly) =>
         constructor.DeclaredAccessibility == Accessibility.Public ||
         (SymbolEqualityComparer.Default.Equals(constructor.ContainingAssembly, mappingAssembly) &&
@@ -263,14 +376,16 @@ public sealed class AstraFlowExecutableMapperGenerator : IIncrementalGenerator
 
     private sealed class MappingCandidate
     {
-        public MappingCandidate(IMethodSymbol method, string fingerprint, string? pairKey)
+        public MappingCandidate(IMethodSymbol method, Compilation compilation, string fingerprint, string? pairKey)
         {
             Method = method;
+            Compilation = compilation;
             Fingerprint = fingerprint;
             PairKey = pairKey;
         }
 
         public IMethodSymbol Method { get; }
+        public Compilation Compilation { get; }
         public string Fingerprint { get; }
         public string? PairKey { get; }
     }
