@@ -149,11 +149,14 @@ The generator emits a deterministic, readable implementation with a direct null 
 - At least one destination instance property. Every destination instance data member must be a public settable non-required property.
 - Each destination property must have exactly one public, readable, exact-name source property. The property types must be identical supported scalars: enums, Boolean, integral/floating-point/decimal numeric primitives, `char`, or `string`. No implicit numeric, enum, or other conversions occur.
 - Nullable reference members where the source-to-destination flow is safe. `[MaybeNull]` on a source property/getter and `[DisallowNull]` on a destination property/setter are also considered.
+- Array and enumerable properties whose destination accepts `List<T>`. Elements may be identical supported scalars or flat classes with matching public scalar properties; generated code uses `Select` and `ToList`. A null source collection maps to an empty list for a non-nullable destination and to `null` for a nullable destination.
+- Destination properties annotated with `[AstraValueConverter(typeof(Converter), nameof(Converter.Method))]`. The method must be public or same-assembly internal, static, non-generic, and accept exactly the source property type while returning exactly the destination property type.
+- Polymorphic collection properties can declare each supported source/destination subtype pair with repeatable `[AstraDerivedMapping(typeof(SourceChild), typeof(DestinationChild))]` attributes. The generator emits a runtime type switch and throws `InvalidOperationException` for undeclared subtypes; it does not silently drop them.
 - Deterministic generated output, per-declaration source hints, and one source-located `AFM001` error for unsupported declarations. Member errors point at the destination member when it is in source, with the mapping declaration as a related location; referenced destination members fall back to the declaration location.
 
 ### Unsupported by the v2.1 branch
 
-The generator reports `AFM001` and emits no method for optional, `params`, `scoped`, `ref`, `in`, or `out` parameters; generic/nested/file-local mapping classes or model types; inherited or record models; abstract models; inaccessible or parameterized-only destination construction; missing/multiple source matches; fields, indexers or other unsupported destination data-member shapes; required/init-only/non-public setters; nullable value types; nested objects, collections, delegates, and unsupported scalar types; incompatible types or unsafe nullability; and duplicate source/destination pairs. Event members are ignored because they are not mapping properties. There is no silent runtime or convention-mapping fallback.
+The generator reports `AFM001` and emits no method for optional, `params`, `scoped`, `ref`, `in`, or `out` parameters; generic/nested/file-local mapping classes or model types; inherited or record models; abstract models; inaccessible or parameterized-only destination construction; missing/multiple source matches; fields, indexers or other unsupported destination data-member shapes; required/init-only/non-public setters; nullable value types; nested objects, delegates, unsupported collection shapes, and unsupported scalar types; incompatible types or unsafe nullability; invalid converters; and duplicate source/destination pairs. Collection element classes are limited to matching public scalar properties and are mapped one level deep; nested collections, nested objects, and unsafe element nullability are unsupported. Event members are ignored because they are not mapping properties. There is no silent runtime or convention-mapping fallback.
 
 The shared sensitive-name policy blocks default-classified destination names. It is compile-time defense in depth only: the generator cannot evaluate arbitrary runtime policy configuration, and name-based classification is not authorization or a guarantee that a DTO is safe. Diagnostics and generated source contain member metadata, never mapped runtime values.
 
@@ -163,7 +166,7 @@ The direct generated mapping path was published and executed as Native AOT from 
 
 ### Future candidates
 
-Generated-to-`IMapper` registration, deep/nested conversion, collection conversion, record/constructor mapping, broader scalar conversions, update/reverse domain writes, direct mediator dispatch, and runtime-configured policy evaluation remain future candidates. Any expansion needs separate semantic, security, compatibility, AOT, and performance evidence.
+Generated-to-`IMapper` registration, nested collection conversion, record/constructor mapping, broader scalar conversions, update/reverse domain writes, direct mediator dispatch, and runtime-configured policy evaluation remain future candidates. Any expansion needs separate semantic, security, compatibility, AOT, and performance evidence.
 
 ### Requirements for a future generated mediator execution path
 
