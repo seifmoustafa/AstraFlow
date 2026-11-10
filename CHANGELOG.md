@@ -19,6 +19,7 @@ All notable AstraFlow changes are tracked here.
 - Generate direct collection projections for enumerable scalar elements and flat class elements with safe property mappings.
 - Add `[AstraValueConverter]` declarations for validated static scalar conversion methods in generated mappings.
 - Add explicit polymorphic collection mappings with declared subtype dispatch and a fail-fast fallback for unknown subtypes.
+- Add a version and upgrade guide comparing the `1.13.0`, `2.2.0`, and `2.3.0` lines, with consumer impact, package boundaries, migration scope, and verification limits.
 
 ### Changed
 

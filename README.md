@@ -82,6 +82,7 @@ NuGet shows package history under the **Release Notes** tab. GitHub shows only s
 | [Package Selection](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/package-selection.md) | You want to choose the smallest package set for an app, library, test project, or EF Core project. |
 | [Compatibility](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/compatibility.md) | You want current target framework support and target-expansion rules. |
 | [Migration Cookbook](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/migration-cookbook.md) | You want upgrade smoke-test guidance and before/after package migration checks. |
+| [Version and Upgrade Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/version-upgrade-guide.md) | You want a clear `1.13.0` → `2.2.0` → `2.3.0` comparison, migration impact, and code-change estimates. |
 | [API Governance](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/api-governance.md) | You want public API compatibility rules and release-review expectations. |
 | [API Reference](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/api-reference.md) | You need every public type, method, option, and expected behavior in one table-driven reference. |
 | [Architecture](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/architecture.md) | You want to understand the package design, runtime flow, dependency boundaries, and non-goals. |
