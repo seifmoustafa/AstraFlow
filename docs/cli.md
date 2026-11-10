@@ -24,7 +24,7 @@ astraflow inspect handlers|notifications|mappings|projections [path] --detail
 astraflow validate [path] -o json|markdown|sarif|text
 astraflow report [path] -o json|markdown|sarif|text
 astraflow diff before.json after.json -o json|markdown|text
-astraflow graph [path] --style relational|pipeline|events --format mermaid|dot|canvas-json --direction TB|LR --cluster
+astraflow graph [path] --style relational|pipeline|events --group-by module|feature -f|--format mermaid|dot|canvas-json --direction TB|LR -o graph.json
 astraflow scan [path] -o json|markdown|text
 ```
 
@@ -60,8 +60,8 @@ dotnet run --project src/AstraFlow.Cli -- inspect AstraFlow.slnx
 - `sarif`: SARIF 2.1.0 result envelope for validation findings.
 - `mermaid`: flowchart output from `graph`.
 - `dot`: Graphviz DOT output from `graph`.
-- `canvas-json`: structured relational graph output with module/feature clusters, request/handler/response nodes, ports, dispatch/outcome edges, source locations, and graph counts.
+- `canvas-json`: structured graph output with module/feature clusters, request/handler/response nodes, notification handlers, mapping and projection nodes, typed ports, available edges, source locations, and graph counts. Pass `-o ./graph.json` (or `--output-file`) to write graph output to a file.
 
-Mermaid graph output defaults to the relational request → handler → response layout when it can read a closed `IRequestHandler<TRequest, TResponse>` declaration from an inspected source line. `Result<T>` response wrappers are unwrapped for the response node label. Other handler forms are omitted from the relational view. `--style pipeline` emits the five conceptual execution stages and includes behaviors, handlers, notifications, and projections found by source scanning. `--style events` shows notification handler relationships. Cluster identifiers use a separate `cluster_` namespace to avoid Mermaid subgraph/node identifier collisions.
+Mermaid graph output defaults to the relational request → handler → response layout when it can read a closed `IRequestHandler<TRequest, TResponse>` declaration from an inspected source line. `Result<T>` response wrappers are unwrapped for the response node label. `--group-by feature` nests flows by module and source feature directory; `--group-by module` groups flows directly under modules. Other handler forms are omitted from the relational view. `--style pipeline` emits the five conceptual execution stages and includes behaviors, handlers, notifications, and projections found by source scanning. `--style events` shows notification handler relationships. Cluster identifiers use a separate `cluster_` namespace to avoid Mermaid subgraph/node identifier collisions.
 
 JSON report and Canvas JSON output use relaxed JSON escaping for readable C# generic signatures. This is intended for CLI data output, not embedding JSON directly into an HTML document; HTML consumers must apply their normal output encoding.

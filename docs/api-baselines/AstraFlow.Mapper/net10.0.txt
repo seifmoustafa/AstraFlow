@@ -141,6 +141,14 @@ T:AstraFlow.Mapper.AstraFlowObjectMapper
 T:AstraFlow.Mapper.AstraFlowObjectMappingStartupValidator
 T:AstraFlow.Mapper.AstraFlowObjectMappingValidator
 T:AstraFlow.Mapper.AstraGenerateMappingAttribute
+T:AstraFlow.Mapper.AstraValueConverterAttribute
+T:AstraFlow.Mapper.AstraDerivedMappingAttribute
+M:AstraFlow.Mapper.AstraDerivedMappingAttribute.#ctor(System.Type,System.Type)
+P:AstraFlow.Mapper.AstraDerivedMappingAttribute.SourceType
+P:AstraFlow.Mapper.AstraDerivedMappingAttribute.DestinationType
+M:AstraFlow.Mapper.AstraValueConverterAttribute.#ctor(System.Type,System.String)
+P:AstraFlow.Mapper.AstraValueConverterAttribute.ConverterType
+P:AstraFlow.Mapper.AstraValueConverterAttribute.MethodName
 T:AstraFlow.Mapper.GeneratedMapperMetadata
 T:AstraFlow.Mapper.GeneratedMappingRuleMetadata
 T:AstraFlow.Mapper.GeneratedProjectionMetadata

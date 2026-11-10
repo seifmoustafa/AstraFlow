@@ -129,6 +129,33 @@ public sealed class CliCommandTests
     }
 
     [Fact]
+    public void GraphMermaid_Can_group_relational_chains_by_module()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "Handler.cs"),
+            "public sealed class Handler : IRequestHandler<Request, Result<Response>> { }");
+
+        var output = Run("graph", temp.Path, "--style", "relational", "--group-by", "module");
+
+        output.Should().Contain("cluster_module_Core");
+        output.Should().Contain("request_");
+        output.Should().NotContain("Operations");
+    }
+
+    [Fact]
+    public void GraphMermaid_Parses_handler_contracts_split_across_lines()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "Handler.cs"),
+            "public sealed class Handler : IRequestHandler<\n    ConfirmRequest,\n    Result<ConfirmResponse>> { }");
+
+        var output = Run("graph", temp.Path, "--style", "relational");
+
+        output.Should().Contain("ConfirmRequest");
+        output.Should().Contain("ConfirmResponse");
+    }
+
+    [Fact]
     public void GraphCanvasJson_Contains_nodes_edges_ports_and_unescaped_generic_text()
     {
         using var temp = new TempDirectory();
@@ -171,6 +198,47 @@ public sealed class CliCommandTests
         output.Should().Contain("3. Core Execution");
         output.Should().Contain("4. Domain Events / Outbox");
         output.Should().Contain("5. Projections &amp; Mappers");
+    }
+
+    [Fact]
+    public void GraphCanvasJson_Includes_notification_mapping_and_projection_nodes()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "RequestHandler.cs"),
+            "public sealed class RequestHandler : IRequestHandler<Request, Result<Response>> { }");
+        File.WriteAllText(Path.Combine(temp.Path, "EventHandler.cs"),
+            "public sealed class EventHandler : INotificationHandler<ReservationConfirmed> { }");
+        File.WriteAllText(Path.Combine(temp.Path, "MapRule.cs"),
+            "public sealed class MapRule : IObjectMappingRule { }");
+        File.WriteAllText(Path.Combine(temp.Path, "ReservationProjection.cs"),
+            "public sealed class ReservationProjection : IProjection<Reservation, ReservationDto> { }");
+
+        using var document = JsonDocument.Parse(Run("graph", temp.Path, "--format", "canvas-json"));
+        var root = document.RootElement;
+        var nodes = root.GetProperty("nodes").EnumerateArray().ToArray();
+
+        nodes.Should().Contain(node => node.GetProperty("type").GetString() == "event");
+        nodes.Should().Contain(node => node.GetProperty("type").GetString() == "notification-handler");
+        nodes.Should().Contain(node => node.GetProperty("type").GetString() == "mapping");
+        nodes.Should().Contain(node => node.GetProperty("type").GetString() == "projection");
+        root.GetProperty("stats").GetProperty("events").GetInt32().Should().Be(1);
+        root.GetProperty("stats").GetProperty("mappings").GetInt32().Should().Be(2);
+        root.GetProperty("edges").GetArrayLength().Should().Be(5);
+    }
+
+    [Fact]
+    public void GraphCanvasJson_Can_write_to_requested_file()
+    {
+        using var temp = new TempDirectory();
+        var source = Path.Combine(temp.Path, "Handler.cs");
+        var outputPath = Path.Combine(temp.Path, "graph.json");
+        File.WriteAllText(source, "public sealed class Handler : IRequestHandler<Request, Result<Response>> { }");
+
+        var exitCode = Execute(["graph", temp.Path, "-f", "canvas-json", "-o", outputPath], out _, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(0);
+        error.Should().BeEmpty();
+        JsonDocument.Parse(File.ReadAllText(outputPath)).RootElement.GetProperty("nodes").GetArrayLength().Should().Be(3);
     }
 
     [Fact]

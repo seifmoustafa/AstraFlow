@@ -27,7 +27,7 @@ public static class Program
         }
 
         var command = args[0].ToLowerInvariant();
-        var arguments = CliArguments.Parse(args.Skip(1));
+        var arguments = CliArguments.Parse(args.Skip(1), command);
 
         if (arguments.Help)
         {
@@ -111,7 +111,7 @@ public static class Program
         {
             GraphFormat.Dot => GraphFormatter.ToDot(report, cluster),
             GraphFormat.CanvasJson => GraphFormatter.ToCanvasJson(report, DateTimeOffset.UtcNow),
-            _ => GraphFormatter.ToRelationalMermaid(report, direction)
+            _ => GraphFormatter.ToRelationalMermaid(report, direction, GraphGroupBy.Feature)
         };
     }
 
@@ -217,9 +217,16 @@ public static class Program
             {
                 GraphStyle.Pipeline => GraphFormatter.ToPipelineMermaid(report),
                 GraphStyle.Events => GraphFormatter.ToEventsMermaid(report),
-                _ => GraphFormatter.ToRelationalMermaid(report, arguments.Direction)
+                _ => GraphFormatter.ToRelationalMermaid(report, arguments.Direction, arguments.GroupBy)
             }
         };
+
+        if (arguments.OutputPath is not null)
+        {
+            var outputPath = Path.GetFullPath(arguments.OutputPath);
+            File.WriteAllText(outputPath, graph);
+            return CliResult.Success($"Wrote graph output to {outputPath}");
+        }
 
         return CliResult.Success(graph);
     }
@@ -303,6 +310,12 @@ internal enum GraphStyle
     Events
 }
 
+internal enum GraphGroupBy
+{
+    Module,
+    Feature
+}
+
 internal sealed class CliArguments
 {
     private CliArguments()
@@ -317,6 +330,10 @@ internal sealed class CliArguments
 
     public GraphStyle GraphStyle { get; private set; } = GraphStyle.Relational;
 
+    public GraphGroupBy GroupBy { get; private set; } = GraphGroupBy.Feature;
+
+    public string? OutputPath { get; private set; }
+
     public string Direction { get; private set; } = "TB";
 
     public bool Cluster { get; private set; }
@@ -325,7 +342,7 @@ internal sealed class CliArguments
 
     public bool Help { get; private set; }
 
-    public static CliArguments Parse(IEnumerable<string> rawArguments)
+    public static CliArguments Parse(IEnumerable<string> rawArguments, string command)
     {
         var arguments = new CliArguments();
         var values = rawArguments.ToArray();
@@ -347,14 +364,27 @@ internal sealed class CliArguments
                     arguments.Cluster = true;
                     break;
                 case "-o":
+                    var outputValue = NextValue(values, ref index, value);
+                    if (command == "graph" && !IsOutputFormat(outputValue))
+                        arguments.OutputPath = outputValue;
+                    else
+                        arguments.Output = ParseOutput(outputValue);
+                    break;
                 case "--output":
                     arguments.Output = ParseOutput(NextValue(values, ref index, value));
                     break;
+                case "--output-file":
+                    arguments.OutputPath = NextValue(values, ref index, value);
+                    break;
+                case "-f":
                 case "--format":
                     arguments.GraphFormat = ParseGraphFormat(NextValue(values, ref index, value));
                     break;
                 case "--style":
                     arguments.GraphStyle = ParseGraphStyle(NextValue(values, ref index, value));
+                    break;
+                case "--group-by":
+                    arguments.GroupBy = ParseGraphGroupBy(NextValue(values, ref index, value));
                     break;
                 case "--direction":
                     arguments.Direction = ParseDirection(NextValue(values, ref index, value));
@@ -391,6 +421,8 @@ internal sealed class CliArguments
         };
     }
 
+    private static bool IsOutputFormat(string value) => value.ToLowerInvariant() is "text" or "json" or "markdown" or "md" or "sarif";
+
     private static GraphFormat ParseGraphFormat(string value)
     {
         return value.ToLowerInvariant() switch
@@ -420,6 +452,16 @@ internal sealed class CliArguments
             "pipeline" or "pipe" => GraphStyle.Pipeline,
             "events" => GraphStyle.Events,
             _ => throw new InvalidOperationException("--style accepts relational, pipeline, or events.")
+        };
+    }
+
+    private static GraphGroupBy ParseGraphGroupBy(string value)
+    {
+        return value.ToLowerInvariant() switch
+        {
+            "module" => GraphGroupBy.Module,
+            "feature" => GraphGroupBy.Feature,
+            _ => throw new InvalidOperationException("--group-by accepts module or feature.")
         };
     }
 }
@@ -746,7 +788,7 @@ internal static class GraphFormatter
         return builder.ToString().TrimEnd();
     }
 
-    public static string ToRelationalMermaid(CliReport report, string direction)
+    public static string ToRelationalMermaid(CliReport report, string direction, GraphGroupBy groupBy)
     {
         var chains = BuildChains(report);
         var builder = new StringBuilder();
@@ -756,26 +798,38 @@ internal static class GraphFormatter
         {
             var moduleId = "cluster_module_" + Sanitize(module.Key);
             builder.AppendLine($"  subgraph {moduleId}[\"{EscapeLabel(module.Key)} Module\"]");
-            builder.AppendLine("    direction TB");
-            foreach (var feature in module.GroupBy(chain => chain.Feature, StringComparer.Ordinal))
+            if (groupBy == GraphGroupBy.Module)
             {
-                var featureId = moduleId + "_feature_" + Sanitize(feature.Key);
-                builder.AppendLine($"    subgraph {featureId}[\"{EscapeLabel(feature.Key)} Operations\"]");
-                builder.AppendLine("      direction LR");
-                foreach (var chain in feature)
+                builder.AppendLine("    direction LR");
+                foreach (var chain in module)
+                    AppendRelationalChain(builder, chain, ref counter);
+            }
+            else
+            {
+                builder.AppendLine("    direction TB");
+                foreach (var feature in module.GroupBy(chain => chain.Feature, StringComparer.Ordinal))
                 {
-                    counter++;
-                    var requestId = $"request_{counter}";
-                    var handlerId = $"handler_{counter}";
-                    var responseId = $"response_{counter}";
-                    var kind = chain.Request.EndsWith("Query", StringComparison.OrdinalIgnoreCase) ? "QRY" : "CMD";
-                    builder.AppendLine($"      {requestId}[\"{kind}: {EscapeLabel(chain.Request)}\"] --> {handlerId}[\"{EscapeLabel(chain.Handler)}\"] --> {responseId}[\"{EscapeLabel(chain.Response)}\"]");
+                    var featureId = moduleId + "_feature_" + Sanitize(feature.Key);
+                    builder.AppendLine($"    subgraph {featureId}[\"{EscapeLabel(feature.Key)} Operations\"]");
+                    builder.AppendLine("      direction LR");
+                    foreach (var chain in feature)
+                        AppendRelationalChain(builder, chain, ref counter);
+                    builder.AppendLine("    end");
                 }
-                builder.AppendLine("    end");
             }
             builder.AppendLine("  end");
         }
         return builder.ToString().TrimEnd();
+    }
+
+    private static void AppendRelationalChain(StringBuilder builder, Chain chain, ref int counter)
+    {
+        counter++;
+        var requestId = $"request_{counter}";
+        var handlerId = $"handler_{counter}";
+        var responseId = $"response_{counter}";
+        var kind = chain.Request.EndsWith("Query", StringComparison.OrdinalIgnoreCase) ? "QRY" : "CMD";
+        builder.AppendLine($"      {requestId}[\"{kind}: {EscapeLabel(chain.Request)}\"] --> {handlerId}[\"{EscapeLabel(chain.Handler)}\"] --> {responseId}[\"{EscapeLabel(chain.Response)}\"]");
     }
 
     public static string ToPipelineMermaid(CliReport report)
@@ -792,17 +846,25 @@ internal static class GraphFormatter
         foreach (var stage in stageDefinitions)
         {
             builder.AppendLine($"  subgraph cluster_stage_{stage.Id}[\"{EscapeLabel(stage.Label)}\"]");
-            var items = report.Sections.FirstOrDefault(section => section.Name == stage.Section)?.Items ?? [];
-            if (stage.Id == "dispatch")
-                items = items.Where(item => TryGetGenericArguments(item.Detail, "IRequestHandler", out _)).ToArray();
-            if (stage.Id == "execution")
-                items = items.Where(item => TryGetGenericArguments(item.Detail, "IRequestHandler", out _)).ToArray();
-            if (items.Count == 0)
+            var items = report.Sections.Where(section => section.Name == stage.Section).SelectMany(section => section.Items).ToArray();
+            if (stage.Id == "dispatch" || stage.Id == "execution")
+                items = items.Where(item => TryGetItemGenericArguments(item, "IRequestHandler", out _)).ToArray();
+            if (stage.Id == "projections")
+                items = items.Concat(report.Sections.Where(section => section.Name == "mappings").SelectMany(section => section.Items)).ToArray();
+            if (items.Length == 0)
                 builder.AppendLine($"    {stage.Id}_0[\"No {stage.Label.ToLowerInvariant()} found\"]");
             foreach (var (item, index) in items.Select((item, index) => (item, index)))
             {
                 var id = stage.Id + "_" + index;
-                builder.AppendLine($"    {id}[\"{EscapeLabel(item.Detail ?? item.Type)}\"]");
+                var label = stage.Id switch
+                {
+                    "dispatch" when TryGetItemGenericArguments(item, "IRequestHandler", out var requestArgs) && requestArgs.Count > 0 => requestArgs[0],
+                    "execution" => TypeName(item.Id),
+                    "outbox" when TryGetItemGenericArguments(item, "INotificationHandler", out var eventArgs) && eventArgs.Count > 0 => eventArgs[0],
+                    "projections" => TypeName(item.Id),
+                    _ => item.Detail ?? item.Type
+                };
+                builder.AppendLine($"    {id}[\"{EscapeLabel(label)}\"]");
             }
             builder.AppendLine("  end");
         }
@@ -817,7 +879,7 @@ internal static class GraphFormatter
         var items = report.Sections.FirstOrDefault(section => section.Name == "notifications")?.Items ?? [];
         foreach (var (item, index) in items.Select((item, index) => (item, index)))
         {
-            var eventType = TryGetGenericArguments(item.Detail, "INotificationHandler", out var args) && args.Count > 0 ? args[0] : item.Type;
+            var eventType = TryGetItemGenericArguments(item, "INotificationHandler", out var args) && args.Count > 0 ? args[0] : item.Type;
             var eventId = "event_" + index;
             var handlerId = "subscriber_" + index;
             builder.AppendLine($"  {eventId}[\"{EscapeLabel(eventType)}\"]");
@@ -830,9 +892,11 @@ internal static class GraphFormatter
     public static string ToCanvasJson(CliReport report, DateTimeOffset timestamp)
     {
         var chains = BuildChains(report);
-        var clusters = chains.GroupBy(chain => chain.Module, StringComparer.Ordinal).Select(module => new CanvasCluster(
+        var allItems = report.Sections.SelectMany(section => section.Items).ToArray();
+        var clusterKeys = allItems.Select(item => GetModuleAndFeature(item.Source)).Distinct().ToArray();
+        var clusters = clusterKeys.GroupBy(location => location.Module, StringComparer.Ordinal).Select(module => new CanvasCluster(
             "cluster_module_" + Sanitize(module.Key), module.Key + " Module", "module",
-            module.GroupBy(chain => chain.Feature, StringComparer.Ordinal).Select(feature => new CanvasCluster(
+            module.GroupBy(location => location.Feature, StringComparer.Ordinal).Select(feature => new CanvasCluster(
                 "cluster_module_" + Sanitize(module.Key) + "_feature_" + Sanitize(feature.Key),
                 feature.Key + " Operations", "feature", Array.Empty<CanvasCluster>())).ToArray())).ToArray();
         var nodes = new List<CanvasNode>();
@@ -853,10 +917,58 @@ internal static class GraphFormatter
             edges.Add(new CanvasEdge("edge_" + index + "_dispatch", requestId, "port_" + requestId + "_out", handlerId, "port_" + handlerId + "_in", "dispatch"));
             edges.Add(new CanvasEdge("edge_" + index + "_outcome", handlerId, "port_" + handlerId + "_out", responseId, "port_" + responseId + "_in", "outcome"));
         }
+        var notificationItems = report.Sections.Where(section => section.Name == "notifications").SelectMany(section => section.Items).ToArray();
+        foreach (var (item, index) in notificationItems.Select((item, index) => (item, index)))
+        {
+            var (module, feature) = GetModuleAndFeature(item.Source);
+            var clusterId = "cluster_module_" + Sanitize(module) + "_feature_" + Sanitize(feature);
+            var eventType = TryGetItemGenericArguments(item, "INotificationHandler", out var args) && args.Count > 0 ? args[0] : "UnknownNotification";
+            var eventId = "event_" + index;
+            var handlerId = "event_handler_" + index;
+            nodes.Add(new CanvasNode(eventId, clusterId, "event", eventType, module, feature, item.Source, null, eventType, null,
+                new CanvasPorts(null, ["port_" + eventId + "_out"])));
+            nodes.Add(new CanvasNode(handlerId, clusterId, "notification-handler", TypeName(item.Id), module, feature, item.Source,
+                ParseLineNumber(item.Id), item.Detail, null, new CanvasPorts(["port_" + handlerId + "_in"], null)));
+            edges.Add(new CanvasEdge("edge_event_" + index, eventId, "port_" + eventId + "_out", handlerId, "port_" + handlerId + "_in", "notification"));
+        }
+        foreach (var (item, index) in report.Sections.Where(section => section.Name == "mappings").SelectMany(section => section.Items).Select((item, index) => (item, index)))
+        {
+            var (module, feature) = GetModuleAndFeature(item.Source);
+            var clusterId = "cluster_module_" + Sanitize(module) + "_feature_" + Sanitize(feature);
+            var mappingId = "mapping_" + index;
+            nodes.Add(new CanvasNode(mappingId, clusterId, "mapping", TypeName(item.Id), module, feature, item.Source,
+                ParseLineNumber(item.Id), item.Detail, null, new CanvasPorts(null, null)));
+        }
+        foreach (var (item, index) in report.Sections.Where(section => section.Name == "projections").SelectMany(section => section.Items).Select((item, index) => (item, index)))
+        {
+            var (module, feature) = GetModuleAndFeature(item.Source);
+            var clusterId = "cluster_module_" + Sanitize(module) + "_feature_" + Sanitize(feature);
+            if (!TryGetItemGenericArguments(item, "IProjection", out var arguments) || arguments.Count < 2)
+            {
+                var id = "projection_" + index;
+                nodes.Add(new CanvasNode(id, clusterId, "projection", TypeName(item.Id), module, feature, item.Source,
+                    ParseLineNumber(item.Id), item.Detail, null, new CanvasPorts(null, null)));
+                continue;
+            }
+            var sourceId = "projection_source_" + index;
+            var projectionId = "projection_" + index;
+            var destinationId = "projection_target_" + index;
+            nodes.Add(new CanvasNode(sourceId, clusterId, "projection-source", arguments[0], module, feature, item.Source, null, null, null,
+                new CanvasPorts(null, ["port_" + sourceId + "_out"])));
+            nodes.Add(new CanvasNode(projectionId, clusterId, "projection", TypeName(item.Id), module, feature, item.Source,
+                ParseLineNumber(item.Id), item.Detail, arguments[1], new CanvasPorts(["port_" + projectionId + "_in"], ["port_" + projectionId + "_out"])));
+            nodes.Add(new CanvasNode(destinationId, clusterId, "projection-target", arguments[1], module, feature, item.Source, null, null, arguments[1],
+                new CanvasPorts(["port_" + destinationId + "_in"], null)));
+            edges.Add(new CanvasEdge("edge_projection_in_" + index, sourceId, "port_" + sourceId + "_out", projectionId, "port_" + projectionId + "_in", "projection-input"));
+            edges.Add(new CanvasEdge("edge_projection_out_" + index, projectionId, "port_" + projectionId + "_out", destinationId, "port_" + destinationId + "_in", "projection-output"));
+        }
+        var eventCount = notificationItems.Select(item =>
+                TryGetItemGenericArguments(item, "INotificationHandler", out var args) && args.Count > 0 ? args[0] : item.Id)
+            .Distinct(StringComparer.Ordinal).Count();
+        var mappingCount = report.Sections.Where(section => section.Name is "mappings" or "projections").Sum(section => section.Items.Count);
         var doc = new CanvasDocument("2.3.0", timestamp.ToUniversalTime().ToString("O"), report.Path,
-            new CanvasStats(clusters.Length, clusters.Sum(cluster => cluster.Clusters.Count), chains.Count, chains.Count,
-                report.Sections.Where(section => section.Name == "notifications").Sum(section => section.Items.Count),
-                report.Sections.Where(section => section.Name is "mappings" or "projections").Sum(section => section.Items.Count)),
+            new CanvasStats(clusters.Length, clusterKeys.Select(location => location.Module + "\0" + location.Feature).Distinct(StringComparer.Ordinal).Count(),
+                chains.Count, chains.Count, eventCount, mappingCount),
             clusters, nodes, edges);
         return JsonSerializer.Serialize(doc, ProgramJson.Options);
     }
@@ -867,24 +979,52 @@ internal static class GraphFormatter
         var chains = new List<Chain>();
         foreach (var item in items)
         {
-            if (!TryGetGenericArguments(item.Detail, "IRequestHandler", out var arguments) || arguments.Count < 2)
+            if (!TryGetItemGenericArguments(item, "IRequestHandler", out var arguments) || arguments.Count < 2)
                 continue;
             var request = arguments[0];
             var response = UnwrapResult(arguments[1]);
             var source = item.Source;
-            var normalized = source.Replace('\\', '/');
-            var segments = normalized.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            var moduleIndex = Array.FindIndex(segments, segment => segment.Equals("Modules", StringComparison.OrdinalIgnoreCase));
-            var module = moduleIndex >= 0 && moduleIndex + 1 < segments.Length ? segments[moduleIndex + 1] : "Core";
-            var featureIndex = Array.FindIndex(segments, segment => segment.Equals("Features", StringComparison.OrdinalIgnoreCase));
-            var feature = featureIndex >= 0 && featureIndex + 1 < segments.Length
-                ? segments[featureIndex + 1]
-                : segments.Length > 1 ? segments[^2] : "General";
-            var line = int.TryParse(item.Id.Split(':').ElementAtOrDefault(1), out var parsedLine) ? parsedLine : (int?)null;
+            var (module, feature) = GetModuleAndFeature(source);
+            var line = ParseLineNumber(item.Id);
             chains.Add(new Chain(item.Id, module, feature, request, TypeName(item.Id), response, arguments[1], item.Detail, source, line));
         }
         return chains;
     }
+
+    private static bool TryGetItemGenericArguments(CliItem item, string contract, out List<string> arguments)
+    {
+        if (TryGetGenericArguments(item.Detail, contract, out arguments))
+            return true;
+        if (!File.Exists(item.Source))
+        {
+            arguments = [];
+            return false;
+        }
+        var lineNumber = ParseLineNumber(item.Id);
+        if (lineNumber is null)
+        {
+            arguments = [];
+            return false;
+        }
+        var lines = File.ReadAllLines(item.Source);
+        var start = Math.Clamp(lineNumber.Value - 1, 0, Math.Max(0, lines.Length - 1));
+        return TryGetGenericArguments(string.Join("\n", lines.Skip(start).Take(32)), contract, out arguments);
+    }
+
+    private static (string Module, string Feature) GetModuleAndFeature(string source)
+    {
+        var segments = source.Replace('\\', '/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+        var moduleIndex = Array.FindIndex(segments, segment => segment.Equals("Modules", StringComparison.OrdinalIgnoreCase));
+        var module = moduleIndex >= 0 && moduleIndex + 1 < segments.Length ? segments[moduleIndex + 1] : "Core";
+        var featureIndex = Array.FindIndex(segments, segment => segment.Equals("Features", StringComparison.OrdinalIgnoreCase));
+        var feature = featureIndex >= 0 && featureIndex + 1 < segments.Length
+            ? segments[featureIndex + 1]
+            : segments.Length > 1 ? segments[^2] : "General";
+        return (module, feature);
+    }
+
+    private static int? ParseLineNumber(string id) =>
+        int.TryParse(id.Split(':').ElementAtOrDefault(1), out var line) ? line : null;
 
     private static bool TryGetGenericArguments(string? text, string contract, out List<string> arguments)
     {
@@ -1017,7 +1157,7 @@ internal static class CliHelp
           astraflow validate [path] [-o json|markdown|sarif|text]
           astraflow report [path] [-o json|markdown|sarif|text]
           astraflow diff <before.json> <after.json> [-o json|markdown|text]
-          astraflow graph [path] [--style relational|pipeline|events] [--format mermaid|dot|canvas-json] [--direction TB|LR] [--cluster]
+          astraflow graph [path] [--style relational|pipeline|events] [--group-by module|feature] [-f|--format mermaid|dot|canvas-json] [--direction TB|LR] [-o graph.json]
           astraflow scan [path] [-o json|markdown|text]
         """;
 
@@ -1029,7 +1169,7 @@ internal static class CliHelp
             "validate" => "Usage: astraflow validate [path] [-o json|markdown|sarif|text]",
             "report" => "Usage: astraflow report [path] [-o json|markdown|sarif|text]",
             "diff" => "Usage: astraflow diff <before.json> <after.json> [-o json|markdown|text]",
-            "graph" => "Usage: astraflow graph [path] [--style relational|pipeline|events] [--format mermaid|dot|canvas-json] [--direction TB|LR] [--cluster]",
+            "graph" => "Usage: astraflow graph [path] [--style relational|pipeline|events] [--group-by module|feature] [-f|--format mermaid|dot|canvas-json] [--direction TB|LR] [-o graph.json]",
             "scan" => "Usage: astraflow scan [path] [-o json|markdown|text]",
             _ => Text
         };

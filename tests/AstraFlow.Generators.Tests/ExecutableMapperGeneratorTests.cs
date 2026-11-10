@@ -86,6 +86,81 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         outputItem.GetType().GetProperty("Name")!.GetValue(outputItem).Should().Be("Court 1");
     }
 
+    [Fact]
+    public void Generated_method_invokes_declared_value_converter()
+    {
+        var source = """
+using AstraFlow.Mapper;
+public class Input { public System.Guid PublicId { get; set; } }
+public class Output { [AstraValueConverter(typeof(IdEncoder), nameof(IdEncoder.Encode))] public string PublicId { get; set; } = ""; }
+public static class IdEncoder { public static string Encode(System.Guid value) => value.ToString("N"); }
+public static partial class Maps { [AstraGenerateMapping] public static partial Output Convert(Input source); }
+""";
+
+        var (compilation, result) = Generate(source);
+
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        result.Results.Single().GeneratedSources.Single().SourceText.ToString().Should().Contain("global::IdEncoder.Encode(source.PublicId)");
+    }
+
+    [Fact]
+    public void Invalid_value_converter_reports_unsupported_mapping()
+    {
+        var source = """
+using AstraFlow.Mapper;
+public class Input { public System.Guid PublicId { get; set; } }
+public class Output { [AstraValueConverter(typeof(IdEncoder), nameof(IdEncoder.Encode))] public string PublicId { get; set; } = ""; }
+public static class IdEncoder { public static int Encode(System.Guid value) => 0; }
+public static partial class Maps { [AstraGenerateMapping] public static partial Output Convert(Input source); }
+""";
+
+        var (_, result) = Generate(source);
+
+        result.Diagnostics.Should().ContainSingle(diagnostic => diagnostic.Id == "AFM001" && diagnostic.GetMessage().Contains("value converter"));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Generated_collection_mapping_dispatches_declared_polymorphic_subtypes()
+    {
+        var source = """
+using AstraFlow.Mapper;
+public abstract class Animal { public string Name { get; set; } = ""; }
+public sealed class Dog : Animal { public int BarkCount { get; set; } }
+public abstract class AnimalDto { public string Name { get; set; } = ""; }
+public sealed class DogDto : AnimalDto { public int BarkCount { get; set; } }
+public class Input { public System.Collections.Generic.IEnumerable<Animal> Animals { get; set; } = System.Array.Empty<Animal>(); }
+public class Output
+{
+    [AstraDerivedMapping(typeof(Dog), typeof(DogDto))]
+    public System.Collections.Generic.IReadOnlyList<AnimalDto> Animals { get; set; } = System.Array.Empty<AnimalDto>();
+}
+public static partial class Maps { [AstraGenerateMapping] public static partial Output Convert(Input source); }
+""";
+
+        var (compilation, result) = Generate(source);
+
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        result.Results.Single().GeneratedSources.Single().SourceText.ToString().Should().Contain("item switch");
+        using var stream = new MemoryStream();
+        compilation.Emit(stream).Success.Should().BeTrue();
+        var assembly = Assembly.Load(stream.ToArray());
+        var input = Activator.CreateInstance(assembly.GetType("Input")!)!;
+        var dog = Activator.CreateInstance(assembly.GetType("Dog")!)!;
+        dog.GetType().GetProperty("Name")!.SetValue(dog, "Rex");
+        dog.GetType().GetProperty("BarkCount")!.SetValue(dog, 3);
+        var animals = Array.CreateInstance(assembly.GetType("Animal")!, 1);
+        animals.SetValue(dog, 0);
+        input.GetType().GetProperty("Animals")!.SetValue(input, animals);
+        var output = assembly.GetType("Maps")!.GetMethod("Convert")!.Invoke(null, [input])!;
+        var resultAnimals = (System.Collections.IEnumerable)output.GetType().GetProperty("Animals")!.GetValue(output)!;
+        var dogDto = resultAnimals.Cast<object>().Single();
+        dogDto.GetType().Name.Should().Be("DogDto");
+        dogDto.GetType().GetProperty("BarkCount")!.GetValue(dogDto).Should().Be(3);
+    }
+
     [Theory]
     [InlineData("public string Password { get; set; } = \"\";", "sensitive")]
     [InlineData("public required string Name { get; set; }", "non-required")]

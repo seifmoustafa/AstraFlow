@@ -15,8 +15,10 @@ All notable AstraFlow changes are tracked here.
 - Add regression tests for baseline drift detection and Obsolete replacement guidance.
 - Require release changelog entries to classify breaking changes, additions, changes, fixes, deprecations, removals, and security work.
 - Run published-package API compatibility and previous-version upgrade smoke checks in pull request CI.
-- Add relational request/handler/response Mermaid graphs, pipeline and notification views, and Canvas JSON export to `AstraFlow.Cli`.
+- Add relational request/handler/response Mermaid graphs, pipeline and notification views, Canvas JSON export for handlers, notifications, mappings, and projections, graph-file output, and module/feature grouping to `AstraFlow.Cli`.
 - Generate direct collection projections for enumerable scalar elements and flat class elements with safe property mappings.
+- Add `[AstraValueConverter]` declarations for validated static scalar conversion methods in generated mappings.
+- Add explicit polymorphic collection mappings with declared subtype dispatch and a fail-fast fallback for unknown subtypes.
 
 ### Changed
 
