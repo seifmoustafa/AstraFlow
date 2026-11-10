@@ -1,6 +1,6 @@
-# AstraFlow Version and Upgrade Guide
+# AstraFlow Version Comparison and Upgrade Guide
 
-This guide explains the difference between the published `2.2.0` package shown on the [NuGet Gallery](https://www.nuget.org/packages/AstraFlow), the `2.3.0` work in PR #57, and the cumulative changes for applications still using `1.13.0`.
+This guide is the maintainer-facing, evidence-qualified comparison of AstraFlow `1.13.0`, `2.2.0`, and the unreleased `2.3.0` work in [PR #57](https://github.com/seifmoustafa/AstraFlow/pull/57). It separates released package evidence from repository source, and separates a version-only upgrade from adopting optional features.
 
 ## Read the version numbers correctly
 
@@ -10,7 +10,61 @@ This guide explains the difference between the published `2.2.0` package shown o
 | `2.3.0` | The version in this repository's `Directory.Build.props` and the target of PR #57. It includes the PR's unreleased work. | Not until that exact package version is published. A source version, branch, tag, or successful local pack is not itself a NuGet release. |
 | `2.2.1` | Text retained in the PR branch name `codex/astra-flow-2.2.1-graph-generator`. | It does not set a package version and does not mean this PR will publish `2.2.1`. |
 
-**For this PR, the intended package version is `2.3.0`.** The version is determined by package metadata, not by the branch name. The PR is not a NuGet publication; publishing requires the separate release process.
+**For this PR, the intended package version is `2.3.0`.** `Directory.Build.props` and the PR package artifacts set `2.3.0`; the branch name's `2.2.1` text is stale naming only. The PR is not a NuGet publication; publishing requires the separate release process.
+
+## Executive comparison
+
+| Question | Clear answer |
+| --- | --- |
+| What is `1.13.0`? | A published AstraFlow baseline. Its NuGet version page is [AstraFlow 1.13.0](https://www.nuget.org/packages/AstraFlow/1.13.0). It already contains the accumulated v1 mediator, mapper, projection, diagnostics, testing, convention mapping, analyzer/generator foundations, CLI, integrations, and observability capabilities listed below. |
+| What is `2.2.0`? | The supplied [NuGet Gallery package page](https://www.nuget.org/packages/AstraFlow/2.2.0) screenshot shows the top-level `AstraFlow` package at `2.2.0`. This is the user's current published baseline. The screenshot confirms that package page, not the publication and asset status of every separately named package. |
+| What is `2.3.0`? | The version currently set in the repository and intended for PR #57. It adds the work described below, but it is not installable from NuGet until the corresponding package IDs are actually published. |
+| What should a current `2.2.0` application do now? | Keep using `2.2.0` until the exact `2.3.0` package IDs it needs are published. No immediate application source rewrite is required by the PR's `Breaking Changes: None` classification. |
+| How much code changes to “use everything”? | There is no single switch and no good reason to install every package. A version-only update is usually package-version edits plus verification. Adopting optional capabilities is incremental: a tool command or CI edit for CLI exports, and per-mapping declarations for generated mapping. Migrating every mapping is a separate project sized by the application's mapping inventory and unsupported shapes. |
+
+## Capability matrix: what each version line gives you
+
+This is a **cumulative** comparison: later rows include prior capabilities unless the row calls out a new addition. “Available by `1.13.0`” means the capability was in the `1.13.0` source/release line, not that every application had installed its optional package. For `2.2.0`, the Gallery screenshot establishes the umbrella package version; exact publication for all satellite packages must be checked package by package.
+
+| Capability area | `1.13.0` baseline | `2.2.0` line | `2.3.0` in PR #57 | Typical application impact |
+| --- | --- | --- | --- | --- |
+| Mediator contracts and dispatch | Requests, response and void commands, streams, notifications, sender/publisher, pipelines, processors, exception flow, scanning, and handler diagnostics are already present. | Continues the v1 mediator model; no forced handler rewrite is identified in the changelog. | No mediator runtime behavior change is claimed by this PR. | Version-only update: align the package version and run tests. |
+| Mapping and query projections | Explicit mapping rules, mapping validation, collections, secure-ID abstraction, named/unnamed projections and projection validation are already present. | Continues the mapper and projection APIs. | Adds new generated mapping behavior; it does not replace or change the runtime `IMapper`/projection path. | Existing mapping code can stay as-is. New generated methods are opt-in. |
+| Convention mapping | Optional `AstraFlow.Mapper.Conventions` with profiles, member rules, plans, safe update mapping, constructors/records, converters, and sensitive-write safeguards is available. | Continues the optional package. v2.0 moves shared sensitive-name classification/redaction policy into `AstraFlow.Security`. | No automatic activation or bulk migration of convention profiles. | Keep conventions opt-in; do not install it unless the app deliberately uses it. |
+| Testing helpers | Framework-neutral `AstraFlow.Testing` fakes, harnesses, and assertions are available. | Continues the test package. | No test framework dependency or forced test rewrite is added. | Existing tests remain; add app-level cases for any newly adopted generated mapping shapes. |
+| Analyzers and generator foundation | Build analyzers, generated mediator registrations, and generated mapper/projection metadata are available. | Also includes the v2.1 source milestone's opt-in executable scalar mapping in the source line; standalone v2.1 NuGet publication was not verified. | Extends generated mapping with supported collections, scalar converters, and explicit polymorphic item mappings. | Only projects that reference the private generator and declare mappings are affected. |
+| CLI inspection and reports | `AstraFlow.Cli` already inspects, validates, reports, diffs, scans migrations, and exports JSON/Markdown/SARIF/Mermaid/DOT. | Existing CLI functionality continues. | Adds relational request → handler → response graphs, pipeline/event styles, grouping, Canvas JSON, file output, aliases, and formatting fixes. | Developer/CI tooling only. Snapshot consumers may need to update expected output. |
+| Diagnostics and health summaries | Framework-neutral registration reports, findings, JSON/Markdown output, and health-ready summaries are available. | Continues; diagnostics remains a separate package. | Canvas export consumes graph data; does not make diagnostics mandatory. | No runtime change unless the app opts into CLI/diagnostic workflows. |
+| ASP.NET Core integration | Optional helpers for minimal APIs/controllers, endpoint filters, problem details, diagnostics endpoints, and health summaries are available. | Continues as an optional package. | No new web-host requirement. | Do not add it to projects that do not use ASP.NET Core integration. |
+| FluentValidation integration | Optional request validation pipeline, fail-fast/aggregate behavior, localization hook, and diagnostics are available. | Continues as an optional package. | No change to validator registration or behavior is claimed. | No change unless that integration is used. |
+| OpenTelemetry | Optional `ActivitySource`/`Meter` instrumentation, sampling, disable switches, and payload-safe redaction defaults are available. | v2.0 aligns default redaction with shared `AstraFlow.Security` policy. | No telemetry contract change is claimed. | Review custom redaction policy only if the app uses conventions or telemetry. |
+| Shared security policy | Not a separate package yet; v1.12 telemetry has its own safe defaults and conventions have their own sensitive-member protections. | v2.0 adds `AstraFlow.Security` with sensitive-name classification and redaction primitives; integrations consume the shared policy. | No additional security package or automatic DTO policy activation is claimed. | Add/use the package only when shared policy primitives are wanted; it is not required for mediator or mapper basics. |
+| Release and API governance | v1.13 introduces previous-package API comparison, clean-consumer upgrade smoke, release gates, and migration docs. | The repository's v2.2 change record adds reproducibility/SourceLink checks, SBOM/provenance and signed-tag workflow, dependency review, and release security guidance. The package screenshot alone does not prove that every release-only hosted attestation/signature gate ran. | Adds target-specific checked-in public API baselines, API drift CI, changelog category enforcement, and PR compatibility/upgrade-smoke gates. | Mostly maintainer/CI impact; application source normally does not change. |
+| Target framework and package shape | Multi-target support and package separation already exist. | Later source expands to current package-specific target matrix; integrations remain target-limited. | PR does not require retargeting an application as a version bump. | Check each package's exact assets; never infer whole-family support from the umbrella package. |
+
+### Package-by-package inventory
+
+At the `v1.13.0` Git tag, the repository contains the fourteen packages below. `AstraFlow.Security` is the additional fifteenth package introduced in `2.0.0`. Availability in a release line is separate from whether a given application uses the package.
+
+| Package | Role | Present by `1.13.0`? | `2.2.0` / `2.3.0` note |
+| --- | --- | --- | --- |
+| `AstraFlow` | Convenience package for mediator + mapper. | Yes. | Source package version is `2.2.0`/`2.3.0` by line; it does not pull every optional package. |
+| `AstraFlow.Contracts` | Shared mediator abstractions. | Yes. | Use separately for contracts-only boundaries. |
+| `AstraFlow.Mediator` | Request/notification/stream dispatch and pipelines. | Yes. | No runtime mediator rewrite is part of PR #57. |
+| `AstraFlow.Mapper` | Explicit mappings, collections, projections, secure-ID abstraction. | Yes. | PR #57 adds converter and derived-mapping attributes for generated methods. |
+| `AstraFlow.Mapper.Conventions` | Opt-in convention mapping and plan validation. | Yes. | Shared sensitive-name policy is integrated from v2.0. |
+| `AstraFlow.Mapper.EntityFrameworkCore` | EF Core projection translation checks. | Yes. | Optional integration; current source is `net10.0`-only. |
+| `AstraFlow.Diagnostics` | Registration reports and findings. | Yes. | Separate from the CLI; it can be paired with packages being inspected. |
+| `AstraFlow.Testing` | Framework-neutral testing fakes/harnesses. | Yes. | No forced test-framework dependency. |
+| `AstraFlow.Analyzers` | Build-time diagnostics. | Yes. | Compiler assets, not runtime library assets. |
+| `AstraFlow.Generators` | Generated registration/metadata; later executable mappings. | Yes, foundation only. | PR #57 extends the generated method's supported mapping shapes. |
+| `AstraFlow.Cli` | .NET tool for inspect/validate/report/diff/graph/scan. | Yes. | PR #57 extends graph styles and export formats. |
+| `AstraFlow.AspNetCore` | ASP.NET Core endpoint/controller helpers. | Yes. | Optional integration; current source is `net10.0`-only. |
+| `AstraFlow.FluentValidation` | Validation pipeline integration. | Yes. | Optional integration. |
+| `AstraFlow.OpenTelemetry` | Tracing, metrics, sampling, redaction. | Yes. | Uses shared security policy in the v2 line. |
+| `AstraFlow.Security` | Shared sensitive-name and redaction policy. | No; added in `2.0.0`. | New in v2; optional for applications that do not need shared policy primitives. |
+
+The exact `2.2.0` publication status of every satellite package is not established by the umbrella package screenshot alone. Before switching a consumer, verify every package ID it uses and its target-framework assets on NuGet.
 
 ### Why repository pages may look inconsistent
 
@@ -31,6 +85,22 @@ The current local environment could not resolve `api.nuget.org` while preparing 
 
 The package's 2.3.0 changelog says **Breaking Changes: None**. That is the intended SemVer classification. It is not a promise that every application has zero work: applications may need to update exact package versions, refresh snapshots for output bug fixes, or make code changes when they choose to adopt new opt-in features.
 
+### Exactly what PR #57 adds
+
+| Change | Previous limitation/behavior | `2.3.0` behavior | Consumer consequence |
+| --- | --- | --- | --- |
+| Relational Mermaid graph | A flat handler-focused graph could place many handlers at one rank and did not express the request/response contract. | When the CLI can read a closed `IRequestHandler<TRequest, TResponse>` declaration, it can render request → handler → response. `Result<T>` wrappers are unwrapped for the response label. | Existing command still works; use `--style relational` or the default where supported. Other handler forms are omitted from this relational view. |
+| Pipeline and event views | Graph output did not provide the new conceptual pipeline or focused notification relationships. | `--style pipeline` shows five conceptual stages and discovered behaviors/handlers/notifications/projections; `--style events` shows notification handler relationships. | Tooling-only. Review whether the source scanner can discover the declarations in the consumer's code layout. |
+| Grouping and Canvas JSON | No module/feature clusters or structured Canvas graph export. | `--group-by module|feature` controls grouping; `--format canvas-json` emits structured nodes, typed ports, available edges, source locations, clusters, and counts for handlers, notifications, mappings, and projections. | Tooling/visualization integration only. Consumers should treat JSON as a documented output contract and parse structurally. |
+| Graph file output and aliases | Output required the prior option spelling/flow. | `-f` aliases `--format`; `-o` / `--output-file` writes graph output to a file. | Update scripts only if convenient; old long options remain. |
+| Mermaid cluster IDs | A subgraph and a contained node could share an identifier, confusing Mermaid layout/rendering. | Cluster identifiers are emitted in their own `cluster_` namespace. | Existing Mermaid snapshots may change; graph semantics are clearer. |
+| JSON and Markdown readability | Generic type brackets could be JSON Unicode-escaped; signatures containing `|` could break Markdown table columns. | CLI JSON keeps generic signatures readable, and Markdown signature/table content is escaped. | Scripts comparing exact text/snapshots may need expectation updates. HTML consumers must still HTML-encode data; relaxed JSON escaping is not HTML encoding. |
+| Collection generation | Executable generated methods covered only the conservative scalar-member subset. | Supported array/enumerable sources can map into list-compatible destinations. Scalar elements and one-level flat element classes with matching public scalar properties are supported. Null source collections become empty lists for non-nullable destinations and remain null for nullable destinations. | Opt in per generated method. This is not arbitrary nested object/collection mapping. |
+| Scalar conversion | The generated mapping subset rejected conversion between different scalar property types. | A destination property can declare a validated static converter via `[AstraValueConverter(typeof(Converter), nameof(Converter.Method))]`. It must accept exactly the source property type and return exactly the destination property type; it must be public or same-assembly internal, static, and non-generic. | Add converter declaration/code only for properties that need it; invalid converter shapes are generator errors. |
+| Polymorphic collections | The generator had no declared subtype dispatch for collection items. | Repeatable `[AstraDerivedMapping(typeof(SourceChild), typeof(DestinationChild))]` declarations generate runtime subtype dispatch. | Declare every intended subtype. An unknown subtype throws `InvalidOperationException`; it is not silently skipped or guessed. |
+
+For full supported and unsupported generated shapes, see [the generator guide](generators.md). For command syntax, graph limitations, and JSON encoding notes, see [the CLI guide](cli.md). The generator does not automatically replace `IMapper`, convention mapping, or application mapping rules.
+
 ## Impact on an application currently using `2.2.0`
 
 ### If you only want to stay current
@@ -41,6 +111,16 @@ For the umbrella package, the version change is one package reference:
 
 ```xml
 <PackageReference Include="AstraFlow" Version="2.3.0" />
+```
+
+With Central Package Management, change the central version and keep project references unversioned:
+
+```xml
+<!-- Directory.Packages.props: do this only after the package is published -->
+<PackageVersion Include="AstraFlow" Version="2.3.0" />
+
+<!-- Application.csproj -->
+<PackageReference Include="AstraFlow" />
 ```
 
 If the application references individual packages, update those package IDs individually and keep them aligned. Do not add packages just because they are part of the AstraFlow family.
@@ -82,19 +162,41 @@ This table distinguishes a source/release milestone from independent NuGet publi
 | `1.13.1` | Adds compile-checked host/migration samples and sample-build verification; clarifies package deprecation/versioned docs guidance. | The repo treats this as the `1.13.0` follow-up baseline for later API and upgrade checks. | Mostly maintenance and confidence. Existing application code normally stays the same. |
 | `2.0.0` | Adds `AstraFlow.Security`, shared sensitive-name classification and redaction policy primitives; integrates those defaults into OpenTelemetry and convention mapping. | The repository records `2.0.0` as a verified comparison baseline. | No forced migration. Add/use the package if the application wants shared policy primitives or custom redaction; review custom convention/telemetry policy behavior if those packages are used. |
 | `2.1.0` source/GitHub Release | Adds opt-in executable typed mapping methods through `[AstraGenerateMapping]` and `AstraFlow.Generators`, beyond the earlier generator registration/metadata foundation. | The repository says standalone `2.1.0` NuGet publication was not verified. The feature code is present in the later `2.2.0` source/package line. | No forced migration. Add a generator package reference and declarations only for mappings you want generated. The generated path has a deliberately limited supported shape. |
-| `2.2.0` | Adds release supply-chain controls: reproducibility, SourceLink verification, SBOM/provenance, signed-tag and repository-signature workflow, dependency review, and security/release guidance. | The supplied Gallery screenshot shows the top-level `AstraFlow` at `2.2.0`; this checkout does not contain a live per-package audit. | Primarily maintainer/release-pipeline impact. It does not require application database migrations or rewrites of mediator handlers. |
+| `2.2.0` | The repository's v2.2 change record adds supply-chain controls: reproducibility, SourceLink verification, SBOM/provenance, signed-tag and repository-signature workflow, dependency review, and security/release guidance. | The supplied Gallery screenshot shows the top-level `AstraFlow` at `2.2.0`; this checkout does not contain a live per-package audit or proof that all release-only hosted gates ran. | Primarily maintainer/release-pipeline impact. It does not require application database migrations or rewrites of mediator handlers. |
 | `2.3.0` in [PR #57](https://github.com/seifmoustafa/AstraFlow/pull/57) | Adds public API governance gates and the CLI graph/export and generated collection/converter/polymorphism capabilities described above. | Source and local package artifacts only; NuGet publication is not established by this PR. | Version update is intended to remain source-compatible. New feature code is opt-in. |
+
+### How the `1.13.0` baseline was built
+
+The later comparison makes more sense when the first published baseline is understood as the endpoint of a long v1 build-out. The release notes show this capability progression:
+
+| Earlier release | Capability added before `1.13.0` | How to think about it when upgrading |
+| --- | --- | --- |
+| `1.0.0` | Core mediator request dispatch, notifications, pipelines, handler scanning/diagnostics; explicit mapper rules, collections, projections, and secure-ID abstractions; convenience package and initial package-quality assets. | The foundational runtime APIs are already part of the `1.13.0` baseline. |
+| `1.1.0` | `AstraFlow.Diagnostics`: registration reports, severity findings, JSON/Markdown exports, and health-ready summary. | Diagnostics is an optional package, not required to dispatch requests. |
+| `1.2.0` | Named projection registry and validation, plus optional `AstraFlow.Mapper.EntityFrameworkCore` translation checks. | Existing projections need not be rewritten to upgrade; the EF package remains optional and framework-limited. |
+| `1.2.2`–`1.2.3` | Multi-target package assets, compatibility fixes, and clean consumer install verification. | Framework support is package-specific; do not infer it from a single core package. |
+| `1.3.0` | `AstraFlow.Testing` fakes, harnesses, and assertion helpers without a test-framework dependency. | Test helpers are additive and belong in test projects. |
+| `1.4.0` | Shared `AstraFlow.Contracts`; mediator void requests, streams, stream pipelines, processors, exception actions/handlers, notification strategies, and registration builder. | This mediator surface is already available in `1.13.0`; it is not a v2 migration. |
+| `1.5.0`–`1.6.x` | Optional convention mapping; profiles, mapping plans, member configuration, constructors/records, update mapping, diagnostics, and advanced mapping scenarios. | Convention mapping stays opt-in and governed by its profiles; do not assume every mapping is automatically convention-based. |
+| `1.8.2`–`1.8.4` | Mapper/projection analyzers; generated mediator registration; generated mapper/projection metadata. | `1.13.0` already has analyzer and generator foundations, but executable typed object mapping arrives later. |
+| `1.9.0` | Non-packable benchmark project and benchmark workflow/methodology. | Maintainer evidence, not a runtime dependency or an application feature. |
+| `1.10.0` | .NET CLI for inspect, validate, report, diff, graph, migration scan, and common output formats. | The `2.3.0` CLI change extends an existing tool; it does not introduce the CLI. |
+| `1.11.0` | Optional ASP.NET Core helpers and FluentValidation mediator behaviors. | Integrations were already available before `1.13.0`; preserve their optional boundaries. |
+| `1.12.0` | Optional OpenTelemetry spans/metrics, sampling/disable switches, and redaction defaults. | Observability was already available; shared security policy is a later v2 change. |
+| `1.13.0` | Public API compatibility comparison and clean-consumer upgrade smoke checks integrated into release gates. | This is primarily release confidence/governance, not a new runtime API release. |
+
+Together, these releases explain why `1.13.0` is already a mature package-family baseline. An upgrade does not mean re-implementing all of these features; the app only needs the packages and features it actually uses.
 
 ### What was already available by `1.13.0`
 
-The exact starting package set varies by application. The release history shows that `1.13.0` is downstream of these capabilities:
+The exact starting package set varies by application. The package-by-package matrix above shows package presence. The table below calls out useful feature boundaries that can otherwise be mistaken for new v2 features:
 
 | Capability already in the `1.13.0` line | Added earlier | Does a `1.13.0` consumer need it again during upgrade? |
 | --- | --- | --- |
-| CLI inspect, validate, report, diff, graph, scan, and output formats | `1.10.0` | No. The 2.3 CLI work extends graph styles/data and fixes output formatting. |
+| CLI inspect, validate, report, diff, graph, scan, and output formats | `1.10.0` | No. The `2.3.0` CLI work extends graph styles/data and fixes output formatting. |
 | ASP.NET Core helpers and FluentValidation behaviors | `1.11.0` | No. Keep or update the optional integrations the app already uses. |
-| OpenTelemetry activities, metrics, and redaction defaults | `1.12.0` | No. `2.0.0` adds shared security-policy plumbing; it does not make telemetry mandatory. |
-| Mapper/analyzer/generator foundations and convention mapping | Earlier `1.x` releases, including `1.8.x` | No. Generated executable mapping is an additional opt-in path, not an automatic conversion. |
+| OpenTelemetry activities, metrics, sampling, and redaction defaults | `1.12.0` | No. `2.0.0` adds shared security-policy plumbing; it does not make telemetry mandatory. |
+| Mapper/analyzer/generator foundations and convention mapping | Earlier `1.x` releases, including `1.5.x` and `1.8.x` | No. Generated executable mapping is an additional opt-in path, not an automatic conversion. |
 | Upgrade API comparison and clean-consumer smoke workflow | `1.13.0` | No. Those are maintainer verification tools, not new runtime features. |
 
 ### How much code must change from `1.13.0`?
@@ -153,3 +255,4 @@ The upgrade path from `1.13.0` to `2.3.0` is therefore supported by staged histo
 - [Package selection](package-selection.md) — package ownership and optional dependencies.
 - [Generator guide](generators.md) and [CLI guide](cli.md) — feature scopes and limitations.
 - [2.2.0 verification evidence](decisions/v2.2-draft-evidence.md) — exact recorded package and upgrade checks.
+
