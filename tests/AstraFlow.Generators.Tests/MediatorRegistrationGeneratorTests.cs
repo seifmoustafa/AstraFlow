@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.Reflection;
 using AstraFlow.Generators;
 using AstraFlow.Mediator;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;

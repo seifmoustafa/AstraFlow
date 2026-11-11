@@ -1,11 +1,28 @@
-# Branding
+# Branding & Visual Identity
 
-The package icon lives at `assets/branding/astraflow-icon.png`.
+The canonical design specification for AstraFlow is located at [`design.md`](../design.md) (**The Trace / Engineered Clarity v0.2**).
 
-It is intentionally text-free so it remains legible as a NuGet thumbnail and avoids generator text artifacts. The visual direction is an orbital star and flowing path: request dispatch, notification fan-out, and explicit source-to-destination mapping.
+## Package Icon & Master Mark
 
-Use this prompt to regenerate or iterate the asset:
+- **Approved Vector Mark:** [`logo-mark-color.svg`](../logo-mark-color.svg) (`viewBox="0 0 270 215"`, 3 deliberate geometric paths: mineral white apex, signature ion cyan flow path, and warm copper terminal accent).
+- **NuGet & Solution Package Icon:** [`assets/branding/astraflow-icon.png`](../assets/branding/astraflow-icon.png) (512×512 PNG, centered mark on `#0C1420` Midnight Ink canvas with generous breathing margins).
+- **Master Export:** [`assets/branding/exports/astraflow-avatar-512.png`](../assets/branding/exports/astraflow-avatar-512.png).
+- **Legacy Icon Archive:** [`assets/branding/astraflow-icon-legacy.png`](../assets/branding/astraflow-icon-legacy.png).
 
-```text
-Create a square app/package icon for a .NET library named AstraFlow. Use an abstract orbital star and flowing path motif that suggests explicit application flow, mediator dispatch, and auditable mapping. Keep it as a clean vector-friendly modern tech logo with crisp edges, centered symbol only, no text, strong silhouette readable at 64x64, generous padding, deep navy background with cyan, teal, white, and a small warm amber star accent. Avoid words, letters, code snippets, watermarks, photorealism, and complex gradients.
-```
+## Design System Tokens & Brand Principles
+
+1. **Direction:** *The Trace / Engineered Clarity* — Geometric, deliberate, strongly typographic; no gratuitous sci-fi or arbitrary neon blooms.
+2. **Palette Foundation:**
+   - `ink.950` (`#0C1420`) — Signature dark canvas and primary ink.
+   - `slate.900` (`#172231`) — Raised surface for cards and navigation bars.
+   - `mineral.50` (`#F2F1EC`) — Mineral white text and primary shapes.
+   - `ion.400` (`#72D5DE`) — Brand signal, line emphasis, and dark-mode interactive focus.
+   - `copper.400` (`#D9A477`) — Warm copper editorial accent (< 5% visible area).
+   - `light.accent.text` (`#0F6875`) — Accessible teal for light-mode links and focus outlines (WCAG 2.2 AA compliant).
+3. **Typography:**
+   - Primary UI & Headings: **Instrument Sans** (600–700 weight).
+   - Technical Metadata & Code: **IBM Plex Mono**.
+   - Arabic Regional Typography: **IBM Plex Sans Arabic** with complete RTL layout support.
+4. **Motion Discipline:**
+   - Restraint-first transitions (120–220ms ease-out).
+   - Strict `prefers-reduced-motion` compliance. Endless pulsing and attention-seeking loops are prohibited by default.

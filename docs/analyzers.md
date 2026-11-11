@@ -9,7 +9,7 @@ The analyzer package remains source-only and code-fix-free. Source generator wor
 Use the analyzer package from application, library, or test projects where you want build-time AstraFlow guidance:
 
 ```powershell
-dotnet add package AstraFlow.Analyzers --version 1.13.1
+dotnet add package AstraFlow.Analyzers --version 2.3.0
 ```
 
 Analyzer packages should be referenced privately so they do not flow transitively to consumers:

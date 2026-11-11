@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "eb36f546-453b-4d40-9a32-9e8cf3aa5ca2",
+  "status": "current",
+  "command": "deliver",
+  "type": "explainer",
+  "input": "d:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-portal-brainstorm-20261111-002500\\candidate.archify.md",
+  "output": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-portal-brainstorm-20261111-002500\\explainer-portal-brainstorm.html",
+  "specification": {
+    "sha256": "2b5011ffa41339347f8588cd913669eb41fab01b27d838c6849013737c3f7aaf",
+    "bytes": 5097
+  },
+  "artifact": {
+    "sha256": "75dd982d9150ec00092cdd585ec6b9e48f871e9b2c3a384e63fd714fcfa109ad",
+    "bytes": 1360742
+  },
+  "explainer": {
+    "preparedSha256": "079b5a15f6cd7db938afd1909d0456e44a30ebf0c0060cbab9e7b004e9ee33ef",
+    "dependencies": [
+      {
+        "kind": "diagram-spec",
+        "id": "visitor-journey",
+        "inline": true,
+        "sha256": "4566d25cb8238b83ce35c6cf92e7ae0cbb5ba717bbfe0eb1146a1be511ed6bb3",
+        "bytes": 1348
+      },
+      {
+        "kind": "diagram-spec",
+        "id": "portal-system",
+        "inline": true,
+        "sha256": "84f73eea990df3ef5b1c162129cf265f0a8ab663599409204928b7d2e29b41be",
+        "bytes": 1297
+      },
+      {
+        "kind": "diagram-spec",
+        "id": "ecosystem-tree",
+        "inline": true,
+        "sha256": "3da9ad9c7598fcf8ac7fb38a351b33446ceafca643ca93e9974a30b0e3250d1a",
+        "bytes": 1021
+      }
+    ]
+  }
+}

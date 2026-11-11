@@ -1,4 +1,4 @@
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 

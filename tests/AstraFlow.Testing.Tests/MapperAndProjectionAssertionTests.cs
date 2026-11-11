@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using AstraFlow.Mapper;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Xunit;
 
 namespace AstraFlow.Testing.Tests;

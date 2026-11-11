@@ -1,7 +1,7 @@
 using AstraFlow.AspNetCore;
 using AstraFlow.Diagnostics;
 using AstraFlow.Mediator;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -100,7 +100,6 @@ public sealed class AstraFlowAspNetCoreTests
         var result = await controller.SendAstraFlow(sender, new Ping("hello"));
 
         result.Result.Should().BeOfType<OkObjectResult>()
-            .Which
             .Value
             .Should()
             .Be(new Pong("ok"));

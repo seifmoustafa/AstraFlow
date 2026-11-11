@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <PackageId>AstraFlow.Assertions</PackageId>
+    <Title>AstraFlow Assertions</Title>
+    <Description>Framework-neutral fluent assertions for .NET tests.</Description>
+    <PackageTags>astraflow;assertions;testing;dotnet</PackageTags>
+    <RootNamespace>AstraFlow.Assertions</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>

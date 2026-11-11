@@ -1,7 +1,7 @@
 using AstraFlow.Diagnostics;
 using AstraFlow.Mapper;
 using AstraFlow.Mapper.Conventions;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 

@@ -1,13 +1,42 @@
 # Testing
 
+## General-purpose assertions
+
+See the [AstraFlow Assertions guide](assertions.md) for the current method list, semantics, package boundary, and unreleased 2.4.0 status.
+
+`AstraFlow.Assertions` is the in-development general-purpose assertion library for tests of any .NET application. Its current source provides fluent checks for values and comparison ranges, booleans, strings, sequences and dictionaries, GUIDs, enums, synchronous exceptions, and asynchronous operations without requiring a particular test runner. It is not published yet.
+
+Use it to verify the result or observable effects of the application under test. It is not a runtime input-validation library and does not execute or mock the application for you. An assertion failure throws `AstraFlowAssertionException`, which ordinary test runners report as a failed test.
+
+```powershell
+dotnet add package AstraFlow.Assertions --version 2.4.0
+```
+
+Run this install command after the 2.4.0 package is published; it cannot install the current source candidate from NuGet yet.
+
+```csharp
+using AstraFlow.Assertions;
+
+response.StatusCode.Should().Be(200);
+response.Body.Should().Contain("created");
+items.Should().HaveCount(2);
+await ((Func<Task>)(() => service.SaveAsync())).Should().NotThrowAsync();
+```
+
+This package is separate from `AstraFlow.Testing`; a project can install either or both according to whether it needs only assertions, AstraFlow-specific fakes/harnesses, or both.
+
+Failure messages avoid rendering arbitrary objects or string contents by default, which helps keep secrets out of CI output. This first phase is a foundation, not a claim of complete API compatibility with another assertion framework.
+
+## AstraFlow-specific test helpers
+
 `AstraFlow.Testing` is an optional test-helper package for projects that use AstraFlow mediator, mapper, projections, diagnostics, or secure ID flows.
 
-It has no dependency on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework. Helpers throw `AstraFlowAssertionException`, so they can be used with any test runner.
+The shipping assembly has no dependency on a test runner, external assertion library, or mocking framework. Helpers throw `AstraFlowAssertionException`, so they can be used with any test runner.
 
 Install:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.13.1
+dotnet add package AstraFlow.Testing --version 2.3.0
 ```
 
 ## Fake Mediator

@@ -108,6 +108,9 @@ jobs:
       - name: Pack testing
         run: dotnet pack src/AstraFlow.Testing/AstraFlow.Testing.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Pack assertions
+        run: dotnet pack src/AstraFlow.Assertions/AstraFlow.Assertions.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
       - name: Pack analyzers
         run: dotnet pack src/AstraFlow.Analyzers/AstraFlow.Analyzers.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
@@ -137,6 +140,7 @@ jobs:
             "src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.$version.nupkg",
             "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.$version.nupkg",
             "src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.$version.nupkg",
+            "src/AstraFlow.Assertions/bin/Release/AstraFlow.Assertions.$version.nupkg",
             "src/AstraFlow/bin/Release/AstraFlow.$version.nupkg"
           )
           foreach ($package in $corePackages) {
