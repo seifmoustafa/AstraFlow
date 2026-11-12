@@ -82,7 +82,7 @@ export function DocsSidebar({ categories }: DocsSidebarProps) {
                       }`}
                     >
                       <span className="truncate">{item.title}</span>
-                      {item.versionNotice === 'v2.4.0 Preview' ? (
+                      {item.versionNotice === 'Unreleased · 2.4 Work in progress' ? (
                         <span className="ml-1.5 px-1 py-0.2 text-[9px] font-mono rounded bg-[var(--af-copper)]/15 text-[var(--af-copper)] shrink-0 font-medium border border-[var(--af-copper)]/30">
                           v2.4 Preview
                         </span>

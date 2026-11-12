@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
+import { CopyCode } from '@/components/docs/CopyCode';
 
 interface MarkdownRendererProps {
   content: string;
@@ -97,18 +98,6 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 }
 
 function CodeBlock({ code, language }: { code: string; language: string }) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1700);
-    } catch {
-      // Fallback
-    }
-  };
-
   return (
     <div
       style={{
@@ -132,17 +121,10 @@ function CodeBlock({ code, language }: { code: string; language: string }) {
         <span className="tiny" style={{ color: '#97b6a3' }}>
           {(language || 'code').toUpperCase()}
         </span>
-        <button
-          type="button"
-          onClick={handleCopy}
-          aria-label="Copy code block"
-          className="v11-code-copy"
-          style={{ marginTop: 0, padding: '5px 10px' }}
-        >
-          {copied ? 'COPIED ✓' : 'COPY CODE ↗'}
-        </button>
+        <CopyCode code={code} label={`Copy ${(language || 'code').toUpperCase()} code block`} />
       </div>
       <pre
+        dir="ltr"
         tabIndex={0}
         style={{
           margin: 0,

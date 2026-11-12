@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useReducer, useRef } from "react";
 import Link from "next/link";
+import { motion } from "motion/react";
+import { useReducedMotionContext } from "@/components/motion/ReducedMotionProvider";
 import { FlowStageRail, type StepIndex } from "./FlowStageRail";
 import { DecisionPanel } from "./DecisionPanel";
 import { CodeExample } from "./CodeExample";
@@ -11,6 +13,58 @@ export type Capability = "dispatch" | "mapping" | "diagnostics";
 export interface FlowState {
   capability: Capability;
   step: StepIndex;
+  direction: -1 | 0 | 1;
+  transitionSeq: number;
+}
+
+type FlowAction =
+  | { type: "SELECT_CAPABILITY"; capability: Capability }
+  | { type: "SELECT_STEP"; step: StepIndex }
+  | { type: "PREV_STEP" }
+  | { type: "NEXT_STEP" };
+
+function flowReducer(state: FlowState, action: FlowAction): FlowState {
+  switch (action.type) {
+    case "SELECT_CAPABILITY":
+      if (state.capability === action.capability && state.step === 0) {
+        return state;
+      }
+      return {
+        capability: action.capability,
+        step: 0,
+        direction: 0,
+        transitionSeq: state.transitionSeq + 1,
+      };
+    case "SELECT_STEP":
+      if (state.step === action.step) return state;
+      return {
+        ...state,
+        step: action.step,
+        direction: action.step > state.step ? 1 : -1,
+        transitionSeq: state.transitionSeq + 1,
+      };
+    case "PREV_STEP": {
+      const nextStep = Math.max(0, state.step - 1) as StepIndex;
+      if (nextStep === state.step) return state;
+      return {
+        ...state,
+        step: nextStep,
+        direction: -1,
+        transitionSeq: state.transitionSeq + 1,
+      };
+    }
+    case "NEXT_STEP": {
+      const nextStep = ((state.step + 1) % 4) as StepIndex;
+      return {
+        ...state,
+        step: nextStep,
+        direction: state.step === 3 ? -1 : 1,
+        transitionSeq: state.transitionSeq + 1,
+      };
+    }
+    default:
+      return state;
+  }
 }
 
 interface CapabilityDefinition {
@@ -21,6 +75,12 @@ interface CapabilityDefinition {
   labels: readonly [string, string, string, string];
   details: readonly [string, string, string, string];
   code: readonly [string, string, string, string];
+  emphasizedLines: readonly [
+    readonly number[],
+    readonly number[],
+    readonly number[],
+    readonly number[],
+  ];
 }
 
 const CAPABILITIES: readonly Capability[] = [
@@ -28,6 +88,13 @@ const CAPABILITIES: readonly Capability[] = [
   "mapping",
   "diagnostics",
 ];
+
+const TECHNICAL_RAIL_STEPS = [
+  "CONTRACT",
+  "DECISION",
+  "IMPLEMENTATION",
+  "RESULT",
+] as const;
 
 const FLOW_DATA: Record<Capability, CapabilityDefinition> = {
   dispatch: {
@@ -48,11 +115,12 @@ const FLOW_DATA: Record<Capability, CapabilityDefinition> = {
       "The caller receives the typed response.",
     ],
     code: [
-      "public sealed record CreateOrder(string Number)\n    : IRequest<OrderCreated>;",
-      "services.AddAstraFlow(\n    assemblyMarkerTypes: typeof(CreateOrderHandler));",
-      "public Task<OrderCreated> Handle(\n    CreateOrder request, CancellationToken ct) {\n  // application logic\n}",
-      'var result = await sender.Send(\n    new CreateOrder("ORD-1042"), ct);',
+      "// 01. Declare the typed request contract\npublic sealed record CreateOrder(string Number)\n    : IRequest<OrderCreated>;",
+      "// 02. Register the handler assembly explicitly\nservices.AddAstraFlow(\n    assemblyMarkerTypes: typeof(CreateOrderHandler));",
+      "public Task<OrderCreated> Handle(\n    CreateOrder request, CancellationToken ct) {\n  // application logic\n  return Task.FromResult(new OrderCreated(request.Number));\n}",
+      '// 04. Dispatch through ISender and await typed result\nvar result = await sender.Send(\n    new CreateOrder("ORD-1042"), ct);',
     ],
+    emphasizedLines: [[2, 3], [2, 3], [3, 4], [2, 3]],
   },
   mapping: {
     tabLabel: "02\u00a0 Object mapping",
@@ -72,11 +140,12 @@ const FLOW_DATA: Record<Capability, CapabilityDefinition> = {
       "Produce the destination model deliberately.",
     ],
     code: [
-      "// Source DTO and domain model",
-      "// Declare an explicit mapping pair",
-      "// Validate supported mapping rules",
-      "// Map only declared destination members",
+      "// Source DTO and domain model\npublic sealed record Invoice(Guid Id, string Number);\npublic sealed record InvoiceResponse(Guid Id, string Number);",
+      "// Declare an explicit mapping pair\npublic sealed class InvoiceMappingRule : IDeclaredObjectMappingRule {\n  public IReadOnlyCollection<ObjectMappingPair> DeclaredMappings { get; } =\n      [ObjectMappingPair.Create<Invoice, InvoiceResponse>()];\n}",
+      "// Validate supported mapping rules\nservices.AddAstraFlowMapper(typeof(InvoiceMappingRule));\nvalidator.Validate(mappingOptions);",
+      "// Map only declared destination members\nInvoiceResponse dto = mapper.Map<InvoiceResponse>(invoice);",
     ],
+    emphasizedLines: [[2, 3], [2, 3, 4], [2, 3], [2]],
   },
   diagnostics: {
     tabLabel: "03\u00a0 Diagnostics",
@@ -91,19 +160,24 @@ const FLOW_DATA: Record<Capability, CapabilityDefinition> = {
       "Use evidence to correct configuration.",
     ],
     code: [
-      "// Discover supported source shapes",
-      "// Inspect registration relationships",
-      "// Report findings via CLI tools",
-      "// Take action on verified findings",
+      "// Discover supported source shapes\nservices.AddAstraFlowDiagnostics(options =>\n    options.AssemblyMarkerTypes.Add(typeof(CreateOrderHandler)));",
+      "// Inspect registration relationships\nvar reporter = provider.GetRequiredService<IAstraFlowDiagnosticsReporter>();\nAstraFlowDiagnosticReport report = reporter.CreateReport();",
+      "// Report findings via CLI tools\nstring markdown = reporter.CreateMarkdownReport();\nstring json = reporter.CreateJsonReport();",
+      "// Take action on verified findings\nbool hasErrors = report.Summary.HasErrors;",
     ],
+    emphasizedLines: [[2, 3], [2, 3], [2, 3], [2]],
   },
 };
 
 export function FlowExplorer() {
-  const [state, setState] = useState<FlowState>({
+  const { prefersReducedMotion } = useReducedMotionContext();
+  const [state, dispatch] = useReducer(flowReducer, {
     capability: "dispatch",
     step: 0,
+    direction: 0,
+    transitionSeq: 0,
   });
+
   const tabRefs = useRef<Record<Capability, HTMLButtonElement | null>>({
     dispatch: null,
     mapping: null,
@@ -113,11 +187,11 @@ export function FlowExplorer() {
   const activeData = FLOW_DATA[state.capability];
 
   const selectCapability = (capability: Capability) => {
-    setState({ capability, step: 0 });
+    dispatch({ type: "SELECT_CAPABILITY", capability });
   };
 
   const selectStep = (step: StepIndex) => {
-    setState((prev) => ({ ...prev, step }));
+    dispatch({ type: "SELECT_STEP", step });
   };
 
   const handleTabKeyDown = (
@@ -145,23 +219,21 @@ export function FlowExplorer() {
   };
 
   const handlePrev = () => {
-    setState((prev) => ({
-      ...prev,
-      step: Math.max(0, prev.step - 1) as StepIndex,
-    }));
+    dispatch({ type: "PREV_STEP" });
   };
 
   const handleNext = () => {
-    setState((prev) => ({
-      ...prev,
-      step: ((prev.step + 1) % 4) as StepIndex,
-    }));
+    dispatch({ type: "NEXT_STEP" });
   };
+
+  const stateKey = `${state.capability}-${state.step}`;
 
   return (
     <section
       className="flow-section v10-flow-section v12-flow-section"
       id="experience"
+      data-active-capability={state.capability}
+      data-active-step={String(state.step)}
     >
       <div className="site-wrap">
         <div className="v10-flow-intro">
@@ -222,7 +294,34 @@ export function FlowExplorer() {
                   type="button"
                   onClick={() => selectCapability(cap)}
                   onKeyDown={(e) => handleTabKeyDown(e, idx)}
+                  style={{ position: "relative" }}
                 >
+                  {isSelected && (
+                    <motion.span
+                      layoutId="flow-capability-active-bar"
+                      aria-hidden="true"
+                      transition={
+                        prefersReducedMotion
+                          ? { duration: 0 }
+                          : {
+                              type: "spring",
+                              stiffness: 420,
+                              damping: 34,
+                              mass: 0.7,
+                            }
+                      }
+                      style={{
+                        position: "absolute",
+                        insetInlineStart: 0,
+                        top: "6px",
+                        bottom: "6px",
+                        width: "3px",
+                        borderRadius: "2px",
+                        backgroundColor: "var(--signal, #f25e3b)",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  )}
                   {FLOW_DATA[cap].tabLabel}
                 </button>
               );
@@ -240,7 +339,19 @@ export function FlowExplorer() {
               </span>
               <span className="tiny">{`0${state.step + 1} / 04`}</span>
             </div>
-            <h3 id="flow-title">{activeData.title}</h3>
+            <motion.h3
+              key={`title-${state.capability}`}
+              id="flow-title"
+              initial={prefersReducedMotion ? false : { opacity: 0.5, y: 3 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : { duration: 0.22, ease: [0.22, 0.75, 0.19, 1] }
+              }
+            >
+              {activeData.title}
+            </motion.h3>
 
             <FlowStageRail
               stages={activeData.stages}
@@ -249,6 +360,7 @@ export function FlowExplorer() {
             />
 
             <DecisionPanel
+              capability={state.capability}
               step={state.step}
               label={activeData.labels[state.step]}
               detail={activeData.details[state.step]}
@@ -282,17 +394,33 @@ export function FlowExplorer() {
             </div>
           </div>
 
-          <CodeExample code={activeData.code[state.step]} />
+          <CodeExample
+            code={activeData.code[state.step]}
+            emphasizedLines={activeData.emphasizedLines[state.step]}
+            stateKey={stateKey}
+            stageBadge={`STAGE 0${state.step + 1}`}
+          />
         </div>
 
         <div className="v12-technical-rail" aria-hidden="true">
-          <span>CONTRACT</span>
-          <i />
-          <span>DECISION</span>
-          <i />
-          <span>IMPLEMENTATION</span>
-          <i />
-          <span>RESULT</span>
+          {TECHNICAL_RAIL_STEPS.map((label, idx) => {
+            const isStepActive = state.step === idx;
+            return (
+              <React.Fragment key={label}>
+                <span
+                  data-active={isStepActive ? "true" : "false"}
+                  style={
+                    isStepActive
+                      ? { color: "#fffdf7", fontWeight: 700 }
+                      : undefined
+                  }
+                >
+                  {label}
+                </span>
+                {idx < TECHNICAL_RAIL_STEPS.length - 1 && <i />}
+              </React.Fragment>
+            );
+          })}
         </div>
 
         <div className="v10-flow-outro">

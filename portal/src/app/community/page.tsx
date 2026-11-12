@@ -24,18 +24,21 @@ const COMMUNITY_VALUES = [
 
 const PARTICIPATION_CARDS = [
   {
+    index: 0,
     tag: '01 / UNDERSTAND',
     title: 'Read the code.',
     description: 'Inspect the API and design decisions first.',
     href: 'https://github.com/seifmoustafa/AstraFlow',
   },
   {
+    index: 1,
     tag: '02 / INVESTIGATE',
     title: 'Report a problem.',
     description: 'Reproducible failures and useful evidence.',
     href: 'https://github.com/seifmoustafa/AstraFlow/issues',
   },
   {
+    index: 2,
     tag: '03 / CONTRIBUTE',
     title: 'Propose a change.',
     description: 'Focused changes with rationale and verification.',
@@ -63,6 +66,7 @@ export default function CommunityPage() {
               <a
                 className="button button-primary"
                 href="https://github.com/seifmoustafa/AstraFlow"
+                target="_blank"
                 rel="noopener noreferrer"
               >
                 Explore the repository <span aria-hidden="true">↗</span>
@@ -70,6 +74,7 @@ export default function CommunityPage() {
               <a
                 className="button button-outline"
                 href="https://github.com/seifmoustafa/AstraFlow/issues"
+                target="_blank"
                 rel="noopener noreferrer"
               >
                 View open issues <span aria-hidden="true">↗</span>
@@ -110,7 +115,9 @@ export default function CommunityPage() {
               <a
                 key={card.tag}
                 className="line-card"
+                data-participation-card={String(card.index)}
                 href={card.href}
+                target="_blank"
                 rel="noopener noreferrer"
               >
                 <span className="tiny signal">{card.tag}</span>

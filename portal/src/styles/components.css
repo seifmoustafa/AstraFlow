@@ -267,7 +267,7 @@ section[id],h2[id],div[id] {scroll-margin-top:92px}
 .v11-skip:focus-visible{transform:translateY(0);outline:3px solid #ef6843;outline-offset:2px}
 
 
-/* AstraFlow / Final Craft v12 â€” focused last-mile visual and interaction polish.
+/* AstraFlow / Final Craft v12 — focused last-mile visual and interaction polish.
    Important: no page-wide marquee, moving hero geometry, scroll hijacking or faux 3D performance cost. */
 :root{--v12-glass:rgba(250,248,242,.6);--v12-accent:#ee6241;--v12-line:rgba(19,66,52,.16);--v12-curve:cubic-bezier(.2,.8,.2,1)}
 body{font-kerning:normal;text-rendering:optimizeLegibility}
@@ -311,11 +311,11 @@ body:not([data-page="home"]) .hero::after{content:"";position:absolute;inset-inl
 body:not([data-page="home"]) .hero .eyebrow{letter-spacing:.12em}
 body:not([data-page="home"]) .page-intro{position:relative}
 body:not([data-page="home"]) .page-intro::after{content:"";position:absolute;inset-inline-end:var(--gutter);inset-block-end:12%;width:12px;height:12px;border:1px solid rgba(199,74,46,.24);transform:rotate(45deg);pointer-events:none}
-/* Packages â€” the physical plates are a compositional system, not 3 generic cards. */
+/* Packages — the physical plates are a compositional system, not 3 generic cards. */
 body[data-page="packages"] .overlap-scene .plate{transition:transform .42s var(--v12-curve),box-shadow .42s var(--v12-curve),border-color .25s}
 body[data-page="packages"] .overlap-scene .plate:hover,body[data-page="packages"] .overlap-scene .plate:focus-visible{transform:translate3d(0,-5px,0);border-color:#ea7755}
 body[data-page="packages"] .overlap-scene .plate.selected{transform:translate3d(0,-8px,0);box-shadow:12px 19px 0 rgba(45,67,50,.11),0 0 0 2px #e16f4e}
-/* Docs â€” usable search is the central interaction: line under input, zero ambiguity. */
+/* Docs — usable search is the central interaction: line under input, zero ambiguity. */
 body[data-page="docs"] .docs-search{transition:background-color .2s,border-color .2s,box-shadow .2s}
 body[data-page="docs"] .docs-search:focus{background:rgba(255,255,255,.28);box-shadow:0 7px 0 -6px #e47751}
 body[data-page="docs"] .docs-tile:focus-visible{box-shadow:0 0 0 3px rgba(239,104,67,.11);transform:translateY(-2px)}
@@ -326,7 +326,7 @@ body[data-page="guides"] [data-guide][aria-selected="true"]{box-shadow:6px 7px 0
 body[data-page="changelog"] .release-art .sheet{transition:transform .42s var(--v12-curve),box-shadow .42s var(--v12-curve)}
 body[data-page="changelog"] .release-art:hover .sheet{filter:none}
 body[data-page="changelog"] .release-art .sheet:hover{box-shadow:9px 13px 0 rgba(19,64,47,.06),0 10px 21px rgba(17,45,35,.12)}
-/* Community routes respond to the actual links â€” no artificial idle orbit. */
+/* Community routes respond to the actual links — no artificial idle orbit. */
 body[data-page="community"] .v10-branch-item{backdrop-filter:blur(6px);border-color:rgba(34,84,65,.24)}
 body[data-page="community"] .v10-branch-item:focus-visible{outline-offset:5px}
 /* Keep content fully visible in case JS isn't loaded. No hero entrance animation. */

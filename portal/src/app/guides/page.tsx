@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 interface PracticalPath {
+  id: string;
   tag: string;
   title: string;
   subtitle: string;
@@ -26,36 +27,42 @@ interface PracticalPath {
 
 const PRACTICAL_PATHS: readonly PracticalPath[] = [
   {
+    id: "path-first-request",
     tag: "01 / FIRST REQUEST",
     title: "Send something.",
     subtitle: "From request contract to response.",
     href: "/docs/getting-started",
   },
   {
+    id: "path-composition",
     tag: "02 / COMPOSITION",
     title: "Design a pipeline.",
     subtitle: "Keep behavior explicit.",
     href: "/docs/mediator",
   },
   {
+    id: "path-data",
     tag: "03 / DATA",
     title: "Map with intent.",
     subtitle: "Declare, validate, project.",
     href: "/docs/mapper",
   },
   {
+    id: "path-inspection",
     tag: "04 / INSPECTION",
     title: "Know your wiring.",
     subtitle: "Reports, diagnostics and tool output.",
     href: "/docs/diagnostics",
   },
   {
+    id: "path-confidence",
     tag: "05 / CONFIDENCE",
     title: "Test the important parts.",
     subtitle: "Fakes, harnesses and assertions.",
     href: "/docs/testing",
   },
   {
+    id: "path-migration",
     tag: "06 / MIGRATION",
     title: "Move without guessing.",
     subtitle: "Versioned migration guidance.",
@@ -104,7 +111,7 @@ export default function GuidesPage() {
         </div>
       </section>
 
-      <section className="editorial-panel">
+      <section className="editorial-panel" id="practical-paths">
         <div className="site-wrap">
           <div className="section-head">
             <div>
@@ -121,8 +128,14 @@ export default function GuidesPage() {
             </p>
           </div>
           <div className="card-list">
-            {PRACTICAL_PATHS.map((path) => (
-              <Link key={path.tag} className="line-card" href={path.href}>
+            {PRACTICAL_PATHS.map((path, index) => (
+              <Link
+                key={path.tag}
+                id={path.id}
+                data-path-index={index}
+                className="line-card"
+                href={path.href}
+              >
                 <span className="tiny signal">{path.tag}</span>
                 <h3>{path.title}</h3>
                 <small>{path.subtitle}</small>

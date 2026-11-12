@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "motion/react";
 
 export function Header() {
   const pathname = usePathname();
@@ -69,10 +70,22 @@ export function Header() {
                 key={link.href}
                 href={link.href}
                 aria-current={isActive ? "page" : undefined}
-                className={isActive ? "active" : ""}
+                className={isActive ? "active has-motion-underline" : "has-motion-underline"}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="header-nav-underline"
+                    className="nav-active-indicator"
+                    transition={{
+                      type: "spring",
+                      stiffness: 420,
+                      damping: 34,
+                      mass: 0.7,
+                    }}
+                  />
+                )}
               </Link>
             );
           })}

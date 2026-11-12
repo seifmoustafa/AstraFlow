@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import { PackageStackProvider } from '@/components/packages/PackageStackContext';
 import { PackagesHeroAssembly } from '@/components/packages/PackagesHeroAssembly';
 import { PackageComposer } from '@/components/packages/PackageComposer';
 import { PackageInventory } from '@/components/packages/PackageInventory';
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function PackagesPage() {
   return (
-    <>
+    <PackageStackProvider>
       <section className="hero">
         <div className="site-wrap page-intro grid">
           <div>
@@ -45,6 +46,6 @@ export default function PackagesPage() {
       </section>
       <PackageComposer />
       <PackageInventory />
-    </>
+    </PackageStackProvider>
   );
 }
