@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import type { DocCategory, DocPageData } from '@/lib/docs-loader';
+import type { DocCategory, DocPageData } from '@/lib/docs-types';
 import { ArticleToc } from '@/components/docs/ArticleToc';
 
 interface DocsShellProps {

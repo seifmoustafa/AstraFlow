@@ -1,44 +1,10 @@
 import fs from 'fs';
 import path from 'path';
+import { PINNED_COMMIT_SHA, type ProvenanceNotice } from './provenance';
+import type { DocItem, DocCategory, DocPageData } from './docs-types';
 
-export const PINNED_COMMIT_SHA = 'b163535864199bfb05cef62807d89509ac2239f8';
-
-export type ProvenanceNotice =
-  | 'Source milestone · Verify per package'
-  | 'Unreleased · 2.4 Work in progress'
-  | 'Umbrella verified in supplied evidence'
-  | 'Governance / Policy'
-  | 'Architecture Decision Record'
-  | 'Strategy & Evidence Ledger';
-
-export interface DocItem {
-  slug: string;
-  title: string;
-  description?: string;
-  category: string;
-  categorySlug: string;
-  versionNotice?: ProvenanceNotice;
-  filename: string;
-  order: number;
-}
-
-export interface DocCategory {
-  title: string;
-  slug: string;
-  order: number;
-  items: DocItem[];
-}
-
-export interface DocPageData {
-  slug: string;
-  title: string;
-  category: string;
-  versionNotice?: string;
-  content: string;
-  headings: { id: string; text: string; level: number }[];
-  prev?: { title: string; href: string };
-  next?: { title: string; href: string };
-}
+export { PINNED_COMMIT_SHA, type ProvenanceNotice };
+export type { DocItem, DocCategory, DocPageData };
 
 // Complete 61-document canonical repository registry
 export const DOC_CATEGORIES: {

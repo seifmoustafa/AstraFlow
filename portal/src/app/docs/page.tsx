@@ -1,13 +1,13 @@
 import React from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DocsSearch } from "@/components/docs/DocsSearch";
+import { DocsReferenceDesk } from "@/components/docs/DocsReferenceDesk";
 import { CopyCode } from "@/components/docs/CopyCode";
 
 export const metadata: Metadata = {
-  title: "Docs — AstraFlow Visual Exploration",
+  title: "Docs — AstraFlow Living Reference Desk",
   description:
-    "Find AstraFlow concepts and documentation topics for mediator, mapping, diagnostics, generators and testing. Interactive design prototype.",
+    "Explore AstraFlow documentation, architectural patterns, C# signatures, ADRs, diagnostics safety defaults, and source-generated mapping across all 61 repository documents.",
 };
 
 const PREVIEW_CODE = `public sealed record CreateOrder(string Number)
@@ -19,19 +19,18 @@ var response = await sender.Send(
 export default function DocsPage() {
   return (
     <>
-      <section className="hero">
-        <div className="site-wrap page-intro grid">
-          <div>
+      {/* Living Reference Desk Hero */}
+      <section className="hero" style={{ paddingBottom: "48px" }}>
+        <div className="site-wrap" style={{ paddingTop: "72px" }}>
+          <div style={{ maxWidth: "860px", marginBottom: "40px" }}>
             <p className="eyebrow">THE DOCUMENTATION / ORIGINAL SOURCES</p>
-            <h1>
+            <h1 style={{ margin: "16px 0 20px" }}>
               Understand it.
               <br />
               <span className="ital">Then build it.</span>
             </h1>
-            <p className="lead">
-              Start with a request. Follow the API. Examine the trade-offs. The
-              documentation must work as an instrument, not as another giant
-              marketing hero.
+            <p className="lead" style={{ margin: "0 0 28px", maxWidth: "680px" }}>
+              Start with a request. Follow the API. Examine the trade-offs. The Living Reference Desk indexes all 61 verified architectural specifications, ADRs, and source guides without promotional fluff.
             </p>
             <div className="links">
               <a className="button button-primary" href="#reading">
@@ -41,19 +40,20 @@ export default function DocsPage() {
                 </span>
               </a>
               <a className="button button-outline" href="#topics">
-                Explore topics
+                Explore reference desk
                 <span aria-hidden="true" className="arrow">
                   ↗
                 </span>
               </a>
             </div>
           </div>
-          <div>
-            <DocsSearch />
-          </div>
+
+          {/* Living Reference Desk Instrument */}
+          <DocsReferenceDesk />
         </div>
       </section>
 
+      {/* Reading System Preview / Deep Article Gateway */}
       <section className="editorial-panel" id="reading">
         <div className="site-wrap">
           <p className="eyebrow">READING SYSTEM / PREVIEW</p>
@@ -152,7 +152,7 @@ export default function DocsPage() {
                 <a href="/docs/getting-started#send-a-request">Dispatch</a>
               </p>
               <p>
-                <a href="/docs/getting-started">Next steps</a>
+                <a href="/docs/getting-started#next-steps">Next steps</a>
               </p>
             </aside>
           </div>

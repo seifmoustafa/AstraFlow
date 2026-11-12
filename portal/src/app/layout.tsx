@@ -8,6 +8,7 @@ import "@/styles/craft-v12.css";
 import "@/styles/layout.css";
 import "@/styles/components.css";
 import "@/styles/motion.css";
+import "@/styles/community.css";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { SkipLink } from "@/components/site/SkipLink";

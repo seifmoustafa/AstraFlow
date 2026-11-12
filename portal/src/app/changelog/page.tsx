@@ -4,18 +4,24 @@ import { getChangelogData } from "@/lib/changelog-loader";
 import {
   VersionFolio,
   ReleaseFolioEntry,
+  PINNED_COMMIT_SHA,
 } from "@/components/changelog/VersionFolio";
+import { ChangelogFolioHero } from "@/components/changelog/ChangelogFolioHero";
 
 export const metadata: Metadata = {
-  title: "Changelog — AstraFlow Visual Exploration",
+  title: "Changelog & Version Archive — AstraFlow",
   description:
-    "Explore the AstraFlow version history and understand the difference between source milestones and published packages. Interactive design prototype.",
+    "Explore the complete 36-release AstraFlow lineage with verifiable distinction between published NuGet artifacts, source milestones, and active work in progress.",
   alternates: {
     canonical: "/changelog",
   },
+  openGraph: {
+    title: "AstraFlow Changelog & Version Folio",
+    description:
+      "Engineered mechanical folio and audit trail tracking all releases from repository source at pinned commit b163535864199bfb05cef62807d89509ac2239f8.",
+    url: "/changelog",
+  },
 };
-
-const PINNED_COMMIT_SHA = "b163535864199bfb05cef62807d89509ac2239f8";
 
 interface EditorialReleaseMeta {
   id?: string;
@@ -41,7 +47,7 @@ const EDITORIAL_RELEASE_MAP: Record<string, EditorialReleaseMeta> = {
     statusLabel: "Unpublished",
     dateQualification: "Unreleased (in-development source)",
     provenanceNote:
-      "Use repository and NuGet evidence before displaying individual planned capabilities.",
+      "Future work must never be presented as a NuGet release. Use repository and NuGet evidence before displaying individual planned capabilities.",
   },
   "2.3.0": {
     id: "r23",
@@ -53,7 +59,7 @@ const EDITORIAL_RELEASE_MAP: Record<string, EditorialReleaseMeta> = {
     statusLabel: "Verify per package",
     dateQualification: "published 2026-11-10; per maintainer confirmation",
     provenanceNote:
-      "Treat source change, GitHub Release and installability as separate states.",
+      "API governance, CLI graph work and generated mapping extensions in source; exact package publication requires verification. Treat source change, GitHub Release and installability as separate states.",
     nugetUrl: "https://www.nuget.org/packages/AstraFlow",
   },
   "2.2.0": {
@@ -66,7 +72,7 @@ const EDITORIAL_RELEASE_MAP: Record<string, EditorialReleaseMeta> = {
     statusLabel: "Umbrella verified in supplied evidence",
     dateQualification: "published; prior release",
     provenanceNote:
-      "Never infer NuGet availability of every satellite package from the umbrella package listing.",
+      "The supplied project guide reports top-level AstraFlow 2.2.0 on NuGet; separate package IDs require their own check. Never infer NuGet availability of every satellite package from the umbrella package listing.",
     nugetUrl: "https://www.nuget.org/packages/AstraFlow/2.2.0",
   },
   "2.1.0": {
@@ -83,6 +89,7 @@ const EDITORIAL_RELEASE_MAP: Record<string, EditorialReleaseMeta> = {
       "v2.1.0 source is merged and a GitHub Release exists. NuGet publication has not been verified, so this version is not listed as published in the compatibility table.",
   },
   "2.0.0": {
+    id: "r200",
     headline: "Shared security governance and redaction taxonomy.",
     summary:
       "Adds AstraFlow.Security with sensitive-name classification and value redaction policy primitives shared across OpenTelemetry and convention mapping.",
@@ -105,6 +112,7 @@ const EDITORIAL_RELEASE_MAP: Record<string, EditorialReleaseMeta> = {
     nugetUrl: "https://www.nuget.org/packages/AstraFlow",
   },
   "1.13.0": {
+    id: "r1130",
     headline: "Public API compatibility and upgrade smoke gates.",
     summary:
       "Adds automated XML doc member ID compatibility checks, previous-version consumer upgrade smoke verification, and API governance documentation.",
@@ -483,49 +491,15 @@ export default function ChangelogPage() {
 
   return (
     <div data-page="changelog">
-      <section className="hero">
-        <div className="site-wrap page-intro grid">
-          <div>
-            <p className="eyebrow">THE RECORD / NOT THE HYPE</p>
-            <h1>
-              Every version.
-              <span className="ital">An honest story.</span>
-            </h1>
-            <p className="lead">
-              An editorial changelog for the entire history—not a release
-              marketing poster. Publication, repository milestones and work in
-              progress must have separate labels.
-            </p>
-            <a className="button button-outline" href="#releases">
-              Explore the chronology
-              <span aria-hidden="true" className="arrow">
-                ↗
-              </span>
-            </a>
-          </div>
-          <div className="release-art">
-            <div className="geo-grid"></div>
-            <div className="sheet">
-              <small>EARLIER SOURCE</small>
-              <big>2.2</big>
-            </div>
-            <div className="sheet">
-              <small>SOURCE MILESTONE · VERIFY PUBLICATION</small>
-              <big>2.3</big>
-            </div>
-            <div className="sheet">
-              <small>IN PROGRESS / NOT PUBLISHED</small>
-              <big>2.4</big>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Bespoke Mechanical Version Folio Hero (replaces legacy 3 tilted cards) */}
+      <ChangelogFolioHero />
 
+      {/* Editorial Chronological Archive Panel & Caliper Timeline */}
       <section className="editorial-panel" id="releases">
         <div className="site-wrap">
-          <div className="section-head">
+          <div className="section-head" style={{ marginBottom: "32px" }}>
             <div>
-              <p className="eyebrow">A LIVING HISTORY / DEMONSTRATION</p>
+              <p className="eyebrow">CHRONOLOGICAL SPINE / 36 RELEASES</p>
               <h2>
                 Progress, with
                 <br />
@@ -533,8 +507,8 @@ export default function ChangelogPage() {
               </h2>
             </div>
             <p className="section-caption">
-              The production view must ingest all CHANGELOG.md entries. These
-              are illustrative rows only, not a complete release catalog.
+              Every release row below represents verified source in <code className="mono">CHANGELOG.md</code>.
+              Expanded views expose categorized changes, SHA references, and honest package publication statuses.
             </p>
           </div>
 
@@ -543,9 +517,9 @@ export default function ChangelogPage() {
             sourceCommitSha={PINNED_COMMIT_SHA}
           />
 
-          <p className="bottom-note" style={{ marginTop: "26px" }}>
-            Prototype chronology. Full source: repository CHANGELOG.md; published
-            status: per NuGet package ID.
+          <p className="bottom-note" style={{ marginTop: "32px" }}>
+            Repository chronology verified against commit SHA <code className="mono" style={{ color: "var(--ink)", fontWeight: 700 }}>{PINNED_COMMIT_SHA}</code>.
+            Publication status is verified individually per package ID on NuGet.
           </p>
         </div>
       </section>

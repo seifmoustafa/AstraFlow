@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { DocCategory } from '@/lib/docs-loader';
+import type { DocCategory } from '@/lib/docs-types';
 import { Search, ChevronRight, BookOpen, Layers, Terminal, Shield, FileText } from 'lucide-react';
 
 interface DocsSidebarProps {

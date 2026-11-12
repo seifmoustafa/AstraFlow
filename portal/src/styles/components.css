@@ -347,3 +347,37 @@ body[data-page="community"] .v10-branch-item:focus-visible{outline-offset:5px}
   stroke-dasharray: none !important;
   filter: drop-shadow(0 0 6px rgba(233, 104, 67, 0.5));
 }
+
+/* Radical Creative Rebuild — Composition Machine & Bespoke Architecture Assembly */
+.composition-machine-scene {
+  perspective: 1000px;
+  position: relative;
+  min-height: 460px;
+  width: 100%;
+}
+.composition-plate:hover,
+.composition-plate:focus-visible {
+  filter: drop-shadow(0 8px 16px rgba(8, 44, 38, 0.15));
+  outline: 2px solid var(--signal) !important;
+  outline-offset: 2px !important;
+}
+.architectural-tier-plate:hover {
+  filter: drop-shadow(0 6px 14px rgba(8, 44, 38, 0.12));
+}
+@media (max-width: 770px) {
+  .composition-machine-scene {
+    min-height: 380px;
+  }
+  .composition-plate strong {
+    font-size: 12px !important;
+  }
+  .composition-plate .tiny {
+    font-size: 8px !important;
+  }
+}
+@media (max-width: 520px) {
+  .composition-machine-scene {
+    min-height: 320px;
+  }
+}
+

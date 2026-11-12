@@ -21,3 +21,15 @@ export {
   type HairlineStudyProps,
   type ComponentReplacementEntry,
 } from "./HairlineFigures";
+
+export {
+  BespokeHairlineFrame,
+  AstraflowRouteStudy,
+  AstraflowAssemblyStudy,
+  AstraflowBranchworkStudy,
+  AstraflowVersionSpineStudy,
+  BESPOKE_HAIRLINE_MANIFEST,
+  type BespokeStudyId,
+  type BespokeStudyMetadata,
+  type BespokeHairlineFrameProps,
+} from "./BespokeHairlineFigures";
