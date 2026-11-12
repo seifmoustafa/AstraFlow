@@ -1,0 +1,108 @@
+/* AstraFlow / v11 FINAL VISUAL POLISH. Preserve v10 page compositions. */
+:root {
+  --v11-paper: #f7f3eb;
+  --v11-forest: #082c26;
+  --v11-forest-deep: #031f1a;
+  --v11-orange: #ef6843;
+  --v11-peach: #ffc4aa;
+  --v11-hairline: #d6d3c8;
+  --v11-ease: cubic-bezier(.22,.75,.19,1);
+}
+/* 60/30/10 is an attention rule, not pixel counting. Orange is for actionable and focal states. */
+html {scroll-behavior:smooth;scroll-padding-top:92px}
+section[id],h2[id],div[id] {scroll-margin-top:92px}
+:focus-visible {outline:2px solid var(--v11-orange);outline-offset:4px}
+::selection{background:#ffc2a8;color:#092c27}
+.site-header {isolation:isolate}
+.site-header::after {content:"";position:absolute;bottom:-1px;inset-inline-start:0;width:100%;height:2px;pointer-events:none;
+   background:var(--v11-orange);transform-origin:0 50%;transform:scaleX(var(--v11-scroll,0));opacity:.8}
+.site-header .brand img {filter:none!important}
+.footer .brand img {filter:none!important;opacity:1!important}
+.footer .brand strong {color:#fff8ef!important}
+.footer .brand .v11-footer-tagline {color:#a8c6b7!important;opacity:1!important}
+.footer .brand {display:inline-flex;align-items:center;gap:10px}
+.footer .brand img {width:40px;height:auto;flex:0 0 auto}
+.footer .brand small {letter-spacing:.10em}
+.footer-links a {text-decoration-thickness:1px;text-underline-offset:4px}
+.footer-links a:hover,.footer-links a:focus-visible {color:#fff2e4;text-decoration:underline}
+.footer-bottom {padding-block-end:8px}
+/* Motion restraint: do not animate headline geometry, logo placement or entire hero. */
+.v10-logo-svg,.v10-hero-copy h1,.v10-home-grid,.v10-signature-stage {animation:none!important;}
+.v10-logo-svg .signature-route {animation:v10-flow-dash 17s linear infinite!important}
+.v10-signature-stage[data-signal-paused="true"] .signature-route {animation-play-state:paused!important}
+.v10-hero-actions .button,.button,.small-btn {transition:background-color .22s ease,color .22s ease,border-color .22s ease,box-shadow .24s ease,transform .24s var(--v11-ease)}
+.button:hover,.small-btn:hover {transform:translateY(-2px);box-shadow:0 9px 25px rgba(6,35,25,.10)}
+.button:active,.small-btn:active {transform:translateY(0);box-shadow:0 3px 10px rgba(6,35,25,.09)}
+/* Note: the orange line on the hero remains the only continuous movement. */
+.v10-stage-top {z-index:3}
+.v10-stage-top button {cursor:pointer}
+/* The stage rail is a coordinate system; active progress makes the interaction legible. */
+.v10-flow-instrument .flow-path{position:relative;isolation:isolate}
+.v10-flow-instrument .flow-path::after{content:"";position:absolute;inset-inline-start:0;inset-block-end:-15px;height:2px;width:var(--v11-stage-progress,0%);max-width:100%;background:#ff9970;box-shadow:0 0 15px rgba(255,133,86,.3);pointer-events:none;transition:width .35s var(--v11-ease)}
+.v10-flow-instrument .flow-path::before{content:"";position:absolute;inset-inline-start:0;inset-inline-end:0;inset-block-end:-15px;height:1px;background:#315448}
+.v10-flow-instrument .flow-node {transition:background .2s,border-color .2s,box-shadow .2s,transform .28s var(--v11-ease)!important}
+.v10-flow-instrument .flow-node:hover {border-color:#ffc4a7;transform:translateY(-3px)!important}
+.v10-flow-instrument .flow-node:active {transform:translateY(0)!important}
+.v10-flow-instrument .flow-code {position:relative}
+.v11-code-copy {align-self:flex-end;order:3;margin-top:14px;background:transparent;border:1px solid #477264;color:#e7e9dc;border-radius:4px;font:700 10px 'Courier New',monospace;letter-spacing:.06em;padding:9px 12px;cursor:pointer;transition:background .2s,border .2s}
+.v11-code-copy:hover {background:#164c3e;border-color:#e8aa8f}
+.v11-code-copy:focus-visible {outline-color:#fba67a}
+/* Spatial detail on the assembly figure: the three interactive layers share one optical axis. */
+.v10-assembly-figure {border-radius:0}
+.v10-assembly-controls .v10-layer-control:focus-visible {outline-offset:-4px}
+.v10-layer-control[aria-pressed="true"] {box-shadow:inset 0 -1px 0 rgba(234,111,66,.25)}
+.v10-assembly-figure .v10-geom-layer {will-change:auto}
+.v10-assembly-figure .v10-geom-layer[data-selected="true"] {filter:drop-shadow(0 16px 17px rgba(35,50,41,.18))}
+/* Cards should resemble inset instruments in one system, not a generic floating grid. */
+.docs-tile,.line-card,.journey-card,.branch-link,.v10-branch-item {transition:transform .3s var(--v11-ease),border-color .22s ease,box-shadow .3s ease,background-color .22s ease}
+.docs-tile:hover,.docs-tile:focus-visible {transform:translateY(-3px);box-shadow:0 12px 25px rgba(27,45,35,.07);border-color:#c98d75}
+.line-card:hover,.line-card:focus-visible {background:rgba(255,255,255,.48);transform:translateY(-2px);box-shadow:inset 0 2px 0 var(--v11-orange)}
+.line-card:active,.docs-tile:active {transform:translateY(0)}
+/* Miniature architectural keylines for page-specific figures; lines are quiet, never decorative noise. */
+.overlap-scene,.release-art,.community-map {isolation:isolate}
+.overlap-scene .plate {transition:transform .35s var(--v11-ease),box-shadow .3s,filter .3s}
+.overlap-scene .plate:hover,.overlap-scene .plate:focus-visible {filter:drop-shadow(0 9px 6px rgba(0,45,32,.12));z-index:5}
+.overlap-scene .plate.selected {box-shadow:10px 13px 0 #cfc3b1,0 0 0 2px var(--v11-orange),0 25px 38px rgba(9,42,30,.14)}
+.docs-search:focus-visible {outline:2px solid #ef6843;outline-offset:4px}
+.docs-tile[hidden] {display:none!important}
+/* Changelog details: visible, gently interlocked with timeline, no floating cards animation. */
+.release-row {transition:background-color .22s ease}
+.release-row:hover {background:rgba(255,255,255,.28)}
+.release-toggle {min-height:42px;cursor:pointer}
+.release-toggle:focus-visible {outline-offset:2px}
+.release-detail.open {animation:v11-detail-open .25s var(--v11-ease)}
+@keyframes v11-detail-open {from{opacity:.5;transform:translateY(-5px)}to{opacity:1;transform:none}}
+/* Guides stage selection is a progressive disclosure, not a fake carousel. */
+.timeline-step{transition:color .2s,transform .24s var(--v11-ease)}
+.timeline-step:hover,.timeline-step:focus-visible{transform:translateY(-3px)}
+.timeline-step:active{transform:translateY(0)}
+/* Community connectors are real links; keep network physically static, animate only selected strokes. */
+.v10-branch-highlight {transition:opacity .22s ease}
+.v10-community-branches[data-active-branch] .v10-branch-highlight {stroke-dasharray:7 8;stroke-dashoffset:0}
+.v10-community-branches[data-active-branch="0"] [data-branch-route="0"],
+.v10-community-branches[data-active-branch="1"] [data-branch-route="1"],
+.v10-community-branches[data-active-branch="2"] [data-branch-route="2"],
+.v10-community-branches[data-active-branch="3"] [data-branch-route="3"] {animation:v11-route-in .55s ease both}
+@keyframes v11-route-in{from{stroke-dashoffset:25;opacity:.18}to{stroke-dashoffset:0;opacity:1}}
+.v10-branch-item:hover,.v10-branch-item:focus-visible{transform:translateY(-3px);box-shadow:0 18px 36px rgba(8,44,38,.10)}
+/* Reveal only below the fold and only while it enters; no invisible initial content and no scroll-hijacking. */
+@media (prefers-reduced-motion:no-preference){
+ [data-v11-entrance="waiting"] {opacity:.92;transform:translateY(11px);transition:opacity .48s ease,transform .58s var(--v11-ease)}
+ [data-v11-entrance="visible"] {opacity:1;transform:translateY(0)}
+}
+/* Hover never becomes the only way to understand state; touch remains fully usable. */
+@media(hover:none){.button:hover,.small-btn:hover,.line-card:hover,.docs-tile:hover,.v10-branch-item:hover{transform:none;box-shadow:none}}
+@media(max-width:770px){
+ html{scroll-padding-top:75px}section[id],h2[id],div[id]{scroll-margin-top:75px}
+ .v10-flow-instrument .flow-path::after,.v10-flow-instrument .flow-path::before{inset-block-end:-7px}
+ .footer .brand{flex-wrap:wrap}.footer .brand img{width:35px}
+ .footer-in{gap:35px}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto!important}
+ .v10-logo-svg .signature-route,.v10-signature-stage .signature-route{animation:none!important}
+ *,*:before,*:after{scroll-behavior:auto!important;transition-duration:0s!important;animation-duration:0s!important;animation-iteration-count:1!important}
+}
+/* Keyboard users get an actual bypass link; invisible until focus, never blocked by sticky header. */
+.v11-skip{position:fixed;inset-block-start:8px;inset-inline-start:10px;z-index:9999;background:#082c26;color:#fff8ef;padding:12px 16px;border-radius:4px;transform:translateY(-150%);text-decoration:none;font:700 13px/1.2 Arial,sans-serif}
+.v11-skip:focus-visible{transform:translateY(0);outline:3px solid #ef6843;outline-offset:2px}

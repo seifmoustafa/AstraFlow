@@ -1,0 +1,74 @@
+/* AstraFlow v12 Design Tokens — Warm Ivory + Deep Forest Green + Signal Orange */
+:root,
+[data-theme="warm-forest"] {
+  /* Core v12 Palette & Geometry (vision.css) */
+  --paper: #f7f3eb;
+  --paper2: #fffdf7;
+  --sand: #ece5d9;
+  --line: #d8d0c2;
+  --ink: #082c26;
+  --ink2: #2f5b4e;
+  --forest: #0a342b;
+  --forest0: #051e19;
+  --signal: #f25e3b;
+  --action: #b73921;
+  --peach: #ffd2bd;
+  --muted: #617267;
+  --shadow: 0 24px 70px rgba(22, 47, 38, 0.08);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --max: 1376px;
+  --gutter: clamp(20px, 4.6vw, 78px);
+
+  /* v11 Final Visual Polish Tokens (polish.css) */
+  --v11-paper: #f7f3eb;
+  --v11-forest: #082c26;
+  --v11-forest-deep: #031f1a;
+  --v11-orange: #ef6843;
+  --v11-peach: #ffc4aa;
+  --v11-hairline: #d6d3c8;
+  --v11-ease: cubic-bezier(0.22, 0.75, 0.19, 1);
+
+  /* v12 Craft Tokens (craft-v12.css) */
+  --v12-glass: rgba(250, 248, 242, 0.6);
+  --v12-accent: #ee6241;
+  --v12-line: rgba(19, 66, 52, 0.16);
+  --v12-curve: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Typography Stack Tokens */
+  --font-sans: var(--font-inter), 'Inter', 'Arial', 'Liberation Sans', sans-serif;
+  --font-serif: var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  --font-mono: var(--font-plex-mono), 'Courier New', monospace;
+
+  /* Compatibility mappings for any internal helpers */
+  --af-bg-canvas: var(--paper);
+  --af-bg-surface: var(--paper2);
+  --af-bg-elevated: var(--sand);
+  --af-text-primary: var(--ink);
+  --af-text-secondary: var(--ink2);
+  --af-text-subtle: var(--muted);
+  --af-border: var(--line);
+  --af-border-subtle: var(--v11-hairline);
+  --af-accent: var(--action);
+  --af-accent-on: var(--paper2);
+  --af-link: var(--action);
+  --af-focus: var(--signal);
+  --af-copper: var(--signal);
+  --af-warning: #e07a38;
+  --af-success: #256b52;
+  --af-surface-2: var(--sand);
+  --af-radius-control: 6px;
+  --af-radius-dialog: 8px;
+
+  font-synthesis: none;
+  color-scheme: light;
+}
+
+/* Hairline Design Contract Tokens (MOTION-HAIRLINE-DESIGN-CONTRACT.md) */
+.hairline-ivory {
+  --color-background: #f7f3eb;
+  --color-foreground: #082c26;
+  --color-grid: #d8d0c2;
+  --color-accent: #f25e3b;
+  --color-surface-elevated: #fffdf7;
+  --border-width: 1px;
+}

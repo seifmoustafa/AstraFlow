@@ -1,12 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="270" height="215" viewBox="0 0 270 215" role="img" aria-label="logo mark color"><defs>
-    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#101D29"/><stop offset=".52" stop-color="#0C1420"/><stop offset="1" stop-color="#08111A"/></linearGradient>
-    <linearGradient id="mineral" x1="0" y1="0" x2="0.2" y2="1"><stop stop-color="#FFFDF6"/><stop offset="1" stop-color="#E7E7E3"/></linearGradient>
-    <linearGradient id="flow" x1="0" y1="0" x2="0.9" y2="0.8"><stop stop-color="#79E0E3"/><stop offset=".55" stop-color="#72D5DE"/><stop offset="1" stop-color="#83DCDD"/></linearGradient>
-    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="0.5"><stop stop-color="#E4AF82"/><stop offset="1" stop-color="#D49B70"/></linearGradient>
-    <linearGradient id="avatar" x1="0" y1="0" x2=".85" y2="1"><stop stop-color="#1A3446"/><stop offset=".65" stop-color="#11212F"/><stop offset="1" stop-color="#0C1420"/></linearGradient>
-    <radialGradient id="ambient"><stop stop-color="#255A68" stop-opacity=".25"/><stop offset="1" stop-color="#0C1420" stop-opacity="0"/></radialGradient>
-    </defs><g transform="translate(0 0) scale(1)" aria-label="AstraFlow logo mark">
-        <path d="M129 7 H173 L222 87 H181 L152 40 L98 129 C92 139 87 143 77 143 H44 Z" fill="url(#mineral)"/>
-        <path d="M30 166 H91 C104 166 111 160 119 148 L137 116 C147 102 157 98 169 98 H230 L249 128 H177 C165 128 160 134 154 144 L132 180 C119 196 107 200 89 200 H10 Z" fill="url(#flow)"/>
-        <path d="M199 145 H237 L259 182 H220 Z" fill="url(#metal)"/>
-        </g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 215" role="img" aria-label="AstraFlow symbol">
+<defs>
+<linearGradient id="forest" x1=".15" y1="0" x2=".85" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#19463d"/><stop offset=".55" stop-color="#092c27"/><stop offset="1" stop-color="#041e1b"/></linearGradient>
+<linearGradient id="orange" x1=".05" y1=".3" x2=".95" y2=".8" gradientUnits="objectBoundingBox"><stop stop-color="#ffb28d"/><stop offset=".32" stop-color="#fa7047"/><stop offset=".8" stop-color="#ff4927"/><stop offset="1" stop-color="#d93e1d"/></linearGradient>
+</defs>
+<path d="M129 7 H173 L222 87 H181 L152 40 L98 129 C92 139 87 143 77 143 H44 Z" fill="url(#forest)"/>
+<path d="M30 166 H91 C104 166 111 160 119 148 L137 116 C147 102 157 98 169 98 H230 L249 128 H177 C165 128 160 134 154 144 L132 180 C119 196 107 200 89 200 H10 Z" fill="url(#orange)"/>
+<path d="M199 145 H237 L259 182 H220 Z" fill="#0b302a"/>
+</svg>

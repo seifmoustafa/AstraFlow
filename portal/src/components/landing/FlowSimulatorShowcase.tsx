@@ -5,23 +5,28 @@ import { usePortal } from "@/context/PortalContext";
 import {
   Play,
   RotateCcw,
-  Shield,
-  Eye,
   CheckCircle2,
   Database,
   ArrowRight,
   Activity,
   Layers,
   Lock,
+  Terminal,
+  ShieldCheck,
+  Cpu,
+  Zap,
 } from "lucide-react";
 
 interface Scenario {
   id: string;
   name: string;
+  badge: string;
   description: string;
   stages: {
     name: string;
+    sublabel: string;
     description: string;
+    badge: string;
     telemetry: Record<string, string | number | boolean>;
   }[];
 }
@@ -30,11 +35,14 @@ const scenarios: Scenario[] = [
   {
     id: "place-order",
     name: "PlaceOrderCommand",
-    description: "Write operation with input validation, transactional scope, and redaction",
+    badge: "Write Pipeline",
+    description: "Write operation with input validation, transactional scope, and PII redaction",
     stages: [
       {
         name: "Validation Stage",
-        description: "AstraFlow.FluentValidation intercepts incoming command",
+        sublabel: "AstraFlow.FluentValidation",
+        description: "FluentValidation interceptor evaluates business invariants prior to dispatch",
+        badge: "0.21 ms",
         telemetry: {
           "Pipeline.Phase": "Pre-Dispatch Validation",
           "Rules.Evaluated": 4,
@@ -44,7 +52,9 @@ const scenarios: Scenario[] = [
       },
       {
         name: "Security Redaction",
-        description: "AstraFlow.Security masks payment details & customer credentials",
+        sublabel: "AstraFlow.Security",
+        description: "Defense-in-depth masking redacts credentials & payment tokens from span tags",
+        badge: "Masked",
         telemetry: {
           "CardNumber": "•••• •••• •••• 4242",
           "CVV": "[REDACTED_BY_POLICY]",
@@ -54,17 +64,21 @@ const scenarios: Scenario[] = [
       },
       {
         name: "Telemetry Span",
-        description: "AstraFlow.OpenTelemetry records ActivitySource activity & tags",
+        sublabel: "AstraFlow.OpenTelemetry",
+        description: "ActivitySource records W3C TraceContext spans with zero unnecessary allocations",
+        badge: "Span Recorded",
         telemetry: {
           "Activity.Name": "Mediator.Dispatch.PlaceOrderCommand",
           "SpanId": "e84f29a0b12c84",
           "TraceId": "4bf92f3577b34da6a3ce929d0e0e4736",
-          "Allocations": "0 B",
+          "Diagnostics.Tags": "Redacted (4 tags)",
         },
       },
       {
         name: "Handler Execution",
-        description: "PlaceOrderCommandHandler handles business logic and DB write",
+        sublabel: "AstraFlow.Mediator",
+        description: "Domain command handler processes business logic and commits to outbox",
+        badge: "Committed",
         telemetry: {
           "Handler": "PlaceOrderCommandHandler",
           "DbContext.State": "Committed",
@@ -77,11 +91,14 @@ const scenarios: Scenario[] = [
   {
     id: "project-invoice",
     name: "ProjectInvoiceQuery",
-    description: "Zero-overhead read query projecting SQL database entity directly to DTO",
+    badge: "Read Projection",
+    description: "Read query projecting SQL database entity directly to DTO via EF Core",
     stages: [
       {
-        name: "Cache & Query Gate",
-        description: "AstraFlow.Mediator evaluates pipeline caching & cancellation token",
+        name: "Query Gate",
+        sublabel: "AstraFlow.Mediator",
+        description: "Mediator resolves handler and passes cancellation token without runtime reflection",
+        badge: "0.08 ms",
         telemetry: {
           "Query.Type": "IRequest<InvoiceDto>",
           "CacheLookup": "Bypassed (Direct)",
@@ -90,7 +107,9 @@ const scenarios: Scenario[] = [
       },
       {
         name: "EF Expression Tree",
-        description: "AstraFlow.Mapper.EntityFrameworkCore creates ProjectTo expression",
+        sublabel: "AstraFlow.Mapper.EntityFrameworkCore",
+        description: "ProjectTo compiles entity expression tree into selective SQL SELECT columns",
+        badge: "Compiled",
         telemetry: {
           "Projection.Provider": "AstraFlowProjectionProvider",
           "Expression.Tree": "x => new InvoiceDto { Id = x.Id, Total = x.Total }",
@@ -99,16 +118,20 @@ const scenarios: Scenario[] = [
       },
       {
         name: "Database Stream",
+        sublabel: "AppDbContext (Npgsql)",
         description: "Direct SQL execution via compiled EF Core expression delegate",
+        badge: "1 Row",
         telemetry: {
           "SQL.RowsRead": 1,
           "EFCore.Tracking": "NoTracking",
-          "MemoryAllocated": "32 B",
+          "Allocations": "32 B",
         },
       },
       {
         name: "DTO Assembly",
-        description: "Returned type-safe DTO with zero intermediary object allocations",
+        sublabel: "AstraFlow.Mapper",
+        description: "Type-safe DTO returned with zero intermediary memory allocations",
+        badge: "200 OK",
         telemetry: {
           "Return.Type": "InvoiceSummaryDto",
           "Status": "200 OK",
@@ -118,105 +141,75 @@ const scenarios: Scenario[] = [
     ],
   },
   {
-    id: "publish-payment",
-    name: "PublishPaymentNotification",
-    description: "Multi-subscriber asynchronous notification fan-out with exception isolation",
+    id: "order-created-event",
+    name: "OrderCreatedEvent",
+    badge: "Notification Fan-Out",
+    description: "Multi-subscriber async notification fan-out with isolated exception barriers",
     stages: [
       {
-        name: "Notification Ingestion",
-        description: "IMediator.PublishAsync broadcasts payment confirmation",
+        name: "Publish Request",
+        sublabel: "AstraFlow.Mediator",
+        description: "Mediator publishes INotification to 3 subscribed notification handlers",
+        badge: "3 Handlers",
         telemetry: {
-          "Notification": "PaymentConfirmedNotification",
-          "Subscribers.Discovered": 3,
-          "Strategy": "Task.WhenAll (Isolated)",
+          "Notification.Type": "OrderCreatedEvent",
+          "PublishStrategy": "ParallelWhenAll",
+          "RegisteredSubscribers": 3,
         },
       },
       {
-        name: "Diagnostics Trace",
-        description: "ActivitySource spans attached for all subscriber branches",
+        name: "Email Dispatcher",
+        sublabel: "SendOrderConfirmationEmailHandler",
+        description: "Subscriber sends customer order confirmation email asynchronously",
+        badge: "Dispatched",
         telemetry: {
-          "Parent.SpanId": "09c2a8f3b41e",
-          "ActiveListeners": 3,
-          "DiagnosticName": "AstraFlow.Mediator.Notification",
+          "Handler": "SendOrderConfirmationEmailHandler",
+          "Delivery": "SMTP Outbox",
+          "Status": "Success",
         },
       },
       {
-        name: "Concurrent Handlers",
-        description: "ReceiptEmailHandler, LedgerSyncHandler, AnalyticsHandler executed",
+        name: "Inventory Reserve",
+        sublabel: "ReserveWarehouseStockHandler",
+        description: "Subscriber claims inventory quantity in local cache table",
+        badge: "Stock Held",
         telemetry: {
-          "EmailHandler": "Succeeded (0.4ms)",
-          "LedgerHandler": "Succeeded (0.6ms)",
-          "AnalyticsHandler": "Succeeded (0.2ms)",
+          "Handler": "ReserveWarehouseStockHandler",
+          "ItemsReserved": 2,
+          "Status": "Success",
         },
       },
       {
-        name: "Trace Completion",
-        description: "Consolidated telemetry published with zero error count",
+        name: "Analytics Ingest",
+        sublabel: "TrackOrderMetricsHandler",
+        description: "Subscriber records high-volume metrics via System.Diagnostics.Metrics",
+        badge: "Emitted",
         telemetry: {
-          "AllSubscribersCompleted": true,
-          "FaultedCount": 0,
-          "TotalExecutionTime": "0.68 ms",
-        },
-      },
-    ],
-  },
-  {
-    id: "validate-input",
-    name: "ValidateCustomerInput",
-    description: "Compiler-safe schema verification preventing invalid pipeline dispatch",
-    stages: [
-      {
-        name: "Request Schema Check",
-        description: "AstraFlow.Analyzers statically verified contract compatibility",
-        telemetry: {
-          "Roslyn.Verified": true,
-          "Contract": "IRequest<ValidationResult>",
-          "HandlerMismatch": "None",
-        },
-      },
-      {
-        name: "Rule Engine Evaluation",
-        description: "Synchronous FluentValidation execution with early short-circuit",
-        telemetry: {
-          "Rule.ZipCodeFormat": "Passed",
-          "Rule.VatIdentifier": "Passed",
-          "ShortCircuitTriggered": false,
-        },
-      },
-      {
-        name: "Redaction Verification",
-        description: "Sensitive tax identifiers masked before telemetry dispatch",
-        telemetry: {
-          "TaxId": "US-XX-XXX-9182",
-          "Audit.Logged": true,
-          "SecurityScan": "Clean",
-        },
-      },
-      {
-        name: "Result Synthesis",
-        description: "Clean validation envelope ready for downstream processing",
-        telemetry: {
-          "Validation.IsValid": true,
-          "Errors": 0,
-          "Elapsed": "0.32 ms",
+          "Handler": "TrackOrderMetricsHandler",
+          "Metric": "orders.volume.counter",
+          "Tags": "region=eu-west-1",
         },
       },
     ],
   },
 ];
 
-export function FlowSimulatorShowcase() {
+export const FlowSimulatorShowcase: React.FC = () => {
   const { locale } = usePortal();
-  const [selectedScenario, setSelectedScenario] = useState<Scenario>(scenarios[0]);
-  const [activeStage, setActiveStage] = useState<number>(0);
+  const [activeScenarioId, setActiveScenarioId] = useState<string>("place-order");
+  const [activeStageIndex, setActiveStageIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
+  const scenario = scenarios.find((s) => s.id === activeScenarioId) || scenarios[0];
+  const currentStage = scenario.stages[activeStageIndex];
+
+  // Auto-play timer
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let interval: NodeJS.Timeout;
     if (isPlaying) {
-      timer = setInterval(() => {
-        setActiveStage((prev) => {
-          if (prev >= selectedScenario.stages.length - 1) {
+      interval = setInterval(() => {
+        setActiveStageIndex((prev) => {
+          if (prev >= scenario.stages.length - 1) {
             setIsPlaying(false);
             return prev;
           }
@@ -224,224 +217,268 @@ export function FlowSimulatorShowcase() {
         });
       }, 1400);
     }
-    return () => clearInterval(timer);
-  }, [isPlaying, selectedScenario]);
+    return () => clearInterval(interval);
+  }, [isPlaying, scenario.stages.length]);
 
-  const handleScenarioChange = (scenario: Scenario) => {
-    setSelectedScenario(scenario);
-    setActiveStage(0);
+  const handleScenarioChange = (id: string) => {
+    setActiveScenarioId(id);
+    setActiveStageIndex(0);
     setIsPlaying(false);
-  };
-
-  const handleStep = () => {
-    if (activeStage < selectedScenario.stages.length - 1) {
-      setActiveStage(activeStage + 1);
-    } else {
-      setActiveStage(0);
-    }
   };
 
   const handleReset = () => {
-    setActiveStage(0);
+    setActiveStageIndex(0);
     setIsPlaying(false);
   };
 
-  const currentStageData = selectedScenario.stages[activeStage];
+  const handleStepForward = () => {
+    if (activeStageIndex < scenario.stages.length - 1) {
+      setActiveStageIndex(prev => prev + 1);
+    } else {
+      setActiveStageIndex(0);
+    }
+  };
 
   return (
-    <section className="py-20 border-b border-[var(--af-border)] bg-[var(--af-bg-surface)]">
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-          <div>
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded text-xs font-mono font-medium text-[var(--af-accent)] bg-[var(--af-bg-canvas)] border border-[var(--af-border)] mb-3">
-              <Activity className="w-3.5 h-3.5" />
-              <span>SHOWCASE 01 · INTERACTIVE FLOW TRACE SIMULATOR</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--af-text-primary)] mb-3">
-              {locale === "ar"
-                ? "محاكي تدفق المسار: [طلب] ← [تحويل] ← [إرسال] ← [فحص]"
-                : "The Flow Trace: [ Request ] → [ Transform ] → [ Dispatch ] → [ Inspect ]"}
-            </h2>
-            <p className="text-sm sm:text-base text-[var(--af-text-secondary)] max-w-2xl">
-              {locale === "ar"
-                ? "تتبع كيفية تنقل العمليات عبر مراحل الأنابيب المعيارية، مع فحص المقاييس الحية وضمانات حجب البيانات الحساسة."
-                : "Step through explicit pipeline stages in real-time. Witness zero-overhead dispatch, security redaction boundaries, and structured OpenTelemetry traces."}
-            </p>
+    <div className="w-full rounded-2xl border border-[var(--af-border)] bg-[var(--af-bg-surface)] overflow-hidden shadow-2xl transition-all duration-300">
+      {/* Top Header Dock */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[var(--af-border)] px-6 py-4 bg-[var(--af-bg-canvas)]/80 backdrop-blur-md gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--af-accent)]/15 border border-[var(--af-accent)]/30 text-[var(--af-accent)]">
+            <Activity className="h-4 w-4" />
           </div>
-
-          {/* Scenario Selector Pills */}
-          <div className="flex flex-wrap items-center gap-2">
-            {scenarios.map((sc) => {
-              const active = sc.id === selectedScenario.id;
-              return (
-                <button
-                  key={sc.id}
-                  onClick={() => handleScenarioChange(sc)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-mono transition-af cursor-pointer border ${
-                    active
-                      ? "bg-[var(--af-accent)] text-[var(--af-accent-on)] font-semibold border-[var(--af-accent)]"
-                      : "bg-[var(--af-bg-canvas)] text-[var(--af-text-secondary)] border-[var(--af-border)] hover:text-[var(--af-text-primary)] hover:border-[var(--af-text-secondary)]"
-                  }`}
-                >
-                  {sc.name}
-                </button>
-              );
-            })}
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold tracking-tight text-[var(--af-text-primary)]">
+                Interactive Flow Trace Simulator
+              </h3>
+              <span className="rounded-full bg-[var(--af-accent)]/10 px-2 py-0.5 text-[10px] font-mono font-medium text-[var(--af-accent)] border border-[var(--af-accent)]/20">
+                Live Engine
+              </span>
+            </div>
+            <p className="text-xs text-[var(--af-text-secondary)]">
+              Step through real AstraFlow pipeline executions, boundary gates, and redacted telemetry.
+            </p>
           </div>
         </div>
 
-        {/* Interactive Simulator Shell */}
-        <div className="rounded-[var(--af-radius-card)] bg-[var(--af-bg-canvas)] border border-[var(--af-border)] overflow-hidden shadow-sm">
-          {/* Top Control Bar */}
-          <div className="px-5 py-3.5 border-b border-[var(--af-border)] bg-[var(--af-bg-surface)] flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono text-[var(--af-text-secondary)]">
-                Active Scenario:
-              </span>
-              <span className="text-xs font-mono font-bold text-[var(--af-accent)]">
-                {selectedScenario.name}
-              </span>
-              <span className="text-xs text-[var(--af-text-subtle)] hidden sm:inline">
-                · {selectedScenario.description}
-              </span>
-            </div>
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <button
+            onClick={() => setIsPlaying(!isPlaying)}
+            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
+              isPlaying
+                ? "bg-[var(--af-copper)] text-white shadow-sm"
+                : "bg-[var(--af-accent)] text-[var(--af-accent-on)] hover:brightness-110 shadow-sm"
+            }`}
+          >
+            <Play className={`h-3.5 w-3.5 ${isPlaying ? "fill-current" : ""}`} />
+            <span>{isPlaying ? "Pause Trace" : "Run Trace"}</span>
+          </button>
 
-            <div className="flex items-center gap-2">
+          <button
+            onClick={handleStepForward}
+            className="flex items-center gap-1.5 rounded-lg border border-[var(--af-border)] px-3 py-1.5 text-xs font-medium text-[var(--af-text-secondary)] hover:text-[var(--af-text-primary)] hover:bg-[var(--af-surface-2)] transition-colors"
+          >
+            <span>Next Stage</span>
+            <ArrowRight className="h-3 w-3" />
+          </button>
+
+          <button
+            onClick={handleReset}
+            title="Reset trace to stage 1"
+            className="flex items-center justify-center rounded-lg border border-[var(--af-border)] p-1.5 text-[var(--af-text-secondary)] hover:text-[var(--af-text-primary)] hover:bg-[var(--af-surface-2)] transition-colors"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Scenario Selector Ribbon */}
+      <div className="flex border-b border-[var(--af-border)] bg-[var(--af-bg-surface)] px-6 py-2.5 gap-2 overflow-x-auto scrollbar-none">
+        {scenarios.map((s) => {
+          const isSelected = s.id === activeScenarioId;
+          return (
+            <button
+              key={s.id}
+              onClick={() => handleScenarioChange(s.id)}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all duration-150 ${
+                isSelected
+                  ? "bg-[var(--af-accent)]/10 text-[var(--af-accent)] border border-[var(--af-accent)]/30 font-semibold shadow-xs"
+                  : "text-[var(--af-text-secondary)] hover:text-[var(--af-text-primary)] hover:bg-[var(--af-surface-2)] border border-transparent"
+              }`}
+            >
+              <span>{s.name}</span>
+              <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                isSelected ? "bg-[var(--af-accent)] text-[var(--af-accent-on)] font-semibold" : "bg-[var(--af-surface-3)] text-[var(--af-text-subtle)]"
+              }`}>
+                {s.badge}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Main Interactive Stage Canvas */}
+      <div className="p-6 md:p-8 space-y-6">
+        {/* Pipeline Stage Breadcrumb Track */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {scenario.stages.map((stage, idx) => {
+            const isActive = idx === activeStageIndex;
+            const isCompleted = idx < activeStageIndex;
+
+            return (
               <button
-                onClick={() => setIsPlaying(!isPlaying)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono font-semibold transition-af cursor-pointer ${
-                  isPlaying
-                    ? "bg-[var(--af-copper)] text-white"
-                    : "bg-[var(--af-accent)] text-[var(--af-accent-on)] hover:opacity-90"
+                key={idx}
+                onClick={() => {
+                  setActiveStageIndex(idx);
+                  setIsPlaying(false);
+                }}
+                className={`relative p-4 rounded-xl border text-left transition-all duration-200 flex flex-col justify-between ${
+                  isActive
+                    ? "border-[var(--af-accent)] bg-[var(--af-accent)]/10 shadow-md ring-1 ring-[var(--af-accent)]/30"
+                    : isCompleted
+                    ? "border-[var(--af-success)]/40 bg-[var(--af-success)]/5 hover:bg-[var(--af-surface-2)]"
+                    : "border-[var(--af-border)]/60 bg-[var(--af-bg-canvas)]/40 hover:bg-[var(--af-surface-2)]"
                 }`}
               >
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>{isPlaying ? (locale === "ar" ? "إيقاف مؤقت" : "Pause") : (locale === "ar" ? "تشغيل التدفق" : "Run Trace")}</span>
-              </button>
-
-              <button
-                onClick={handleStep}
-                disabled={isPlaying}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono font-medium border border-[var(--af-border)] bg-[var(--af-bg-canvas)] text-[var(--af-text-primary)] hover:border-[var(--af-accent)] disabled:opacity-50 transition-af cursor-pointer"
-              >
-                <span>{locale === "ar" ? "الخطوة التالية" : "Step"}</span>
-                <ArrowRight className="w-3 h-3 rtl:rotate-180" />
-              </button>
-
-              <button
-                onClick={handleReset}
-                title="Reset simulation"
-                className="p-1.5 rounded text-xs border border-[var(--af-border)] bg-[var(--af-bg-canvas)] text-[var(--af-text-secondary)] hover:text-[var(--af-text-primary)] transition-af cursor-pointer"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Pipeline Stage Visualizer */}
-          <div className="p-6 md:p-8 border-b border-[var(--af-border)] bg-[var(--af-bg-canvas)]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 relative">
-              {selectedScenario.stages.map((stage, idx) => {
-                const isCurrent = idx === activeStage;
-                const isPassed = idx < activeStage;
-                return (
-                  <div
-                    key={stage.name}
-                    onClick={() => {
-                      setIsPlaying(false);
-                      setActiveStage(idx);
-                    }}
-                    className={`p-4 rounded-lg border transition-af cursor-pointer text-left relative ${
-                      isCurrent
-                        ? "bg-[var(--af-bg-surface)] border-[var(--af-accent)] ring-1 ring-[var(--af-accent)] shadow-sm"
-                        : isPassed
-                        ? "bg-[var(--af-bg-surface)]/60 border-[var(--af-success)]/40 text-[var(--af-text-secondary)]"
-                        : "bg-[var(--af-bg-surface)]/30 border-[var(--af-border)] opacity-60 hover:opacity-100"
-                    }`}
-                  >
-                    {/* Stage Number & Indicator */}
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-[11px] font-mono text-[var(--af-text-subtle)]">
-                        STAGE 0{idx + 1}
-                      </span>
-                      {isPassed ? (
-                        <CheckCircle2 className="w-4 h-4 text-[var(--af-success)]" />
-                      ) : isCurrent ? (
-                        <span className="w-2.5 h-2.5 rounded-full bg-[var(--af-accent)]" />
-                      ) : (
-                        <span className="w-2 h-2 rounded-full bg-[var(--af-border)]" />
-                      )}
-                    </div>
-
-                    <h4 className="text-sm font-semibold text-[var(--af-text-primary)] mb-1">
-                      {stage.name}
-                    </h4>
-                    <p className="text-xs text-[var(--af-text-secondary)] line-clamp-2 leading-relaxed">
-                      {stage.description}
-                    </p>
-
-                    {/* Flow arrow on desktop */}
-                    {idx < selectedScenario.stages.length - 1 && (
-                      <div className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-[var(--af-border)]">
-                        <ArrowRight className="w-4 h-4 rtl:rotate-180" />
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Bottom Diagnostics & Telemetry Terminal View */}
-          <div className="p-6 md:p-8 bg-[var(--af-bg-surface)]">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-[var(--af-accent)]" />
-                <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--af-text-primary)]">
-                  Live Stage Telemetry & Structured Diagnostics
-                </span>
-              </div>
-              <span className="text-[11px] font-mono text-[var(--af-text-subtle)]">
-                Status: Stage {activeStage + 1} of {selectedScenario.stages.length}
-              </span>
-            </div>
-
-            <div className="rounded-md border border-[var(--af-border)] bg-[var(--af-bg-canvas)] p-4 font-mono text-xs overflow-x-auto shadow-inner">
-              <div className="text-[var(--af-text-subtle)] mb-2 pb-2 border-b border-[var(--af-border)] flex items-center justify-between">
-                <span>// Event: {currentStageData.name}</span>
-                <span className="text-[var(--af-accent)] font-semibold">ActivitySource: AstraFlow.Telemetry</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-6 text-[var(--af-text-secondary)]">
-                {Object.entries(currentStageData.telemetry).map(([key, val]) => (
-                  <div key={key} className="flex items-center justify-between py-1 border-b border-[var(--af-border)]/40">
-                    <span className="text-[var(--af-text-subtle)]">{key}:</span>
-                    <span
-                      className={`font-semibold ${
-                        String(val).includes("REDACTED") || String(val).includes("••••")
-                          ? "text-[var(--af-copper)]"
-                          : String(val) === "true" || String(val) === "Passed" || String(val) === "Clean"
-                          ? "text-[var(--af-success)]"
-                          : "text-[var(--af-text-primary)]"
-                      }`}
-                    >
-                      {String(val)}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-[10px] font-mono font-bold ${
+                      isActive ? "text-[var(--af-accent)]" : isCompleted ? "text-[var(--af-success)]" : "text-[var(--af-text-subtle)]"
+                    }`}>
+                      0{idx + 1} // STAGE
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-medium ${
+                      isActive
+                        ? "bg-[var(--af-accent)] text-[var(--af-accent-on)]"
+                        : isCompleted
+                        ? "bg-[var(--af-success)]/20 text-[var(--af-success)]"
+                        : "bg-[var(--af-surface-2)] text-[var(--af-text-subtle)]"
+                    }`}>
+                      {stage.badge}
                     </span>
                   </div>
-                ))}
+
+                  <h4 className={`text-xs font-bold leading-tight ${
+                    isActive ? "text-[var(--af-text-primary)]" : "text-[var(--af-text-secondary)]"
+                  }`}>
+                    {stage.name}
+                  </h4>
+                  <p className="text-[11px] text-[var(--af-text-subtle)] mt-1 truncate">
+                    {stage.sublabel}
+                  </p>
+                </div>
+
+                <div className="mt-3 pt-2.5 border-t border-[var(--af-border)]/50 flex items-center justify-between text-[10px]">
+                  <span className="text-[var(--af-text-subtle)]">State</span>
+                  <span className={`font-mono font-semibold ${
+                    isActive ? "text-[var(--af-accent)]" : isCompleted ? "text-[var(--af-success)]" : "text-[var(--af-text-subtle)]"
+                  }`}>
+                    {isActive ? "ACTIVE EXECUTING" : isCompleted ? "VERIFIED PASSED" : "PENDING"}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Detailed Stage Inspector & Telemetry Console */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 rounded-xl border border-[var(--af-border)] bg-[var(--af-bg-canvas)] overflow-hidden">
+          {/* Left Column: Architectural Intent */}
+          <div className="lg:col-span-5 p-6 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[var(--af-border)]">
+            <div className="space-y-4">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-[var(--af-accent)] font-semibold">
+                  Executing Pipeline Subsystem
+                </span>
+                <h4 className="text-lg font-bold text-[var(--af-text-primary)] mt-1">
+                  {currentStage.name}
+                </h4>
+                <div className="inline-block mt-1.5 px-2.5 py-0.5 rounded bg-[var(--af-surface-2)] text-xs font-mono text-[var(--af-accent)] border border-[var(--af-border)]">
+                  {currentStage.sublabel}
+                </div>
+              </div>
+
+              <p className="text-xs text-[var(--af-text-secondary)] leading-relaxed">
+                {currentStage.description}
+              </p>
+
+              <div className="rounded-lg border border-[var(--af-border)] bg-[var(--af-bg-surface)] p-3 space-y-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--af-text-subtle)] block">
+                  Subsystem Guarantees
+                </span>
+                <div className="space-y-1.5 text-xs text-[var(--af-text-secondary)]">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[var(--af-success)] shrink-0" />
+                    <span>Strict cancellation token propagation</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[var(--af-success)] shrink-0" />
+                    <span>Zero unconstrained dynamic string reflection</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[var(--af-success)] shrink-0" />
+                    <span>Automated PII & credential redaction in telemetry</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="mt-4 flex items-center gap-2 text-xs text-[var(--af-text-subtle)] font-mono">
-              <Lock className="w-3.5 h-3.5 text-[var(--af-copper)]" />
-              <span>
-                Safety Guarantee: Telemetry output preserves redaction boundaries; PII and sensitive payment keys are masked prior to tracing.
-              </span>
+            <div className="mt-6 pt-4 border-t border-[var(--af-border)] flex items-center justify-between text-xs text-[var(--af-text-subtle)]">
+              <span>Active Scenario: {scenario.name}</span>
+              <span className="font-mono text-[var(--af-accent)]">Stage {activeStageIndex + 1} of 4</span>
+            </div>
+          </div>
+
+          {/* Right Column: Live Telemetry & Tags Console */}
+          <div className="lg:col-span-7 p-6 bg-neutral-950 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-neutral-800 mb-4">
+                <div className="flex items-center gap-2">
+                  <Terminal className="h-4 w-4 text-[var(--af-accent)]" />
+                  <span className="text-xs font-mono font-medium text-neutral-300">
+                    Diagnostics & Activity Tags (OpenTelemetry Safe)
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-[var(--af-success)] bg-[var(--af-success)]/10 px-2 py-0.5 rounded border border-[var(--af-success)]/30">
+                  SANITIZED
+                </span>
+              </div>
+
+              {/* Key-Value Tag List */}
+              <div className="space-y-2 font-mono text-xs">
+                {Object.entries(currentStage.telemetry).map(([key, value], idx) => {
+                  const isRedacted = String(value).includes("REDACTED") || String(value).includes("••••");
+
+                  return (
+                    <div
+                      key={idx}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between py-1.5 px-3 rounded bg-neutral-900/80 border border-neutral-800/80 gap-1"
+                    >
+                      <span className="text-neutral-400 select-all">{key}</span>
+                      <span className={`select-all font-semibold break-all ${
+                        isRedacted
+                          ? "text-[var(--af-copper)] bg-[var(--af-copper)]/10 px-1.5 py-0.2 rounded"
+                          : typeof value === "boolean"
+                          ? "text-[var(--af-success)]"
+                          : "text-[var(--af-accent)]"
+                      }`}>
+                        {String(value)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-6 pt-3 border-t border-neutral-800 flex items-center justify-between text-[11px] font-mono text-neutral-500">
+              <span>W3C TraceContext: Active</span>
+              <span className="text-neutral-400">Zero Leakage Enforced</span>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
-}
+};

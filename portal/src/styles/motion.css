@@ -1,0 +1,58 @@
+/* AstraFlow v12 Motion & Animation Styles */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .v10-logo-svg animateMotion {
+    dur: 0s !important;
+  }
+}
+
+/* Home Hero Signal Animation */
+.trace-glide {
+  stroke-dasharray: 9 100;
+  animation: dashtravel 6s linear infinite;
+}
+
+.trace-under {
+  stroke-dasharray: 4 8;
+  opacity: 0.85;
+}
+
+@keyframes dashtravel {
+  to {
+    stroke-dashoffset: -240;
+  }
+}
+
+/* Paused state for Home Hero signal */
+#v10-signature-stage[data-signal-paused="true"] .v10-logo-svg animateMotion {
+  animation-play-state: paused;
+}
+
+#v10-signature-stage[data-signal-paused="true"] .signature-flow-dot {
+  opacity: 0.6;
+}
+
+/* One-shot entrance below the fold */
+[data-v11-entrance="waiting"] {
+  opacity: 0.92;
+  transform: translateY(12px);
+  transition: opacity 450ms cubic-bezier(0.2, 0.8, 0.2, 1), transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-v11-entrance="visible"] {
+  opacity: 1;
+  transform: translateY(0);
+}

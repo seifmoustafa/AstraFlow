@@ -1,0 +1,11 @@
+AstraFlow Connected Instruments v10 / provenance
+
+Base: AstraFlow-Experience-Reset-v9 (same six HTML visual directions).
+Changed: index.html, community.html, assets/final.css and assets/final.js.
+Reused: the SVG hero A/route geometry+moving signal from AstraFlow-Crafted-v7 (inlined in v10 index.html).
+Unchanged, SHA-identical from v9: packages.html, docs.html, guides.html, changelog.html, assets/vision.css, assets/vision.js, assets/mark.svg, assets/mark-reversed.svg.
+
+source-materials/README-snapshot.md: user uploaded README, Nov 2026.
+source-materials/astra-docs-snapshot-2026-11-10.zip: user uploaded docs archive (61 .md documents).
+
+Visual QA: Chromium Playwright resources inlined due sandbox file navigation restriction. NOT a Next production site.

@@ -1,53 +1,53 @@
 import type { Metadata } from "next";
-import { Instrument_Sans, IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
-import "./globals.css";
-import { PortalProvider } from "@/context/PortalContext";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
-import { SearchModal } from "@/components/layout/SearchModal";
+import { Inter, IBM_Plex_Mono } from "next/font/google";
+import "@/styles/tokens.css";
+import "@/styles/vision.css";
+import "@/styles/final.css";
+import "@/styles/polish.css";
+import "@/styles/craft-v12.css";
+import "@/styles/layout.css";
+import "@/styles/components.css";
+import "@/styles/motion.css";
+import { Header } from "@/components/site/Header";
+import { Footer } from "@/components/site/Footer";
+import { SkipLink } from "@/components/site/SkipLink";
+import { ReducedMotionProvider } from "@/components/motion/ReducedMotionProvider";
 
-const instrumentSans = Instrument_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-instrument-sans",
+  variable: "--font-inter",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-plex-mono",
   display: "swap",
-  weight: ["400", "500", "600"],
-});
-
-const plexSansArabic = IBM_Plex_Sans_Arabic({
-  subsets: ["arabic"],
-  variable: "--font-plex-arabic",
-  display: "swap",
   weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://astraflow.dev"),
-  title: "AstraFlow — Engineered Clarity for .NET",
+  title: "AstraFlow — Control the flow.",
   description:
-    "AstraFlow makes application flow explicit, predictable, and inspectable. High-performance mediator, projections, structured diagnostics, and testing harnesses for .NET.",
+    "A focused family of .NET packages for explicit request dispatch, object mapping, diagnostics and testing. Compose only what your application needs.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/logo-mark-color.svg",
+    icon: "/brand/mark.svg",
+    shortcut: "/brand/mark.svg",
   },
   openGraph: {
-    title: "AstraFlow — Engineered Clarity for .NET",
+    title: "AstraFlow — Control the flow.",
     description:
-      "AstraFlow makes application flow explicit, predictable, and inspectable. Modular mediator, projections, structured diagnostics, and testing harnesses for .NET.",
+      "A focused family of .NET packages for explicit request dispatch, object mapping, diagnostics and testing. Compose only what your application needs.",
     url: "https://astraflow.dev",
     siteName: "AstraFlow",
     images: [
       {
-        url: "/images/brand/astraflow-social-preview.jpg",
-        width: 1200,
-        height: 630,
-        alt: "AstraFlow — Engineered Clarity for .NET",
+        url: "/brand/mark-on-light.svg",
+        width: 800,
+        height: 600,
+        alt: "AstraFlow — The .NET Flow Engine",
       },
     ],
     locale: "en_US",
@@ -55,31 +55,32 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AstraFlow — Engineered Clarity for .NET",
+    title: "AstraFlow — Control the flow.",
     description:
-      "AstraFlow makes application flow explicit, predictable, and inspectable. Modular mediator, projections, structured diagnostics, and testing harnesses for .NET.",
-    images: ["/images/brand/astraflow-social-preview.jpg"],
+      "A focused family of .NET packages for explicit request dispatch, object mapping, diagnostics and testing.",
+    images: ["/brand/mark-on-light.svg"],
   },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" data-theme="dark" dir="ltr" suppressHydrationWarning>
-      <body
-        className={`${instrumentSans.variable} ${plexMono.variable} ${plexSansArabic.variable} antialiased selection:bg-[var(--af-accent)] selection:text-[var(--af-accent-on)]`}
-      >
-        <PortalProvider>
-          <div className="min-h-screen flex flex-col justify-between">
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <SearchModal />
-          </div>
-        </PortalProvider>
+    <html
+      lang="en"
+      dir="ltr"
+      data-theme="warm-forest"
+      className={`${inter.variable} ${plexMono.variable}`}
+    >
+      <body>
+        <SkipLink />
+        <ReducedMotionProvider>
+          <Header />
+          <main id="main">{children}</main>
+          <Footer />
+        </ReducedMotionProvider>
       </body>
     </html>
   );

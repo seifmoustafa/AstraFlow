@@ -6,11 +6,10 @@ import {
   Code2,
   Copy,
   Check,
-  Cpu,
   GitCompare,
-  ShieldCheck,
   CheckCircle2,
-  Sparkles,
+  AlertCircle,
+  FileCode,
 } from "lucide-react";
 
 interface CodeComparisonTab {
@@ -99,262 +98,243 @@ public async Task<List<OrderSummaryDto>> GetRecentOrdersAsync(
         .ProjectTo<OrderEntity, OrderSummaryDto>() // Generates selective SQL SELECT
         .ToListAsync(ct);
 }`,
-    legacyCode: `// Legacy Reflection-Based Mapping
-public static class LegacyMapper
+    legacyCode: `// Legacy Runtime Dynamic Mapping
+public class OrderService
 {
-    public static TDest Map<TSource, TDest>(TSource source)
+    private readonly IMapper _mapper; // Dynamic runtime profile lookup
+    
+    public async Task<List<OrderSummaryDto>> GetOrdersLegacy(AppDbContext db)
     {
-        // Reflection scan over all property descriptors at runtime
-        var dest = Activator.CreateInstance<TDest>();
-        foreach (var prop in typeof(TSource).GetProperties())
-        {
-            var target = typeof(TDest).GetProperty(prop.Name);
-            if (target != null && target.CanWrite)
-                target.SetValue(dest, prop.GetValue(source)); // Slow & allocates
-        }
-        return dest;
+        // Loads full entities with all columns into memory
+        var entities = await db.Orders.AsNoTracking().ToListAsync();
+        
+        // Reflection-based property-by-property copy during runtime
+        return _mapper.Map<List<OrderSummaryDto>>(entities);
     }
 }`,
-    astraFlowHighlight: "Direct IL / C# assignments, 32 B footprint, selective SQL SELECT projection",
-    legacyFlaw: "Property reflection loops, boxing, forces client-side SQL evaluation in EF Core",
+    astraFlowHighlight: "Zero runtime reflection, compile-time Roslyn verification, selective SQL SELECT query generation",
+    legacyFlaw: "Over-fetching entire database tables, runtime type dictionary lookups, excessive memory churn",
   },
   {
     id: "assertions",
-    name: "Runner-Neutral Assertions",
-    badge: "v2.4 Preview",
-    title: "Clean-Room Fluent Chaining with Privacy-Safe Failure Output",
+    name: "Runner-Neutral Assertions (v2.4)",
+    badge: "Preview",
+    title: "Privacy-Safe Assertions vs Leaky Test Framework Failures",
     description:
-      "AstraFlow.Assertions (v2.4 in-dev) works identically across xUnit, NUnit, and MSTest without proprietary license walls, providing structured diffs that automatically mask PII.",
-    astraFlowCode: `// AstraFlow.Assertions (Clean-Room v2.4 Preview)
+      "AstraFlow.Assertions (in development for v2.4.0) operates without package dependencies and automatically masks tokens, passwords, and sensitive identifiers in CI failure messages.",
+    astraFlowCode: `// Runner-neutral assertion (zero package dependencies)
 [Fact]
-public void Customer_Order_Should_Satisfy_Audit_Policy()
+public void TokenPayload_Should_BeSanitizedInCiOutput()
 {
-    var order = ProcessCustomerOrder(orderInput);
-
-    // Fluent chaining with .And, .Which, and custom failure diagnostics
-    order.Should().NotBeNull()
-        .And.Subject.TotalAmount.Should().BeGreaterThan(0m);
-
-    // Automatically sanitizes PII tokens in assertion failure messages
-    order.PaymentDetails.Should()
-        .ContainKey("AuthorizationCode")
-        .Which.Should().MatchRegex("^[A-Z0-9]{8}$");
-}`,
-    legacyCode: `// Traditional Test Assertions
-[Test]
-public void Test_Legacy()
-{
-    var order = ProcessCustomerOrder(orderInput);
-
-    // Disjointed assertions with opaque failure messages
-    Assert.IsNotNull(order);
-    Assert.IsTrue(order.TotalAmount > 0);
+    using var scope = new AssertionScope();
     
-    // Leaks raw unredacted customer data into CI test logs
-    Assert.AreEqual("AUTH9876", order.PaymentDetails["AuthCode"]);
-    // Log failure: Expected AUTH9876 but got AUTH1234 for user john.doe@secret.com!
+    var response = authClient.Authenticate("admin@corp.internal");
+    
+    // Privacy-safe failure formatting masks arbitrary values by default
+    response.Token.Should().NotBeNullOrEmpty()
+        .And.SubjectMatches("[a-zA-Z0-9_-]+");
+    
+    // If an assertion fails, CI logs show:
+    // Expected token with valid claims, but found: [REDACTED_BEARER_TOKEN]
 }`,
-    astraFlowHighlight: "Fluent `.And` / `.Which` chaining, runner-neutral (xUnit/NUnit/MSTest), PII-masked CI logs",
-    legacyFlaw: "Fragmented assert calls, unformatted failure dumps, potential PII leakage into test artifacts",
+    legacyCode: `// Traditional Assertions Leaking Secrets in CI Logs
+[Fact]
+public void TokenPayload_LeakyFailure()
+{
+    var response = authClient.Authenticate("admin@corp.internal");
+    
+    // Traditional assertion prints raw unmasked payload on failure:
+    Assert.True(response.Token == "expected_hash");
+    
+    // Failure output dumped to public CI job logs:
+    // Expected: expected_hash
+    // Actual:   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... [LEAKED_JWT_SECRET!]
+}`,
+    astraFlowHighlight: "Runner independence (xUnit/NUnit/MSTest), automatic secret masking, audit-safe CI output",
+    legacyFlaw: "Dumps raw customer credentials and API keys directly into unencrypted CI runner logs",
   },
   {
     id: "security",
     name: "Security & Redaction",
-    title: "Defense-in-Depth Diagnostics & Automatic Data Masking",
+    title: "Defense-in-Depth OpenTelemetry vs Plain-Text Tagging",
     description:
-      "AstraFlow.Security and AstraFlow.Diagnostics enforce safe diagnostic boundaries so sensitive request fields never escape into OpenTelemetry spans or error logs.",
-    astraFlowCode: `// 1. Declare sensitive contract boundary
-public sealed record ProcessPaymentCommand(
-    Guid CustomerId,
-    [property: Redact(MaskType.CreditCard)] string CardNumber,
-    [property: Redact(MaskType.Secret)] string CVV,
-    decimal Amount
-) : IRequest<PaymentStatus>;
-
-// 2. Telemetry subscriber writes safe structured payload
-diagnosticListener.Subscribe(new AnonymousObserver<KeyValuePair<string, object?>>(
-    evt =>
-    {
-        // Safe stringification enforces Redact attributes automatically
-        var safeTrace = AstraFlowDiagnostics.FormatRedacted(evt.Value);
-        logger.LogInformation("Pipeline Event: {Trace}", safeTrace);
-        // Emits: {"CustomerId": "...", "CardNumber": "•••• 4242", "CVV": "[REDACTED]"}
-    }
-));`,
-    legacyCode: `// Unsafe Traditional Tracing
-public async Task<PaymentStatus> Handle(ProcessPaymentCommand cmd)
+      "AstraFlow.Security sanitizes activity tags and diagnostic metadata before OpenTelemetry exporters broadcast spans across distributed tracing networks.",
+    astraFlowCode: `// Telemetry sanitization gate
+public class PaymentPipelineBehavior<TRequest, TResponse> 
+    : IPipelineBehavior<TRequest, TResponse>
 {
-    // Careless JSON serialization into logger / OpenTelemetry tags
-    var json = JsonSerializer.Serialize(cmd);
-    _logger.LogInformation("Processing payment: {Payload}", json);
-    
-    // SECURITY RISK: Plaintext credit card numbers & CVV written to Splunk/Datadog!
-    return await _gateway.ChargeAsync(cmd);
+    public async Task<TResponse> HandleAsync(TRequest req, RequestHandlerDelegate<TResponse> next, CancellationToken ct)
+    {
+        using var activity = AstraFlowDiagnostics.ActivitySource
+            .StartActivity("Payment.Process");
+        
+        // Automatic policy-driven redaction for credit cards, SSNs, and API keys
+        AstraFlowSecurity.RedactAndSetTag(activity, "user.email", "alice@customer.com");
+        AstraFlowSecurity.RedactAndSetTag(activity, "payment.card", "4111111111114242");
+        
+        return await next(ct);
+    }
 }`,
-    astraFlowHighlight: "Declarative `[Redact]` attributes, compile-time Roslyn audit rule, zero-leak telemetry",
-    legacyFlaw: "Unintentional PII/PCI exposure to log aggregators and APM telemetry pipelines",
+    legacyCode: `// Insecure Telemetry Logging Anti-Pattern
+public class LegacyPaymentLogger
+{
+    public void LogSpan(PaymentRequest request)
+    {
+        var activity = new Activity("Payment");
+        
+        // Directly writing unredacted PII to telemetry tags
+        activity.SetTag("customer.email", request.Email);
+        activity.SetTag("customer.credit_card", request.CardNumber);
+        
+        // Telemetry tags broadcast in plain-text to Jaeger, Zipkin, & Datadog!
+    }
+}`,
+    astraFlowHighlight: "Guaranteed PII redaction, strict compliance defaults, zero telemetry data leakage",
+    legacyFlaw: "Plain-text credential broadcasts in telemetry spans, violating GDPR and PCI-DSS compliance",
   },
 ];
 
-export function CodeComparisonShowcase() {
+export const CodeComparisonShowcase: React.FC = () => {
   const { locale } = usePortal();
   const [activeTabId, setActiveTabId] = useState<string>("mediator");
-  const [copiedType, setCopiedType] = useState<"astra" | "legacy" | null>(null);
+  const [copiedSide, setCopiedSide] = useState<"astraflow" | "legacy" | null>(null);
 
   const activeTab = comparisonTabs.find((t) => t.id === activeTabId) || comparisonTabs[0];
 
-  const handleCopy = (code: string, type: "astra" | "legacy") => {
+  const handleCopy = (code: string, side: "astraflow" | "legacy") => {
     navigator.clipboard.writeText(code);
-    setCopiedType(type);
-    setTimeout(() => setCopiedType(null), 2000);
+    setCopiedSide(side);
+    setTimeout(() => setCopiedSide(null), 2000);
   };
 
   return (
-    <section className="py-20 border-b border-[var(--af-border)] bg-[var(--af-bg-surface)]">
-      <div className="max-w-[1240px] mx-auto px-4 sm:px-6">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+    <div className="w-full rounded-2xl border border-[var(--af-border)] bg-[var(--af-bg-surface)] overflow-hidden shadow-2xl transition-all duration-300">
+      {/* Top Header Dock */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-[var(--af-border)] px-6 py-4 bg-[var(--af-bg-canvas)]/80 backdrop-blur-md gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--af-accent)]/15 border border-[var(--af-accent)]/30 text-[var(--af-accent)]">
+            <GitCompare className="h-4 w-4" />
+          </div>
           <div>
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded text-xs font-mono font-medium text-[var(--af-accent)] bg-[var(--af-bg-canvas)] border border-[var(--af-border)] mb-3">
-              <GitCompare className="w-3.5 h-3.5" />
-              <span>SHOWCASE 03 · SPLIT-VIEW CODE COMPARISON</span>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold tracking-tight text-[var(--af-text-primary)]">
+                Side-by-Side Architectural Code Matrix
+              </h3>
+              <span className="rounded-full bg-[var(--af-accent)]/10 px-2 py-0.5 text-[10px] font-mono font-medium text-[var(--af-accent)] border border-[var(--af-accent)]/20">
+                Pattern Comparison
+              </span>
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[var(--af-text-primary)] mb-3">
-              {locale === "ar"
-                ? "مصفوفة مقارنة الأكواد: AstraFlow مقابل الأنماط القديمة"
-                : "Architectural Comparison: AstraFlow vs Legacy Approaches"}
-            </h2>
-            <p className="text-sm sm:text-base text-[var(--af-text-secondary)] max-w-2xl">
-              {locale === "ar"
-                ? "شاهد كيف تحل AstraFlow محل الصناديق السوداء القائمة على الانعكاس والترميز المعقد بحلول صريحة ومفحوصة وقت التجميع."
-                : "Compare side-by-side: explicit, inspectable C# patterns versus reflection-heavy legacy code. Choose explicit correctness over runtime guesswork."}
+            <p className="text-xs text-[var(--af-text-secondary)]">
+              Inspect how AstraFlow enforces typed predictability vs legacy reflection and leaky anti-patterns.
             </p>
           </div>
-
-          {/* Tab Selection */}
-          <div className="flex flex-wrap items-center gap-2">
-            {comparisonTabs.map((tab) => {
-              const active = tab.id === activeTab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTabId(tab.id)}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-mono transition-af cursor-pointer border ${
-                    active
-                      ? "bg-[var(--af-accent)] text-[var(--af-accent-on)] font-semibold border-[var(--af-accent)]"
-                      : "bg-[var(--af-bg-canvas)] text-[var(--af-text-secondary)] border-[var(--af-border)] hover:border-[var(--af-text-secondary)]"
-                  }`}
-                >
-                  <span>{tab.name}</span>
-                  {tab.badge && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-[var(--af-copper)]/20 text-[var(--af-copper)] border border-[var(--af-copper)]/40 font-bold">
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
         </div>
+      </div>
 
-        {/* Tab Context Banner */}
-        <div className="mb-6 p-4 rounded-lg bg-[var(--af-bg-canvas)] border border-[var(--af-border)]">
-          <h3 className="text-base font-bold text-[var(--af-text-primary)] mb-1 flex items-center gap-2">
-            <Code2 className="w-4 h-4 text-[var(--af-accent)]" />
-            <span>{activeTab.title}</span>
-          </h3>
-          <p className="text-xs sm:text-sm text-[var(--af-text-secondary)] leading-relaxed">
+      {/* Comparison Tab Selector */}
+      <div className="flex border-b border-[var(--af-border)] bg-[var(--af-bg-surface)] px-6 py-2.5 gap-2 overflow-x-auto scrollbar-none">
+        {comparisonTabs.map((tab) => {
+          const isSelected = tab.id === activeTabId;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTabId(tab.id)}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all duration-150 ${
+                isSelected
+                  ? "bg-[var(--af-accent)]/10 text-[var(--af-accent)] border border-[var(--af-accent)]/30 font-semibold shadow-xs"
+                  : "text-[var(--af-text-secondary)] hover:text-[var(--af-text-primary)] hover:bg-[var(--af-surface-2)] border border-transparent"
+              }`}
+            >
+              <span>{tab.name}</span>
+              {tab.badge && (
+                <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
+                  isSelected ? "bg-[var(--af-accent)] text-[var(--af-accent-on)] font-semibold" : "bg-[var(--af-surface-3)] text-[var(--af-text-subtle)]"
+                }`}>
+                  {tab.badge}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Split Comparison View */}
+      <div className="p-6 md:p-8 space-y-6">
+        <div>
+          <h4 className="text-base font-bold text-[var(--af-text-primary)]">
+            {activeTab.title}
+          </h4>
+          <p className="text-xs text-[var(--af-text-secondary)] mt-1 max-w-3xl leading-relaxed">
             {activeTab.description}
           </p>
         </div>
 
-        {/* Split View Editor Shell */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-          {/* AstraFlow Side */}
-          <div className="flex flex-col rounded-[var(--af-radius-card)] bg-[var(--af-bg-canvas)] border border-[var(--af-accent)]/40 overflow-hidden shadow-sm">
-            {/* Panel Header */}
-            <div className="px-4 py-3 bg-[var(--af-bg-surface)] border-b border-[var(--af-border)] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[var(--af-accent)]" />
-                <span className="text-xs font-mono font-bold text-[var(--af-text-primary)]">
-                  The AstraFlow Way (Explicit &amp; Safe)
-                </span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* AstraFlow Modern Approach */}
+          <div className="rounded-xl border border-[var(--af-border)] bg-[var(--af-bg-canvas)] overflow-hidden flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--af-border)] bg-[var(--af-bg-surface)]">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-[var(--af-accent)]" />
+                  <span className="text-xs font-mono font-semibold text-[var(--af-text-primary)]">
+                    AstraFlow Pattern (Typed & Inspectable)
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleCopy(activeTab.astraFlowCode, "astraflow")}
+                  className="flex items-center gap-1 text-[11px] text-[var(--af-accent)] hover:underline font-mono"
+                >
+                  {copiedSide === "astraflow" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  <span>{copiedSide === "astraflow" ? "Copied" : "Copy"}</span>
+                </button>
               </div>
-              <button
-                onClick={() => handleCopy(activeTab.astraFlowCode, "astra")}
-                className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-[11px] font-mono border border-[var(--af-border)] bg-[var(--af-bg-canvas)] text-[var(--af-text-secondary)] hover:text-[var(--af-text-primary)] transition-af cursor-pointer"
-              >
-                {copiedType === "astra" ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-[var(--af-success)]" />
-                    <span>Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy C#</span>
-                  </>
-                )}
-              </button>
+
+              <div className="p-4 font-mono text-xs text-[var(--af-text-primary)] bg-neutral-950 overflow-x-auto">
+                <pre>
+                  <code>{activeTab.astraFlowCode}</code>
+                </pre>
+              </div>
             </div>
 
-            {/* Code Body */}
-            <div className="p-4 flex-1 overflow-x-auto font-mono text-xs text-[var(--af-text-primary)] leading-relaxed bg-[var(--af-bg-canvas)]">
-              <pre className="select-all">
-                <code>{activeTab.astraFlowCode}</code>
-              </pre>
-            </div>
-
-            {/* Highlight Banner */}
-            <div className="px-4 py-2.5 bg-[var(--af-accent)]/10 border-t border-[var(--af-border)] text-xs font-mono text-[var(--af-accent)] flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">{activeTab.astraFlowHighlight}</span>
+            <div className="p-3 border-t border-[var(--af-border)] bg-[var(--af-bg-surface)]/60 flex items-start gap-2 text-xs text-[var(--af-text-secondary)]">
+              <CheckCircle2 className="h-4 w-4 text-[var(--af-success)] shrink-0 mt-0.5" />
+              <span>{activeTab.astraFlowHighlight}</span>
             </div>
           </div>
 
-          {/* Legacy Boilerplate Side */}
-          <div className="flex flex-col rounded-[var(--af-radius-card)] bg-[var(--af-bg-canvas)] border border-[var(--af-border)] overflow-hidden opacity-90 shadow-sm">
-            {/* Panel Header */}
-            <div className="px-4 py-3 bg-[var(--af-bg-surface)] border-b border-[var(--af-border)] flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[var(--af-danger)]" />
-                <span className="text-xs font-mono font-semibold text-[var(--af-text-secondary)]">
-                  Legacy / Reflection Anti-Pattern
-                </span>
+          {/* Legacy / Reflection Anti-Pattern */}
+          <div className="rounded-xl border border-[var(--af-border)]/60 bg-[var(--af-bg-canvas)] overflow-hidden flex flex-col justify-between opacity-85 hover:opacity-100 transition-opacity">
+            <div>
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-[var(--af-border)]/60 bg-[var(--af-bg-surface)]/60">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full bg-[var(--af-danger)]" />
+                  <span className="text-xs font-mono font-semibold text-[var(--af-text-secondary)]">
+                    Legacy Reflection / Unsafe Pattern
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleCopy(activeTab.legacyCode, "legacy")}
+                  className="flex items-center gap-1 text-[11px] text-[var(--af-text-subtle)] hover:underline font-mono"
+                >
+                  {copiedSide === "legacy" ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  <span>{copiedSide === "legacy" ? "Copied" : "Copy"}</span>
+                </button>
               </div>
-              <button
-                onClick={() => handleCopy(activeTab.legacyCode, "legacy")}
-                className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-[11px] font-mono border border-[var(--af-border)] bg-[var(--af-bg-canvas)] text-[var(--af-text-secondary)] hover:text-[var(--af-text-primary)] transition-af cursor-pointer"
-              >
-                {copiedType === "legacy" ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-[var(--af-success)]" />
-                    <span>Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy</span>
-                  </>
-                )}
-              </button>
+
+              <div className="p-4 font-mono text-xs text-[var(--af-text-secondary)] bg-neutral-950/80 overflow-x-auto">
+                <pre>
+                  <code>{activeTab.legacyCode}</code>
+                </pre>
+              </div>
             </div>
 
-            {/* Code Body */}
-            <div className="p-4 flex-1 overflow-x-auto font-mono text-xs text-[var(--af-text-secondary)] leading-relaxed bg-[var(--af-bg-canvas)]">
-              <pre className="select-all">
-                <code>{activeTab.legacyCode}</code>
-              </pre>
-            </div>
-
-            {/* Flaw Banner */}
-            <div className="px-4 py-2.5 bg-[var(--af-danger)]/10 border-t border-[var(--af-border)] text-xs font-mono text-[var(--af-danger)] flex items-center gap-2">
-              <span className="font-bold">Caution:</span>
-              <span className="truncate">{activeTab.legacyFlaw}</span>
+            <div className="p-3 border-t border-[var(--af-border)]/60 bg-[var(--af-bg-surface)]/40 flex items-start gap-2 text-xs text-[var(--af-danger)]">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <span>{activeTab.legacyFlaw}</span>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
-}
+};
