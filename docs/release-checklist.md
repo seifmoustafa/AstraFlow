@@ -79,6 +79,7 @@
 - A clean sample project can install `AstraFlow.Diagnostics`.
 - A clean sample project can install `AstraFlow.Security`.
 - A clean sample project can install `AstraFlow.Testing`.
+- A clean test consumer can install `AstraFlow.Assertions` and compile its general-purpose assertion examples.
 - A clean sample project can install `AstraFlow.Mapper.EntityFrameworkCore`.
 - A clean sample project can install `AstraFlow.AspNetCore`.
 - A clean sample project can install `AstraFlow.FluentValidation`.

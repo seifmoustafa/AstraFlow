@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "explainer",
+  "quality": "showcase",
+  "specification": {
+    "path": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-strategy-20261111-005500\\candidate.archify.md",
+    "sha256": "ff827d27169d9a1e54a9b41fbe5e51e238f5641dad4f58fa3c8f60e383a5a83e",
+    "bytes": 4571
+  },
+  "artifact": {
+    "path": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-strategy-20261111-005500\\astraflow-portal-strategy.html",
+    "sha256": "c591b046824a76588d82a88b92765dc578ada013ed7bc42c22565351f2d9e081",
+    "bytes": 613899
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "not-run"
+  },
+  "diagnostics": [
+    {
+      "code": "explainer/writing-cliche",
+      "severity": "warning",
+      "message": "This stock phrase gives little information about the concrete outcome.",
+      "subject": {
+        "input": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-strategy-20261111-005500\\candidate.archify.md",
+        "line": 20,
+        "component": "comparison",
+        "panelId": "approaches-comparison"
+      },
+      "evidence": {
+        "reason": "This stock phrase gives little information about the concrete outcome.",
+        "example": "赋能业务 → 让客服查到订单状态; seamless → name what no longer needs a manual step",
+        "rule": "cliche",
+        "matched": "Seamless"
+      },
+      "supportedFixes": [
+        "Replace the stock phrase with the specific action or outcome the reader needs."
+      ]
+    }
+  ],
+  "diagnosticSummary": {
+    "total": 1,
+    "shown": 1,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-strategy-20261111-005500\\astraflow-portal-strategy.finalize.json",
+    "summaryReceipt": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-strategy-20261111-005500\\astraflow-portal-strategy.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 7832,
+  "browserCheck": {
+    "requested": false,
+    "ran": false
+  }
+}

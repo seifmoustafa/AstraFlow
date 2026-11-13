@@ -12,6 +12,6 @@
 
 ## Layout
 
-- `rules/` contains detailed architecture, coding/API, and verification rules.
-- `skills/` contains focused workflows for work that benefits from package-specific procedures. The root `AGENTS.md` is the routing index; each skill description should be narrow enough to select the right workflow.
+- `rules/` contains detailed architecture, coding/API, portal synchronization and content-firewall (`portal-and-content.md`), and verification rules.
+- `skills/` contains focused workflows for work that benefits from package-specific or portal-synchronization procedures (including `portal-maintenance/SKILL.md` and `verification-and-release/SKILL.md` for release readiness). The root `AGENTS.md` is the routing index; each skill description should be narrow enough to select the right workflow.
 

@@ -3,7 +3,7 @@ using AstraFlow.Analyzers;
 using AstraFlow.Mapper;
 using AstraFlow.Mapper.Conventions;
 using AstraFlow.Mediator;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;

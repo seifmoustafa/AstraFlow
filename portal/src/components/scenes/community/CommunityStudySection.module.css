@@ -1,0 +1,359 @@
+.studyBand {
+  width: 100%;
+  background: #e9e1d4;
+  border-block-start: 1px solid var(--line);
+  border-block-end: 1px solid var(--line);
+  padding-block: clamp(72px, 7vw, 120px);
+}
+
+.studyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: clamp(28px, 4vw, 60px);
+  align-items: center;
+}
+
+.copyColumn {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.heading {
+  margin: 0;
+  font-size: clamp(38px, 4.4vw, 62px);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  color: var(--ink);
+}
+
+.headingItalic {
+  display: block;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--action);
+  letter-spacing: -0.045em;
+  margin-block-start: 6px;
+}
+
+.lead {
+  margin: 0;
+  max-width: 560px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--ink-body);
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.questionCard {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 15px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--paper-raised);
+  transition:
+    transform 0.28s cubic-bezier(0.32, 0.72, 0, 1),
+    border-color 0.22s ease,
+    box-shadow 0.24s ease,
+    background-color 0.22s ease;
+}
+
+.questionCardActive {
+  border-color: var(--signal);
+  background: #fff8f3;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(8, 44, 38, 0.1);
+}
+
+.cardToggleBtn {
+  appearance: none;
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.cardToggleBtn:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.cardMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--action);
+}
+
+.cardStateDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.questionCardActive .cardStateDot {
+  background: var(--signal);
+  box-shadow: 0 0 0 3px rgba(242, 94, 59, 0.22);
+}
+
+.cardQuestion {
+  font-family: var(--font-sans);
+  font-size: 14.5px;
+  font-weight: 750;
+  line-height: 1.35;
+  color: var(--ink);
+}
+
+.cardAnswer {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-body);
+}
+
+.cardDocLink {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--action);
+  text-decoration: none;
+}
+
+.cardDocLink:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.cardDocLink:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-block-start: 4px;
+}
+
+.stageColumn {
+  min-width: 0;
+}
+
+.relayFrame {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: clamp(16px, 2.2vw, 24px);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(
+      circle at 50% 44%,
+      rgba(255, 253, 247, 0.94),
+      rgba(247, 243, 235, 0.85)
+    ),
+    var(--paper);
+  box-shadow: var(--shadow);
+  transition:
+    transform 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+    border-color 0.24s ease,
+    box-shadow 0.32s ease;
+}
+
+.relayFrame:hover {
+  transform: translateY(-3px);
+  border-color: var(--ink-secondary);
+  box-shadow: 0 28px 74px rgba(8, 44, 38, 0.13);
+}
+
+.relayHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.relayPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--paper-raised);
+  color: var(--ink);
+}
+
+.relayDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--signal);
+}
+
+.relayCanvas {
+  width: 100%;
+  min-width: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--paper-raised);
+  padding: 10px;
+  overflow: hidden;
+  --hairline-plate: #f7f3eb;
+  --hairline-hi: #fffdf8;
+  --hairline-edge: #8da194;
+  --hairline-mid: #e4dac9;
+  --hairline-lo: #d2c5b0;
+  --hairline-stroke: #15352a;
+}
+
+.relayHost {
+  width: 100%;
+  max-width: 100%;
+}
+
+.relayHost svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.branchBar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.branchBadge {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.branchBadge:hover {
+  border-color: var(--action);
+}
+
+.branchBadge:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 2px;
+}
+
+.branchBadge[aria-pressed='true'] {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: var(--paper-raised);
+}
+
+.branchTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.telemetryReadout {
+  display: grid;
+  gap: 4px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-inline-start: 3px solid var(--signal);
+  background: var(--paper);
+}
+
+.telemetryLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--action);
+}
+
+.telemetryText {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink);
+  min-height: 1.45em;
+}
+
+@media (max-width: 1040px) {
+  .studyGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .cardsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .branchBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .questionCard,
+  .relayFrame,
+  .branchBadge {
+    transition: none;
+  }
+}

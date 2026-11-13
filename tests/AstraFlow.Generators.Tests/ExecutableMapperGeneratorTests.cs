@@ -1,7 +1,7 @@
 using System.Reflection;
 using AstraFlow.Generators;
 using AstraFlow.Mapper;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
@@ -66,8 +66,8 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
 
         var (compilation, result) = Generate(source);
 
-        result.Diagnostics.Should().BeEmpty();
-        compilation.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        AssertNoGeneratorDiagnostics(result);
+        AssertNoCompilationErrors(compilation);
         result.Results.Single().GeneratedSources.Single().SourceText.ToString().Should().Contain("Enumerable.Select(source.Items, item => new global::OutputItem");
         using var stream = new MemoryStream();
         compilation.Emit(stream).Success.Should().BeTrue();
@@ -84,6 +84,269 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         var outputItems = (System.Collections.IEnumerable)mapped.GetType().GetProperty("Items")!.GetValue(mapped)!;
         var outputItem = outputItems.Cast<object>().Single();
         outputItem.GetType().GetProperty("Name")!.GetValue(outputItem).Should().Be("Court 1");
+    }
+
+    [Fact]
+    public void Generated_method_maps_inherited_auditable_properties_to_positional_record()
+    {
+        var source = """
+using AstraFlow.Mapper;
+public abstract class AuditableEntity<TKey>
+{
+    public TKey Id { get; set; } = default!;
+    public System.DateTime CreatedAt { get; set; }
+}
+public sealed class WorkItem : AuditableEntity<System.Guid>
+{
+    public string Title { get; set; } = "";
+    public System.DateTime? DueAt { get; set; }
+}
+public sealed record WorkItemResponse(System.Guid Id, string Title, System.DateTime CreatedAt, System.DateTime? DueAt);
+public static partial class WorkItemMaps
+{
+    [AstraGenerateMapping]
+    public static partial WorkItemResponse ToResponse(WorkItem source);
+}
+""";
+
+        var (compilation, result) = Generate(source);
+
+        result.Diagnostics.Should().BeEmpty();
+        AssertNoCompilationErrors(compilation);
+        result.Results.Single().GeneratedSources.Single().SourceText.ToString()
+            .Should().Contain("new global::WorkItemResponse(")
+            .And.Contain("source.Id")
+            .And.Contain("source.CreatedAt");
+        using var stream = new MemoryStream();
+        compilation.Emit(stream).Success.Should().BeTrue();
+        var assembly = Assembly.Load(stream.ToArray());
+        var item = Activator.CreateInstance(assembly.GetType("WorkItem")!)!;
+        var id = Guid.NewGuid();
+        var createdAt = new DateTime(2026, 11, 10, 8, 30, 0, DateTimeKind.Utc);
+        var dueAt = createdAt.AddDays(3);
+        item.GetType().GetProperty("Id")!.SetValue(item, id);
+        item.GetType().GetProperty("CreatedAt")!.SetValue(item, createdAt);
+        item.GetType().GetProperty("Title")!.SetValue(item, "Review");
+        item.GetType().GetProperty("DueAt")!.SetValue(item, dueAt);
+
+        var response = assembly.GetType("WorkItemMaps")!.GetMethod("ToResponse")!.Invoke(null, [item])!;
+
+        response.GetType().GetProperty("Id")!.GetValue(response).Should().Be(id);
+        response.GetType().GetProperty("Title")!.GetValue(response).Should().Be("Review");
+        response.GetType().GetProperty("CreatedAt")!.GetValue(response).Should().Be(createdAt);
+        response.GetType().GetProperty("DueAt")!.GetValue(response).Should().Be(dueAt);
+    }
+
+    [Fact]
+    public void Generated_method_maps_nullable_scalars_and_non_nullable_to_nullable_record_parameters()
+    {
+        var source = """
+using AstraFlow.Mapper;
+public sealed class Input
+{
+    public decimal? Amount { get; set; }
+    public int? Count { get; set; }
+    public System.Guid? PublicId { get; set; }
+    public System.DateTime? DueAt { get; set; }
+    public System.DateTimeOffset? CompletedAt { get; set; }
+    public int RequiredCount { get; set; }
+}
+public sealed record Output(decimal? amount, int? count, System.Guid? publicId, System.DateTime? dueAt,
+    System.DateTimeOffset? completedAt, int? requiredCount);
+public static partial class Maps
+{
+    [AstraGenerateMapping]
+    public static partial Output Convert(Input source);
+}
+""";
+
+        var (compilation, result) = Generate(source);
+
+        AssertNoGeneratorDiagnostics(result);
+        AssertNoCompilationErrors(compilation);
+        using var stream = new MemoryStream();
+        compilation.Emit(stream).Success.Should().BeTrue();
+        var assembly = Assembly.Load(stream.ToArray());
+        var input = Activator.CreateInstance(assembly.GetType("Input")!)!;
+        input.GetType().GetProperty("Amount")!.SetValue(input, 12.50m);
+        input.GetType().GetProperty("Count")!.SetValue(input, null);
+        input.GetType().GetProperty("PublicId")!.SetValue(input, Guid.Empty);
+        input.GetType().GetProperty("DueAt")!.SetValue(input, null);
+        var completedAt = new DateTimeOffset(2026, 11, 10, 9, 0, 0, TimeSpan.Zero);
+        input.GetType().GetProperty("CompletedAt")!.SetValue(input, completedAt);
+        input.GetType().GetProperty("RequiredCount")!.SetValue(input, 4);
+
+        var output = assembly.GetType("Maps")!.GetMethod("Convert")!.Invoke(null, [input])!;
+
+        output.GetType().GetProperty("amount")!.GetValue(output).Should().Be(12.50m);
+        output.GetType().GetProperty("count")!.GetValue(output).Should().BeNull();
+        output.GetType().GetProperty("publicId")!.GetValue(output).Should().Be(Guid.Empty);
+        output.GetType().GetProperty("dueAt")!.GetValue(output).Should().BeNull();
+        output.GetType().GetProperty("completedAt")!.GetValue(output).Should().Be(completedAt);
+        output.GetType().GetProperty("requiredCount")!.GetValue(output).Should().Be(4);
+    }
+
+    [Fact]
+    public void Generated_method_maps_parameterless_init_only_record_properties()
+    {
+        var source = """
+using AstraFlow.Mapper;
+public sealed class Input { public int Count { get; set; } }
+public sealed record Output { public int Count { get; init; } }
+public static partial class Maps
+{
+    [AstraGenerateMapping]
+    public static partial Output Convert(Input source);
+}
+""";
+
+        var (compilation, result) = Generate(source);
+
+        result.Diagnostics.Should().BeEmpty();
+        AssertNoCompilationErrors(compilation);
+        result.Results.Single().GeneratedSources.Single().SourceText.ToString().Should().Contain("Count = source.Count");
+    }
+
+    [Fact]
+    public void Generated_method_maps_parameterless_init_only_class_properties()
+    {
+        var source = """
+using AstraFlow.Mapper;
+public sealed class Input { public int Count { get; set; } }
+public sealed class Output { public int Count { get; init; } }
+public static partial class Maps
+{
+    [AstraGenerateMapping]
+    public static partial Output Convert(Input source);
+}
+""";
+
+        var (compilation, result) = Generate(source);
+
+        AssertNoGeneratorDiagnostics(result);
+        AssertNoCompilationErrors(compilation);
+        result.Results.Single().GeneratedSources.Single().SourceText.ToString().Should().Contain("Count = source.Count");
+        using var stream = new MemoryStream();
+        compilation.Emit(stream).Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Generated_method_maps_primary_constructor_parameters_and_init_properties()
+    {
+        var source = """
+using AstraFlow.Mapper;
+public sealed class Input { public System.Guid Id { get; set; } public string Title { get; set; } = ""; }
+public sealed class Output(System.Guid id)
+{
+    public System.Guid Id { get; } = id;
+    public string Title { get; init; } = "";
+}
+public static partial class Maps
+{
+    [AstraGenerateMapping]
+    public static partial Output Convert(Input source);
+}
+""";
+
+        var (compilation, result) = Generate(source);
+
+        result.Diagnostics.Should().BeEmpty();
+        compilation.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Should().BeEmpty();
+        var generated = result.Results.Single().GeneratedSources.Single().SourceText.ToString();
+        generated.Should().Contain("new global::Output(source.Id)").And.Contain("Title = source.Title");
+    }
+
+    [Fact]
+    public void Nullable_value_source_cannot_map_to_non_nullable_destination()
+    {
+        var source = ReplaceInput("public class Input { public int? Count { get; set; } }");
+
+        var (_, result) = Generate(source);
+
+        result.Diagnostics.Should().ContainSingle(diagnostic => diagnostic.Id == "AFM001" &&
+            diagnostic.GetMessage().Contains("nullable value", StringComparison.OrdinalIgnoreCase));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Editing_an_inherited_property_invalidates_its_generated_mapping()
+    {
+        const string source = """
+using AstraFlow.Mapper;
+public class AuditBase<TKey> { public TKey Id { get; set; } = default!; }
+public sealed class WorkItem : AuditBase<System.Guid> { public string Title { get; set; } = ""; }
+public sealed record WorkItemResponse(System.Guid Id, string Title);
+public static partial class Maps
+{
+    [AstraGenerateMapping]
+    public static partial WorkItemResponse ToResponse(WorkItem source);
+}
+""";
+        var options = CSharpParseOptions.Default.WithLanguageVersion(LanguageVersion.Preview);
+        var tree = CSharpSyntaxTree.ParseText(source, options);
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
+            .Select(path => MetadataReference.CreateFromFile(path)).ToList();
+        references.Add(MetadataReference.CreateFromFile(typeof(AstraGenerateMappingAttribute).Assembly.Location));
+        var compilation = CSharpCompilation.Create("InheritedMappingIncrementalTest", [tree], references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
+
+        driver = driver.RunGenerators(compilation);
+        driver.GetRunResult().Results.Single().GeneratedSources.Should().ContainSingle();
+
+        var changed = CSharpSyntaxTree.ParseText(source.Replace("public TKey Id", "public string Id", StringComparison.Ordinal), options);
+        driver = driver.RunGenerators(compilation.ReplaceSyntaxTree(tree, changed));
+
+        driver.GetRunResult().Diagnostics.Should().ContainSingle(diagnostic => diagnostic.Id == "AFM001");
+        driver.GetRunResult().Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Hidden_inherited_source_properties_are_reported_as_ambiguous()
+    {
+        const string source = """
+using AstraFlow.Mapper;
+public class BaseInput { public int Id { get; set; } }
+public sealed class Input : BaseInput { public new int Id { get; set; } }
+public sealed class Output { public int Id { get; set; } }
+public static partial class Maps
+{
+    [AstraGenerateMapping]
+    public static partial Output Convert(Input source);
+}
+""";
+
+        var (_, result) = Generate(source);
+
+        result.Diagnostics.Should().ContainSingle(diagnostic => diagnostic.Id == "AFM001" &&
+            diagnostic.GetMessage().Contains("multiple distinct", StringComparison.Ordinal));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Multiple_matching_parameterized_constructors_are_rejected()
+    {
+        const string source = """
+using AstraFlow.Mapper;
+public sealed class Input { public int Count { get; set; } }
+public sealed class Output
+{
+    public Output(int count) { Count = count; }
+    public Output(int? count) { Count = count ?? 0; }
+    public int Count { get; }
+}
+public static partial class Maps
+{
+    [AstraGenerateMapping]
+    public static partial Output Convert(Input source);
+}
+""";
+
+        var (_, result) = Generate(source);
+
+        result.Diagnostics.Should().ContainSingle(diagnostic => diagnostic.Id == "AFM001" &&
+            diagnostic.GetMessage().Contains("multiple accessible constructors", StringComparison.Ordinal));
+        result.Results.Single().GeneratedSources.Should().BeEmpty();
     }
 
     [Fact]
@@ -164,7 +427,7 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
     [Theory]
     [InlineData("public string Password { get; set; } = \"\";", "sensitive")]
     [InlineData("public required string Name { get; set; }", "non-required")]
-    [InlineData("public string Name { get; init; } = \"\";", "init-only")]
+    [InlineData("public string Name { get; protected init; } = \"\";", "public settable")]
     [InlineData("public long Count { get; set; }", "identical")]
     [InlineData("public object Count { get; set; } = new();", "identical")]
     [InlineData("public int Missing { get; set; }", "same name")]
@@ -607,9 +870,9 @@ public static partial class Maps
     [Fact]
     public void Nullable_value_members_are_explicitly_rejected()
     {
-        var source = Declaration.Replace("int Count", "int? Count");
+        var source = Declaration.Replace("public class Input { public int Count", "public class Input { public int? Count", StringComparison.Ordinal);
         var (_, result) = Generate(source);
-        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource && d.GetMessage().Contains("supported scalars"));
+        result.Diagnostics.Should().ContainSingle(d => d.Id == "AFM001" && d.Location.IsInSource && d.GetMessage().Contains("nullable value"));
         result.Results.Single().GeneratedSources.Should().BeEmpty();
     }
 
@@ -735,6 +998,17 @@ public static partial class Maps { [AstraGenerateMapping] public static partial 
         GeneratorDriver driver = CSharpGeneratorDriver.Create([new AstraFlowExecutableMapperGenerator().AsSourceGenerator()], parseOptions: options);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out _);
         return (output, driver.GetRunResult());
+    }
+
+    private static void AssertNoCompilationErrors(Compilation compilation)
+    {
+        var errors = compilation.GetDiagnostics().Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).ToArray();
+        Assert.True(errors.Length == 0, string.Join(Environment.NewLine, errors.Select(diagnostic => diagnostic.ToString())));
+    }
+
+    private static void AssertNoGeneratorDiagnostics(GeneratorDriverRunResult result)
+    {
+        Assert.True(result.Diagnostics.IsEmpty, string.Join(Environment.NewLine, result.Diagnostics.Select(diagnostic => diagnostic.ToString())));
     }
 
     private static string ReplaceInput(string inputDeclaration) => ReplaceInput(Declaration, inputDeclaration);

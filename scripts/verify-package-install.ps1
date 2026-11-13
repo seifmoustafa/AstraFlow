@@ -19,7 +19,7 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
 }
 
 $localSource = Join-Path $repoRoot ".dotnet-cli-home\local-packages\$Version"
-$checkRootName = if ($NoRestore) { $Version } else { "$Version-$([guid]::NewGuid().ToString("N"))" }
+$checkRootName = if ($NoRestore) { $Version } else { "$Version-$([guid]::NewGuid().ToString("N").Substring(0, 8))" }
 $checkRoot = Join-Path $WorkRoot $checkRootName
 $restorePackages = Join-Path $checkRoot "packages"
 $config = Join-Path $checkRoot "nuget.config"
@@ -78,6 +78,7 @@ function Initialize-LocalSource {
     Copy-Package "AstraFlow.FluentValidation"
     Copy-Package "AstraFlow.OpenTelemetry"
     Copy-Package "AstraFlow.Testing"
+    Copy-Package "AstraFlow.Assertions"
     Copy-Package "AstraFlow.Analyzers"
     Copy-Package "AstraFlow.Generators"
     Copy-Package "AstraFlow.Cli"
@@ -115,6 +116,11 @@ function New-ConsumerProject {
         throw "Could not find generated project in $sample."
     }
 
+    # The classlib template creates a public Class1 without XML documentation. Remove
+    # that placeholder so the strict documentation build checks the package consumer,
+    # not an unused template type.
+    Get-ChildItem -LiteralPath $sample -Filter "Class1.cs" -File | Remove-Item -Force
+
     [xml]$projectXml = Get-Content -LiteralPath $project.FullName
     $propertyGroup = $projectXml.SelectSingleNode("/Project/PropertyGroup")
     if ($null -eq $propertyGroup) {
@@ -137,6 +143,16 @@ function New-ConsumerProject {
     }
 
     $langVersionNode.InnerText = "latest"
+
+    # Consumer smoke fixtures intentionally contain public sample handlers and DTOs;
+    # XML API documentation is enforced for AstraFlow packages, not these fixtures.
+    $noWarnNode = $projectXml.SelectSingleNode("/Project/PropertyGroup/NoWarn")
+    if ($null -eq $noWarnNode) {
+        $noWarnNode = $projectXml.CreateElement("NoWarn")
+        [void]$propertyGroup.AppendChild($noWarnNode)
+    }
+    $noWarnNode.InnerText = "`$(NoWarn);1591"
+
     $projectXml.Save($project.FullName)
 
     return $project.FullName
@@ -178,6 +194,7 @@ function Set-MediatorSmokeProgram {
     $projectDirectory = Split-Path -Parent $Project
     $programPath = Join-Path $projectDirectory "Program.cs"
     $program = @'
+using AstraFlow.Assertions;
 using AstraFlow.Mediator;
 using AstraFlow.Mapper;
 using Microsoft.Extensions.DependencyInjection;
@@ -194,6 +211,7 @@ if (response != "handled:response")
 {
     throw new InvalidOperationException("Response request failed.");
 }
+response.Should().Be("handled:response");
 
 await mediator.Send(new SmokeCommand("void"));
 
@@ -216,8 +234,23 @@ if (mapped.Name != "Ada" || mapped.Count != 3)
     throw new InvalidOperationException("Generated mapping failed.");
 }
 
+var itemId = Guid.NewGuid();
+var createdAt = DateTime.UtcNow;
+var responseModel = SmokeWorkItemMaps.ToResponse(new SmokeWorkItem
+{
+    Id = itemId,
+    CreatedAt = createdAt,
+    Title = "Package consumer",
+    DueAt = null
+});
+if (responseModel.Id != itemId || responseModel.CreatedAt != createdAt || responseModel.Title != "Package consumer" || responseModel.DueAt is not null)
+{
+    throw new InvalidOperationException("Inherited entity to positional record mapping failed.");
+}
+
 Console.WriteLine("AstraFlow mediator package smoke passed.");
 Console.WriteLine("AstraFlow generated mapping package smoke passed.");
+Console.WriteLine("AstraFlow inherited entity to positional record smoke passed.");
 
 public sealed record SmokeQuery(string Value) : IRequest<string>;
 
@@ -283,6 +316,26 @@ public static partial class SmokeMaps
     [AstraGenerateMapping]
     public static partial SmokeMappingDestination Map(SmokeMappingSource source);
 }
+
+public abstract class SmokeAuditBase<TKey>
+{
+    public TKey Id { get; set; } = default!;
+    public DateTime CreatedAt { get; set; }
+}
+
+public sealed class SmokeWorkItem : SmokeAuditBase<Guid>
+{
+    public string Title { get; set; } = "";
+    public DateTime? DueAt { get; set; }
+}
+
+public sealed record SmokeWorkItemResponse(Guid Id, string Title, DateTime CreatedAt, DateTime? DueAt);
+
+public static partial class SmokeWorkItemMaps
+{
+    [AstraGenerateMapping]
+    public static partial SmokeWorkItemResponse ToResponse(SmokeWorkItem source);
+}
 '@
 
     Set-Content -LiteralPath $programPath -Value $program -Encoding UTF8
@@ -306,6 +359,7 @@ function Test-CoreConsumer {
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mapper.Conventions"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Diagnostics"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Testing"
+    Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Assertions"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Analyzers"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Generators"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow"
@@ -327,6 +381,7 @@ function Test-AllConsumer {
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.FluentValidation"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.OpenTelemetry"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Testing"
+    Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Assertions"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Analyzers"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Generators"
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Mapper.EntityFrameworkCore"
@@ -338,6 +393,30 @@ function Test-AllConsumer {
     Invoke-DotNetStep "Restore net10.0 all-package consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
     Invoke-DotNetStep "Build net10.0 all-package consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
     Invoke-DotNetStep "Run net10.0 all-package consumer" @("run", "--project", $project, "--no-build")
+}
+
+function Test-AssertionsOnlyConsumer {
+    $project = New-ConsumerProject -Framework "net8.0" -Template "console"
+    Add-AstraFlowPackage -Project $project -PackageId "AstraFlow.Assertions"
+
+    $programPath = Join-Path (Split-Path -Parent $project) "Program.cs"
+    $program = @'
+using AstraFlow.Assertions;
+
+201.Should().Be(201);
+new[] { 1, 2, 3 }.Should().Contain(1, 3);
+((Action)(() => throw new InvalidOperationException("sample failure")))
+    .Should()
+    .Throw<InvalidOperationException>()
+    .WithMessage("*sample failure*");
+
+Console.WriteLine("AstraFlow.Assertions standalone package smoke passed.");
+'@
+    Set-Content -LiteralPath $programPath -Value $program -Encoding UTF8
+
+    Invoke-DotNetStep "Restore standalone AstraFlow.Assertions consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
+    Invoke-DotNetStep "Build standalone AstraFlow.Assertions consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Run standalone AstraFlow.Assertions consumer" @("run", "--project", $project, "--no-build")
 }
 
 function Test-CliTool {
@@ -382,6 +461,7 @@ Test-CoreConsumer -Framework "netstandard2.0" -Template "classlib"
 Test-CoreConsumer -Framework "net8.0" -Template "console"
 Test-CoreConsumer -Framework "net9.0" -Template "console"
 Test-AllConsumer
+Test-AssertionsOnlyConsumer
 Test-CliTool
 
 Write-Host "AstraFlow package install verification passed for version $Version."

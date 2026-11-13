@@ -1,6 +1,6 @@
 using AstraFlow.FluentValidation;
 using AstraFlow.Mediator;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

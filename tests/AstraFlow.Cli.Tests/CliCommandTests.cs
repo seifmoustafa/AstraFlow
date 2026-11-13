@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using AstraFlow.Cli;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Xunit;
 
 namespace AstraFlow.Cli.Tests;

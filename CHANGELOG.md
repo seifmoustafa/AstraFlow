@@ -2,7 +2,42 @@
 
 All notable AstraFlow changes are tracked here.
 
-## 2.3.0 (in progress)
+## 2.4.0 (2026-11-13)
+
+### Breaking Changes
+
+- None.
+
+### Added
+
+- Add the first clean-room `AstraFlow.Assertions` package foundation for value, string, collection, type, and sync/async exception assertions, with no production package dependencies.
+- Add predicate and multiple-item sequence membership, key lookup on key-value-pair sequences, and ordinal wildcard checks for synchronous and asynchronous exception messages.
+- Add empty/null string assertions, exact runtime-type checks for sequence objects, and reason text for equality failures.
+- Add ordered subsequence assertions, `And` chaining, and `Which`/`Subject` access for captured items and exceptions.
+- Add sync and async assertion entry points for value-returning functions, and reference-identity checks on sequence and dictionary results.
+- Expand executable generated mapping to inherited source properties, `Guid`/date scalars, safe nullable value flows, record/primary-constructor destinations, and public init-only properties assigned through object initializers.
+
+### Changed
+
+- Migrate AstraFlow's test projects to the runner-neutral `AstraFlow.Assertions` package; no external assertion-package reference remains in the test projects.
+
+### Fixed
+
+- Cover collection-like structs, empty and null strings, key-value-pair sequences, and asynchronous exception message chaining found during the internal consumer migration.
+
+### Deprecated
+
+- None.
+
+### Removed
+
+- None.
+
+### Security
+
+- Keep assertion failure messages from rendering arbitrary object values, string contents, GUID values, or exception message contents by default.
+
+## 2.3.0 (2026-11-10)
 
 ### Breaking Changes
 
@@ -42,7 +77,7 @@ All notable AstraFlow changes are tracked here.
 
 - None.
 
-## 2.2.0 (source merged; release not verified)
+## 2.2.0
 
 - Enable `CI=true` and verify repeat package hashes and packaged SourceLink metadata before release.
 - Add an SPDX SBOM and GitHub OIDC/Sigstore provenance for release package artifacts.
@@ -51,7 +86,7 @@ All notable AstraFlow changes are tracked here.
 - Verify each published NuGet package's repository signature after Trusted Publishing completes.
 - Document security advisory reporting, recommended branch protection, artifact verification, and maintainer-controlled GitHub settings.
 
-## 2.1.0 (GitHub Release; NuGet unverified)
+## 2.1.0
 
 - v2.1.0 source is merged and a GitHub Release exists. NuGet publication has not been verified, so this version is not listed as published in the compatibility table.
 - Adds opt-in `[AstraGenerateMapping]` partial methods that emit direct typed assignments for a conservative scalar-property subset; unsupported and sensitive-name declarations report `AFM001`.

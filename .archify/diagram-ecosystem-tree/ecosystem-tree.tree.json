@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "diagram_type": "tree",
+  "meta": {
+    "title": "AstraFlow Package Ecosystem Architecture",
+    "subtitle": "Modular family of 16 .NET packages grouped into 6 architectural layers with strict dependency isolation.",
+    "output": "portal/public/archify/ecosystem-tree.html",
+    "quality_profile": "showcase"
+  },
+  "nodes": [
+    { "id": "astraflow", "label": "AstraFlow Suite", "sublabel": "16-Package Family" },
+    { "id": "contracts", "label": "Contracts Layer", "parent": "astraflow", "sublabel": "Zero Dependency" },
+    { "id": "dispatch", "label": "Core Dispatch", "parent": "astraflow", "sublabel": "Mediator & Pipelines" },
+    { "id": "mapping", "label": "Mapping & Data", "parent": "astraflow", "sublabel": "Compiled Projections" },
+    { "id": "roslyn", "label": "Roslyn Tooling", "parent": "astraflow", "sublabel": "Analyzers & Generators" },
+    { "id": "observability", "label": "Observability & Sec", "parent": "astraflow", "sublabel": "Telemetry & Redaction" },
+    { "id": "testing", "label": "Testing & Assert", "parent": "astraflow", "sublabel": "Runner-Neutral" },
+
+    { "id": "pkg_contracts", "label": "AstraFlow.Contracts", "parent": "contracts", "sublabel": "IMediator, IObjectMapper" },
+
+    { "id": "pkg_mediator", "label": "AstraFlow.Mediator", "parent": "dispatch", "sublabel": "Pipeline engine" },
+    { "id": "pkg_aspnetcore", "label": "AstraFlow.AspNetCore", "parent": "dispatch", "sublabel": "Minimal APIs & DI" },
+
+    { "id": "pkg_mapper", "label": "AstraFlow.Mapper", "parent": "mapping", "sublabel": "Executable mapper" },
+    { "id": "pkg_efcore", "label": "AstraFlow.EFCore", "parent": "mapping", "sublabel": "Queryable projections" },
+
+    { "id": "pkg_analyzers", "label": "AstraFlow.Analyzers", "parent": "roslyn", "sublabel": "AF0001-AF0012 code rules" },
+    { "id": "pkg_generators", "label": "AstraFlow.Generators", "parent": "roslyn", "sublabel": "Source generator engine" },
+    { "id": "pkg_tools", "label": "AstraFlow.Tools", "parent": "roslyn", "sublabel": "CLI & diagnostic tools" },
+
+    { "id": "pkg_diag", "label": "AstraFlow.Diagnostics", "parent": "observability", "sublabel": "OpenTelemetry Activity" },
+    { "id": "pkg_sec", "label": "AstraFlow.Security", "parent": "observability", "sublabel": "PII & secret redactor" },
+    { "id": "pkg_resilience", "label": "AstraFlow.Resilience", "parent": "observability", "sublabel": "Polly v8 strategies" },
+
+    { "id": "pkg_test", "label": "AstraFlow.Testing", "parent": "testing", "sublabel": "Mediator test harness" },
+    { "id": "pkg_assert", "label": "AstraFlow.Assertions", "parent": "testing", "sublabel": "Runner-neutral (v2.4)" },
+    { "id": "pkg_samples", "label": "AstraFlow.Samples.Common", "parent": "testing", "sublabel": "Sample harness helpers" }
+  ]
+}

@@ -11,7 +11,7 @@ This file and `.agents/` are the repository's canonical agent guidance. `CODEX.m
 
 ## Project at a glance
 
-AstraFlow is a modular .NET library suite for mediator patterns, object mapping and projections, diagnostics, analyzers and source generators, ASP.NET Core integration, security helpers, testing utilities, and related extensions. The solution is `AstraFlow.slnx`; production projects are under `src/`, tests under `tests/`, samples under `samples/`, benchmarks under `benchmarks/`, and user documentation under `docs/`.
+AstraFlow is a modular .NET library suite for mediator patterns, object mapping and projections, diagnostics, analyzers and source generators, ASP.NET Core integration, security helpers, testing utilities, and related extensions. The solution is `AstraFlow.slnx`; production projects are under `src/`, tests under `tests/`, samples under `samples/`, benchmarks under `benchmarks/`, user documentation under `docs/`, and the Next.js 16 developer web portal under `portal/`.
 
 ## Repository rules
 
@@ -21,6 +21,7 @@ AstraFlow is a modular .NET library suite for mediator patterns, object mapping 
 - Follow existing C# style, naming, cancellation-token flow, diagnostics, and exception behavior in the owning package. Do not impose application-layer patterns such as `Result<T>` or entity conventions on this library.
 - Security-sensitive mapping, redaction, diagnostics, and endpoint behavior must preserve the documented safety defaults. Never expose payload values, secrets, or sensitive identifiers in telemetry or diagnostics unless the existing contract explicitly permits it.
 - Update the closest documentation and tests when behavior or public contracts change. Avoid unrelated formatting, generated output, and broad rewrites.
+- **Hard Rule — Portal Sync, Warm Forest Preservation & Collaborative Brainstorming**: Every AstraFlow version bump, new package, public API change, or release update MUST synchronize `portal/` (`portal/src/lib/site-config.ts`, `portal/src/lib/packages.ts`, `portal/src/content/docs/*.md`, `portal/src/lib/guides.ts`, `portal/src/lib/changelog.ts`, and `portal/src/content/ui-copy.ts`) in the same task, strictly preserving the approved Warm Forest design system, route layout, and product-only content firewall (see `.agents/rules/portal-and-content.md`). Whenever a new portal component, new section, layout change, or UX enhancement is needed, you MUST first engage the user via `/using-superpowers` and `/brainstorming` before implementing UI changes.
 - Do not claim verification that was not run. Report commands and outcomes accurately; distinguish a focused check from the full release matrix.
 
 ## Useful commands
@@ -32,6 +33,15 @@ dotnet build AstraFlow.slnx --no-restore
 dotnet test AstraFlow.slnx --no-build
 dotnet test tests/AstraFlow.Mediator.Tests/AstraFlow.Mediator.Tests.csproj
 dotnet test tests/AstraFlow.Mapper.Tests/AstraFlow.Mapper.Tests.csproj
+```
+
+When `portal/` files or synchronized product docs/metadata change, verify the web portal from `portal/`:
+
+```bash
+cd portal && npm run typecheck
+npx eslint . --max-warnings 0
+npm run build
+npm run test:e2e
 ```
 
 For release or package changes, inspect and use the repository scripts as appropriate:
@@ -50,11 +60,13 @@ Read script parameters before invoking a script. Do not publish packages, push c
 - `.agents/README.md` — ownership and update policy.
 - `.agents/rules/architecture.md` — package boundaries and project structure.
 - `.agents/rules/csharp-and-api.md` — code and public API expectations.
+- `.agents/rules/portal-and-content.md` — portal sync lockstep, Warm Forest design preservation, collaborative brainstorming gate, and product-only content firewall.
 - `.agents/rules/verification.md` — verification selection and evidence.
 - `.agents/skills/package-development/SKILL.md` — package and public API changes.
 - `.agents/skills/mapper-projection-development/SKILL.md` — mapping, projection, generator, and security-sensitive mapping work.
 - `.agents/skills/mediator-development/SKILL.md` — mediator dispatch, pipelines, notifications, and integrations.
 - `.agents/skills/analyzer-generator-development/SKILL.md` — Roslyn analyzers, source generators, diagnostics, and compiler-facing package validation.
 - `.agents/skills/architecture-and-feature-planning/SKILL.md` — package fit, proposal status, ADRs, roadmap decisions, and evidence gates.
-- `.agents/skills/verification-and-release/SKILL.md` — focused verification, package validation, and release preparation.
+- `.agents/skills/portal-maintenance/SKILL.md` — step-by-step workflow for synchronizing `portal/` with AstraFlow releases, packages, and public APIs.
+- `.agents/skills/verification-and-release/SKILL.md` — focused verification, package validation, portal verification, and release preparation.
 

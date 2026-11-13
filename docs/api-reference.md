@@ -1,6 +1,6 @@
 # API Reference
 
-This reference describes the public AstraFlow `2.3.0` source API surface. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails. Package availability is tracked separately in [compatibility](compatibility.md).
+This reference describes the published AstraFlow `2.3.0` API plus current, unreleased `2.4.0` source candidates. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails. Package availability is tracked separately in [compatibility](compatibility.md).
 
 ## Package Map
 
@@ -13,6 +13,30 @@ This reference describes the public AstraFlow `2.3.0` source API surface. It is 
 | `AstraFlow.Diagnostics` | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reporting for AstraFlow registrations and validation findings. |
 | `AstraFlow.Security` | `AstraFlow.Security` | Shared sensitive-name classification and redaction policy primitives for secure DTO governance. |
 | `AstraFlow.Testing` | `AstraFlow.Testing` | Framework-neutral fake dispatchers, harnesses, assertions, and test secure ID helpers. |
+| `AstraFlow.Assertions` | `AstraFlow.Assertions` | Unreleased 2.4.0 source candidate: framework-neutral assertions for values, strings, sequences, dictionaries, exceptions, and async operations. |
+
+## Assertions API (v2.4 source candidate)
+
+`AstraFlow.Assertions` is intended for tests of any application. It is independent of AstraFlow runtime packages and test runners. The source implementation is available in this checkout, but 2.4.0 has not been published and the API remains subject to release review.
+
+| Type | Public methods | Semantics |
+| --- | --- | --- |
+| `AssertionExtensions` | `Should()` for objects, comparable structs, booleans, strings, GUIDs, sequences, `Action`, `Func<T>`, `Func<Task>`, and `Func<Task<T>>`; `ContainKey` for key-value-pair sequences | Creates the assertion object for the input; action and function forms support expected-exception checks. |
+| `ObjectAssertions<T>` | `Be`, `NotBe`, `BeNull`, `NotBeNull`, `BeSameAs`, `NotBeSameAs`, `BeOfType<TExpected>`, `BeAssignableTo<TExpected>`, `BeGreaterThan`, `BeGreaterThanOrEqualTo`, `BeLessThan`, `BeLessThanOrEqualTo`, `BeInRange`, `BeDefined`, `HaveFlag`, `NotHaveFlag` | Equality uses `EqualityComparer<T>.Default` and accepts optional reason text; comparison uses `Comparer<T>.Default`; range endpoints are inclusive; type checks distinguish exact runtime type from assignability. Enum checks fail when the actual value is not an enum or the flag type differs. |
+| `BooleanAssertions` | `BeTrue`, `BeFalse` | Checks a Boolean value directly. |
+| `StringAssertions` | `Be`, `BeNull`, `BeEmpty`, `BeNullOrEmpty`, `NotBeNullOrEmpty`, `BeNullOrWhiteSpace`, `NotBeNullOrWhiteSpace`, `Contain`, `NotContain`, `StartWith`, `EndWith` | Text comparisons are ordinal and failure output omits string contents. `BeEmpty` rejects null; use `BeNullOrEmpty` to accept either. |
+| `CollectionAssertions<T>` | `BeEmpty`, `NotBeEmpty`, `HaveCount`, `BeSameAs`, `NotBeSameAs`, value/predicate/multiple-item `Contain`, value/predicate `NotContain`, `BeOfType<TExpected>`, `Equal`, `ContainInOrder`, `ContainSingle`, `OnlyContain`, `And` | Null sequences fail; equality is ordered and uses `EqualityComparer<T>.Default`; `ContainInOrder` allows intervening items; predicate checks enumerate once per call. |
+| `DictionaryAssertions<TKey, TValue>` | `BeSameAs`, `NotBeSameAs`, `ContainKey`, `NotContainKey`, `Contain`, `ContainValue`, `HaveCount`, `And` | Uses the dictionary's key comparer and `EqualityComparer<TValue>.Default`; failure messages omit key/value contents. |
+| `GuidAssertions` | `BeEmpty`, `NotBeEmpty`, `Be` | GUID values are not included in failure messages. |
+| `SingleItemAssertions<T>` | `Which`, `Subject`, `And` | Exposes the one item proven by `ContainSingle`. |
+| `ActionAssertions` | `Throw<TException>`, `NotThrow` | Expected exception accepts the requested type or a derived type. The result exposes `Which` and `Subject`, and supports `WithMessage` using ordinal `*` and `?` wildcards. |
+| `AsyncActionAssertions` | `ThrowAsync<TException>`, `NotThrowAsync` | Awaits the operation with `ConfigureAwait(false)` and checks exception type. The result exposes the same subject and message assertions. |
+| `FunctionAssertions<TResult>` | `Throw<TException>`, `NotThrow` | Checks synchronous functions that return values. |
+| `AsyncFunctionAssertions<TResult>` | `ThrowAsync<TException>`, `NotThrowAsync` | Checks asynchronous functions that return values and awaits with `ConfigureAwait(false)`. |
+| `ExceptionAssertionExtensions` | `WithMessage` on captured exceptions and awaited async exception assertions | Applies an ordinal, case-sensitive `*` / `?` wildcard match; failure output omits the exception message. |
+| `AstraFlowAssertionException` | `Message` (inherited) | Test-runner-neutral failure signal with safe, deterministic wording. |
+
+For examples and current exclusions, see the [Assertions guide](assertions.md). This candidate has no drop-in compatibility promise.
 | `AstraFlow.Analyzers` | `AstraFlow.Analyzers` | Roslyn analyzer descriptors, stable rule IDs, severity metadata, and build-time diagnostics infrastructure. |
 | `AstraFlow.Generators` | `AstraFlow.Generators` | Source generators for mediator component registration, mapper/projection metadata, and opt-in executable typed mappings. |
 | `AstraFlow` | `AstraFlow` | Convenience registration for mediator and mapper together. |
@@ -46,7 +70,7 @@ public static partial class CustomerMaps
 }
 ```
 
-The generator implements this method as direct typed assignments. It supports top-level non-generic class pairs, a destination parameterless constructor accessible from the generated code, and exact-name public properties whose scalar types and nullability are compatible. Unsupported declarations produce the `AFM001` compiler error and no generated mapping; they do not fall back to `IMapper` or convention mapping. Nested objects, collections, conversions, records, fields, required/init-only members, and sensitive-name matches are unsupported. The generated method is a separate opt-in API and does not register or replace runtime mapper rules. See [Generators](generators.md) for all shape constraints and security limitations.
+The unreleased 2.4.0 source extends direct typed mappings to inherited source properties, safe nullable scalar flow, `Guid`/date values, positional records, primary constructors, and public init-only destination properties. Existing collection projection remains limited to documented shallow shapes. Unsupported or ambiguous declarations produce `AFM001` and no generated mapping; they do not fall back to `IMapper` or convention mapping. Sensitive-name matches remain blocked. These expansions are opt-in per mapping method. Generator, clean-consumer, API, and upgrade checks pass locally; hosted CI and remote SourceLink verification remain. The generated method does not register or replace runtime mapper rules. See [Generators](generators.md) for constraints and security limitations.
 
 ## Security Types
 

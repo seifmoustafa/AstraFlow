@@ -1,0 +1,443 @@
+.deckRoot {
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Frameless 500px Physical Archival Edition Stage — NO outer white box */
+.editionStage {
+  position: relative;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 18px 8px 16px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.stageTop {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stageKicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+  margin: 0;
+}
+
+.stageStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.stagePulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 0 4px rgba(242, 94, 59, 0.14);
+  flex: none;
+}
+
+.stageField {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.conduitFlow {
+  stroke-dasharray: 12 10;
+  animation: craftEditionRoute 16s linear infinite;
+}
+
+@keyframes craftEditionRoute {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -220;
+  }
+}
+
+/* 3-Layer Fanned Physical Sheets */
+.stageDeck {
+  position: relative;
+  z-index: 2;
+  min-height: 318px;
+  display: grid;
+  place-items: center;
+  padding: 20px 18px;
+}
+
+.paperBack,
+.paperMiddle,
+.paperActive {
+  width: min(100%, 408px);
+  border-radius: 16px;
+  grid-area: 1 / 1;
+}
+
+.paperBack {
+  height: 274px;
+  background: #103c32;
+  border: 1px solid rgba(255, 250, 242, 0.12);
+  transform: translate(18px, 10px) rotate(8deg);
+  box-shadow: 0 22px 48px rgba(8, 44, 38, 0.14);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  user-select: none;
+}
+
+.paperBackStamp {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 250, 242, 0.56);
+  text-align: right;
+}
+
+.paperBackRule {
+  height: 1px;
+  width: 48%;
+  margin-left: auto;
+  background: rgba(255, 210, 189, 0.2);
+}
+
+.paperMiddle {
+  height: 278px;
+  background: #17493d;
+  border: 1px solid rgba(255, 210, 189, 0.18);
+  transform: translate(-14px, 6px) rotate(-9deg);
+  box-shadow: 0 22px 52px rgba(8, 44, 38, 0.16);
+  padding: 20px 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  pointer-events: none;
+  user-select: none;
+}
+
+.paperMiddleStamp {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 210, 189, 0.72);
+}
+
+.paperActive {
+  position: relative;
+  min-height: 282px;
+  padding: 24px 26px;
+  color: #fffaf2;
+  box-shadow: 0 28px 64px rgba(8, 44, 38, 0.24);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 250, 242, 0.16);
+}
+
+.paperActivePublished {
+  background: #0a352a;
+}
+
+.paperActiveLatest {
+  background: #a8321b;
+}
+
+.sheetHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sheetPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 250, 242, 0.14);
+  border: 1px solid rgba(255, 210, 189, 0.34);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fffaf2;
+}
+
+.sheetIndex {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 250, 242, 0.78);
+}
+
+.sheetVersion {
+  font-family: var(--font-sans);
+  font-size: clamp(50px, 5.4vw, 84px);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+  margin: 2px 0 0;
+  color: #fffaf2;
+  overflow-wrap: anywhere;
+}
+
+.sheetFooter {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+}
+
+.sheetCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sheetHeadline {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.42;
+  color: rgba(255, 250, 242, 0.94);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sheetMeta {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff3e8;
+}
+
+.sheetSeal {
+  width: 68px;
+  height: 68px;
+  flex: none;
+  opacity: 0.92;
+}
+
+/* Bottom Stage Control: Milestone Tablist + Provenance Readout + Jump Action */
+.stageControl {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(8, 44, 38, 0.12);
+}
+
+.tablist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tabButton {
+  appearance: none;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 7px 12px;
+  min-height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(8, 44, 38, 0.16);
+  background: rgba(255, 253, 247, 0.65);
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease),
+    border-color 160ms var(--ease),
+    color 160ms var(--ease),
+    transform 160ms var(--ease);
+}
+
+.tabButton:hover {
+  border-color: var(--ink);
+  background: var(--paper-raised);
+}
+
+.tabButton:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+.tabButtonActive {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: #fffaf2;
+}
+
+.tabButtonActive:hover {
+  background: var(--forest);
+  border-color: var(--forest);
+}
+
+.tabButtonLatestActive {
+  background: #a8321b;
+  border-color: #a8321b;
+  color: #fffaf2;
+}
+
+.tabButtonLatestActive:hover {
+  background: #a8321b;
+  border-color: #a8321b;
+}
+
+.controlFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.controlSummary {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink-body);
+  flex: 1 1 240px;
+}
+
+.jumpButton {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--action);
+  padding: 6px 2px;
+  min-height: 36px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--action);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color 160ms var(--ease),
+    border-color 160ms var(--ease);
+}
+
+.jumpButton:hover {
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+
+.jumpButton:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .editionStage {
+    min-height: 440px;
+    padding: 12px 0;
+  }
+
+  .stageDeck {
+    min-height: 290px;
+    padding: 16px 12px;
+  }
+
+  .paperBack {
+    transform: translate(10px, 8px) rotate(5deg);
+    height: 248px;
+  }
+
+  .paperMiddle {
+    transform: translate(-8px, 5px) rotate(-6deg);
+    height: 252px;
+  }
+
+  .paperActive {
+    min-height: 256px;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 520px) {
+  .editionStage {
+    min-height: 390px;
+  }
+
+  .stageDeck {
+    min-height: 260px;
+    padding: 12px 10px;
+  }
+
+  .paperBack,
+  .paperMiddle {
+    display: none;
+  }
+
+  .paperActive {
+    width: 100%;
+    min-height: 230px;
+    padding: 18px;
+  }
+
+  .sheetVersion {
+    font-size: clamp(42px, 12vw, 56px);
+  }
+
+  .sheetSeal {
+    width: 54px;
+    height: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conduitFlow {
+    animation: none;
+  }
+
+  .tabButton,
+  .jumpButton {
+    transition: none;
+  }
+}

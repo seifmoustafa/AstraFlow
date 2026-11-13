@@ -27,6 +27,7 @@ $packages = @(
     "AstraFlow.Mapper.EntityFrameworkCore",
     "AstraFlow.Diagnostics",
     "AstraFlow.AspNetCore",
+    "AstraFlow.Security",
     "AstraFlow.FluentValidation",
     "AstraFlow.OpenTelemetry",
     "AstraFlow.Testing",
@@ -36,7 +37,7 @@ $packages = @(
 )
 
 $newInCurrentVersionPackages = @(
-    "AstraFlow.Security"
+    "AstraFlow.Assertions"
 )
 
 $runRoot = Join-Path $WorkRoot "$PreviousVersion-to-$CurrentVersion-$([guid]::NewGuid().ToString("N"))"
@@ -111,12 +112,22 @@ foreach ($packageId in $newInCurrentVersionPackages) {
     Copy-CurrentPackage -PackageId $packageId
 }
 
+$globalPackagesRoot = Join-Path $env:USERPROFILE ".nuget\packages"
+foreach ($packageId in $packages) {
+    $normalizedPackageId = $packageId.ToLowerInvariant()
+    $cachedPreviousPackage = Join-Path $globalPackagesRoot "$normalizedPackageId\$PreviousVersion\$normalizedPackageId.$PreviousVersion.nupkg"
+    if (Test-Path -LiteralPath $cachedPreviousPackage) {
+        Copy-Item -LiteralPath $cachedPreviousPackage -Destination $localSource -Force
+    }
+}
+
 $nugetConfig = @(
     '<?xml version="1.0" encoding="utf-8"?>',
     '<configuration>',
     '  <packageSources>',
     '    <clear />',
     "    <add key=""local"" value=""$localSource"" />",
+    "    <add key=""global-cache"" value=""$globalPackagesRoot"" />",
     '    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />',
     '  </packageSources>',
     '</configuration>'

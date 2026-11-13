@@ -13,4 +13,9 @@ artifacts/
 .dotnet-cli-home/
 .vscode/
 .artifacts/
+**/node_modules/
+**/.next/
+*.tsbuildinfo
+**/.vercel/
 /BenchmarkDotNet.Artifacts/
+*portal/next-env.d.ts
