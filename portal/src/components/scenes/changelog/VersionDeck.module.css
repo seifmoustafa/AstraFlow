@@ -171,7 +171,7 @@
   background: #0a352a;
 }
 
-.paperActiveUnreleased {
+.paperActiveLatest {
   background: #a8321b;
 }
 
@@ -316,13 +316,13 @@
   border-color: var(--forest);
 }
 
-.tabButtonUnreleasedActive {
+.tabButtonLatestActive {
   background: #a8321b;
   border-color: #a8321b;
   color: #fffaf2;
 }
 
-.tabButtonUnreleasedActive:hover {
+.tabButtonLatestActive:hover {
   background: #a8321b;
   border-color: #a8321b;
 }

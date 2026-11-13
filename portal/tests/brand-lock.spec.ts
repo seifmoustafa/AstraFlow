@@ -286,6 +286,10 @@ test.describe("AstraFlow Brand Lock Verification", () => {
     await expect(proofBand).toBeVisible();
     await expect(page.locator("#v10-motion-toggle")).toHaveCount(0);
 
+    // Allow the one-shot 640ms HeroStageEntrance / HeroTextReveal mount choreography to settle,
+    // then verify Hero A mark and h1 remain continuously stationary across 1200ms.
+    await page.waitForTimeout(800);
+
     const boxAStart = await signatureA.boundingBox();
     const boxH1Start = await heroHeading.boundingBox();
     expect(boxAStart).not.toBeNull();
@@ -367,5 +371,60 @@ test.describe("AstraFlow Brand Lock Verification", () => {
       await page.keyboard.press("Escape");
       await expect(menuBtn).toHaveAttribute("aria-expanded", "false");
     }
+  });
+
+  test("serves universal circular medallion favicon suite with 200 OK across all icon and manifest endpoints", async ({
+    page,
+    request,
+  }) => {
+    const faviconEndpoints = [
+      { path: "/favicon.svg", contentType: "image/svg+xml" },
+      { path: "/favicon.ico", contentType: "image/x-icon" },
+      { path: "/favicon-96x96.png", contentType: "image/png" },
+      { path: "/apple-touch-icon.png", contentType: "image/png" },
+      { path: "/web-app-manifest-192x192.png", contentType: "image/png" },
+      { path: "/web-app-manifest-512x512.png", contentType: "image/png" },
+      { path: "/site.webmanifest", contentType: "manifest" },
+    ] as const;
+
+    for (const entry of faviconEndpoints) {
+      const res = await request.get(entry.path);
+      expect(res.status(), `${entry.path} did not return 200`).toBe(200);
+      const bytes = await res.body();
+      expect(bytes.byteLength, `${entry.path} was empty`).toBeGreaterThan(100);
+
+      if (entry.path === "/favicon.svg") {
+        const svg = bytes.toString("utf8");
+        expect(svg).toContain('viewBox="0 0 512 512"');
+        expect(svg).toContain('id="medallionBg"');
+        expect(svg).toContain("#f7f3eb");
+      } else if (entry.path === "/favicon.ico") {
+        // Multi-resolution ICO header: reserved=0x0000, type=0x0001
+        expect(bytes[0]).toBe(0);
+        expect(bytes[1]).toBe(0);
+        expect(bytes[2]).toBe(1);
+        expect(bytes[3]).toBe(0);
+        expect(bytes[4]).toBeGreaterThanOrEqual(1);
+      } else if (entry.path === "/site.webmanifest") {
+        const manifest = JSON.parse(bytes.toString("utf8")) as {
+          name?: string;
+          short_name?: string;
+          theme_color?: string;
+        };
+        expect(manifest.name).toBe("AstraFlow");
+        expect(manifest.short_name).toBe("AstraFlow");
+        expect(manifest.theme_color).toBe("#f7f3eb");
+      } else {
+        expect(res.headers()["content-type"]).toContain(entry.contentType);
+      }
+    }
+
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(
+      page.locator('head link[rel="icon"][href*="/favicon.svg"]').first(),
+    ).toHaveAttribute("href", /\/favicon\.svg/);
+    await expect(
+      page.locator('head link[rel="manifest"][href="/site.webmanifest"]'),
+    ).toHaveCount(1);
   });
 });

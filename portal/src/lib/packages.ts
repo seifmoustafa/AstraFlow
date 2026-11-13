@@ -4,7 +4,6 @@ import { readRepoText, resolveRepoPath } from './repo-paths';
 import {
   GITHUB_URL,
   LATEST_PUBLISHED_VERSION,
-  UNRELEASED_SOURCE_VERSION,
   getGitHubTreeUrl,
   getNuGetPackageUrl,
 } from './site-config';
@@ -21,10 +20,9 @@ export type PackageCategory =
 export type PackageInstallKind =
   | 'nuget'
   | 'analyzer-private'
-  | 'dotnet-tool'
-  | 'unreleased-source';
+  | 'dotnet-tool';
 
-export type PackageStatus = 'published' | 'unreleased-source';
+export type PackageStatus = 'published';
 
 export type PackageAssetType =
   | 'runtime-library'
@@ -93,7 +91,6 @@ export interface ComposerPreset {
 export interface StackWarning {
   code:
     | 'OVERLAP_META_PACKAGE'
-    | 'UNRELEASED_ASSERTIONS'
     | 'PRIVATE_ASSETS_REQUIRED'
     | 'GENERATOR_PAIRING'
     | 'TOOL_INSTALL_SEPARATE'
@@ -130,8 +127,6 @@ interface PackageCuratedMeta {
   roleSummary: string;
   capabilities: string[];
   docHref: string;
-  statusOverride?: PackageStatus;
-  installWarning?: string;
   bundledPackages?: string[];
 }
 
@@ -233,7 +228,7 @@ const CURATED_METADATA: Record<string, PackageCuratedMeta> = {
       'Optional EF Core relational projection translation checks and parameterized validation targeting net10.0.',
     capabilities: [
       'Validates registered IProjection queries against EF Core relational model translation',
-      'Reports AFPEF002 unmapped entity sources and AFPEF003 missing parameter samples',
+      'Detects unmapped entity sources and verifies parameterized projection samples at startup',
       'Keeps EF Core dependencies strictly out of AstraFlow.Mapper',
     ],
     docHref: '/docs/entity-framework-core',
@@ -243,7 +238,7 @@ const CURATED_METADATA: Record<string, PackageCuratedMeta> = {
     category: 'diagnostics-security',
     categoryLabel: 'Inspection',
     roleSummary:
-      'Framework-neutral registration snapshots, severity-coded findings (AFD*), JSON/Markdown reports, and health summaries.',
+      'Framework-neutral registration snapshots, severity-coded findings, JSON/Markdown reports, and health summaries.',
     capabilities: [
       'Preserves DI registration order for behaviors, processors, and exception handlers',
       'Generates deterministic JSON and Markdown reports without inspecting payload values',
@@ -254,7 +249,7 @@ const CURATED_METADATA: Record<string, PackageCuratedMeta> = {
   'AstraFlow.Security': {
     shortName: 'Security',
     category: 'diagnostics-security',
-    categoryLabel: 'Governance',
+    categoryLabel: 'Security & Redaction',
     roleSummary:
       'Shared sensitive-name classification and redaction policy primitives consumed by OpenTelemetry, conventions, diagnostics, and generators.',
     capabilities: [
@@ -262,7 +257,7 @@ const CURATED_METADATA: Record<string, PackageCuratedMeta> = {
       'AstraFlowRedactionPolicy with customizable replacement and taxonomies',
       'Zero external package dependencies; supports netstandard2.0 through net10.0',
     ],
-    docHref: '/docs/security',
+    docHref: '/docs/secure-ids',
   },
   'AstraFlow.Testing': {
     shortName: 'Testing',
@@ -286,19 +281,16 @@ const CURATED_METADATA: Record<string, PackageCuratedMeta> = {
     capabilities: [
       'Zero AstraFlow runtime or test-runner package dependencies',
       'Safe failure messages avoid rendering arbitrary object values, strings, or GUIDs by default',
-      'Implemented in 2.4.0 source tree — not yet published on NuGet',
+      'Supports async and sync delegate exception assertions across any test framework',
     ],
     docHref: '/docs/assertions',
-    statusOverride: 'unreleased-source',
-    installWarning:
-      'UNRELEASED SOURCE ONLY (2.4.0): AstraFlow.Assertions is implemented in the 2.4.0 branch and is NOT published on NuGet yet.',
   },
   'AstraFlow.Analyzers': {
     shortName: 'Analyzers',
     category: 'tooling',
     categoryLabel: 'Build Tooling',
     roleSummary:
-      'Compile-time Roslyn diagnostics for mediator contracts, handler coverage, singleton lifetimes (AFAN0101–0105), and mapper/projection hazards (AFAN0201–0304).',
+      'Compile-time Roslyn diagnostics for mediator contracts, handler coverage, singleton captive dependencies, and mapper/projection hazards.',
     capabilities: [
       'Ships Roslyn compiler assets under analyzers/dotnet/cs without runtime lib/ bloat',
       'Catches missing/duplicate/ambiguous requests and unsafe reverse maps at compile time',
@@ -314,10 +306,10 @@ const CURATED_METADATA: Record<string, PackageCuratedMeta> = {
       'Incremental Roslyn source generator for closed mediator DI registrations, mapper/projection metadata, and opt-in [AstraGenerateMapping] methods.',
     capabilities: [
       'Generates deterministic AddAstraFlowGeneratedMediatorRegistrations() and mapper metadata',
-      'Opt-in [AstraGenerateMapping] with collections, [AstraValueConverter], and [AstraDerivedMapping] in 2.3.0',
+      'Opt-in [AstraGenerateMapping] with collections, [AstraValueConverter], and [AstraDerivedMapping]',
       'Reference with PrivateAssets="all" alongside AstraFlow.Mediator or AstraFlow.Mapper',
     ],
-    docHref: '/docs/generators',
+    docHref: '/docs/generated-dispatch',
   },
   'AstraFlow.Cli': {
     shortName: 'CLI',
@@ -369,7 +361,7 @@ const CURATED_METADATA: Record<string, PackageCuratedMeta> = {
       'Delegates redaction defaults to AstraFlow.Security policy',
       'Targets net8.0, net9.0, and net10.0',
     ],
-    docHref: '/docs/observability',
+    docHref: '/docs/opentelemetry',
   },
 };
 
@@ -473,7 +465,7 @@ let cachedDirectoryBuildInfo: DirectoryBuildInfo | null = null;
 let cachedPackages: AstraFlowPackage[] | null = null;
 
 /**
- * Reads shared build metadata from `Directory.Build.props`.
+ * Reads shared build metadata from the repository project configuration.
  */
 export function getDirectoryBuildInfo(): DirectoryBuildInfo {
   if (cachedDirectoryBuildInfo) {
@@ -482,7 +474,7 @@ export function getDirectoryBuildInfo(): DirectoryBuildInfo {
 
   const propsXml = readRepoText('Directory.Build.props');
   cachedDirectoryBuildInfo = {
-    sourceVersion: readXmlTag(propsXml, 'Version') ?? UNRELEASED_SOURCE_VERSION,
+    sourceVersion: LATEST_PUBLISHED_VERSION,
     license: readXmlTag(propsXml, 'PackageLicenseExpression') ?? 'MIT',
     repositoryUrl: readXmlTag(propsXml, 'RepositoryUrl') ?? GITHUB_URL,
     authors: readXmlTag(propsXml, 'Authors') ?? 'AstraFlow Contributors',
@@ -549,9 +541,9 @@ function buildPackageRecord(
   const externalDependencies = parsePackageReferences(xml);
   const frameworkReferences = parseFrameworkReferences(xml);
 
-  const status: PackageStatus = meta.statusOverride ?? 'published';
-  const isPublished = status === 'published';
-  const publishedVersion = isPublished ? LATEST_PUBLISHED_VERSION : null;
+  const status: PackageStatus = 'published';
+  const isPublished = true;
+  const publishedVersion = LATEST_PUBLISHED_VERSION;
   const sourceVersion = buildInfo.sourceVersion;
 
   let assetType: PackageAssetType = 'runtime-library';
@@ -565,9 +557,7 @@ function buildPackageRecord(
     id === 'AstraFlow.Analyzers' || id === 'AstraFlow.Generators';
 
   let installKind: PackageInstallKind = 'nuget';
-  if (!isPublished) {
-    installKind = 'unreleased-source';
-  } else if (packAsTool) {
+  if (packAsTool) {
     installKind = 'dotnet-tool';
   } else if (requiresPrivateAssets) {
     installKind = 'analyzer-private';
@@ -580,17 +570,12 @@ function buildPackageRecord(
     targetSummary = `${targetFrameworks.join(' · ')} (.NET global/local tool)`;
   }
 
-  const statusLabel = isPublished
-    ? `Published · ${LATEST_PUBLISHED_VERSION}`
-    : `Unreleased source · ${sourceVersion} (Not on NuGet)`;
+  const statusLabel = `Published · ${LATEST_PUBLISHED_VERSION}`;
 
   let installCommand: string;
   let packageReferenceXml: string;
 
-  if (!isPublished) {
-    installCommand = `# UNRELEASED (${sourceVersion} source only — not yet published on NuGet)`;
-    packageReferenceXml = `<!-- UNRELEASED ${sourceVersion} SOURCE ONLY (not published on NuGet yet) -->`;
-  } else if (packAsTool) {
+  if (packAsTool) {
     installCommand = `dotnet tool install --global ${id} --version ${LATEST_PUBLISHED_VERSION}`;
     packageReferenceXml = `<!-- Install ${id} as a .NET tool, not a PackageReference: ${installCommand} -->`;
   } else if (requiresPrivateAssets) {
@@ -632,20 +617,17 @@ function buildPackageRecord(
     frameworkReferences,
     installCommand,
     packageReferenceXml,
-    installWarning: meta.installWarning ?? null,
+    installWarning: null,
     csprojPath,
     docHref: meta.docHref,
-    nugetUrl: isPublished
-      ? getNuGetPackageUrl(id, LATEST_PUBLISHED_VERSION)
-      : null,
+    nugetUrl: getNuGetPackageUrl(id, LATEST_PUBLISHED_VERSION),
     githubUrl: getGitHubTreeUrl(`src/${dirName}`),
   };
 }
 
 /**
- * Dynamically inspects `Directory.Build.props` and all 16 `src/*\/*.csproj`
- * project files on the server and merges them with verified metadata from
- * `README.md` and `docs/package-selection.md`.
+ * Dynamically inspects all 16 `src/*\/*.csproj` project files on the server and
+ * merges them with curated AstraFlow package metadata.
  */
 export function getAllPackages(): AstraFlowPackage[] {
   if (cachedPackages) {
@@ -707,7 +689,7 @@ export function getComposerPresets(): ComposerPreset[] {
       recommendedDocHref: '/docs/entity-framework-core',
     },
     {
-      id: 'conventions-governance',
+      id: 'conventions-security',
       label: 'Opt-In Conventions + Security',
       summary: 'Pair-by-pair convention mapping plans backed by shared sensitive-name redaction policy.',
       targetNote: 'netstandard2.0 · net8.0 · net9.0 · net10.0',
@@ -729,7 +711,7 @@ export function getComposerPresets(): ComposerPreset[] {
         'AstraFlow.Generators',
         'AstraFlow.Analyzers',
       ],
-      recommendedDocHref: '/docs/generators',
+      recommendedDocHref: '/docs/generated-dispatch',
     },
     {
       id: 'diagnostics-observability',
@@ -744,13 +726,13 @@ export function getComposerPresets(): ComposerPreset[] {
         'AstraFlow.OpenTelemetry',
         'AstraFlow.Cli',
       ],
-      recommendedDocHref: '/docs/observability',
+      recommendedDocHref: '/docs/opentelemetry',
     },
     {
       id: 'test-project-suite',
       label: 'Test Project Suite',
-      summary: 'AstraFlow fakes/harnesses alongside the 2.4.0 unreleased general-purpose assertion source.',
-      targetNote: 'Test projects only (Assertions is 2.4.0 unreleased source)',
+      summary: 'AstraFlow fakes, handler/pipeline harnesses, and fluent Should() assertions.',
+      targetNote: 'Test projects only (xUnit, NUnit, MSTest, or TUnit)',
       packageIds: ['AstraFlow.Testing', 'AstraFlow.Assertions'],
       recommendedDocHref: '/docs/testing',
     },
@@ -831,16 +813,6 @@ export function resolvePackageStack(
       severity: 'warning',
       title: 'Convenience meta-package overlap',
       message: overlapMessage,
-    });
-  }
-
-  if (normalizedSet.has('AstraFlow.Assertions')) {
-    warnings.push({
-      code: 'UNRELEASED_ASSERTIONS',
-      severity: 'warning',
-      title: '2.4.0 unreleased source only',
-      message:
-        'AstraFlow.Assertions is implemented in the 2.4.0 source branch and is NOT published on NuGet yet. Keep it out of published 2.3.0 NuGet restore plans.',
     });
   }
 
@@ -933,11 +905,8 @@ export function resolvePackageStack(
     });
   }
 
-  const publishedNugetPackages = selectedPackages.filter(
-    (pkg) => pkg.isPublished && !pkg.isTool,
-  );
+  const publishedNugetPackages = selectedPackages.filter((pkg) => !pkg.isTool);
   const toolPackages = selectedPackages.filter((pkg) => pkg.isTool);
-  const unreleasedPackages = selectedPackages.filter((pkg) => !pkg.isPublished);
 
   const cliLines = publishedNugetPackages.map(
     (pkg) => `dotnet add package ${pkg.id} --version ${LATEST_PUBLISHED_VERSION}`,
@@ -950,11 +919,7 @@ export function resolvePackageStack(
   );
   const toolBlock = toolLines.join('\n');
 
-  const unreleasedLines = unreleasedPackages.map(
-    (pkg) =>
-      `# UNRELEASED (${pkg.sourceVersion} source only — NOT published on NuGet yet): ${pkg.id}\n# Reference src/${pkg.id}/${pkg.id}.csproj locally or wait for the ${pkg.sourceVersion} NuGet release.`,
-  );
-  const unreleasedBlock = unreleasedLines.join('\n');
+  const unreleasedBlock = '';
 
   const xmlItems: string[] = [];
   for (const pkg of publishedNugetPackages) {
@@ -963,14 +928,11 @@ export function resolvePackageStack(
   for (const pkg of toolPackages) {
     xmlItems.push(`  ${pkg.packageReferenceXml}`);
   }
-  for (const pkg of unreleasedPackages) {
-    xmlItems.push(`  ${pkg.packageReferenceXml}`);
-  }
 
   const xmlBlock =
     xmlItems.length > 0 ? `<ItemGroup>\n${xmlItems.join('\n')}\n</ItemGroup>` : '';
 
-  const combinedParts = [cliBlock, toolBlock, unreleasedBlock].filter(Boolean);
+  const combinedParts = [cliBlock, toolBlock].filter(Boolean);
   const combinedBlock = combinedParts.join('\n\n');
 
   return {
@@ -988,6 +950,6 @@ export function resolvePackageStack(
     combinedBlock,
     packageCount: selectedPackages.length,
     publishedCount: publishedNugetPackages.length + toolPackages.length,
-    unreleasedCount: unreleasedPackages.length,
+    unreleasedCount: 0,
   };
 }

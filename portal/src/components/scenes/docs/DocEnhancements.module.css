@@ -193,7 +193,7 @@
   text-underline-offset: 3px;
 }
 
-/* Provenance & Unreleased Notices */
+/* Route Aliased Provenance Notice */
 .provenanceBanner {
   margin-block-end: 18px;
   padding: 12px 16px;
@@ -209,17 +209,6 @@
   color: var(--action);
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-
-.unreleasedBanner {
-  margin-block-end: 18px;
-  padding: 12px 16px;
-  border-radius: 6px;
-  background: var(--peach);
-  border: 1px solid var(--action);
-  border-inline-start: 4px solid var(--action);
-  font: 700 12px/1.55 var(--font-sans);
-  color: var(--ink);
 }
 
 /* Mobile collapsible track index drawer */

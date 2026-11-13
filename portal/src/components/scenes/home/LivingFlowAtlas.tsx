@@ -927,7 +927,7 @@ export function LivingFlowAtlas({
           aria-labelledby={activeTabId}
           className={styles.atlasCanvas}
         >
-          <div className={styles.atlasSvgWrap}>
+          <div className={styles.atlasSvgWrap} data-parallax="stage">
             <svg
               aria-label={`${spec.shortTab} four-stage isometric request path: ${spec.stages.map((s) => s.label).join(' to ')}`}
               className={styles.atlasSvg}
@@ -1138,6 +1138,7 @@ export function LivingFlowAtlas({
             role="tabpanel"
             aria-labelledby={activeStageTabId}
             className={styles.inspectorGrid}
+            data-reveal="up"
           >
             <div className={styles.decisionCol}>
               <div className={styles.decisionReadout}>
@@ -1224,6 +1225,7 @@ export function LivingFlowAtlas({
 
               <div
                 className={styles.codeScroll}
+                data-lenis-prevent
                 tabIndex={0}
                 role="region"
                 aria-label={`${spec.fileName} C# example viewport`}

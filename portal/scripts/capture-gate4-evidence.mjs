@@ -536,7 +536,7 @@ async function captureVideos(browser, portalBaseUrl) {
         await page.waitForTimeout(500);
         const tabs = page
           .getByRole("tablist", {
-            name: "Key AstraFlow release provenance milestones",
+            name: "Key AstraFlow release milestones",
           })
           .getByRole("tab");
         if ((await tabs.count()) >= 3) {
@@ -552,12 +552,12 @@ async function captureVideos(browser, portalBaseUrl) {
         await releases.scrollIntoViewIfNeeded();
         await page.waitForTimeout(450);
         await releases
-          .getByRole("button", { name: /Published Confirmed/i })
+          .getByRole("button", { name: /Feature Release/i })
           .first()
           .click();
         await page.waitForTimeout(550);
         await releases
-          .getByRole("button", { name: /Unreleased Source/i })
+          .getByRole("button", { name: /Latest Milestone/i })
           .first()
           .click();
         await page.waitForTimeout(550);
@@ -670,6 +670,136 @@ async function captureVideos(browser, portalBaseUrl) {
   return results;
 }
 
+async function captureFaviconThemeProof(browser, portalBaseUrl) {
+  const context = await browser.newContext({
+    viewport: { width: 1200, height: 740 },
+    deviceScaleFactor: 2,
+  });
+  const page = await context.newPage();
+
+  const themes = [
+    { bg: "#132a28", ink: "#f7f3eb", border: "rgba(247, 243, 235, 0.2)", label: "Deep Warm Forest (#132a28)" },
+    { bg: "#1e1e1e", ink: "#f3f3f3", border: "rgba(255, 255, 255, 0.16)", label: "Dark Chrome / System (#1e1e1e)" },
+    { bg: "#f7f3eb", ink: "#0d3028", border: "rgba(13, 48, 40, 0.18)", label: "Warm Ivory Surface (#f7f3eb)" },
+    { bg: "#ffffff", ink: "#111827", border: "rgba(17, 24, 39, 0.15)", label: "Pure Light Tab Bar (#ffffff)" },
+  ];
+
+  await page.setContent(
+    `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+          width: 1200px;
+          min-height: 740px;
+          background: #f7f3eb;
+          color: #0d3028;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          padding: 36px 40px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 24px;
+        }
+        header {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          border-bottom: 1px solid rgba(13, 48, 40, 0.18);
+          padding-bottom: 14px;
+        }
+        h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+        .meta { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #3f584d; font-weight: 700; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .swatch {
+          border-radius: 14px;
+          padding: 24px 26px;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+        .swatch-title { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+        .sizes { display: flex; align-items: flex-end; gap: 28px; }
+        .size-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .size-label { font-size: 11px; font-family: ui-monospace, monospace; opacity: 0.85; }
+        .tab-mock {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 7px 14px;
+          border-radius: 8px 8px 0 0;
+          border: 1px solid rgba(128, 128, 128, 0.25);
+          font-size: 12px;
+          font-weight: 600;
+        }
+        footer {
+          border-top: 1px solid rgba(13, 48, 40, 0.14);
+          padding-top: 12px;
+          display: flex;
+          justify-content: space-between;
+          font-size: 12px;
+          color: #3f584d;
+        }
+      </style>
+    </head>
+    <body>
+      <header>
+        <h1>AstraFlow Universal Circular Medallion Favicon Contrast Proof</h1>
+        <span class="meta">16px · 32px · 64px across Dark & Light Themes</span>
+      </header>
+      <section class="grid">
+        ${themes
+          .map(
+            (t) => `<div class="swatch" style="background:${t.bg};color:${t.ink};border:1px solid ${t.border}">
+              <div class="swatch-title">${t.label}</div>
+              <div class="sizes">
+                <div class="size-item">
+                  <img src="${portalBaseUrl}/favicon.ico?v=3" width="16" height="16" alt="16px ICO" />
+                  <span class="size-label">16px (.ico)</span>
+                </div>
+                <div class="size-item">
+                  <img src="${portalBaseUrl}/favicon.svg?v=3" width="32" height="32" alt="32px SVG" />
+                  <span class="size-label">32px (.svg)</span>
+                </div>
+                <div class="size-item">
+                  <img src="${portalBaseUrl}/favicon-96x96.png?v=3" width="64" height="64" alt="64px PNG" />
+                  <span class="size-label">64px (.png)</span>
+                </div>
+                <div class="tab-mock" style="background:${t.bg};color:${t.ink}">
+                  <img src="${portalBaseUrl}/favicon.svg?v=3" width="16" height="16" alt="Tab icon" />
+                  <span>AstraFlow — Docs</span>
+                </div>
+              </div>
+            </div>`,
+          )
+          .join("")}
+      </section>
+      <footer>
+        <span>Medallion: Warm Ivory (#f7f3eb) circular badge + #0d3028 edge rim + canonical A mark</span>
+        <span>Verified from live Next.js /favicon.{svg,ico} & /favicon-96x96.png</span>
+      </footer>
+    </body>
+    </html>`,
+    { waitUntil: "networkidle" },
+  );
+
+  const imgsReady = await page.evaluate(() =>
+    Array.from(document.querySelectorAll("img")).every(
+      (img) => img.complete && img.naturalWidth > 0,
+    ),
+  );
+  if (!imgsReady) {
+    throw new Error("One or more favicon proof images failed to load");
+  }
+
+  const outPath = path.join(artifactsDir, "favicon-theme-proof.png");
+  await page.screenshot({ path: outPath });
+  await context.close();
+  return outPath;
+}
+
 async function capturePerformance(browser, portalBaseUrl) {
   const routes = [
     "/",
@@ -760,15 +890,13 @@ async function capturePerformance(browser, portalBaseUrl) {
 }
 
 async function main() {
-  if (!fs.existsSync(referenceDir)) {
-    throw new Error(`Missing reference-v12 directory: ${referenceDir}`);
-  }
+  const hasReferenceDir = fs.existsSync(referenceDir);
 
   fs.mkdirSync(screenshotsDir, { recursive: true });
   fs.mkdirSync(comparisonsDir, { recursive: true });
   fs.mkdirSync(videosDir, { recursive: true });
 
-  const staticSrv = await startStaticServer(referenceDir);
+  const staticSrv = hasReferenceDir ? await startStaticServer(referenceDir) : null;
   const nextPort = await getFreePort();
   const portalBaseUrl = `http://127.0.0.1:${nextPort}`;
   const nextBin = path.join(portalDir, "node_modules", "next", "dist", "bin", "next");
@@ -794,17 +922,24 @@ async function main() {
   let browser;
   try {
     await waitForHttpOk(portalBaseUrl, 45000);
-    await waitForHttpOk(`${staticSrv.baseUrl}/index.html`, 10000);
+    if (staticSrv) {
+      await waitForHttpOk(`${staticSrv.baseUrl}/index.html`, 10000);
+    }
 
     browser = await chromium.launch({ headless: true });
 
     const screenshots = await captureScreenshots(browser, portalBaseUrl);
-    const comparisons = await captureComparisons(
+    const comparisons = staticSrv
+      ? await captureComparisons(browser, staticSrv.baseUrl, portalBaseUrl)
+      : fs
+          .readdirSync(comparisonsDir)
+          .filter((name) => name.endsWith(".png"))
+          .map((name) => path.join(comparisonsDir, name));
+    const videos = await captureVideos(browser, portalBaseUrl);
+    const faviconThemeProofPath = await captureFaviconThemeProof(
       browser,
-      staticSrv.baseUrl,
       portalBaseUrl,
     );
-    const videos = await captureVideos(browser, portalBaseUrl);
     const perf = await capturePerformance(browser, portalBaseUrl);
 
     console.log(
@@ -812,7 +947,9 @@ async function main() {
         {
           screenshotsCount: screenshots.length,
           comparisonsCount: comparisons.length,
+          comparisonsMode: staticSrv ? "regenerated" : "preserved-no-reference-v12",
           videos,
+          faviconThemeProofPath,
           performanceRoutes: Object.keys(perf.routes),
           perfReportPath,
         },
@@ -829,7 +966,9 @@ async function main() {
   } finally {
     await browser?.close();
     await stopChildProcess(nextChild);
-    await new Promise((resolve) => staticSrv.server.close(() => resolve()));
+    if (staticSrv) {
+      await new Promise((resolve) => staticSrv.server.close(() => resolve()));
+    }
   }
 }
 

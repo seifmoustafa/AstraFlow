@@ -1,12 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import {
   useEffect,
   useRef,
   useState,
   useSyncExternalStore,
 } from "react";
+import {
+  HeroStageEntrance,
+  HeroTextReveal,
+  MagneticButton,
+} from "@/components/motion";
 import { UI_COPY } from "@/content/ui-copy";
 
 const SIGNAL_PATH =
@@ -34,6 +38,7 @@ function getDocumentHiddenSnapshot() {
 export function SignalArchitectureHero() {
   const stageRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const draftingGridRef = useRef<SVGGElement>(null);
   const [isVisible, setIsVisible] = useState(true);
 
   const reducedMotion = useSyncExternalStore(
@@ -48,6 +53,61 @@ export function SignalArchitectureHero() {
   );
 
   const isPaused = reducedMotion || !isVisible || documentHidden;
+
+  useEffect(() => {
+    const gridEl = draftingGridRef.current;
+    if (!gridEl || reducedMotion || typeof window === "undefined") {
+      return;
+    }
+
+    const strokeShapes = Array.from(
+      gridEl.querySelectorAll<SVGGeometryElement>(
+        "path, circle:not([stroke-dasharray])",
+      ),
+    );
+    const animations: Animation[] = [];
+
+    strokeShapes.forEach((shape, index) => {
+      if (
+        typeof shape.getTotalLength !== "function" ||
+        typeof shape.animate !== "function"
+      ) {
+        return;
+      }
+      try {
+        const totalLen = shape.getTotalLength();
+        if (!Number.isFinite(totalLen) || totalLen <= 0) return;
+        const lenStr = totalLen.toFixed(1);
+        const anim = shape.animate(
+          [
+            {
+              strokeDasharray: lenStr,
+              strokeDashoffset: lenStr,
+            },
+            {
+              strokeDasharray: lenStr,
+              strokeDashoffset: "0",
+            },
+          ],
+          {
+            duration: 920,
+            delay: index * 90,
+            easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+            fill: "none",
+          },
+        );
+        animations.push(anim);
+      } catch {
+        // Keep static geometry when WAAPI stroke draw is unsupported
+      }
+    });
+
+    return () => {
+      for (const anim of animations) {
+        anim.cancel();
+      }
+    };
+  }, [reducedMotion]);
 
   useEffect(() => {
     const stageEl = stageRef.current;
@@ -87,31 +147,41 @@ export function SignalArchitectureHero() {
         <div className="v10-hero-copy">
           <p className="eyebrow">{UI_COPY.hero.eyebrow}</p>
           <h1 id="v10-hero-heading">
-            {UI_COPY.hero.titleTop}
+            <HeroTextReveal as="span" delayMs={20}>
+              {UI_COPY.hero.titleTop}
+            </HeroTextReveal>
             <br />
-            <span className="v10-flow-word">
+            <HeroTextReveal as="span" className="v10-flow-word" delayMs={85}>
               {UI_COPY.hero.titleBottom}
               <span className="v10-period">.</span>
-            </span>
+            </HeroTextReveal>
           </h1>
-          <p className="v10-hero-lead">{UI_COPY.hero.lead}</p>
+          <HeroTextReveal as="p" className="v10-hero-lead" delayMs={140}>
+            {UI_COPY.hero.lead}
+          </HeroTextReveal>
           <p className="v10-hero-description">
             {UI_COPY.hero.descriptionLead}{" "}
             <strong>{UI_COPY.hero.descriptionStrong}</strong>
           </p>
           <div className="links v10-hero-actions">
-            <Link
+            <MagneticButton
               className="button button-primary"
               href={UI_COPY.hero.primaryHref}
             >
-              {UI_COPY.hero.primaryCta} <span aria-hidden="true">↗</span>
-            </Link>
-            <a
+              {UI_COPY.hero.primaryCta}{" "}
+              <span className="cta-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </MagneticButton>
+            <MagneticButton
               className="button button-outline"
               href={UI_COPY.hero.secondaryHref}
             >
-              {UI_COPY.hero.secondaryCta} <span aria-hidden="true">↘</span>
-            </a>
+              {UI_COPY.hero.secondaryCta}{" "}
+              <span className="cta-arrow" aria-hidden="true">
+                ↘
+              </span>
+            </MagneticButton>
           </div>
           <p className="v10-hero-meta mono">
             <span aria-hidden="true" className="v10-led" />{" "}
@@ -120,12 +190,13 @@ export function SignalArchitectureHero() {
           </p>
         </div>
 
-        <div
-          ref={stageRef}
-          className="v10-signature-stage v12-signature-stage"
-          id="v10-signature-stage"
-          data-signal-paused={isPaused ? "true" : "false"}
-        >
+        <HeroStageEntrance>
+          <div
+            ref={stageRef}
+            className="v10-signature-stage v12-signature-stage"
+            id="v10-signature-stage"
+            data-signal-paused={isPaused ? "true" : "false"}
+          >
           <div className="v10-hero-grid" aria-hidden="true" />
 
           <div className="v10-stage-top">
@@ -214,6 +285,7 @@ export function SignalArchitectureHero() {
               />
 
               <g
+                ref={draftingGridRef}
                 className="stage-architecture"
                 fill="none"
                 opacity="0.22"
@@ -388,12 +460,13 @@ export function SignalArchitectureHero() {
             </svg>
           </div>
 
-          <div className="v10-stage-bottom v12-stage-bottom">
-            {UI_COPY.hero.stageSteps.map((step) => (
-              <span key={step}>{step}</span>
-            ))}
+            <div className="v10-stage-bottom v12-stage-bottom">
+              {UI_COPY.hero.stageSteps.map((step) => (
+                <span key={step}>{step}</span>
+              ))}
+            </div>
           </div>
-        </div>
+        </HeroStageEntrance>
       </div>
 
       <div className="site-wrap v10-hero-under">

@@ -119,7 +119,7 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     fallbackTfms: 'netstandard2.0 (analyzers/dotnet/cs) · net10.0 (.NET tool)',
     summary:
       'Compile-time Roslyn diagnostics and opt-in [AstraGenerateMapping] source generators (PrivateAssets="all") plus the global `astraflow` CLI tool.',
-    docHref: '/docs/generators',
+    docHref: '/docs/generated-dispatch',
     docLabel: 'Generators & CLI docs',
     bounds: {
       x0: -112,
@@ -149,10 +149,10 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     plateTitle: 'TESTING',
     name: 'Testing Harnesses & Assertions',
     packageIds: ['AstraFlow.Testing', 'AstraFlow.Assertions'],
-    stagePackageIds: ['AstraFlow.Testing'],
+    stagePackageIds: ['AstraFlow.Testing', 'AstraFlow.Assertions'],
     fallbackTfms: 'netstandard2.0 · net8.0 · net9.0 · net10.0',
     summary:
-      'Runner-neutral FakeMediator and harnesses (2.3.0 published). AstraFlow.Assertions fluent Should() primitives live in 2.4.0 unreleased source only.',
+      'Runner-neutral FakeMediator, pipeline harnesses, and standalone fluent .Should() assertions.',
     docHref: '/docs/testing',
     docLabel: 'Testing guide',
     bounds: {
@@ -186,7 +186,7 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     stagePackageIds: ['AstraFlow.Diagnostics', 'AstraFlow.Security'],
     fallbackTfms: 'netstandard2.0 · net8.0 · net9.0 · net10.0',
     summary:
-      'Deterministic registration snapshots, AFD* findings, shared sensitive-name redaction rules, and payload-free OpenTelemetry spans.',
+      'Deterministic registration snapshots, startup validation findings, shared sensitive-name redaction rules, and payload-free OpenTelemetry spans.',
     docHref: '/docs/diagnostics',
     docLabel: 'Diagnostics & security',
     bounds: {
@@ -609,19 +609,12 @@ export function PackagesModuleLoom({
     return primaryTfms;
   }, [activePackages, activeModule.fallbackTfms]);
 
-  const hasUnreleasedInModule =
-    activeModule.id === 'testing' ||
-    activePackages.some((pkg) => !pkg.isPublished);
-
   const releaseStatusLabel = useMemo(() => {
     if (activeModule.id === 'tooling') {
       return 'Published · 2.3.0 (PrivateAssets + .NET Tool)';
     }
-    if (activeModule.id === 'testing') {
-      return 'Testing 2.3.0 Published · Assertions 2.4.0 Unreleased Source';
-    }
     const publishedVersion =
-      activePackages.find((pkg) => pkg.isPublished)?.publishedVersion ?? '2.3.0';
+      activePackages.find((pkg) => pkg.publishedVersion)?.publishedVersion ?? '2.3.0';
     return `Published · ${publishedVersion} NuGet`;
   }, [activeModule.id, activePackages]);
 
@@ -1017,13 +1010,7 @@ export function PackagesModuleLoom({
       >
         <div className={styles.inspectorTop}>
           <h2 className={styles.inspectorName}>{activeModule.name}</h2>
-          <span
-            className={`${styles.statusBadge} ${
-              hasUnreleasedInModule ? styles.statusBadgeWarn : ''
-            }`}
-          >
-            {releaseStatusLabel}
-          </span>
+          <span className={styles.statusBadge}>{releaseStatusLabel}</span>
         </div>
 
         <p className={styles.inspectorSummary}>{activeModule.summary}</p>
@@ -1035,14 +1022,11 @@ export function PackagesModuleLoom({
         <div className={styles.pkgChips} aria-label="Owning packages">
           {activeModule.packageIds.map((pkgId) => {
             const pkg = packageById.get(pkgId);
-            const suffix =
-              pkg && !pkg.isPublished
-                ? ' · 2.4.0 UNRELEASED SOURCE'
-                : pkg?.requiresPrivateAssets
-                  ? ' · PrivateAssets="all"'
-                  : pkg?.isTool
-                    ? ' · .NET Tool'
-                    : '';
+            const suffix = pkg?.requiresPrivateAssets
+              ? ' · PrivateAssets="all"'
+              : pkg?.isTool
+                ? ' · .NET Tool'
+                : '';
             return (
               <span key={pkgId} className={styles.pkgChip}>
                 {pkgId}
@@ -1051,13 +1035,6 @@ export function PackagesModuleLoom({
             );
           })}
         </div>
-
-        {activeModule.id === 'testing' ? (
-          <p className={styles.unreleasedNotice}>
-            Note: <code>AstraFlow.Testing</code> is published on NuGet (2.3.0).{' '}
-            <code>AstraFlow.Assertions</code> is 2.4.0 unreleased source only — NOT published on NuGet yet.
-          </p>
-        ) : null}
 
         <div className={styles.inspectorActions}>
           <button

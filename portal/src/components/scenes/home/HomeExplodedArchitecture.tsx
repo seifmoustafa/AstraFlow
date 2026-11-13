@@ -172,7 +172,7 @@ const LAYER_SPECS: readonly AssemblyLayerSpec[] = [
         id: 'analyzers',
         name: 'AstraFlow.Analyzers',
         version: '2.3.0',
-        role: 'Compile-time Roslyn diagnostics (AFAN0101–0404) & fixes',
+        role: 'Compile-time Roslyn analyzer rules & code fixes',
         href: '/packages#directory',
       },
       {
@@ -185,7 +185,7 @@ const LAYER_SPECS: readonly AssemblyLayerSpec[] = [
     ],
     contracts: [
       'IAstraFlowDiagnosticsReporter',
-      'AFAN0101–0404',
+      'AstraFlowAnalyzerRules',
       'FakeMediator',
       'PipelineTestHarness<,>',
       'ShouldHaveNoDiagnosticErrors()',
@@ -536,7 +536,7 @@ export function HomeExplodedArchitecture({
               </button>
             </div>
 
-            <div className={styles.stageFrame}>
+            <div className={styles.stageFrame} data-parallax="stage">
               <div className={styles.stageHeaderOverlay}>
                 <span className={styles.stageReadoutTag}>
                   ACTIVE: {activeSpec.tierLabel} — {activeSpec.title}

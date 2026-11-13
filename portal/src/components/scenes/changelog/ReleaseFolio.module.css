@@ -256,7 +256,7 @@
   color: var(--ink-secondary);
 }
 
-.folioRowTagUnreleased {
+.folioRowTagLatest {
   background: #fbe3d8;
   border-color: rgba(168, 50, 27, 0.34);
   color: #7f210f;
@@ -474,13 +474,13 @@
   color: #fffaf2;
 }
 
-.badgeUnreleased {
+.badgeLatest {
   background: #a8321b;
   color: #fffaf2;
 }
 
-.badgeUnverified {
-  background: #6e4416;
+.badgeFeature {
+  background: #144d3e;
   color: #fffaf2;
 }
 

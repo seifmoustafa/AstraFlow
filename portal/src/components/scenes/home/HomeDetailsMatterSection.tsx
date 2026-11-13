@@ -1,9 +1,9 @@
 'use client';
 
 import { Exploded } from '@lucasmarkes/hairline/react';
-import Link from 'next/link';
 import { useId, useState, type CSSProperties } from 'react';
 import { useReducedMotionSafe } from '@/components/hairline';
+import { MagneticButton } from '@/components/motion';
 import styles from './HomeDetailsMatterSection.module.css';
 
 export type DetailsPlaneIndex = 0 | 1 | 2;
@@ -39,7 +39,7 @@ const PLANE_SPECS: readonly PlaneFocusSpec[] = [
     headingTag: 'LAYER 03 · DIAGNOSTIC FLOOR',
     packages: 'AstraFlow.Diagnostics · AstraFlow.Analyzers',
     summary:
-      'Anchors the runtime with static AFAN0101–0404 checks, redacted snapshots, and test harnesses.',
+      'Anchors the runtime with compile-time analyzer rules, redacted snapshots, and test harnesses.',
   },
 ] as const;
 
@@ -126,14 +126,20 @@ export function HomeDetailsMatterSection({
             </div>
 
             <div className={styles.ctaWrap}>
-              <Link className="button button-outline" href="/packages#composer">
-                Build your stack <span aria-hidden="true">↗</span>
-              </Link>
+              <MagneticButton
+                className="button button-outline"
+                href="/packages#composer"
+              >
+                Build your stack{' '}
+                <span className="cta-arrow" aria-hidden="true">
+                  ↗
+                </span>
+              </MagneticButton>
             </div>
           </div>
 
           <div className={styles.stageColumn} data-reveal="up">
-            <div className={styles.figureFrame}>
+            <div className={styles.figureFrame} data-parallax="stage">
               <span className={`${styles.tick} ${styles.tickTl}`} aria-hidden="true" />
               <span className={`${styles.tick} ${styles.tickTr}`} aria-hidden="true" />
               <span className={`${styles.tick} ${styles.tickBl}`} aria-hidden="true" />

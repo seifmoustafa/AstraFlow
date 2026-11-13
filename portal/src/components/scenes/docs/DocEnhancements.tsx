@@ -139,7 +139,7 @@ export function DocMobileNavDrawer({
         </span>
         <span className={styles.mobileNavSummaryTag}>INDEX ▾</span>
       </summary>
-      <div className={styles.mobileNavBody}>
+      <div className={styles.mobileNavBody} data-lenis-prevent="">
         <Link className={styles.desktopNavBack} href="/docs">
           ← All documentation
         </Link>
@@ -314,6 +314,7 @@ export function DocEnhancements({
 
       const rawLang = (pre.dataset.lang || 'text').toUpperCase();
       pre.tabIndex = 0;
+      pre.setAttribute('data-lenis-prevent', '');
 
       const wrapper = document.createElement('div');
       wrapper.className = styles.codeBlockWrap;
@@ -373,6 +374,7 @@ export function DocEnhancements({
           window.clearTimeout(resetTimer);
         }
         pre.classList.remove(styles.codeBlockPreEnhanced);
+        pre.removeAttribute('data-lenis-prevent');
         delete pre.dataset.enhanced;
         if (wrapper.parentNode) {
           wrapper.parentNode.insertBefore(pre, wrapper);
@@ -431,7 +433,11 @@ export function DocEnhancements({
             </button>
 
             {drawerOpen ? (
-              <div className={styles.mobileTocPanel} id="doc-mobile-toc-panel">
+              <div
+                className={styles.mobileTocPanel}
+                data-lenis-prevent=""
+                id="doc-mobile-toc-panel"
+              >
                 {toc.map((item) => {
                   const isActive = item.id === activeId;
                   return (

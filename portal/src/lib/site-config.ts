@@ -5,12 +5,12 @@ export const SITE_URL = (
 export const SITE_NAME = 'AstraFlow';
 export const SITE_TAGLINE = 'ENGINEERED CLARITY';
 export const SITE_DESCRIPTION =
-  'Explicit .NET packages for mediator dispatch, auditable object mapping, query projections, compile-time analyzers, source generators, diagnostics, and test workflows.';
+  'Explicit .NET packages for mediator dispatch, object mapping, query projections, compile-time analyzers, source generators, diagnostics, and test workflows.';
 
 export const LATEST_PUBLISHED_VERSION = '2.3.0';
 export const LATEST_PUBLISHED_DATE = '2026-11-10';
 export const LATEST_PUBLISHED_PROVENANCE =
-  'Maintainer-confirmed published on 2026-11-10';
+  'Latest stable release (2026-11-10)';
 export const PREVIOUS_PUBLISHED_VERSION = '2.2.0';
 export const UNRELEASED_SOURCE_VERSION = '2.4.0';
 

@@ -384,12 +384,6 @@
   box-shadow: inset 3px 0 0 var(--signal);
 }
 
-.pkgToggleUnreleased[aria-pressed="true"] {
-  border-color: var(--signal);
-  background: rgba(242, 94, 59, 0.28);
-  box-shadow: inset 3px 0 0 var(--peach);
-}
-
 .pkgCheck {
   width: 19px;
   height: 19px;
@@ -663,18 +657,6 @@
   background: var(--signal);
   border-color: var(--signal);
   color: var(--forest-deep);
-}
-
-.unreleasedBanner {
-  padding: 10px 12px;
-  border-radius: 5px;
-  background: var(--peach);
-  border: 2px solid var(--signal);
-  color: var(--ink);
-  font-size: 12px;
-  line-height: 1.45;
-  font-weight: 700;
-  margin-block-end: 12px;
 }
 
 .codeBox {

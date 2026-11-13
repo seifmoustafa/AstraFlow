@@ -3,6 +3,11 @@ import Link from "next/link";
 import { getCommunityGovernance } from "@/lib/community";
 import { GITHUB_LINKS } from "@/lib/site-config";
 import {
+  HeroStageEntrance,
+  HeroTextReveal,
+  MagneticButton,
+} from "@/components/motion";
+import {
   CommunityContributionCurrent,
   CommunityStudySection,
 } from "@/components/scenes/community";
@@ -10,7 +15,7 @@ import {
 export const metadata: Metadata = {
   title: "Community",
   description:
-    "Open-source AstraFlow governance grounded in repository files: GitHub repository, issues, pull requests, CONTRIBUTING.md checks, and SECURITY.md disclosures.",
+    "Open-source AstraFlow collaboration on GitHub: source repository, issue tracker, pull requests, build verification, and coordinated security disclosures.",
   alternates: {
     canonical: "/community",
   },
@@ -27,22 +32,24 @@ export default function CommunityPage() {
       >
         <div className="site-wrap v10-community-grid">
           <div className="v10-community-copy">
-            <p className="eyebrow">OPEN SOURCE. OPEN DECISIONS.</p>
+            <p className="eyebrow">OPEN SOURCE. BUILT IN THE OPEN.</p>
             <h1 id="v10-community-title">
-              The work
-              <br />
-              is public<span className="v10-period">.</span>
-              <span className="v10-community-italic">
-                So is the thinking.
-              </span>
+              <HeroTextReveal as="span">
+                The work
+                <br />
+                is public<span className="v10-period">.</span>
+                <span className="v10-community-italic">
+                  So is the thinking.
+                </span>
+              </HeroTextReveal>
             </h1>
             <p className="v10-community-lead">
-              {governance.repoScope} Issues, pull requests, security
-              disclosures, and architectural decisions are tracked openly on
-              GitHub under the MIT license.
+              {governance.repoScope} Issues, pull requests, test suites, and
+              security disclosures are tracked openly on GitHub under the MIT
+              license.
             </p>
             <div className="links">
-              <a
+              <MagneticButton
                 className="button button-primary"
                 href={GITHUB_LINKS.repo}
                 target="_blank"
@@ -52,8 +59,8 @@ export default function CommunityPage() {
                 <span aria-hidden="true" className="arrow">
                   ↗
                 </span>
-              </a>
-              <a
+              </MagneticButton>
+              <MagneticButton
                 className="button button-outline"
                 href={GITHUB_LINKS.issues}
                 target="_blank"
@@ -63,17 +70,19 @@ export default function CommunityPage() {
                 <span aria-hidden="true" className="arrow">
                   ↗
                 </span>
-              </a>
+              </MagneticButton>
             </div>
             <p className="mono v10-community-note">
               NO PRIVATE COMMUNITY GATE. THE WORK IS ON GITHUB.
             </p>
           </div>
 
-          <CommunityContributionCurrent
-            pathways={governance.pathways}
-            governance={governance}
-          />
+          <HeroStageEntrance>
+            <CommunityContributionCurrent
+              pathways={governance.pathways}
+              governance={governance}
+            />
+          </HeroStageEntrance>
         </div>
 
         <div className="site-wrap v10-community-values">
@@ -93,7 +102,7 @@ export default function CommunityPage() {
         <div className="site-wrap">
           <div className="section-head" data-reveal="up">
             <div>
-              <p className="eyebrow">02 / PUBLIC GOVERNANCE</p>
+              <p className="eyebrow">02 / CONTRIBUTE &amp; COLLABORATE</p>
               <h2>Six ways to engage.</h2>
             </div>
             <p className="section-caption">
@@ -140,7 +149,7 @@ export default function CommunityPage() {
                     ))}
                   </div>
                 </Link>
-              )
+              ),
             )}
           </div>
 
@@ -152,7 +161,11 @@ export default function CommunityPage() {
                 Run the full solution build and test suite before submitting a
                 focused pull request:
               </p>
-              <pre className="community-cmd-pre" tabIndex={0}>
+              <pre
+                className="community-cmd-pre"
+                tabIndex={0}
+                data-lenis-prevent
+              >
                 <code>{governance.buildTestCommands.join("\n")}</code>
               </pre>
               <ul className="community-checklist">

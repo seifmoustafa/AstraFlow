@@ -8,7 +8,7 @@ import { ChangelogShell } from "@/components/scenes/changelog";
 export const metadata: Metadata = {
   title: "Changelog",
   description:
-    "Full AstraFlow release history parsed from CHANGELOG.md with explicit provenance separating published NuGet 2.3.0 releases from unreleased 2.4.0 source milestones.",
+    "Complete AstraFlow release history covering 36 releases from 1.0.0 through the latest 2.4.0 updates, new capabilities, and migration notes.",
   alternates: {
     canonical: "/changelog",
   },

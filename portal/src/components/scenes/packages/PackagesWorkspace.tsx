@@ -1,6 +1,11 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import {
+  HeroStageEntrance,
+  HeroTextReveal,
+  MagneticButton,
+} from '@/components/motion';
 import type { AstraFlowPackage, ComposerPreset } from '@/lib/packages';
 import { PackagesDirectory } from './PackagesDirectory';
 import {
@@ -58,39 +63,41 @@ export function PackagesWorkspace({
           {heroCopy ?? (
             <div>
               <p className="eyebrow">A DIFFERENT WAY TO COMPOSE</p>
-              <h1>
+              <HeroTextReveal as="h1">
                 Take the parts.
                 <span className="ital">Keep the control.</span>
-              </h1>
-              <p className="lead">
+              </HeroTextReveal>
+              <HeroTextReveal as="p" className="lead" delayMs={80}>
                 A family of {packages.length} focused .NET packages. Choose a
                 capability, see what it adds, and generate an install plan
                 without adopting a platform.
-              </p>
+              </HeroTextReveal>
               <div className="links">
-                <a className="button button-primary" href="#composer">
+                <MagneticButton className="button button-primary" href="#composer">
                   Build your stack
                   <span aria-hidden="true" className="arrow">
                     ↗
                   </span>
-                </a>
-                <a className="button button-outline" href="#directory">
+                </MagneticButton>
+                <MagneticButton className="button button-outline" href="#directory">
                   Browse packages
                   <span aria-hidden="true" className="arrow">
                     ↗
                   </span>
-                </a>
+                </MagneticButton>
               </div>
             </div>
           )}
 
-          <PackagesModuleLoom
-            packages={packages}
-            selectedModuleId={selectedModuleId}
-            onSelectModule={setSelectedModuleId}
-            onStageCapability={handleStageCapability}
-            composerAnchorId="composer"
-          />
+          <HeroStageEntrance>
+            <PackagesModuleLoom
+              packages={packages}
+              selectedModuleId={selectedModuleId}
+              onSelectModule={setSelectedModuleId}
+              onStageCapability={handleStageCapability}
+              composerAnchorId="composer"
+            />
+          </HeroStageEntrance>
         </div>
       </section>
 
@@ -111,10 +118,9 @@ export function PackagesWorkspace({
               </h2>
             </div>
             <p className={composerStyles.bandCaption}>
-              Backed directly by repository <code>.csproj</code> metadata and
-              published <code>2.3.0</code> NuGet release records. Unreleased{' '}
-              <code>2.4.0</code> source packages are isolated with an explicit
-              warning and never emitted as NuGet installs.
+              All {packages.length} AstraFlow packages resolved with target
+              frameworks, transitive references, and explicit{' '}
+              <code>PrivateAssets=&quot;all&quot;</code> build rules.
             </p>
           </div>
 
@@ -139,8 +145,8 @@ export function PackagesWorkspace({
               </h2>
             </div>
             <p className="section-caption">
-              All {packages.length} packages inspected directly from{' '}
-              <code>src/*/*.csproj</code>.
+              All {packages.length} AstraFlow packages organized by architecture
+              layer, target frameworks, and integration boundary.
             </p>
           </div>
 

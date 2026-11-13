@@ -15,7 +15,6 @@ import type {
 import {
   GITHUB_LINKS,
   LATEST_PUBLISHED_VERSION,
-  UNRELEASED_SOURCE_VERSION,
 } from '@/lib/site-config';
 import {
   createCamera,
@@ -51,10 +50,10 @@ const FALLBACK_PATHWAYS: ContributionPathway[] = [
   {
     id: 'source-repo',
     number: '01',
-    title: 'Explore the Monorepo & Roadmap',
+    title: 'Explore the Monorepo Source',
     summary:
-      'Browse all 16 .NET packages, source generators, analyzers, and the 2.4.0 development branch directly on GitHub.',
-    detail: `Stable NuGet releases target ${LATEST_PUBLISHED_VERSION}; active source development tracks ${UNRELEASED_SOURCE_VERSION}.`,
+      'Browse all 16 .NET packages, source generators, Roslyn analyzers, and test suites directly on GitHub.',
+    detail: `AstraFlow packages target version ${LATEST_PUBLISHED_VERSION} with modular project boundaries.`,
     href: GITHUB_LINKS.repo,
     ctaLabel: 'Open GitHub Repository',
     isExternal: true,
@@ -67,7 +66,7 @@ const FALLBACK_PATHWAYS: ContributionPathway[] = [
     summary:
       'Open a targeted GitHub Issue with your AstraFlow package version, target framework, and minimal reproduction.',
     detail:
-      'Include exception messages, analyzer diagnostic codes, or mapping expression snippets so maintainers can reproduce fast.',
+      'Include exception messages, compiler warnings, or mapping expression snippets so maintainers can reproduce fast.',
     href: GITHUB_LINKS.issues,
     ctaLabel: 'Browse or File Issues',
     isExternal: true,
@@ -115,15 +114,15 @@ const FALLBACK_PATHWAYS: ContributionPathway[] = [
   {
     id: 'documentation-hub',
     number: '06',
-    title: 'Architecture Docs, ADRs & Upgrade Guides',
+    title: 'Product Documentation & Guides',
     summary:
-      'Consult the repository docs archive, architecture decision records, benchmarks, and 2.3.0 upgrade notes before proposing API changes.',
+      'Consult the developer documentation, package selection matrix, pipeline patterns, and upgrade notes before proposing API changes.',
     detail:
-      'Every public API surface and compatibility decision is documented alongside the source in docs/.',
+      'Every public API surface and compatibility baseline is documented in the AstraFlow documentation hub.',
     href: '/docs/getting-started',
     ctaLabel: 'Open Documentation Hub',
     isExternal: false,
-    tags: ['Docs', 'ADRs', 'Upgrade Guide'],
+    tags: ['Docs', 'Quick Start', 'Migration'],
   },
 ];
 
@@ -350,7 +349,7 @@ function getGovernanceRuleForPathway(
     };
   }
   return {
-    label: 'Repository governance rule',
+    label: 'Contribution guideline',
     text: pathway.detail,
   };
 }

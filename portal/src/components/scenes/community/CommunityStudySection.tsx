@@ -33,8 +33,8 @@ const STUDY_QUESTIONS: StudyQuestionItem[] = [
     question: 'How does generated mediator dispatch stay reflection-free?',
     answer:
       'Compile-time source generation emits typed dispatchers and closed pipeline invocations directly against your handlers instead of runtime reflection lookup.',
-    href: '/docs/adr/0002-generated-mediator',
-    ctaLabel: 'Read ADR-0002 ↗',
+    href: '/docs/generated-dispatch',
+    ctaLabel: 'Read generated dispatch guide ↗',
   },
   {
     id: 'mapping',
@@ -53,8 +53,8 @@ const STUDY_QUESTIONS: StudyQuestionItem[] = [
     question: 'How do diagnostic reports guarantee zero payload leakage?',
     answer:
       'Diagnostics restrict snapshots to structural route/handler metadata and explicit redaction summaries so user request payloads never serialize into reports.',
-    href: '/docs/diagnostics-endpoint-safety',
-    ctaLabel: 'Read safety contract ↗',
+    href: '/docs/diagnostics',
+    ctaLabel: 'Read diagnostics guide ↗',
   },
   {
     id: 'contracts',
@@ -268,7 +268,7 @@ export function CommunityStudySection({
           </div>
         </div>
 
-        <div className={styles.stageColumn} data-reveal="up">
+        <div className={styles.stageColumn} data-parallax="stage">
           <div className={styles.relayFrame}>
             <div className={styles.relayHeader}>
               <span>FIGURE 06 / FOUR-BRANCH CODEBASE TOPOLOGY</span>

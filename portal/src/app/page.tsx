@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MagneticButton } from "@/components/motion";
 import { SignalArchitectureHero } from "@/components/home/SignalArchitectureHero";
 import {
   HomeDetailsMatterSection,
@@ -29,8 +30,8 @@ const PROOF_ITEMS = [
   },
   {
     num: "03",
-    title: "Inspectable decisions.",
-    caption: "Understand supported source shapes.",
+    title: "Predictable behavior.",
+    caption: "Verify handlers, mappings, and projections up front.",
   },
 ] as const;
 
@@ -153,12 +154,21 @@ export default function HomePage() {
             </p>
           </div>
           <div className="ending-cta-actions" data-reveal="up">
-            <Link className="button button-primary" href="/docs/getting-started">
-              Read the quick start <span aria-hidden="true">↗</span>
-            </Link>
-            <Link className="button button-outline" href="/packages">
-              Explore packages <span aria-hidden="true">↗</span>
-            </Link>
+            <MagneticButton
+              className="button button-primary"
+              href="/docs/getting-started"
+            >
+              Read the quick start{" "}
+              <span className="cta-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </MagneticButton>
+            <MagneticButton className="button button-outline" href="/packages">
+              Explore packages{" "}
+              <span className="cta-arrow" aria-hidden="true">
+                ↗
+              </span>
+            </MagneticButton>
           </div>
         </div>
       </section>

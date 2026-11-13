@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useReducedMotionSafe } from "@/components/hairline";
+import {
+  HeroStageEntrance,
+  HeroTextReveal,
+  MagneticButton,
+} from "@/components/motion";
 import type { ChangelogRelease, ChangelogStats } from "@/lib/changelog";
 import { GITHUB_LINKS } from "@/lib/site-config";
 import { ReleaseFolio, type ReleaseFilter } from "./ReleaseFolio";
@@ -70,26 +75,26 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
       <section className={`hero ${styles.subhero}`}>
         <div className={`site-wrap ${styles.heroGrid}`}>
           <div className={styles.heroCopy}>
-            <p className="eyebrow">THE RECORD / NOT THE HYPE</p>
-            <h1 className={styles.heroHeading}>
+            <p className="eyebrow">RELEASE NOTES / VERSION ARCHIVE</p>
+            <HeroTextReveal as="h1" className={styles.heroHeading}>
               Every version.
               <span className={`ital signal ${styles.heroItal}`}>
                 An honest story.
               </span>
-            </h1>
+            </HeroTextReveal>
             <p className={styles.heroLead}>
-              Engineering decisions are recorded here. Source milestones, GitHub
-              Releases, and NuGet package publication are separate states — not
-              interchangeable labels.
+              Every AstraFlow milestone recorded in sequence — new package
+              capabilities, generator performance improvements, and breaking
+              changes across the suite.
             </p>
             <div className="links">
-              <a className="button button-primary" href="#releases">
-                Explore the chronology
+              <MagneticButton className="button button-primary" href="#releases">
+                Explore release notes
                 <span aria-hidden="true" className="arrow">
                   ↘
                 </span>
-              </a>
-              <a
+              </MagneticButton>
+              <MagneticButton
                 className="button button-outline"
                 href={GITHUB_LINKS.changelog}
                 target="_blank"
@@ -99,20 +104,20 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
                 <span aria-hidden="true" className="arrow">
                   ↗
                 </span>
-              </a>
+              </MagneticButton>
             </div>
 
             <div
               className={styles.provenanceStrip}
-              aria-label="Release provenance summary"
+              aria-label="Release summary"
             >
               <span className={styles.provenanceItem}>
                 <span className={styles.provenanceDotSignal} aria-hidden="true" />
-                {stats.latestUnreleasedVersion} Unreleased Source
+                {stats.latestVersion} Latest Milestone
               </span>
               <span className={styles.provenanceItem}>
                 <span className={styles.provenanceDotForest} aria-hidden="true" />
-                {stats.latestPublishedVersion} Latest NuGet (2026-11-10)
+                {stats.latestPublishedVersion} NuGet Suite
               </span>
               <span className={styles.provenanceItem}>
                 {stats.totalReleases} Recorded Editions
@@ -120,28 +125,30 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
             </div>
           </div>
 
-          <VersionDeck
-            releases={releases}
-            stats={stats}
-            onJumpToRelease={handleJumpToRelease}
-          />
+          <HeroStageEntrance>
+            <VersionDeck
+              releases={releases}
+              stats={stats}
+              onJumpToRelease={handleJumpToRelease}
+            />
+          </HeroStageEntrance>
         </div>
       </section>
 
       <section className={styles.releasesSection} id="releases">
         <div className={`site-wrap ${styles.sectionWrap}`}>
-          <div className={styles.sectionHeader}>
+          <div className={styles.sectionHeader} data-reveal="up">
             <div className={styles.sectionTitleBlock}>
-              <p className="eyebrow">01 / RELEASE HISTORY · SOURCE VERIFIED</p>
+              <p className="eyebrow">01 / RELEASE HISTORY · CHANGELOG</p>
               <h2 className={styles.sectionHeading}>
-                Progress, with <span className="ital signal">provenance.</span>
+                Progress, with <span className="ital signal">clarity.</span>
               </h2>
             </div>
             <p className={styles.sectionCaption}>
-              All {stats.totalReleases} releases parsed directly from
-              CHANGELOG.md — {stats.publishedCount} published or historical
-              baseline entries, {stats.unreleasedCount} unreleased source
-              milestone, {stats.githubUnverifiedCount} GitHub-only tag, and{" "}
+              All {stats.totalReleases} AstraFlow editions —{" "}
+              {stats.latestCount} latest milestone, {stats.majorCount} major
+              releases, {stats.featureCount} feature updates,{" "}
+              {stats.historicalCount} archive releases, and{" "}
               {stats.breakingReleaseCount} with breaking changes.
             </p>
           </div>
@@ -159,21 +166,22 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
 
           <aside
             className={styles.releasesNotice}
-            aria-label="Release accuracy and provenance policy"
+            data-reveal="up"
+            aria-label="Upgrade and compatibility guidance"
           >
             <div className={styles.noticeCopy}>
-              <span className={styles.noticeEyebrow}>PROVENANCE STANDARD</span>
+              <span className={styles.noticeEyebrow}>
+                UPGRADE &amp; COMPATIBILITY
+              </span>
               <p className={styles.noticeText}>
-                NuGet publication ({stats.latestPublishedVersion} on
-                2026-11-10), active unreleased source (
-                {stats.latestUnreleasedVersion} in Directory.Build.props), and
-                GitHub Release tags with unverified package parity (2.1.0)
-                remain strictly separated across this record.
+                Upgrading from AstraFlow 1.x or an earlier 2.x release? Check
+                package alignment, target-framework compatibility, and step-by-step
+                migration recipes before rolling out changes.
               </p>
             </div>
             <Link
               className={styles.noticeLink}
-              href="/docs/version-upgrade-guide"
+              href="/docs/migration-and-troubleshooting"
             >
               Read upgrade guide ↗
             </Link>

@@ -254,18 +254,6 @@
   color: var(--ink);
 }
 
-.unreleasedNotice {
-  margin: 0;
-  padding: 8px 10px;
-  border-radius: 4px;
-  background: var(--peach);
-  border: 1px solid var(--action);
-  color: var(--ink);
-  font-size: 12px;
-  line-height: 1.45;
-  font-weight: 600;
-}
-
 .inspectorActions {
   display: flex;
   flex-wrap: wrap;

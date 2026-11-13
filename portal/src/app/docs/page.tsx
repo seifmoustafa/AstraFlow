@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
+  HeroStageEntrance,
+  HeroTextReveal,
+  MagneticButton,
+} from '@/components/motion';
+import {
   CliCopyPill,
   DocsHeroDesk,
   DocsSearch,
@@ -13,7 +18,7 @@ import { LATEST_PUBLISHED_VERSION } from '@/lib/site-config';
 export const metadata: Metadata = {
   title: 'Documentation',
   description:
-    'Search and browse verified AstraFlow guides, package deep dives, compatibility baselines, and Architecture Decision Records generated directly from repository markdown.',
+    'Search and browse verified AstraFlow guides, package deep dives, mapping patterns, framework integrations, and diagnostics references.',
   alternates: {
     canonical: '/docs',
   },
@@ -22,9 +27,6 @@ export const metadata: Metadata = {
 export default function DocsIndexPage() {
   const allDocs = getAllDocs();
   const categories = getDocCategories();
-  const adrCount =
-    categories.find((group) => group.category === 'Architecture Decisions (ADRs)')
-      ?.docs.length ?? 0;
   const quickStartCommand = `dotnet add package AstraFlow.Mediator --version ${LATEST_PUBLISHED_VERSION}`;
 
   return (
@@ -32,51 +34,60 @@ export default function DocsIndexPage() {
       <section className={`hero ${heroStyles.subhero}`}>
         <div className={`site-wrap ${heroStyles.subheroGrid}`}>
           <div className={heroStyles.heroCopy}>
-            <p className="eyebrow">THE DOCUMENTATION / ORIGINAL SOURCES</p>
-            <h1 className={heroStyles.heroTitle}>
+            <p className="eyebrow">THE DOCUMENTATION / PRODUCT REFERENCE</p>
+            <HeroTextReveal as="h1" className={heroStyles.heroTitle}>
               Understand it.{' '}
               <span className={`ital signal ${heroStyles.heroTitleEm}`}>
                 Then build it.
               </span>
-            </h1>
-            <p className={heroStyles.heroLead}>
+            </HeroTextReveal>
+            <HeroTextReveal
+              as="p"
+              className={heroStyles.heroLead}
+              delayMs={90}
+            >
               Start with a request. Follow the API. Examine the trade-offs. Practical documentation that works like an instrument — not another marketing poster.
-            </p>
+            </HeroTextReveal>
             <div className={heroStyles.heroActions}>
-              <Link className="button button-primary" href="/docs/getting-started">
-                Start with the basics ↗
-              </Link>
-              <a className="button button-outline" href="#reference">
-                Explore the reference ↓
-              </a>
+              <MagneticButton
+                className="button button-primary"
+                href="/docs/getting-started"
+              >
+                Start with the basics <span aria-hidden="true" className="arrow">↗</span>
+              </MagneticButton>
+              <MagneticButton className="button button-outline" href="#reference">
+                Explore the reference <span aria-hidden="true" className="arrow">↓</span>
+              </MagneticButton>
             </div>
             <div className={heroStyles.heroStrip}>
-              <span>{allDocs.length} SOURCE GUIDES</span>
+              <span>{allDocs.length} PRODUCT GUIDES</span>
               <span aria-hidden="true" className={heroStyles.heroStripDot}>
                 ·
               </span>
-              <span>{categories.length} CURATED TRACKS</span>
+              <span>{categories.length} PRODUCT TRACKS</span>
               <span aria-hidden="true" className={heroStyles.heroStripDot}>
                 ·
               </span>
-              <span>{adrCount} ARCHITECTURE ADRS</span>
+              <span>16 .NET PACKAGES</span>
             </div>
           </div>
 
-          <DocsHeroDesk docs={allDocs} />
+          <HeroStageEntrance>
+            <DocsHeroDesk docs={allDocs} />
+          </HeroStageEntrance>
         </div>
       </section>
 
       <section id="reference" className={searchStyles.referenceSection}>
         <div className="site-wrap">
-          <header className={searchStyles.sectionHeader}>
+          <header className={searchStyles.sectionHeader} data-reveal="up">
             <p className="eyebrow">01 / LIVING REFERENCE DESK</p>
             <h2 className={searchStyles.sectionTitle}>
               Find the answer.{' '}
-              <span className="ital signal">Follow the source.</span>
+              <span className="ital signal">Follow the API.</span>
             </h2>
             <p className={searchStyles.sectionIntroLead}>
-              Search the real documentation. Move with your keyboard. Open source-backed articles, inspect headings, and copy starter C# snippets without leaving the desk.
+              Search the complete product documentation. Move with your keyboard. Open focused guides, inspect headings, and copy starter C# snippets without leaving the desk.
             </p>
           </header>
 
@@ -86,13 +97,13 @@ export default function DocsIndexPage() {
 
       <section id="category-index" className={searchStyles.tracksSection}>
         <div className="site-wrap">
-          <header className={searchStyles.tracksHeader}>
-            <p className="eyebrow">02 / CURATED SOURCE TRACKS</p>
+          <header className={searchStyles.tracksHeader} data-reveal="up">
+            <p className="eyebrow">02 / CURATED PRODUCT TRACKS</p>
             <h2 className={searchStyles.tracksTitle}>
-              Six tracks, <span className="ital signal">zero draft clutter.</span>
+              Five tracks, <span className="ital signal">zero draft clutter.</span>
             </h2>
             <p className={searchStyles.tracksLead}>
-              Every curated guide and Architecture Decision Record organized from your first compiled request to release operations and locked architectural records.
+              Every AstraFlow guide organized from your first compiled request through explicit mapping, framework integrations, diagnostics, and tooling.
             </p>
           </header>
 
@@ -101,6 +112,7 @@ export default function DocsIndexPage() {
               <section
                 aria-label={`${group.category} documentation track`}
                 className={searchStyles.trackShelf}
+                data-reveal="up"
                 key={group.category}
               >
                 <div className={searchStyles.trackShelfHead}>
@@ -118,7 +130,6 @@ export default function DocsIndexPage() {
                       <Link className={searchStyles.trackShelfLink} href={doc.href}>
                         <span>{doc.title}</span>
                         <span className={searchStyles.trackShelfMeta}>
-                          {doc.isUnreleasedSource ? '2.4.0 · ' : ''}
                           {doc.readingMinutes}m
                         </span>
                       </Link>
@@ -133,7 +144,7 @@ export default function DocsIndexPage() {
 
       <section className={searchStyles.calloutOuter} aria-label="The first ten minutes">
         <div className="site-wrap">
-          <div className={searchStyles.docsCallout}>
+          <div className={searchStyles.docsCallout} data-reveal="up">
             <div className={searchStyles.docsCalloutCopy}>
               <p className={searchStyles.calloutEyebrow}>THE FIRST TEN MINUTES</p>
               <h2 className={searchStyles.calloutHeading}>
@@ -143,7 +154,7 @@ export default function DocsIndexPage() {
                 </span>
               </h2>
               <p className={searchStyles.calloutLead}>
-                Install the generated mediator on .NET {LATEST_PUBLISHED_VERSION}, register your handler assembly, and run your first verified slice in one pass.
+                Install AstraFlow.Mediator {LATEST_PUBLISHED_VERSION}, register your handler assembly, and run your first verified slice in one pass.
               </p>
             </div>
 

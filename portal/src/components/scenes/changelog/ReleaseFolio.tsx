@@ -24,10 +24,10 @@ import styles from "./ReleaseFolio.module.css";
 
 export type ReleaseFilter =
   | "all"
-  | "published"
+  | "latest"
+  | "major"
+  | "feature"
   | "historical"
-  | "unreleased"
-  | "github-unverified"
   | "breaking";
 
 export interface ReleaseFolioProps {
@@ -46,17 +46,14 @@ function matchesFilter(
   filter: ReleaseFilter,
 ): boolean {
   switch (filter) {
-    case "published":
-      return (
-        release.status === "published-confirmed" ||
-        release.status === "published-baseline"
-      );
+    case "latest":
+      return release.status === "latest";
+    case "major":
+      return release.status === "major";
+    case "feature":
+      return release.status === "feature";
     case "historical":
-      return release.status === "historical-release";
-    case "unreleased":
-      return release.isUnreleased;
-    case "github-unverified":
-      return release.status === "github-unverified";
+      return release.status === "historical";
     case "breaking":
       return release.isBreaking;
     case "all":
@@ -65,7 +62,10 @@ function matchesFilter(
   }
 }
 
-function matchesQuery(release: ChangelogRelease, normalizedQuery: string): boolean {
+function matchesQuery(
+  release: ChangelogRelease,
+  normalizedQuery: string,
+): boolean {
   if (!normalizedQuery) {
     return true;
   }
@@ -91,37 +91,46 @@ function matchesQuery(release: ChangelogRelease, normalizedQuery: string): boole
 
 function getBadgeStyleClass(status: ReleaseProvenanceStatus): string {
   switch (status) {
-    case "unreleased":
-      return styles.badgeUnreleased;
-    case "github-unverified":
-      return styles.badgeUnverified;
-    case "historical-release":
-      return styles.badgeHistorical;
-    case "published-confirmed":
-    case "published-baseline":
-    default:
+    case "latest":
+      return styles.badgeLatest;
+    case "major":
       return styles.badgePublished;
+    case "feature":
+      return styles.badgeFeature;
+    case "historical":
+    default:
+      return styles.badgeHistorical;
   }
 }
 
 function getShortSpineTag(release: ChangelogRelease): string {
-  if (release.isUnreleased) {
-    return "Unreleased Source";
+  if (release.status === "latest") {
+    return release.releaseDate
+      ? `Latest · ${release.releaseDate}`
+      : "Latest Milestone";
   }
-  if (release.status === "published-confirmed") {
-    return release.releaseDate ? `NuGet · ${release.releaseDate}` : "Published Confirmed";
+  if (release.status === "major") {
+    return release.releaseDate
+      ? `Major · ${release.releaseDate}`
+      : "Major Release";
   }
-  if (release.status === "published-baseline") {
-    return "Verified Baseline";
+  if (release.status === "feature") {
+    return release.releaseDate
+      ? `Feature · ${release.releaseDate}`
+      : "Feature Release";
   }
-  if (release.status === "github-unverified") {
-    return "GitHub Unverified";
-  }
-  return release.releaseDate ? `Historical · ${release.releaseDate}` : "Historical";
+  return release.releaseDate
+    ? `Archive · ${release.releaseDate}`
+    : "Archive Release";
+}
+
+function sanitizeProductNoteText(text: string): string {
+  return text.replace(/\bScope In\s+\d+(?:\.\d+)*\b:?\s*/gi, "");
 }
 
 function FormattedNoteText({ text }: { text: string }) {
-  const parts = text.split(/(`[^`]+`)/g);
+  const cleanText = sanitizeProductNoteText(text);
+  const parts = cleanText.split(/(`[^`]+`)/g);
   return (
     <>
       {parts.map((part, index) => {
@@ -307,47 +316,16 @@ export function ReleaseFolio({
     }
   };
 
-  const publishedConfirmedCount = useMemo(
-    () =>
-      releases.filter(
-        (r) =>
-          r.status === "published-confirmed" ||
-          r.status === "published-baseline",
-      ).length,
-    [releases],
-  );
-
-  const historicalArchiveCount = useMemo(
-    () => releases.filter((r) => r.status === "historical-release").length,
-    [releases],
-  );
-
   const filterOptions: ReadonlyArray<{
     key: ReleaseFilter;
     label: string;
     count: number;
   }> = [
     { key: "all", label: "All", count: stats.totalReleases },
-    {
-      key: "published",
-      label: "Published Confirmed",
-      count: publishedConfirmedCount,
-    },
-    {
-      key: "historical",
-      label: "Historical Archive",
-      count: historicalArchiveCount,
-    },
-    {
-      key: "unreleased",
-      label: "Unreleased Source",
-      count: stats.unreleasedCount,
-    },
-    {
-      key: "github-unverified",
-      label: "GitHub Unverified",
-      count: stats.githubUnverifiedCount,
-    },
+    { key: "latest", label: "Latest Milestone", count: stats.latestCount },
+    { key: "major", label: "Major Release", count: stats.majorCount },
+    { key: "feature", label: "Feature Release", count: stats.featureCount },
+    { key: "historical", label: "Archive Release", count: stats.historicalCount },
     {
       key: "breaking",
       label: "Breaking Changes",
@@ -361,7 +339,7 @@ export function ReleaseFolio({
         <div className={styles.spineBar}>
           <p className={styles.spineKicker}>RELEASE SPINE</p>
           <p className={styles.spineCount}>
-            {filteredReleases.length} of {releases.length} source entries
+            {filteredReleases.length} of {releases.length} releases
           </p>
         </div>
 
@@ -390,7 +368,7 @@ export function ReleaseFolio({
           <div
             className={styles.filterGroup}
             role="group"
-            aria-label="Filter releases by provenance"
+            aria-label="Filter releases by category"
           >
             {filterOptions.map((option) => {
               const isSelected = activeFilter === option.key;
@@ -416,7 +394,7 @@ export function ReleaseFolio({
           <div className={styles.emptyState}>
             <p className={styles.emptyTitle}>No matching release entries</p>
             <p className={styles.emptyCopy}>
-              No versions in CHANGELOG.md match the active provenance filter and
+              No versions in CHANGELOG.md match the active category filter and
               search query.
             </p>
             <button
@@ -431,6 +409,7 @@ export function ReleaseFolio({
           <ol
             className={styles.folioList}
             tabIndex={0}
+            data-lenis-prevent
             aria-label="Changelog release entries"
           >
             {filteredReleases.map((release, index) => {
@@ -456,8 +435,8 @@ export function ReleaseFolio({
                         </span>
                         <span
                           className={`${styles.folioRowTag} ${
-                            release.isUnreleased
-                              ? styles.folioRowTagUnreleased
+                            release.status === "latest"
+                              ? styles.folioRowTagLatest
                               : ""
                           }`}
                         >
@@ -486,7 +465,7 @@ export function ReleaseFolio({
         )}
       </div>
 
-      <aside className={styles.folioFeature} aria-label="Selected release folio">
+      <aside className={styles.folioFeature} aria-label="Selected release notes">
         {!activeRelease ? (
           <div className={styles.emptyState}>
             <p className={styles.emptyTitle}>Select a release</p>
@@ -499,7 +478,7 @@ export function ReleaseFolio({
           <article id={activeRelease.anchorId} className={styles.folioCard}>
             <div className={styles.folioArt}>
               <div className={styles.folioArtBack} aria-hidden="true">
-                <span className={styles.folioArtBackLabel}>SOURCE RECORD</span>
+                <span className={styles.folioArtBackLabel}>RELEASE FOLIO</span>
               </div>
               <div className={styles.folioArtMiddle} aria-hidden="true" />
 
@@ -509,14 +488,14 @@ export function ReleaseFolio({
                   className={styles.folioArtFront}
                   initial={
                     reducedMotion
-                      ? { opacity: 0, rotate: -6 }
-                      : { opacity: 0, y: 12, rotate: -9, scale: 0.97 }
+                      ? { opacity: 1, rotate: -6 }
+                      : { opacity: 1, y: 10, rotate: -8, scale: 0.98 }
                   }
                   animate={{ opacity: 1, y: 0, rotate: -6, scale: 1 }}
                   exit={
                     reducedMotion
                       ? { opacity: 0, rotate: -6 }
-                      : { opacity: 0, y: -10, rotate: -3, scale: 0.97 }
+                      : { opacity: 0, y: -8, rotate: -4, scale: 0.98 }
                   }
                   transition={{
                     duration: reducedMotion ? 0.08 : 0.28,
@@ -524,7 +503,7 @@ export function ReleaseFolio({
                   }}
                 >
                   <p className={styles.folioArtEyebrow}>
-                    SOURCE EDITION /{" "}
+                    EDITION /{" "}
                     {String(Math.max(0, globalPosition) + 1).padStart(2, "0")}
                   </p>
                   <p className={styles.folioArtVersion}>
@@ -596,6 +575,7 @@ export function ReleaseFolio({
                 id={`${activeRelease.anchorId}-detail`}
                 hidden={!isNotesExpanded}
                 className={styles.notesDetail}
+                data-lenis-prevent
               >
                 {activeRelease.sections.some((section) =>
                   section.items.some((item) => !item.isNonePlaceholder),
@@ -636,9 +616,9 @@ export function ReleaseFolio({
                   })
                 ) : (
                   <p className={styles.emptyNotes}>
-                    No bulleted item deltas were parsed for{" "}
-                    <code>{activeRelease.rawHeading}</code>. Inspect the raw
-                    CHANGELOG.md record via the source link below.
+                    No additional change bullets are recorded for{" "}
+                    <code>{activeRelease.rawHeading}</code>. View the full
+                    release note on GitHub below.
                   </p>
                 )}
               </div>
@@ -679,7 +659,7 @@ export function ReleaseFolio({
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Full source notes ↗
+                  View on GitHub ↗
                 </a>
               </div>
             </div>

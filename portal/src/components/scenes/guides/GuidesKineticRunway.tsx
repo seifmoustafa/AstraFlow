@@ -13,7 +13,6 @@ import { motion } from 'motion/react';
 import type { LearningMilestone } from '@/lib/guides';
 import {
   LATEST_PUBLISHED_VERSION,
-  UNRELEASED_SOURCE_VERSION,
 } from '@/lib/site-config';
 import {
   createCamera,
@@ -92,7 +91,7 @@ const STATION_POS_CLASSES = [
 export interface GuidesHeroQuickJumpProps {
   milestones: Pick<
     LearningMilestone,
-    'id' | 'stepNumber' | 'shortTitle' | 'unreleasedNote'
+    'id' | 'stepNumber' | 'shortTitle'
   >[];
 }
 
@@ -163,13 +162,9 @@ export function GuidesHeroQuickJump({ milestones }: GuidesHeroQuickJumpProps) {
             >
               <span className={styles.quickJumpTop}>
                 <span className={styles.quickJumpIndex}>{m.stepNumber}</span>
-                {m.unreleasedNote ? (
-                  <span className={styles.quickJumpPreviewTag}>2.4*</span>
-                ) : (
-                  <span className={styles.quickJumpArrow} aria-hidden="true">
-                    ↘
-                  </span>
-                )}
+                <span className={styles.quickJumpArrow} aria-hidden="true">
+                  ↘
+                </span>
               </span>
               <span className={styles.quickJumpLabel}>{m.shortTitle}</span>
             </button>
@@ -215,10 +210,10 @@ const LOCAL_CHECKS: Record<string, LocalCheckSpec> = {
     note: 'Runs the repository CLI inspector directly from source against the AstraFlow solution.',
   },
   'testing-harnesses': {
-    title: 'Local verification — Testing & 2.4.0 assertions source',
+    title: 'Local verification — Testing & assertions',
     command:
       'dotnet test tests/AstraFlow.Testing.Tests/AstraFlow.Testing.Tests.csproj && dotnet test tests/AstraFlow.Assertions.Tests/AstraFlow.Assertions.Tests.csproj',
-    note: 'Runs both published 2.3.0 testing harnesses and the unreleased 2.4.0 AstraFlow.Assertions suite.',
+    note: 'Runs both AstraFlow.Testing mediator harnesses and fluent AstraFlow.Assertions verification suites.',
   },
 };
 
@@ -357,7 +352,6 @@ function buildMilestoneSculpture(index: number): MilestoneSculpture {
 }
 
 function getPackageQualifier(pkg: string): string | null {
-  if (pkg === 'AstraFlow.Assertions') return `${UNRELEASED_SOURCE_VERSION} source`;
   if (pkg === 'AstraFlow.Cli') return '.NET tool';
   if (pkg === 'AstraFlow.Generators' || pkg === 'AstraFlow.Analyzers') {
     return 'PrivateAssets="all"';
@@ -380,12 +374,11 @@ function resolveSculptureColors(
   tone: SculptureSolid['tone'],
   isSelected: boolean,
   isTraversed: boolean,
-  isUnreleased: boolean,
 ) {
   let variant: IsoPrismVariant;
   if (isSelected) {
     if (tone === 'accent') {
-      variant = isUnreleased ? 'sand' : 'terracotta';
+      variant = 'terracotta';
     } else if (tone === 'mid') {
       variant = 'ivory';
     } else {
@@ -624,7 +617,7 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
       </div>
 
       {/* Open diagonal ascending 6-station architectural trajectory */}
-      <div className={styles.runwayStage}>
+      <div className={styles.runwayStage} data-parallax="stage">
         <div className={styles.runwayGridBackdrop} aria-hidden="true" />
 
         <svg
@@ -760,7 +753,6 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
             const sculpture = sculptures[index];
             const posClass = STATION_POS_CLASSES[index] ?? '';
             const cue = STATION_CUES[index] ?? 'MILESTONE';
-            const isUnreleased = Boolean(milestone.unreleasedNote);
 
             return (
               <button
@@ -793,7 +785,6 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
                       solid.tone,
                       isSelected,
                       isTraversed,
-                      isUnreleased,
                     );
                     return (
                       <g key={`solid-${index}-${solidIdx}`}>
@@ -841,9 +832,6 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
                   <span className={styles.stationStepNum}>
                     {milestone.stepNumber}
                   </span>
-                  {milestone.unreleasedNote ? (
-                    <span className={styles.stationSourcePill}>2.4*</span>
-                  ) : null}
                 </span>
 
                 <strong className={styles.stationTitle}>
@@ -868,7 +856,7 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
           <motion.div
             key={active.id}
             className={styles.workbenchPanel}
-            initial={reducedMotion ? false : { opacity: 0.45, y: 6 }}
+            initial={reducedMotion ? false : { opacity: 1, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
               duration: reducedMotion ? 0 : 0.16,
@@ -882,15 +870,9 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
                   {active.shortTitle.toUpperCase()}
                 </span>
                 <span
-                  className={`${styles.provenancePill} ${
-                    active.unreleasedNote
-                      ? styles.provenanceUnreleased
-                      : styles.provenancePublished
-                  }`}
+                  className={`${styles.provenancePill} ${styles.provenancePublished}`}
                 >
-                  {active.unreleasedNote
-                    ? `NuGet ${LATEST_PUBLISHED_VERSION} + ${UNRELEASED_SOURCE_VERSION} Unreleased Source`
-                    : `Published NuGet ${LATEST_PUBLISHED_VERSION}`}
+                  AstraFlow {LATEST_PUBLISHED_VERSION} Suite
                 </span>
               </div>
 
@@ -905,15 +887,12 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
                 aria-label="Required packages for this milestone"
               >
                 {active.packages.map((pkg) => {
-                  const isUnreleasedPkg = pkg === 'AstraFlow.Assertions';
                   const qualifier = getPackageQualifier(pkg);
                   return (
                     <Link
                       key={pkg}
                       href={`/packages#${encodeURIComponent(pkg)}`}
-                      className={`${styles.pkgPill}${
-                        isUnreleasedPkg ? ` ${styles.pkgPillUnreleased}` : ''
-                      }`}
+                      className={styles.pkgPill}
                     >
                       <span>{pkg}</span>
                       {qualifier ? (
@@ -929,12 +908,6 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
                   <li key={concept}>{concept}</li>
                 ))}
               </ul>
-
-              {active.unreleasedNote ? (
-                <div className={styles.unreleasedNotice} role="note">
-                  <strong>Provenance notice:</strong> {active.unreleasedNote}
-                </div>
-              ) : null}
 
               <div className={styles.ctaRow}>
                 <Link className="button button-primary" href={active.docHref}>
@@ -978,7 +951,7 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
                     {copiedKind === 'code' ? 'Copied ✓' : 'Copy snippet'}
                   </button>
                 </div>
-                <pre className={styles.codePre} tabIndex={0}>
+                <pre className={styles.codePre} tabIndex={0} data-lenis-prevent>
                   <code
                     className={`language-${active.codeLang}`}
                     dangerouslySetInnerHTML={{ __html: active.codeHtml }}
@@ -1003,7 +976,7 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
                     {copiedKind === 'cli' ? 'Copied ✓' : 'Copy CLI check'}
                   </button>
                 </div>
-                <code className={styles.verifyCmd} tabIndex={0}>
+                <code className={styles.verifyCmd} tabIndex={0} data-lenis-prevent>
                   {localCheck.command}
                 </code>
                 <p className={styles.verifyCaption}>{localCheck.note}</p>

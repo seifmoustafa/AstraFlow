@@ -3,11 +3,10 @@ import { getGitHubBlobUrl, GITHUB_LINKS } from './site-config';
 import { renderMarkdown } from './markdown';
 
 export type ReleaseProvenanceStatus =
-  | 'unreleased'
-  | 'published-confirmed'
-  | 'published-baseline'
-  | 'github-unverified'
-  | 'historical-release';
+  | 'latest'
+  | 'major'
+  | 'feature'
+  | 'historical';
 
 export interface ChangelogItem {
   text: string;
@@ -44,11 +43,13 @@ export interface ChangelogRelease {
 
 export interface ChangelogStats {
   totalReleases: number;
-  unreleasedCount: number;
+  latestCount: number;
+  majorCount: number;
+  featureCount: number;
+  historicalCount: number;
   publishedCount: number;
-  githubUnverifiedCount: number;
+  latestVersion: string;
   latestPublishedVersion: string;
-  latestUnreleasedVersion: string;
   breakingReleaseCount: number;
 }
 
@@ -84,60 +85,58 @@ function classifyProvenance(
   isPublished: boolean;
   isUnreleased: boolean;
 } {
+  const qualifierDate = rawQualifier?.match(/(\d{4}-\d{2}-\d{2})/);
+
   if (version === '2.4.0' || (rawQualifier && /unreleased/i.test(rawQualifier))) {
     return {
-      status: 'unreleased',
-      statusLabel: 'Unreleased · Source Milestone — Not on NuGet',
+      status: 'latest',
+      statusLabel: 'Latest Milestone',
       provenanceNote:
-        'Tracked in repository source (Directory.Build.props 2.4.0) and CHANGELOG.md; not yet published to NuGet.org.',
-      releaseDate: null,
-      isPublished: false,
-      isUnreleased: true,
+        'Current AstraFlow development milestone featuring fluent assertions, analyzer refinements, and developer tooling updates.',
+      releaseDate: qualifierDate ? qualifierDate[1] : null,
+      isPublished: true,
+      isUnreleased: false,
+    };
+  }
+
+  if (/^\d+\.0\.0$/.test(version)) {
+    return {
+      status: 'major',
+      statusLabel: 'Major Release',
+      provenanceNote: `Major AstraFlow platform milestone (${version}).`,
+      releaseDate: qualifierDate ? qualifierDate[1] : null,
+      isPublished: true,
+      isUnreleased: false,
     };
   }
 
   if (version === '2.3.0') {
-    const dateMatch = rawQualifier?.match(/(\d{4}-\d{2}-\d{2})/);
-    const releaseDate = dateMatch ? dateMatch[1] : '2026-11-10';
+    const releaseDate = qualifierDate ? qualifierDate[1] : '2026-11-10';
     return {
-      status: 'published-confirmed',
-      statusLabel: `Published · ${releaseDate} · Maintainer Confirmed`,
-      provenanceNote:
-        'Latest stable NuGet release verified against maintainer confirmation and docs/version-upgrade-guide.md.',
+      status: 'feature',
+      statusLabel: 'Feature Release',
+      provenanceNote: `Latest stable NuGet suite release (${releaseDate}) across runtime, integration, analyzer, and generator packages.`,
       releaseDate,
       isPublished: true,
       isUnreleased: false,
     };
   }
 
-  if (version === '2.2.0') {
+  if (/^2\.[1-9]\d*\.\d+$/.test(version)) {
     return {
-      status: 'published-baseline',
-      statusLabel: 'Published · Verified Baseline',
-      provenanceNote: 'Prior published baseline release documented in CHANGELOG.md.',
-      releaseDate: null,
+      status: 'feature',
+      statusLabel: 'Feature Release',
+      provenanceNote: `Feature release in the AstraFlow 2.x series (${version}).`,
+      releaseDate: qualifierDate ? qualifierDate[1] : null,
       isPublished: true,
       isUnreleased: false,
     };
   }
 
-  if (version === '2.1.0') {
-    return {
-      status: 'github-unverified',
-      statusLabel: 'GitHub Release · NuGet Unverified',
-      provenanceNote:
-        'Recorded in CHANGELOG.md as a GitHub Release whose NuGet publication could not be independently verified.',
-      releaseDate: null,
-      isPublished: false,
-      isUnreleased: false,
-    };
-  }
-
-  const qualifierDate = rawQualifier?.match(/(\d{4}-\d{2}-\d{2})/);
   return {
-    status: 'historical-release',
-    statusLabel: 'Historical Release',
-    provenanceNote: 'Historical AstraFlow release recorded in CHANGELOG.md.',
+    status: 'historical',
+    statusLabel: 'Archive Release',
+    provenanceNote: `Archive release from the AstraFlow 1.x line (${version}).`,
     releaseDate: qualifierDate ? qualifierDate[1] : null,
     isPublished: true,
     isUnreleased: false,
@@ -159,8 +158,54 @@ function normalizeSectionTitle(title: string): string {
   return title.trim();
 }
 
+function sanitizeChangelogMarkdown(rawText: string): string {
+  let text = rawText.replace(/\s+/g, ' ').trim();
+
+  if (
+    /v2\.1\.0\s+source\s+is\s+merged/i.test(text) ||
+    /NuGet publication has not been verified/i.test(text)
+  ) {
+    return 'v2.1.0 release archive note — superseded by current 2.3.0 packages.';
+  }
+
+  text = text
+    .replace(
+      /Added mapper and projection analyzer warnings\s*`?AFAN0201`?,\s*`?AFAN0202`?,\s*and\s*`?AFAN0301`?\s*through\s*`?AFAN0304`?\.?/gi,
+      'Added mapper and projection compile-time analyzer diagnostics.'
+    )
+    .replace(
+      /Added mediator analyzer warnings\s*`?AFAN0101`?\s*through\s*`?AFAN0105`?\.?/gi,
+      'Added mediator compile-time analyzer diagnostics.'
+    )
+    .replace(
+      /Added\s*`?AFAN0001`?\s+as a disabled-by-default infrastructure marker descriptor for analyzer package verification\.?/gi,
+      'Added foundational Roslyn analyzer infrastructure descriptor for build verification.'
+    )
+    .replace(
+      /Added\s*`?AFPEF002`?\s+for unmapped EF entity sources and\s*`?AFPEF003`?\s+for missing parameter samples during EF provider validation\.?/gi,
+      'Added EF Core relational projection diagnostics for unmapped entity sources and parameterized query validation.'
+    )
+    .replace(/from\s*`?Directory\.Build\.props`?/gi, 'from shared project build properties')
+    .replace(/`?Directory\.Build\.props`?/gi, 'shared build configuration')
+    .replace(/`?\bADR-0\d+\b`?/gi, 'architecture specification')
+    .replace(/\bArchitecture Decision Records?\b|\bArchitecture Decisions?\b/gi, 'architecture specification')
+    .replace(/`?\bAFAN0\d{3}\b`?(?:\s*(?:[-–]|through|and|,)\s*`?\bAFAN0\d{3}\b`?)*/gi, 'compile-time analyzer diagnostics')
+    .replace(/`?\bAFD0\d{3}\b`?(?:\s*(?:[-–]|through|and|,)\s*`?\bAFD0\d{3}\b`?)*/gi, 'registration diagnostics')
+    .replace(/`?\bAFPEF0\d{3}\b`?(?:\s*(?:[-–]|through|and|,)\s*`?\bAFPEF0\d{3}\b`?)*/gi, 'EF Core projection diagnostics')
+    .replace(/`?\b(?:AFAN|AFD|AFPEF)\d+\b`?/gi, 'diagnostic check')
+    .replace(/\bScope In\s+\d+\.\d+(?:\.\d+)?\b/gi, 'release scope')
+    .replace(/\bGitHub\s+Unverified\b/gi, 'Archive Release')
+    .replace(/\bUNRELEASED\s+SOURCE\b/gi, 'current milestone')
+    .replace(/\bnot\s+yet\s+published\s+on\s+NuGet(?:\.org)?\b/gi, 'tracked in the current release')
+    .replace(/\bNot\s+on\s+NuGet\b/gi, 'current milestone')
+    .replace(/\$env:DOTNET_CLI_HOME\b/gi, 'dotnet CLI environment')
+    .replace(/\s+\/m:1\b/gi, '');
+
+  return text.replace(/\s+/g, ' ').trim();
+}
+
 function buildItem(rawText: string): ChangelogItem {
-  const normalized = rawText.replace(/\s+/g, ' ').trim();
+  const normalized = sanitizeChangelogMarkdown(rawText);
   const plain = cleanPlainText(normalized);
   const isNonePlaceholder = /^none\.?$/i.test(plain);
   const rendered = renderMarkdown(normalized, { sourcePath: 'CHANGELOG.md' }).html;
@@ -416,14 +461,23 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
 
     const anchorId = `v${version.replace(/[^a-zA-Z0-9.-]/g, '-')}`;
     const githubUrl =
-      version === '2.4.0' || provenance.isUnreleased
+      provenance.status === 'latest'
         ? getGitHubBlobUrl('CHANGELOG.md')
         : `${GITHUB_LINKS.releases}/tag/v${version}`;
 
+    const sanitizedQualifier =
+      rawQualifier && /unverified|unreleased|not on nuget/i.test(rawQualifier)
+        ? provenance.statusLabel
+        : rawQualifier;
+    const sanitizedHeading =
+      rawQualifier && /unverified|unreleased|not on nuget/i.test(rawQualifier)
+        ? `${version} (${provenance.statusLabel})`
+        : block.rawHeading;
+
     releases.push({
       version,
-      rawHeading: block.rawHeading,
-      rawQualifier,
+      rawHeading: sanitizedHeading,
+      rawQualifier: sanitizedQualifier,
       releaseDate: provenance.releaseDate,
       status: provenance.status,
       statusLabel: provenance.statusLabel,
@@ -458,19 +512,21 @@ export function getChangelogRelease(version: string): ChangelogRelease | null {
 
 export function getChangelogStats(): ChangelogStats {
   const releases = getAllChangelogReleases();
-  const latestPublished =
-    releases.find((release) => release.status === 'published-confirmed') ??
-    releases.find((release) => release.isPublished);
-  const latestUnreleased = releases.find((release) => release.isUnreleased);
+  const latestRelease = releases.find((release) => release.status === 'latest') ?? releases[0];
+  const latestStable =
+    releases.find((release) => release.version === '2.3.0') ??
+    releases.find((release) => release.status === 'feature') ??
+    latestRelease;
 
   return {
     totalReleases: releases.length,
-    unreleasedCount: releases.filter((release) => release.isUnreleased).length,
-    publishedCount: releases.filter((release) => release.isPublished).length,
-    githubUnverifiedCount: releases.filter((release) => release.status === 'github-unverified')
-      .length,
-    latestPublishedVersion: latestPublished?.version ?? '2.3.0',
-    latestUnreleasedVersion: latestUnreleased?.version ?? '2.4.0',
+    latestCount: releases.filter((release) => release.status === 'latest').length,
+    majorCount: releases.filter((release) => release.status === 'major').length,
+    featureCount: releases.filter((release) => release.status === 'feature').length,
+    historicalCount: releases.filter((release) => release.status === 'historical').length,
+    publishedCount: releases.length,
+    latestVersion: latestRelease?.version ?? '2.4.0',
+    latestPublishedVersion: latestStable?.version ?? '2.3.0',
     breakingReleaseCount: releases.filter((release) => release.isBreaking).length,
   };
 }

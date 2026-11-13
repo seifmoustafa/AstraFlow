@@ -5,16 +5,15 @@ import {
   type CodeSnippet,
   type TocItem,
 } from './markdown';
-import { readRepoText, resolveRepoPath } from './repo-paths';
+import { resolveRepoPath } from './repo-paths';
 import { getGitHubBlobUrl } from './site-config';
 
 export type DocCategory =
   | 'Getting Started'
-  | 'Core & Mapping'
-  | 'Integrations'
-  | 'Diagnostics, Tooling & Testing'
-  | 'Reference & Operations'
-  | 'Architecture Decisions (ADRs)';
+  | 'Mediator & Pipelines'
+  | 'Mapping & Projections'
+  | 'Framework Integrations'
+  | 'Testing, Diagnostics & Tooling';
 
 export interface DocNavLink {
   slug: string[];
@@ -62,18 +61,35 @@ export const DOC_SLUG_ALIASES: ReadonlyMap<string, string> = new Map([
   ['efcore', 'entity-framework-core'],
   ['ef-core', 'entity-framework-core'],
   ['validation', 'fluentvalidation'],
-  ['branch-protection-rollout', 'security-and-supply-chain'],
+  ['observability', 'opentelemetry'],
+  ['generators', 'generated-dispatch'],
+  ['security', 'secure-ids'],
+  ['security-and-supply-chain', 'secure-ids'],
+  ['branch-protection-rollout', 'secure-ids'],
+  ['mediator-scenarios', 'pipelines'],
+  ['mapper-scenarios', 'mapper'],
+  ['projection-scenarios', 'projections'],
+  ['diagnostics-endpoint-safety', 'diagnostics'],
+  ['api-governance', 'compatibility'],
+  ['api-reference', 'overview'],
+  ['benchmarks', 'generated-dispatch'],
+  ['engineering-blueprint', 'architecture'],
+  ['version-upgrade-guide', 'migration-and-troubleshooting'],
+  ['migration-cookbook', 'migration-and-troubleshooting'],
+  ['troubleshooting', 'migration-and-troubleshooting'],
+  ['adr/0001-generated-mapper', 'generated-mapping'],
+  ['adr/0002-generated-mediator', 'generated-dispatch'],
+  ['adr/0003-flow-manifest', 'diagnostics'],
   ['readme', 'overview'],
   ['index', 'overview'],
 ]);
 
 export const DOC_CATEGORY_ORDER: readonly DocCategory[] = [
   'Getting Started',
-  'Core & Mapping',
-  'Integrations',
-  'Diagnostics, Tooling & Testing',
-  'Reference & Operations',
-  'Architecture Decisions (ADRs)',
+  'Mediator & Pipelines',
+  'Mapping & Projections',
+  'Framework Integrations',
+  'Testing, Diagnostics & Tooling',
 ];
 
 const CURATED_DOC_ORDER: readonly string[] = [
@@ -83,41 +99,29 @@ const CURATED_DOC_ORDER: readonly string[] = [
   'package-selection',
   'architecture',
   'compatibility',
-  // 2. Core & Mapping
+  // 2. Mediator & Pipelines
   'mediator',
-  'mediator-scenarios',
+  'pipelines',
+  'notifications-and-streams',
+  'generated-dispatch',
+  // 3. Mapping & Projections
   'mapper',
-  'mapper-scenarios',
   'convention-mapping',
   'projections',
-  'projection-scenarios',
-  // 3. Integrations
+  'generated-mapping',
+  'secure-ids',
+  // 4. Framework Integrations
   'aspnetcore',
   'entity-framework-core',
   'fluentvalidation',
-  // 4. Diagnostics, Tooling & Testing
-  'diagnostics',
-  'diagnostics-endpoint-safety',
-  'observability',
-  'analyzers',
-  'generators',
-  'cli',
+  'opentelemetry',
+  // 5. Testing, Diagnostics & Tooling
   'testing',
   'assertions',
-  // 5. Reference & Operations
-  'security',
-  'security-and-supply-chain',
-  'api-governance',
-  'api-reference',
-  'benchmarks',
-  'engineering-blueprint',
-  'version-upgrade-guide',
-  'migration-cookbook',
-  'troubleshooting',
-  // 6. Architecture Decisions (ADRs)
-  'adr/0001-generated-mapper',
-  'adr/0002-generated-mediator',
-  'adr/0003-flow-manifest',
+  'diagnostics',
+  'analyzers',
+  'cli',
+  'migration-and-troubleshooting',
 ];
 
 const CATEGORY_BY_SLUG: Record<string, DocCategory> = {
@@ -127,77 +131,32 @@ const CATEGORY_BY_SLUG: Record<string, DocCategory> = {
   architecture: 'Getting Started',
   compatibility: 'Getting Started',
 
-  mediator: 'Core & Mapping',
-  'mediator-scenarios': 'Core & Mapping',
-  mapper: 'Core & Mapping',
-  'mapper-scenarios': 'Core & Mapping',
-  'convention-mapping': 'Core & Mapping',
-  projections: 'Core & Mapping',
-  'projection-scenarios': 'Core & Mapping',
+  mediator: 'Mediator & Pipelines',
+  pipelines: 'Mediator & Pipelines',
+  'notifications-and-streams': 'Mediator & Pipelines',
+  'generated-dispatch': 'Mediator & Pipelines',
 
-  aspnetcore: 'Integrations',
-  'entity-framework-core': 'Integrations',
-  fluentvalidation: 'Integrations',
+  mapper: 'Mapping & Projections',
+  'convention-mapping': 'Mapping & Projections',
+  projections: 'Mapping & Projections',
+  'generated-mapping': 'Mapping & Projections',
+  'secure-ids': 'Mapping & Projections',
 
-  diagnostics: 'Diagnostics, Tooling & Testing',
-  'diagnostics-endpoint-safety': 'Diagnostics, Tooling & Testing',
-  observability: 'Diagnostics, Tooling & Testing',
-  analyzers: 'Diagnostics, Tooling & Testing',
-  generators: 'Diagnostics, Tooling & Testing',
-  cli: 'Diagnostics, Tooling & Testing',
-  testing: 'Diagnostics, Tooling & Testing',
-  assertions: 'Diagnostics, Tooling & Testing',
+  aspnetcore: 'Framework Integrations',
+  'entity-framework-core': 'Framework Integrations',
+  fluentvalidation: 'Framework Integrations',
+  opentelemetry: 'Framework Integrations',
 
-  security: 'Reference & Operations',
-  'security-and-supply-chain': 'Reference & Operations',
-  'api-governance': 'Reference & Operations',
-  'api-reference': 'Reference & Operations',
-  benchmarks: 'Reference & Operations',
-  'engineering-blueprint': 'Reference & Operations',
-  'version-upgrade-guide': 'Reference & Operations',
-  'migration-cookbook': 'Reference & Operations',
-  troubleshooting: 'Reference & Operations',
+  testing: 'Testing, Diagnostics & Tooling',
+  assertions: 'Testing, Diagnostics & Tooling',
+  diagnostics: 'Testing, Diagnostics & Tooling',
+  analyzers: 'Testing, Diagnostics & Tooling',
+  cli: 'Testing, Diagnostics & Tooling',
+  'migration-and-troubleshooting': 'Testing, Diagnostics & Tooling',
 };
 
-const EXCLUDED_DOC_PREFIXES = [
-  'plans/',
-  'decisions/',
-  'benchmark-results/',
-  'strategy/',
-  'api-baselines/',
-] as const;
-
-const EXCLUDED_DOC_FILES = new Set<string>([
-  'future-ideas.md',
-  'release-checklist.md',
-  'publishing.md',
-  'community-release-guide.md',
-  'branding.md',
-  'roadmap.md',
-  'design-v1.6.md',
-  'design-v1.6.html',
-]);
-
-function isExcludedDocRelativePath(relPath: string): boolean {
-  const normalized = relPath.replace(/\\/g, '/').toLowerCase();
-  if (EXCLUDED_DOC_PREFIXES.some((prefix) => normalized.startsWith(prefix))) {
-    return true;
-  }
-  const baseName = path.posix.basename(normalized);
-  if (EXCLUDED_DOC_FILES.has(baseName)) {
-    return true;
-  }
-  if (/^design-v1\.6/i.test(baseName)) {
-    return true;
-  }
-  return false;
-}
-
 function classifyDocCategory(slugPath: string): DocCategory {
-  if (slugPath.startsWith('adr/')) {
-    return 'Architecture Decisions (ADRs)';
-  }
-  return CATEGORY_BY_SLUG[slugPath] ?? 'Reference & Operations';
+  return CATEGORY_BY_SLUG[slugPath] ?? 'Testing, Diagnostics & Tooling';
 }
 
 function titleCaseFromSlug(slugPath: string): string {
@@ -357,7 +316,23 @@ function extractPlainProse(markdown: string): {
   };
 }
 
+function resolvePortalDocsDir(): string {
+  const cwdCandidate = path.join(process.cwd(), 'src', 'content', 'docs');
+  if (fs.existsSync(cwdCandidate)) {
+    return cwdCandidate;
+  }
+  const repoCandidate = resolveRepoPath('portal', 'src', 'content', 'docs');
+  if (fs.existsSync(repoCandidate)) {
+    return repoCandidate;
+  }
+  return cwdCandidate;
+}
+
 function discoverDocRelativePaths(dir: string, prefix = ''): string[] {
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
+
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   const files: string[] = [];
 
@@ -365,16 +340,8 @@ function discoverDocRelativePaths(dir: string, prefix = ''): string[] {
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      const normalizedPrefix = `${rel.replace(/\\/g, '/').toLowerCase()}/`;
-      if (EXCLUDED_DOC_PREFIXES.some((excluded) => normalizedPrefix.startsWith(excluded))) {
-        continue;
-      }
       files.push(...discoverDocRelativePaths(full, rel));
-    } else if (
-      entry.isFile() &&
-      entry.name.toLowerCase().endsWith('.md') &&
-      !isExcludedDocRelativePath(rel)
-    ) {
+    } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
       files.push(rel);
     }
   }
@@ -399,15 +366,15 @@ function buildDocsIndex(): DocDetail[] {
     return cachedDocs;
   }
 
-  const docsDir = resolveRepoPath('docs');
+  const docsDir = resolvePortalDocsDir();
   const relativeFiles = discoverDocRelativePaths(docsDir);
 
   const rawEntries: RawDocEntry[] = relativeFiles.map((relPath) => {
     const normalizedRel = relPath.replace(/\\/g, '/');
     const slugPath = normalizedRel.slice(0, -'.md'.length);
     const slug = slugPath.split('/');
-    const sourcePath = `docs/${normalizedRel}`;
-    const markdown = readRepoText('docs', ...slug.slice(0, -1), `${slug[slug.length - 1]}.md`);
+    const sourcePath = `portal/src/content/docs/${normalizedRel}`;
+    const markdown = fs.readFileSync(path.join(docsDir, relPath), 'utf8');
     return {
       slug,
       slugPath,
@@ -416,17 +383,6 @@ function buildDocsIndex(): DocDetail[] {
       category: classifyDocCategory(slugPath),
       title: extractTitle(markdown, slugPath),
     };
-  });
-
-  // Include root README.md mapped under /docs/overview
-  const readmeMarkdown = readRepoText('README.md');
-  rawEntries.push({
-    slug: ['overview'],
-    slugPath: 'overview',
-    sourcePath: 'README.md',
-    markdown: readmeMarkdown,
-    category: 'Getting Started',
-    title: 'AstraFlow Overview',
   });
 
   const orderIndex = new Map<string, number>(
@@ -496,7 +452,7 @@ function buildDocsIndex(): DocDetail[] {
       toc: rendered.toc,
       html: rendered.html,
       resolvedFromAlias: null,
-      isUnreleasedSource: entry.slugPath === 'assertions',
+      isUnreleasedSource: false,
     };
   });
 
@@ -530,9 +486,7 @@ function toDocSummary(doc: DocDetail): DocSummary {
 }
 
 /**
- * Returns all curated developer documentation pages (authoritative guides under `docs/`,
- * accepted ADRs under `docs/adr/`, plus root `README.md` mapped at `overview`),
- * excluding internal maintainer/planning scratchpads.
+ * Returns all curated developer documentation guides under `portal/src/content/docs/`.
  */
 export function getAllDocs(): DocSummary[] {
   return buildDocsIndex().map(toDocSummary);

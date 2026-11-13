@@ -24,6 +24,7 @@ function GitHubMarkSvg({ size = 20 }: { size?: number }) {
 export function SiteHeader() {
   const pathname = usePathname() ?? "/";
   const [openAtPath, setOpenAtPath] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
   const menuOpen = openAtPath === pathname;
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -33,11 +34,13 @@ export function SiteHeader() {
         1,
         document.documentElement.scrollHeight - window.innerHeight,
       );
-      const percent = Math.max(0, Math.min(1, window.scrollY / max));
+      const scrollY = window.scrollY;
+      const percent = Math.max(0, Math.min(1, scrollY / max));
       document.documentElement.style.setProperty(
         "--v11-scroll",
         percent.toFixed(4),
       );
+      setIsScrolled(scrollY > 12);
     };
 
     let pending = false;
@@ -76,7 +79,7 @@ export function SiteHeader() {
   return (
     <>
       <GlobalScrollChoreographer />
-      <header className="site-header">
+      <header className={isScrolled ? "site-header scrolled" : "site-header"}>
         <div className="site-wrap header-in">
           <Link href="/" className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}

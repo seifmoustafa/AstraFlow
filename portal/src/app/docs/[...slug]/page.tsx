@@ -13,7 +13,6 @@ import {
   getDocBySlug,
   getDocCategories,
 } from '@/lib/docs';
-import { UNRELEASED_SOURCE_VERSION } from '@/lib/site-config';
 
 export const dynamicParams = false;
 
@@ -65,6 +64,7 @@ export default async function DocArticlePage({ params }: DocPageProps) {
             <aside
               aria-label="Documentation navigation"
               className={enhancerStyles.sidebarColumn}
+              data-lenis-prevent=""
             >
               <DocSidebarNav
                 activeSlugPath={doc.slugPath}
@@ -96,14 +96,6 @@ export default async function DocArticlePage({ params }: DocPageProps) {
                 </div>
               ) : null}
 
-              {doc.isUnreleasedSource ? (
-                <div className={enhancerStyles.unreleasedBanner} role="note">
-                  {UNRELEASED_SOURCE_VERSION} UNRELEASED SOURCE — This document
-                  covers capabilities on the source branch not yet published to
-                  NuGet.
-                </div>
-              ) : null}
-
               <DocMobileNavDrawer
                 activeSlugPath={doc.slugPath}
                 categories={categories}
@@ -115,16 +107,20 @@ export default async function DocArticlePage({ params }: DocPageProps) {
               <div className="docs-article-meta">
                 <span>{doc.readingMinutes} min read</span>
                 <span>{doc.wordCount} words</span>
-                <span>Source: {doc.sourcePath}</span>
+                <span>Track: {doc.category}</span>
                 <a href={doc.githubUrl} rel="noreferrer" target="_blank">
-                  View markdown source on GitHub ↗
+                  View guide on GitHub ↗
                 </a>
               </div>
 
               <div dangerouslySetInnerHTML={{ __html: doc.html }} />
 
               {doc.prev || doc.next ? (
-                <nav aria-label="Adjacent guides" className="docs-pager">
+                <nav
+                  aria-label="Adjacent guides"
+                  className="docs-pager"
+                  data-reveal="fade"
+                >
                   {doc.prev ? (
                     <Link href={doc.prev.href}>
                       <span className="tiny">
@@ -152,6 +148,7 @@ export default async function DocArticlePage({ params }: DocPageProps) {
             <aside
               aria-label="On this page"
               className={enhancerStyles.tocAside}
+              data-lenis-prevent=""
             >
               <div className="docs-toc">
                 <p className="eyebrow">On this page</p>
@@ -172,7 +169,7 @@ export default async function DocArticlePage({ params }: DocPageProps) {
                   rel="noreferrer"
                   target="_blank"
                 >
-                  View markdown source on GitHub ↗
+                  View guide on GitHub ↗
                 </a>
               </div>
             </aside>

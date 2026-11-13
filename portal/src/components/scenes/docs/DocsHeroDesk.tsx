@@ -46,54 +46,54 @@ const FOLIO_VOLUMES: readonly FolioVolumeSpec[] = [
     sheetTone: 'ivory',
   },
   {
-    id: 'core-mapping',
+    id: 'mediator-pipelines',
     num: '02',
-    shortTag: 'CORE',
-    shelfTitle: 'Core & Mapping',
-    category: 'Core & Mapping',
-    flagshipSlug: 'mapper',
-    flagshipTitle: 'Explicit Object Mapping',
-    apiBadge: 'IMapper',
-    summary: 'Source-generated dispatch, pipeline behaviors, and declared mapping rules.',
+    shortTag: 'MEDIATOR',
+    shelfTitle: 'Mediator & Pipelines',
+    category: 'Mediator & Pipelines',
+    flagshipSlug: 'mediator',
+    flagshipTitle: 'Mediator Dispatch & Behaviors',
+    apiBadge: 'IMediator',
+    summary: 'Zero-reflection dispatch, ordered pipeline behaviors, notifications, and streams.',
     defaultMinutes: 5,
     sheetTone: 'forest',
   },
   {
-    id: 'integrations',
+    id: 'mapping-projections',
     num: '03',
-    shortTag: 'INTEGRATE',
-    shelfTitle: 'Integrations',
-    category: 'Integrations',
-    flagshipSlug: 'entity-framework-core',
-    flagshipTitle: 'Entity Framework Core Projections',
-    apiBadge: 'MapAstraFlow',
-    summary: 'ASP.NET Core ProblemDetails, EF Core projections, and validation adapters.',
-    defaultMinutes: 4,
+    shortTag: 'MAPPER',
+    shelfTitle: 'Mapping & Projections',
+    category: 'Mapping & Projections',
+    flagshipSlug: 'mapper',
+    flagshipTitle: 'Explicit Object Mapping',
+    apiBadge: 'IMapper',
+    summary: 'Explicit mapping contracts, convention opt-in, LINQ projections, and generated codecs.',
+    defaultMinutes: 5,
     sheetTone: 'sand',
   },
   {
-    id: 'diagnostics-testing',
+    id: 'integrations',
     num: '04',
-    shortTag: 'DIAGNOSE',
-    shelfTitle: 'Diagnostics & Testing',
-    category: 'Diagnostics, Tooling & Testing',
-    flagshipSlug: 'diagnostics',
-    flagshipTitle: 'Diagnostics & Inspection',
-    apiBadge: 'AstraFlowTestHost',
-    summary: 'Build-time Roslyn analyzers, trace telemetry, CLI checks, and test hosts.',
-    defaultMinutes: 5,
+    shortTag: 'INTEGRATE',
+    shelfTitle: 'Framework Integrations',
+    category: 'Framework Integrations',
+    flagshipSlug: 'aspnetcore',
+    flagshipTitle: 'ASP.NET Core & ProblemDetails',
+    apiBadge: 'MapAstraFlow',
+    summary: 'ASP.NET Core endpoints, EF Core projections, FluentValidation, and OpenTelemetry.',
+    defaultMinutes: 4,
     sheetTone: 'terracotta',
   },
   {
-    id: 'reference-adrs',
+    id: 'testing-tooling',
     num: '05',
-    shortTag: 'ADRS & OPS',
-    shelfTitle: 'Reference & ADRs',
-    category: 'Architecture Decisions (ADRs)',
-    flagshipSlug: 'adr/0001-generated-mapper',
-    flagshipTitle: 'ADR 0001: Source-Generated Mapper',
-    apiBadge: 'ADR-0001..03',
-    summary: 'Compatibility baselines, release governance, and locked design records.',
+    shortTag: 'QUALITY',
+    shelfTitle: 'Testing & Diagnostics',
+    category: 'Testing, Diagnostics & Tooling',
+    flagshipSlug: 'testing',
+    flagshipTitle: 'Testing Harnesses & Assertions',
+    apiBadge: 'AstraFlowTestHost',
+    summary: 'Test harnesses, fluent assertions, startup diagnostics, analyzers, and the CLI.',
     defaultMinutes: 5,
     sheetTone: 'linen',
   },
@@ -139,7 +139,18 @@ function FolioHairlineDiagram({
     );
   }
 
-  if (volumeId === 'core-mapping') {
+  if (volumeId === 'mediator-pipelines') {
+    return (
+      <svg aria-hidden="true" className={styles.sheetDiagram} viewBox="0 0 140 54">
+        <polygon fill="none" points="22,40 56,28 90,40 56,51" stroke={strokeSub} strokeWidth="1.15" />
+        <polygon fill="none" points="32,29 66,17 100,29 66,40" stroke={strokeMain} strokeWidth="1.2" />
+        <polygon fill="none" points="44,18 78,6 112,18 78,29" stroke={accent} strokeWidth="1.45" />
+        <circle cx="78" cy="18" fill={accent} r="2.3" />
+      </svg>
+    );
+  }
+
+  if (volumeId === 'mapping-projections') {
     return (
       <svg aria-hidden="true" className={styles.sheetDiagram} viewBox="0 0 140 54">
         <polygon
@@ -173,30 +184,19 @@ function FolioHairlineDiagram({
     );
   }
 
-  if (volumeId === 'diagnostics-testing') {
-    return (
-      <svg aria-hidden="true" className={styles.sheetDiagram} viewBox="0 0 140 54">
-        <polyline
-          fill="none"
-          points="10,36 32,36 44,14 58,42 74,22 90,34 128,34"
-          stroke={accent}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="1.7"
-        />
-        <line stroke={strokeSub} strokeDasharray="3 3" strokeWidth="1" x1="10" x2="130" y1="45" y2="45" />
-        <circle cx="114" cy="18" fill="none" r="8" stroke={strokeMain} strokeWidth="1.2" />
-        <circle cx="114" cy="18" fill={accent} r="2.4" />
-      </svg>
-    );
-  }
-
   return (
     <svg aria-hidden="true" className={styles.sheetDiagram} viewBox="0 0 140 54">
-      <polygon fill="none" points="22,40 56,28 90,40 56,51" stroke={strokeSub} strokeWidth="1.15" />
-      <polygon fill="none" points="32,29 66,17 100,29 66,40" stroke={strokeMain} strokeWidth="1.2" />
-      <polygon fill="none" points="44,18 78,6 112,18 78,29" stroke={accent} strokeWidth="1.45" />
-      <circle cx="78" cy="18" fill={accent} r="2.3" />
+      <polyline
+        fill="none"
+        points="10,36 32,36 44,14 58,42 74,22 90,34 128,34"
+        stroke={accent}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.7"
+      />
+      <line stroke={strokeSub} strokeDasharray="3 3" strokeWidth="1" x1="10" x2="130" y1="45" y2="45" />
+      <circle cx="114" cy="18" fill="none" r="8" stroke={strokeMain} strokeWidth="1.2" />
+      <circle cx="114" cy="18" fill={accent} r="2.4" />
     </svg>
   );
 }
@@ -275,11 +275,7 @@ export function DocsHeroDesk({ docs = [] }: DocsHeroDeskProps) {
 
   const activeVolume = FOLIO_VOLUMES[activeIndex];
   const flagshipDoc = docBySlug.get(activeVolume.flagshipSlug);
-  const categoryCount =
-    activeVolume.id === 'reference-adrs'
-      ? (categoryCounts.get('Reference & Operations') ?? 0) +
-        (categoryCounts.get('Architecture Decisions (ADRs)') ?? 0)
-      : (categoryCounts.get(activeVolume.category) ?? 0);
+  const categoryCount = categoryCounts.get(activeVolume.category) ?? 0;
 
   return (
     <div

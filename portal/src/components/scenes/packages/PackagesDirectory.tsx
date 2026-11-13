@@ -108,32 +108,22 @@ export function PackagesDirectory({
       {filteredPackages.length > 0 ? (
         <div className={styles.grid}>
           {filteredPackages.map((pkg) => {
-            const badgeText = !pkg.isPublished
-              ? `2.4.0 UNRELEASED SOURCE`
-              : pkg.isTool
-                ? `${pkg.publishedVersion} · .NET Tool`
-                : pkg.requiresPrivateAssets
-                  ? `${pkg.publishedVersion} · PrivateAssets="all"`
-                  : `${pkg.publishedVersion} · Published`;
+            const badgeText = pkg.isTool
+              ? `${pkg.publishedVersion} · .NET Tool`
+              : pkg.requiresPrivateAssets
+                ? `${pkg.publishedVersion} · PrivateAssets="all"`
+                : `${pkg.publishedVersion} · Published`;
 
             return (
               <article
                 key={pkg.id}
                 id={pkg.id}
                 data-reveal="up"
-                className={`${styles.card} ${
-                  !pkg.isPublished ? styles.cardUnreleased : ''
-                }`}
+                className={styles.card}
               >
                 <div className={styles.cardTop}>
                   <span className={styles.categoryBadge}>{pkg.categoryLabel}</span>
-                  <span
-                    className={
-                      !pkg.isPublished ? styles.statusBadgeWarn : styles.statusBadge
-                    }
-                  >
-                    {badgeText}
-                  </span>
+                  <span className={styles.statusBadge}>{badgeText}</span>
                 </div>
 
                 <h3 className={styles.cardTitle}>{pkg.id}</h3>

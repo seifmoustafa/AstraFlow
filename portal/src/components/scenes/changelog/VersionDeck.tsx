@@ -59,9 +59,9 @@ function selectFeaturedReleases(
  * Pure geometric Hairline seal rendered with iso-kernel circle and tick segments.
  */
 function ArchivalSeal({
-  isUnreleased,
+  isLatest,
 }: {
-  isUnreleased: boolean;
+  isLatest: boolean;
 }) {
   const outerRing = useMemo(
     () => poly(circ(29, 32, 34, 34).map((sample) => [sample.u, sample.v])),
@@ -81,10 +81,10 @@ function ArchivalSeal({
     [],
   );
 
-  const ringStroke = isUnreleased
+  const ringStroke = isLatest
     ? "rgba(255, 250, 242, 0.78)"
     : "rgba(255, 210, 189, 0.72)";
-  const accentStroke = isUnreleased ? "#fffaf2" : "#f25e3b";
+  const accentStroke = isLatest ? "#fffaf2" : "#f25e3b";
 
   return (
     <svg
@@ -208,7 +208,8 @@ export function VersionDeck({
     }
   };
 
-  const provenanceStamp =
+  const isLatestMilestone = activeRelease.status === "latest";
+  const editionStamp =
     activeRelease.releaseDate &&
     !activeRelease.statusLabel.includes(activeRelease.releaseDate)
       ? `${activeRelease.statusLabel} · ${activeRelease.releaseDate}`
@@ -313,20 +314,20 @@ export function VersionDeck({
               role="tabpanel"
               aria-labelledby={`edition-tab-${activeRelease.version}`}
               className={`${styles.paperActive} ${
-                activeRelease.isUnreleased
-                  ? styles.paperActiveUnreleased
+                isLatestMilestone
+                  ? styles.paperActiveLatest
                   : styles.paperActivePublished
               }`}
               initial={
                 reducedMotion
-                  ? { opacity: 0, rotate: -3 }
-                  : { opacity: 0, y: 18, rotate: -6, scale: 0.96 }
+                  ? { opacity: 1, rotate: -3 }
+                  : { opacity: 1, y: 12, rotate: -5, scale: 0.97 }
               }
               animate={{ opacity: 1, y: 0, rotate: -3, scale: 1 }}
               exit={
                 reducedMotion
                   ? { opacity: 0, rotate: -3 }
-                  : { opacity: 0, y: -14, rotate: 0, scale: 0.96 }
+                  : { opacity: 0, y: -10, rotate: -1, scale: 0.97 }
               }
               transition={{
                 duration: reducedMotion ? 0.08 : 0.34,
@@ -334,7 +335,7 @@ export function VersionDeck({
               }}
             >
               <div className={styles.sheetHeader}>
-                <span className={styles.sheetPill}>{provenanceStamp}</span>
+                <span className={styles.sheetPill}>{editionStamp}</span>
                 <span className={styles.sheetIndex}>
                   {String(safeIndex + 1).padStart(2, "0")} /{" "}
                   {String(featured.length).padStart(2, "0")}
@@ -353,7 +354,7 @@ export function VersionDeck({
                       : "Non-breaking release"}
                   </p>
                 </div>
-                <ArchivalSeal isUnreleased={activeRelease.isUnreleased} />
+                <ArchivalSeal isLatest={isLatestMilestone} />
               </div>
             </motion.div>
           </AnimatePresence>
@@ -363,13 +364,14 @@ export function VersionDeck({
           <div
             className={styles.tablist}
             role="tablist"
-            aria-label="Key AstraFlow release provenance milestones"
+            aria-label="Key AstraFlow release milestones"
           >
             {featured.map((release, index) => {
               const isSelected = index === safeIndex;
-              const activeClass = release.isUnreleased
-                ? styles.tabButtonUnreleasedActive
-                : styles.tabButtonActive;
+              const activeClass =
+                release.status === "latest"
+                  ? styles.tabButtonLatestActive
+                  : styles.tabButtonActive;
 
               return (
                 <button

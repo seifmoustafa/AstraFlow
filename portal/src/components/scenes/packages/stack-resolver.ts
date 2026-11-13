@@ -44,7 +44,7 @@ export const PACKAGE_LAYER_GROUPS: readonly ComposerLayerGroup[] = [
   {
     key: 'testing',
     label: 'Testing & Quality',
-    description: 'Runner-neutral test harnesses and 2.4.0 unreleased assertion source.',
+    description: 'Runner-neutral test harnesses and fluent .Should() assertions.',
     categories: ['testing'],
   },
   {
@@ -86,8 +86,8 @@ export function groupPackagesByLayer(
 
 /**
  * Pure browser-safe equivalent of `resolvePackageStack()` from `@/lib/packages`.
- * Computes transitive project dependencies, overlap/tool/unreleased warnings,
- * compatible TFM intersection, and truthful CLI / XML / .NET tool install outputs
+ * Computes transitive project dependencies, overlap/tool/boundary warnings,
+ * compatible TFM intersection, and accurate CLI / XML / .NET tool install outputs
  * without importing Node `fs`/`path` APIs in client bundles.
  */
 export function resolvePackageStackClient(
@@ -157,16 +157,6 @@ export function resolvePackageStackClient(
       severity: 'warning',
       title: 'Convenience meta-package overlap',
       message: overlapMessage,
-    });
-  }
-
-  if (normalizedSet.has('AstraFlow.Assertions')) {
-    warnings.push({
-      code: 'UNRELEASED_ASSERTIONS',
-      severity: 'warning',
-      title: '2.4.0 unreleased source only',
-      message:
-        'AstraFlow.Assertions is implemented in the 2.4.0 source branch and is NOT published on NuGet yet. Keep it out of published 2.3.0 NuGet restore plans.',
     });
   }
 
@@ -258,43 +248,33 @@ export function resolvePackageStackClient(
     });
   }
 
-  const publishedNugetPackages = selectedPackages.filter(
-    (pkg) => pkg.isPublished && !pkg.isTool,
-  );
+  const nugetPackages = selectedPackages.filter((pkg) => !pkg.isTool);
   const toolPackages = selectedPackages.filter((pkg) => pkg.isTool);
-  const unreleasedPackages = selectedPackages.filter((pkg) => !pkg.isPublished);
 
-  const cliLines = publishedNugetPackages.map(
-    (pkg) => `dotnet add package ${pkg.id} --version ${latestPublishedVersion}`,
+  const cliLines = nugetPackages.map(
+    (pkg) =>
+      `dotnet add package ${pkg.id} --version ${pkg.publishedVersion ?? latestPublishedVersion}`,
   );
   const cliBlock = cliLines.join('\n');
 
   const toolLines = toolPackages.map(
-    (pkg) => `dotnet tool install --global ${pkg.id} --version ${latestPublishedVersion}`,
+    (pkg) =>
+      `dotnet tool install --global ${pkg.id} --version ${pkg.publishedVersion ?? latestPublishedVersion}`,
   );
   const toolBlock = toolLines.join('\n');
 
-  const unreleasedLines = unreleasedPackages.map(
-    (pkg) =>
-      `# UNRELEASED (${pkg.sourceVersion} source only — NOT published on NuGet yet): ${pkg.id}\n# Reference src/${pkg.id}/${pkg.id}.csproj locally or wait for the ${pkg.sourceVersion} NuGet release.`,
-  );
-  const unreleasedBlock = unreleasedLines.join('\n');
-
   const xmlItems: string[] = [];
-  for (const pkg of publishedNugetPackages) {
+  for (const pkg of nugetPackages) {
     xmlItems.push(`  ${pkg.packageReferenceXml}`);
   }
   for (const pkg of toolPackages) {
-    xmlItems.push(`  ${pkg.packageReferenceXml}`);
-  }
-  for (const pkg of unreleasedPackages) {
     xmlItems.push(`  ${pkg.packageReferenceXml}`);
   }
 
   const xmlBlock =
     xmlItems.length > 0 ? `<ItemGroup>\n${xmlItems.join('\n')}\n</ItemGroup>` : '';
 
-  const combinedParts = [cliBlock, toolBlock, unreleasedBlock].filter(Boolean);
+  const combinedParts = [cliBlock, toolBlock].filter(Boolean);
   const combinedBlock = combinedParts.join('\n\n');
 
   return {
@@ -307,11 +287,11 @@ export function resolvePackageStackClient(
     overlapNotes,
     cliBlock,
     toolBlock,
-    unreleasedBlock,
+    unreleasedBlock: '',
     xmlBlock,
     combinedBlock,
     packageCount: selectedPackages.length,
-    publishedCount: publishedNugetPackages.length + toolPackages.length,
-    unreleasedCount: unreleasedPackages.length,
+    publishedCount: selectedPackages.length,
+    unreleasedCount: 0,
   };
 }

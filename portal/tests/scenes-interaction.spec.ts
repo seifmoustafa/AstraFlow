@@ -255,7 +255,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await xmlTab.click();
     await expect(outputPre).toContainText('PrivateAssets="all"');
 
-    // AstraFlow.Assertions: 2.4.0 unreleased source notice + NO `dotnet add package AstraFlow.Assertions`
+    // Unified published packages: AstraFlow.Assertions emits clean dotnet add package + test-project boundary info
     await searchInput.fill("Assertions");
     const assertionsToggle = composer
       .locator('button[aria-pressed]')
@@ -263,15 +263,11 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       .first();
     await assertionsToggle.click();
 
-    const assertionsAlert = composer.locator('[role="alert"]').first();
-    await expect(assertionsAlert).toBeVisible();
-    await expect(assertionsAlert).toContainText("2.4.0");
-    await expect(assertionsAlert).toContainText(/unreleased|source/i);
+    await expect(composer).not.toContainText(/unreleased|not on nuget/i);
+    await expect(composer).toContainText(/Separate test-project references/i);
 
     await cliTab.click();
-    await expect(outputPre).not.toContainText(
-      "dotnet add package AstraFlow.Assertions",
-    );
+    await expect(outputPre).toContainText("dotnet add package AstraFlow.Assertions");
 
     // AstraFlow.Cli uses `dotnet tool install`
     await searchInput.fill("AstraFlow.Cli");
@@ -347,7 +343,9 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await volumeBtns.nth(0).click();
 
     const docsMainText = await page.locator("main").innerText();
-    expect(docsMainText).not.toMatch(/(plans\/|strategy\/|future-ideas)/i);
+    expect(docsMainText).not.toMatch(
+      /ADR-000|Architecture Decision|AFAN0|AFD0|AFPEF0|GitHub Unverified|UNRELEASED SOURCE|Directory\.Build\.props|Scope In 1\.8|plans\/|strategy\/|future-ideas/i,
+    );
     const docsHrefs = await page
       .locator("main a[href]")
       .evaluateAll((els) => els.map((a) => a.getAttribute("href") ?? ""));
@@ -380,12 +378,14 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await searchInput.press("Escape");
     await expect(searchInput).toHaveValue("");
 
-    // Category pill filter
-    const architecturePill = page
-      .getByRole("button", { name: /^Architecture/i })
+    // Category pill filter across the 5 product tracks
+    const mappingPill = page
+      .getByRole("button", { name: /^Mapping & Projections/i })
       .first();
-    await architecturePill.click();
+    await mappingPill.click();
+    await expect(mappingPill).toHaveAttribute("aria-pressed", "true");
     await expect(preview).toBeVisible();
+    await page.getByRole("button", { name: /^All topics/i }).first().click();
 
     // Navigate directly to /docs/getting-started and test 1-click Copy on code block
     await page.goto("/docs/getting-started", { waitUntil: "networkidle" });
@@ -403,18 +403,29 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await copyBtn.click();
     await expect(copyBtn).toContainText(/Copied/i);
 
+    // Navigate to /docs/analyzers product guide cleanly with zero internal rule IDs
+    const analyzersRes = await page.goto("/docs/analyzers", {
+      waitUntil: "networkidle",
+    });
+    expect(analyzersRes?.status()).toBe(200);
+    await expect(page.locator("h1")).toBeVisible();
+    await expect(page.locator("main")).not.toContainText(/AFAN0|AFD0|AFPEF0/i);
+
     // Verify /docs/quick-start alias banner
     await page.goto("/docs/quick-start", { waitUntil: "networkidle" });
     await expect(page.locator("main")).toContainText(/ALIASED ROUTE/i);
     await expect(page.locator("main")).toContainText("/docs/getting-started");
 
-    // Verify ADR route /docs/adr/0001-generated-mapper
-    const adrResp = await page.goto("/docs/adr/0001-generated-mapper", {
+    // Verify legacy redirect route /docs/adr/0001-generated-mapper resolves to canonical /docs/generated-mapping
+    const legacyResp = await page.goto("/docs/adr/0001-generated-mapper", {
       waitUntil: "networkidle",
     });
-    expect(adrResp?.status()).toBe(200);
+    expect(legacyResp?.status()).toBe(200);
     await expect(page.locator("h1")).toBeVisible();
-    await expect(page.locator("main")).toContainText(/mapper/i);
+    await expect(page.locator("main")).toContainText("/docs/generated-mapping");
+    await expect(page.locator("main")).not.toContainText(
+      /ADR-000|Architecture Decision/i,
+    );
   });
 
   test("5. Guides GuidesKineticRunway milestones 01..06 mouse & keyboard + Milestone 06 2.4.0 badge", async ({
@@ -466,9 +477,12 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       await expect(tabs.nth(i)).toHaveAttribute("aria-selected", "true");
     }
 
-    // Verify Milestone 06 shows 2.4.0 preview badge, C# snippet, and CLI verification command
+    // Verify Milestone 06 shows Testing & Assertions suite details, C# snippet, and CLI verification command
     const runwayWorkbench = page.locator("#runway-workbench-panel");
-    await expect(runwayWorkbench).toContainText("2.4.0");
+    await expect(runwayWorkbench).toContainText("AstraFlow.Assertions");
+    await expect(runwayWorkbench).toContainText("Should()");
+    await expect(runwayWorkbench).toContainText("AstraFlow 2.3.0 Suite");
+    await expect(runwayWorkbench).not.toContainText(/unreleased|not on nuget/i);
     await checkDesktopPreNoOverflow("Milestone 06");
     await expect(
       runwayWorkbench.getByRole("button", { name: /Copy snippet/i }),
@@ -494,7 +508,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await page.goto("/changelog", { waitUntil: "networkidle" });
 
     const folioTablist = page.getByRole("tablist", {
-      name: "Key AstraFlow release provenance milestones",
+      name: "Key AstraFlow release milestones",
     });
     const folioTabs = folioTablist.getByRole("tab");
     const count = await folioTabs.count();
@@ -520,23 +534,35 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     ).toBeVisible();
     await releaseSearch.fill("");
 
-    // Provenance filter pills
-    const nugetPill = releasesSection
-      .getByRole("button", { name: /Published Confirmed/i })
+    // Product release filter pills
+    const latestPill = releasesSection
+      .getByRole("button", { name: /Latest Milestone/i })
       .first();
-    const unreleasedPill = releasesSection
-      .getByRole("button", { name: /Unreleased Source/i })
+    const majorPill = releasesSection
+      .getByRole("button", { name: /Major Release/i })
+      .first();
+    const featurePill = releasesSection
+      .getByRole("button", { name: /Feature Release/i })
+      .first();
+    const archivePill = releasesSection
+      .getByRole("button", { name: /Archive Release/i })
       .first();
     const breakingPill = releasesSection
       .getByRole("button", { name: /Breaking Changes/i })
       .first();
     const allPill = releasesSection.getByRole("button", { name: /^All\b/i }).first();
 
-    await nugetPill.click();
+    await latestPill.click();
+    await expect(page.locator('article[id="v2.4.0"]')).toBeVisible();
+
+    await majorPill.click();
+    await expect(page.locator('article[id="v2.0.0"]')).toBeVisible();
+
+    await featurePill.click();
     await expect(page.locator('article[id="v2.3.0"]')).toBeVisible();
 
-    await unreleasedPill.click();
-    await expect(page.locator('article[id="v2.4.0"]')).toBeVisible();
+    await archivePill.click();
+    await expect(releasesSection).toBeVisible();
 
     await breakingPill.click();
     await expect(releasesSection).toBeVisible();
@@ -548,12 +574,12 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       {
         id: "v2.4.0",
         versionText: /^v2\.4\.0$/,
-        provenancePattern: /Not on NuGet|Unreleased/i,
+        provenancePattern: /Latest Milestone|fluent assertions/i,
       },
       {
         id: "v2.3.0",
         versionText: /^v2\.3\.0$/,
-        provenancePattern: /NuGet|2026-11-10/i,
+        provenancePattern: /Feature Release|2026-11-10/i,
       },
     ]) {
       const spineBtn = releasesSection
@@ -762,11 +788,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
 
   test("200% desktop zoom simulation (720x450) has zero overflow and unclipped primary buttons across all 6 main routes", async ({
     page,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.name === "mobile-chromium",
-      "Desktop 200% zoom layout test",
-    );
+  }) => {
     await page.setViewportSize({ width: 720, height: 450 });
 
     for (const route of MAIN_ROUTES) {

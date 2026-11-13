@@ -2,7 +2,6 @@ import { readRepoText } from './repo-paths';
 import {
   GITHUB_LINKS,
   LATEST_PUBLISHED_VERSION,
-  UNRELEASED_SOURCE_VERSION,
 } from './site-config';
 
 export interface ContributionPathway {
@@ -62,17 +61,6 @@ function extractBulletsUnderHeading(markdown: string, headingText: string): stri
   return bullets;
 }
 
-function extractCodeBlockCommands(markdown: string): string[] {
-  const match = markdown.match(/```(?:powershell|bash|sh)?\n([\s\S]*?)```/);
-  if (!match) {
-    return [];
-  }
-  return match[1]
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0 && !line.startsWith('#'));
-}
-
 let cachedGovernance: CommunityGovernance | null = null;
 
 export function getContributionPathways(): ContributionPathway[] {
@@ -80,10 +68,10 @@ export function getContributionPathways(): ContributionPathway[] {
     {
       id: 'source-repo',
       number: '01',
-      title: 'Explore the Monorepo & Roadmap',
+      title: 'Explore the Monorepo Source',
       summary:
-        'Browse all 16 .NET packages, source generators, analyzers, and the 2.4.0 development branch directly on GitHub.',
-      detail: `Stable NuGet releases target ${LATEST_PUBLISHED_VERSION}; active source development tracks ${UNRELEASED_SOURCE_VERSION}.`,
+        'Browse all 16 .NET packages, source generators, Roslyn analyzers, and verification harnesses directly on GitHub.',
+      detail: `Current stable AstraFlow packages target version ${LATEST_PUBLISHED_VERSION} with modular project boundaries.`,
       href: GITHUB_LINKS.repo,
       ctaLabel: 'Open GitHub Repository',
       isExternal: true,
@@ -96,7 +84,7 @@ export function getContributionPathways(): ContributionPathway[] {
       summary:
         'Open a targeted GitHub Issue with your AstraFlow package version, target framework, and minimal reproduction.',
       detail:
-        'Include exception messages, analyzer diagnostic codes, or mapping expression snippets so maintainers can reproduce fast.',
+        'Include exception messages, compiler warnings, or mapping expression snippets so maintainers can reproduce quickly.',
       href: GITHUB_LINKS.issues,
       ctaLabel: 'Browse or File Issues',
       isExternal: true,
@@ -144,15 +132,15 @@ export function getContributionPathways(): ContributionPathway[] {
     {
       id: 'documentation-hub',
       number: '06',
-      title: 'Architecture Docs, ADRs & Upgrade Guides',
+      title: 'Product Documentation & Guides',
       summary:
-        'Consult the repository docs archive, architecture decision records, benchmarks, and 2.3.0 upgrade notes before proposing API changes.',
+        'Consult the developer documentation, package selection matrix, pipeline patterns, and upgrade notes before proposing API changes.',
       detail:
-        'Every public API surface and compatibility decision is documented alongside the source in docs/.',
+        'Every public API surface and compatibility baseline is documented in the AstraFlow documentation hub.',
       href: '/docs/getting-started',
       ctaLabel: 'Open Documentation Hub',
       isExternal: false,
-      tags: ['Docs', 'ADRs', 'Upgrade Guide'],
+      tags: ['Docs', 'Quick Start', 'Migration'],
     },
   ];
 }
@@ -167,7 +155,6 @@ export function getCommunityGovernance(): CommunityGovernance {
   const support = readRepoText('SUPPORT.md');
   const codeOfConduct = readRepoText('CODE_OF_CONDUCT.md');
 
-  const commands = extractCodeBlockCommands(contributing);
   const prChecklist = extractBulletsUnderHeading(contributing, 'Pull Request Checklist');
 
   const slaMatch = security.match(/(\d+\s*hours)/i);
@@ -187,14 +174,11 @@ export function getCommunityGovernance(): CommunityGovernance {
   cachedGovernance = {
     repoScope:
       'AstraFlow welcomes focused issues, reproduction cases, benchmarks, and pull requests verified against AstraFlow.slnx.',
-    buildTestCommands:
-      commands.length > 0
-        ? commands
-        : [
-            'dotnet restore AstraFlow.slnx',
-            'dotnet build AstraFlow.slnx -c Release --no-restore',
-            'dotnet test AstraFlow.slnx -c Release --no-build',
-          ],
+    buildTestCommands: [
+      'dotnet restore AstraFlow.slnx',
+      'dotnet build AstraFlow.slnx -c Release',
+      'dotnet test AstraFlow.slnx -c Release',
+    ],
     prChecklist:
       prChecklist.length > 0
         ? prChecklist
@@ -217,8 +201,8 @@ export function getCommunityGovernance(): CommunityGovernance {
           ],
     supportChannels: [
       {
-        title: 'Repository Documentation',
-        detail: 'Getting started, compatibility matrix, upgrade guide, and ADRs in docs/.',
+        title: 'Product Documentation',
+        detail: 'Getting started, compatibility matrix, pipeline recipes, and migration guides.',
         href: '/docs/overview',
         isExternal: false,
       },

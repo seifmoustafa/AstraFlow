@@ -3839,6 +3839,136 @@ h3 {
   }
 }
 
+/* Lenis Smooth Scroll, Sticky Elevation & Agency Motion System */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+html.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+
+[data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.site-header {
+  transition:
+    box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.site-header.scrolled {
+  background: rgba(247, 243, 235, 0.98);
+  border-block-end-color: rgba(8, 44, 38, 0.22);
+  box-shadow: 0 10px 28px rgba(8, 44, 38, 0.08);
+}
+
+.af-route-shell {
+  position: relative;
+}
+
+.af-route-sweep {
+  position: fixed;
+  inset-block-start: var(--header-height);
+  inset-inline: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--action, #b73921),
+    var(--signal, #f25e3b) 70%,
+    rgba(242, 94, 59, 0.25)
+  );
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 49;
+  will-change: transform, opacity;
+}
+
+.af-route-stage {
+  opacity: 1;
+}
+
+.af-hero-text-mask {
+  display: block;
+  overflow: hidden;
+  padding-block: 0.08em;
+  margin-block: -0.08em;
+}
+
+.af-hero-text-mask.is-inline {
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+.af-hero-text-inner {
+  display: block;
+  opacity: 1;
+  will-change: transform, clip-path;
+}
+
+.af-magnetic {
+  will-change: transform;
+  transition:
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.24s ease;
+}
+
+.af-magnetic .cta-arrow,
+.af-magnetic .arrow {
+  display: inline-block;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.af-magnetic:hover .cta-arrow,
+.af-magnetic:focus-visible .cta-arrow,
+.af-magnetic:hover .arrow,
+.af-magnetic:focus-visible .arrow {
+  transform: translate3d(2px, -2px, 0);
+}
+
+.card,
+.proof,
+.line-card,
+.docs-tile {
+  transition:
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.24s ease,
+    box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.24s ease;
+}
+
+.card:hover,
+.proof:hover {
+  border-color: rgba(183, 57, 33, 0.38);
+}
+
+.line-card::after,
+.docs-tile::after {
+  transition:
+    transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.22s ease;
+}
+
+.line-card:hover::after {
+  transform: translate3d(2px, -2px, 0);
+}
+
 @media (hover: none) {
   .button:hover,
   .small-btn:hover,
@@ -3848,12 +3978,26 @@ h3 {
     transform: none;
     box-shadow: none;
   }
+  .af-magnetic:hover .cta-arrow,
+  .af-magnetic:hover .arrow,
+  .line-card:hover::after {
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto !important;
   }
+  .af-route-sweep {
+    display: none !important;
+  }
+  .af-hero-text-mask {
+    overflow: visible;
+  }
+  .af-magnetic,
+  .af-magnetic .cta-arrow,
+  .af-magnetic .arrow,
   .v10-logo-svg .signature-route,
   .v10-signature-stage .signature-route,
   .v10-live-dot {

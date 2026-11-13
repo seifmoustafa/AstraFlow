@@ -61,12 +61,12 @@ export interface PackagesStackComposerProps {
 const STACK_SVG_WIDTH = 470;
 const STACK_SVG_HEIGHT = 450;
 
-function formatStackLeaderLabel(pkgId: string, isUnreleased: boolean): string {
+function formatStackLeaderLabel(pkgId: string): string {
   const short = pkgId
     .replace(/^AstraFlow\.?/, '')
     .replace('EntityFrameworkCore', 'EF Core');
   const base = short || 'AstraFlow';
-  return isUnreleased ? `${base} 2.4*` : base.toUpperCase();
+  return base.toUpperCase();
 }
 
 export function PackagesStackComposer({
@@ -342,14 +342,12 @@ export function PackagesStackComposer({
     switch (activeTab) {
       case 'cli':
         if (stack.cliBlock) {
-          return stack.unreleasedBlock
-            ? `${stack.cliBlock}\n\n${stack.unreleasedBlock}`
-            : stack.cliBlock;
+          return stack.cliBlock;
         }
-        if (stack.toolBlock && !stack.unreleasedBlock) {
+        if (stack.toolBlock) {
           return '# AstraFlow.Cli installs via the .NET Tool CLI tab:\n' + stack.toolBlock;
         }
-        return stack.unreleasedBlock || '# No published NuGet packages selected.';
+        return '# Select one or more NuGet packages.';
       case 'xml':
         return stack.xmlBlock;
       case 'tool':
@@ -537,7 +535,11 @@ export function PackagesStackComposer({
             </div>
 
             {visibleGroups.length > 0 ? (
-              <div className={styles.groupList} tabIndex={0}>
+              <div
+                className={styles.groupList}
+                data-lenis-prevent=""
+                tabIndex={0}
+              >
                 {visibleGroups.map((group) => (
                   <section
                     key={group.key}
@@ -556,16 +558,13 @@ export function PackagesStackComposer({
                       const isSelected = stack.selectedIds.includes(pkg.id);
                       const isImplied =
                         !isSelected && stack.impliedDependencies.includes(pkg.id);
-                      const isUnreleased = !pkg.isPublished;
 
                       return (
                         <div key={pkg.id} className={styles.pkgRow}>
                           <button
                             type="button"
                             aria-pressed={isSelected}
-                            className={`${styles.pkgToggle} ${
-                              isUnreleased ? styles.pkgToggleUnreleased : ''
-                            }`}
+                            className={styles.pkgToggle}
                             onClick={() => togglePackage(pkg.id)}
                           >
                             <span className={styles.pkgCheck} aria-hidden="true">
@@ -574,11 +573,7 @@ export function PackagesStackComposer({
                             <span className={styles.pkgMain}>
                               <span className={styles.pkgIdLine}>
                                 <span className={styles.pkgName}>{pkg.id}</span>
-                                {isUnreleased ? (
-                                  <span className={styles.pkgTagWarn}>
-                                    2.4.0 Unreleased Source
-                                  </span>
-                                ) : pkg.requiresPrivateAssets ? (
+                                {pkg.requiresPrivateAssets ? (
                                   <span className={styles.pkgTag}>
                                     PrivateAssets=&quot;all&quot;
                                   </span>
@@ -632,7 +627,7 @@ export function PackagesStackComposer({
               </span>
             </div>
 
-            <div className={styles.stackCanvas}>
+            <div className={styles.stackCanvas} data-parallax="stage">
               <svg
                 className={styles.stackSvg}
                 viewBox={`0 0 ${STACK_SVG_WIDTH} ${STACK_SVG_HEIGHT}`}
@@ -689,12 +684,9 @@ export function PackagesStackComposer({
                 {stackGeometry.layers.map((layer) => {
                   const isFocused = activeLayerPkg?.id === layer.pkg.id;
                   const isHovered = hoveredLayerId === layer.pkg.id;
-                  const isUnreleased = !layer.pkg.isPublished;
 
                   let variant: IsoPrismVariant = 'forest';
-                  if (isUnreleased) {
-                    variant = 'terracotta';
-                  } else if (!layer.isDirect) {
+                  if (!layer.isDirect) {
                     variant = 'dark-forest';
                   } else if (layer.pkg.requiresPrivateAssets) {
                     variant = 'sand';
@@ -702,25 +694,19 @@ export function PackagesStackComposer({
                     variant = 'ivory';
                   }
 
-                  const trimVariant: IsoPrismVariant = isUnreleased
-                    ? 'ivory'
-                    : variant === 'sand' || variant === 'ivory'
-                      ? 'forest'
-                      : 'sand';
+                  const trimVariant: IsoPrismVariant =
+                    variant === 'sand' || variant === 'ivory' ? 'forest' : 'sand';
 
                   const textColor =
-                    variant === 'sand' ||
-                    variant === 'ivory' ||
-                    variant === 'terracotta'
+                    variant === 'sand' || variant === 'ivory'
                       ? WARM_FOREST_PALETTE.ink
                       : WARM_FOREST_PALETTE.paperRaised;
 
-                  const leaderText = formatStackLeaderLabel(layer.pkg.id, isUnreleased);
+                  const leaderText = formatStackLeaderLabel(layer.pkg.id);
 
                   const showFaceBadge =
                     isFocused ||
                     layer.index === stackGeometry.layers.length - 1 ||
-                    isUnreleased ||
                     stackGeometry.layers.length <= 5;
 
                   const liftPx = isFocused ? 7 : isHovered ? 3.5 : 0;
@@ -746,11 +732,7 @@ export function PackagesStackComposer({
                         delayMs={delayMs}
                         showDropGuides={isFocused}
                         label={`${layer.pkg.id} (${
-                          isUnreleased
-                            ? '2.4.0 Unreleased Source'
-                            : layer.isDirect
-                              ? 'Selected'
-                              : 'Implied reference'
+                          layer.isDirect ? 'Selected' : 'Implied reference'
                         })`}
                         onSelect={() => setFocusedPkgId(layer.pkg.id)}
                         onHoverChange={(hover) =>
@@ -873,9 +855,9 @@ export function PackagesStackComposer({
               <span className={styles.legendItem}>
                 <span
                   className={styles.legendSwatch}
-                  style={{ background: WARM_FOREST_PALETTE.peach }}
+                  style={{ background: WARM_FOREST_PALETTE.paperRaised }}
                 />
-                2.4.0 unreleased
+                .NET Tool
               </span>
             </div>
 
@@ -883,11 +865,7 @@ export function PackagesStackComposer({
               <div className={styles.focusedLayerCard} aria-live="polite">
                 <div className={styles.focusedLayerTop}>
                   <span className={styles.focusedLayerName}>{activeLayerPkg.id}</span>
-                  <span
-                    className={
-                      !activeLayerPkg.isPublished ? styles.pkgTagWarn : styles.pkgTag
-                    }
-                  >
+                  <span className={styles.pkgTag}>
                     {activeLayerPkg.statusLabel}
                   </span>
                 </div>
@@ -899,7 +877,7 @@ export function PackagesStackComposer({
             ) : null}
           </div>
 
-          {/* Right Pane: Truthful Install Plan & Warnings */}
+          {/* Right Pane: Install Plan & Warnings */}
           <div className={styles.outputPane}>
             <div className={styles.outputHeader}>
               <div>
@@ -948,20 +926,16 @@ export function PackagesStackComposer({
               })}
             </div>
 
-            {stack.unreleasedCount > 0 ? (
-              <div className={styles.unreleasedBanner} role="alert">
-                2.4.0 UNRELEASED SOURCE WARNING: <code>AstraFlow.Assertions</code> is NOT
-                published on NuGet. It is excluded from published 2.3.0{' '}
-                <code>dotnet add package</code> commands.
-              </div>
-            ) : null}
-
             <div
               id={`${baseId}-panel`}
               role="tabpanel"
               aria-labelledby={`${baseId}-tab-${activeTab}`}
             >
-              <pre className={styles.codeBox} tabIndex={0}>
+              <pre
+                className={styles.codeBox}
+                data-lenis-prevent=""
+                tabIndex={0}
+              >
                 {currentOutputCode}
               </pre>
 

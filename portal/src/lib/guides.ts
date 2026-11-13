@@ -1,5 +1,5 @@
 import { highlightCode } from './markdown';
-import { LATEST_PUBLISHED_VERSION, UNRELEASED_SOURCE_VERSION } from './site-config';
+import { LATEST_PUBLISHED_VERSION } from './site-config';
 
 export interface LearningMilestone {
   stepNumber: string;
@@ -100,7 +100,7 @@ app.Run();`,
     docLabel: 'Read Mediator Guide',
     secondaryLinks: [
       { href: '/docs/getting-started', label: 'Getting Started' },
-      { href: '/docs/benchmarks', label: 'Benchmarks' },
+      { href: '/docs/generated-dispatch', label: 'Generated Dispatch' },
     ],
   },
   {
@@ -140,7 +140,7 @@ public static Task<List<OrderSummaryDto>> GetRecentOrdersAsync(
     docHref: '/docs/mapper',
     docLabel: 'Read Mapper & Projections Guide',
     secondaryLinks: [
-      { href: '/docs/adr/0001-generated-mapper', label: 'ADR 0001: Generated Mapper' },
+      { href: '/docs/generated-mapping', label: 'Generated Mapping' },
       { href: '/docs/compatibility', label: 'Compatibility Matrix' },
     ],
   },
@@ -165,10 +165,10 @@ public static Task<List<OrderSummaryDto>> GetRecentOrdersAsync(
   <PackageReference Include="AstraFlow.Generators" Version="${LATEST_PUBLISHED_VERSION}" PrivateAssets="all" />
   <PackageReference Include="AstraFlow.Analyzers" Version="${LATEST_PUBLISHED_VERSION}" PrivateAssets="all" />
 </ItemGroup>`,
-    docHref: '/docs/generators',
+    docHref: '/docs/generated-dispatch',
     docLabel: 'Read Source Generators Guide',
     secondaryLinks: [
-      { href: '/docs/getting-started', label: 'Quick Start' },
+      { href: '/docs/getting-started', label: 'Getting Started' },
       { href: '/packages#AstraFlow.Generators', label: 'AstraFlow.Generators' },
     ],
   },
@@ -203,23 +203,23 @@ dotnet add package AstraFlow.Security --version ${LATEST_PUBLISHED_VERSION}`,
     docHref: '/docs/diagnostics',
     docLabel: 'Read Diagnostics Guide',
     secondaryLinks: [
-      { href: '/docs/security', label: 'Security & Redaction' },
+      { href: '/docs/secure-ids', label: 'Security & Redaction' },
       { href: '/docs/cli', label: 'CLI Reference' },
     ],
   },
   {
     stepNumber: '06',
     id: 'testing-harnesses',
-    title: '06 Testing & Harnesses',
-    shortTitle: 'Testing & Harnesses',
-    subtitle: 'Deterministic mediator harnesses plus upcoming 2.4.0 native assertions.',
+    title: '06 Testing & Assertions',
+    shortTitle: 'Testing & Assertions',
+    subtitle: 'Deterministic mediator harnesses paired with fluent Should() assertions.',
     summary:
-      'Verify handlers, pipeline ordering, and notifications in isolation with AstraFlow.Testing (published at 2.3.0). Starting with the 2.4.0 unreleased source milestone, AstraFlow.Assertions adds lightweight Should() verification primitives directly inside the suite.',
+      'Verify handlers, pipeline ordering, and notifications in isolation with AstraFlow.Testing and FakeMediator. Pair your test harness with AstraFlow.Assertions for crisp, readable Should() and NotThrowAsync() assertions with zero external runner coupling.',
     packages: ['AstraFlow.Testing', 'AstraFlow.Assertions'],
     keyConcepts: [
-      `AstraFlow.Testing (${LATEST_PUBLISHED_VERSION}) for handler & pipeline test harnesses`,
-      `AstraFlow.Assertions (${UNRELEASED_SOURCE_VERSION} unreleased source) for Should() & NotThrowAsync()`,
-      'Strict separation between published NuGet feeds and unreleased source APIs',
+      'FakeMediator and HandlerTestHarness for isolated pipeline & notification verification',
+      'Fluent Should(), Be(), NotBeEmpty(), and NotThrowAsync() assertion primitives',
+      'Clean test-project isolation with zero production runtime overhead',
     ],
     codeLang: 'csharp',
     codeTitle: 'Tests/Orders/CreateOrderTests.cs',
@@ -235,10 +235,9 @@ await act.Should().NotThrowAsync();`,
     docHref: '/docs/testing',
     docLabel: 'Read Testing Guide',
     secondaryLinks: [
-      { href: '/docs/assertions', label: 'Assertions Guide (2.4.0 Source)' },
-      { href: '/changelog#v2.4.0', label: '2.4.0 Unreleased Changelog' },
+      { href: '/docs/assertions', label: 'Assertions Reference' },
+      { href: '/docs/package-selection', label: 'Package Selection' },
     ],
-    unreleasedNote: `AstraFlow.Testing is published on NuGet at ${LATEST_PUBLISHED_VERSION}. AstraFlow.Assertions is part of the ${UNRELEASED_SOURCE_VERSION} unreleased source milestone — consume via project reference in this repository until ${UNRELEASED_SOURCE_VERSION} ships to NuGet.`,
   },
 ];
 

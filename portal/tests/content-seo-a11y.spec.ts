@@ -6,10 +6,14 @@ const AUDIT_ROUTES = [
   "/packages",
   "/docs",
   "/docs/getting-started",
+  "/docs/analyzers",
   "/guides",
   "/changelog",
   "/community",
 ] as const;
+
+const FORBIDDEN_INTERNAL_JARGON =
+  /ADR-000|Architecture Decision|AFAN0|AFD0|AFPEF0|GitHub Unverified|UNRELEASED SOURCE|Directory\.Build\.props|Scope In 1\.8/i;
 
 const MAIN_ROUTES = [
   "/",
@@ -57,6 +61,16 @@ test.describe("AstraFlow SEO Metadata, Custom 404, and WCAG 2.2 AA Accessibility
   });
 
   for (const route of AUDIT_ROUTES) {
+    test(`zero internal jargon gate holds on ${route}`, async ({ page }) => {
+      await page.goto(route, { waitUntil: "networkidle" });
+      const mainText = await page.locator("main").innerText();
+      expect(mainText.trim().length).toBeGreaterThan(80);
+      expect(
+        mainText,
+        `Internal repository jargon leaked into visible <main> on ${route}`,
+      ).not.toMatch(FORBIDDEN_INTERNAL_JARGON);
+    });
+
     test(`axe-core WCAG 2.0/2.1/2.2 A/AA audit reports 0 critical, serious, or moderate violations on ${route}`, async ({
       page,
     }) => {

@@ -86,10 +86,6 @@
   border-inline-end: 0;
 }
 
-.cardUnreleased {
-  background: linear-gradient(180deg, rgba(255, 210, 189, 0.22), var(--paper-raised) 56%);
-}
-
 .cardTop {
   display: flex;
   flex-wrap: wrap;

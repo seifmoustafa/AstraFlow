@@ -24,7 +24,7 @@ export const UI_COPY = {
     githubTitle: "View AstraFlow on GitHub",
     githubDrawerLabel: "GitHub Repository ↗",
     ctaLabel: "Get started ↗",
-    ctaHref: "/docs/quick-start",
+    ctaHref: "/docs/getting-started",
     navItems: [
       { label: "Home", href: "/" },
       { label: "Packages", href: "/packages" },
@@ -58,14 +58,14 @@ export const UI_COPY = {
       {
         heading: "Build",
         links: [
-          { label: "Quick start", href: "/docs/quick-start" },
+          { label: "Getting started", href: "/docs/getting-started" },
           { label: "Package selection", href: "/docs/package-selection" },
           { label: "Release history", href: "/changelog" },
         ],
       },
     ] satisfies readonly FooterColumn[],
     bottomLeft: "ASTRAFLOW / THE COMPONENTS OF CLARITY",
-    bottomRight: "MIT LICENSED • VERIFIED REPOSITORY SOURCE",
+    bottomRight: "MIT LICENSED • MODULAR .NET ARCHITECTURE",
   },
   hero: {
     eyebrow: "OPEN SOURCE / THE .NET FLOW ENGINE",
@@ -76,16 +76,12 @@ export const UI_COPY = {
       "A focused family of .NET packages for request dispatch, object mapping, diagnostics and testing.",
     descriptionStrong: "Compose only what your application needs.",
     primaryCta: "Start building",
-    primaryHref: "/docs/quick-start",
+    primaryHref: "/docs/getting-started",
     secondaryCta: "Explore the flow",
     secondaryHref: "#experience",
     metaItems: ["MIT LICENSED", "MODULAR PACKAGES", "DOCUMENTED APIS"] as const,
     stageTopLabel: "FIGURE 01 / REQUEST TO RESULT",
     liveSignalLabel: "LIVE SIGNAL · CONTINUOUS",
-    pauseLabel: "PAUSE SIGNAL",
-    resumeLabel: "RESUME SIGNAL",
-    pauseAriaLabel: "PAUSE SIGNAL — pause hero trace animation",
-    resumeAriaLabel: "RESUME SIGNAL — resume hero trace animation",
     reducedMotionTitle: "Movement disabled by your reduced-motion preference",
     stageSteps: [
       "01 / DECLARE",
@@ -103,7 +99,7 @@ export const UI_COPY = {
     notFoundTitle: "Nothing at",
     notFoundAccent: "this address.",
     notFoundBody:
-      "The requested route or documentation slug does not exist in the verified AstraFlow source index.",
+      "The requested page or documentation guide could not be found in the AstraFlow documentation hub.",
     errorEyebrow: "UNEXPECTED FAULT",
     errorTitle: "Something",
     errorAccent: "interrupted the page.",

@@ -26,11 +26,10 @@ export interface DocsSearchProps {
 
 const CATEGORY_ORDER: readonly DocCategory[] = [
   'Getting Started',
-  'Core & Mapping',
-  'Integrations',
-  'Diagnostics, Tooling & Testing',
-  'Reference & Operations',
-  'Architecture Decisions (ADRs)',
+  'Mediator & Pipelines',
+  'Mapping & Projections',
+  'Framework Integrations',
+  'Testing, Diagnostics & Tooling',
 ];
 
 function isEditableTarget(target: EventTarget | null): boolean {
@@ -305,12 +304,12 @@ export function DocsSearch({
     <div className={styles.craftReference}>
       <div className={styles.topRuleLine}>
         <span className={styles.topRuleLeft}>
-          FIND THE RIGHT ANSWER / SOURCE-BASED
+          FIND THE RIGHT ANSWER / PRODUCT REFERENCE
         </span>
         <span className={styles.topRuleCount} role="status">
           {filteredDocs.length === docs.length
-            ? `${docs.length} SOURCE ARTICLES`
-            : `${filteredDocs.length} OF ${docs.length} SOURCE ARTICLES`}
+            ? `${docs.length} PRODUCT GUIDES`
+            : `${filteredDocs.length} OF ${docs.length} PRODUCT GUIDES`}
         </span>
       </div>
 
@@ -449,9 +448,6 @@ export function DocsSearch({
                         <span className={styles.cardEyebrow}>
                           {String(index + 1).padStart(2, '0')} / {doc.category}
                         </span>
-                        {doc.isUnreleasedSource ? (
-                          <span className={styles.unreleasedTag}>2.4.0 SOURCE</span>
-                        ) : null}
                       </div>
                       <strong className={styles.cardTitle}>{doc.title}</strong>
                       <span className={styles.cardSummary}>{doc.summary}</span>
@@ -532,11 +528,6 @@ export function DocsSearch({
                     {String(filteredDocs.length).padStart(2, '0')} ·{' '}
                     {activeDoc.category} · {activeDoc.readingMinutes} MIN READ
                   </span>
-                  {activeDoc.isUnreleasedSource ? (
-                    <span className={styles.unreleasedTag}>
-                      2.4.0 UNRELEASED SOURCE
-                    </span>
-                  ) : null}
                 </div>
 
                 <h3 className={styles.lensTitle}>{activeDoc.title}</h3>
@@ -578,7 +569,11 @@ export function DocsSearch({
                         {snippetCopied ? 'Copied ✓' : 'Copy snippet'}
                       </button>
                     </div>
-                    <pre className={styles.codePreviewPre} tabIndex={0}>
+                    <pre
+                      className={styles.codePreviewPre}
+                      data-lenis-prevent=""
+                      tabIndex={0}
+                    >
                       <code
                         className={`language-${activeDoc.firstCodeSnippet.lang}`}
                         dangerouslySetInnerHTML={{
