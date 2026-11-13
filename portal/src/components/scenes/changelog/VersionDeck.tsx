@@ -1,592 +1,413 @@
-'use client';
+"use client";
 
 import {
   useEffect,
   useMemo,
   useRef,
   useState,
+  type FocusEvent,
   type KeyboardEvent,
-} from 'react';
-import type {
-  ChangelogRelease,
-  ChangelogStats,
-  ReleaseProvenanceStatus,
-} from '@/lib/changelog';
+} from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
-  createCamera,
-  createFacingPredicate,
-  createIsoPlateGeometry,
-  fitCamera,
-  IsoPrism,
-  IsoSignalConduit,
-  projectCamera,
-  r2,
+  circ,
+  poly,
   seg,
-  staggerDelayMs,
   useReducedMotionSafe,
-  useViewportActivity,
-  WARM_FOREST_PALETTE,
-  type IsoPlateGeometry,
-  type IsoPrismVariant,
-  type Point2,
-  type Point3,
-} from '@/components/hairline';
-import styles from './VersionDeck.module.css';
+} from "@/components/hairline";
+import type { ChangelogRelease, ChangelogStats } from "@/lib/changelog";
+import styles from "./VersionDeck.module.css";
 
-export const CHANGELOG_FOCUS_EVENT = 'astraflow:changelog-focus';
-
-const MILESTONE_VERSIONS = [
-  '2.4.0',
-  '2.3.0',
-  '2.2.0',
-  '2.1.0',
-  '2.0.0',
-  '1.0.0',
+const FEATURED_VERSIONS = [
+  "2.4.0",
+  "2.3.0",
+  "2.2.0",
+  "2.1.0",
+  "2.0.0",
+  "1.0.0",
 ] as const;
 
-const DECK_WIDTH = 640;
-const DECK_HEIGHT = 300;
-const AUTO_CYCLE_INTERVAL_MS = 3400;
+const IDLE_CYCLE_MS = 4500;
 
 export interface VersionDeckProps {
-  releases: ChangelogRelease[];
-  stats?: ChangelogStats;
-  onSelectVersion?: (anchorId: string) => void;
-  className?: string;
+  releases: readonly ChangelogRelease[];
+  stats: ChangelogStats;
+  onJumpToRelease?: (anchorId: string) => void;
 }
 
-interface ProjectedEditionPlate {
-  index: number;
-  release: ChangelogRelease;
-  geometry: IsoPlateGeometry;
-  spineNodePoint: Point2;
-  spineTickPath: string;
-  accentBarPath: string;
-  tierPipCenters: Point2[];
-}
-
-function getPlateVariant(status: ReleaseProvenanceStatus): IsoPrismVariant {
-  switch (status) {
-    case 'unreleased':
-      return 'terracotta';
-    case 'published-confirmed':
-      return 'ivory';
-    case 'published-baseline':
-    case 'github-unverified':
-      return 'sand';
-    default:
-      return 'forest';
-  }
-}
-
-function getShortTag(status: ReleaseProvenanceStatus): string {
-  switch (status) {
-    case 'unreleased':
-      return 'Source';
-    case 'published-confirmed':
-      return 'NuGet';
-    case 'published-baseline':
-      return 'Baseline';
-    case 'github-unverified':
-      return 'Unverified';
-    default:
-      return 'Milestone';
-  }
-}
-
-function getStatusClass(status: ReleaseProvenanceStatus): string {
-  switch (status) {
-    case 'unreleased':
-      return styles.statusUnreleased;
-    case 'published-confirmed':
-      return styles.statusConfirmed;
-    case 'published-baseline':
-      return styles.statusBaseline;
-    case 'github-unverified':
-      return styles.statusUnverified;
-    default:
-      return styles.statusHistorical;
-  }
-}
-
-function selectMilestoneReleases(
-  releases: ChangelogRelease[],
+function selectFeaturedReleases(
+  releases: readonly ChangelogRelease[],
 ): ChangelogRelease[] {
+  const byVersion = new Map(releases.map((release) => [release.version, release]));
   const picked: ChangelogRelease[] = [];
-  for (const version of MILESTONE_VERSIONS) {
-    const match = releases.find((item) => item.version === version);
-    if (match) picked.push(match);
-  }
-  if (picked.length >= 4) return picked;
 
-  for (const release of releases) {
-    if (picked.length >= 6) break;
-    if (!picked.some((existing) => existing.version === release.version)) {
-      picked.push(release);
+  for (const version of FEATURED_VERSIONS) {
+    const match = byVersion.get(version);
+    if (match) {
+      picked.push(match);
     }
   }
-  return picked;
+
+  if (picked.length > 0) {
+    return picked;
+  }
+
+  return releases.slice(0, 6);
+}
+
+/**
+ * Pure geometric Hairline seal rendered with iso-kernel circle and tick segments.
+ */
+function ArchivalSeal({
+  isUnreleased,
+}: {
+  isUnreleased: boolean;
+}) {
+  const outerRing = useMemo(
+    () => poly(circ(29, 32, 34, 34).map((sample) => [sample.u, sample.v])),
+    [],
+  );
+  const innerRing = useMemo(
+    () => poly(circ(18, 24, 34, 34).map((sample) => [sample.u, sample.v])),
+    [],
+  );
+  const cardinalTicks = useMemo(
+    () => [
+      seg([34, 2], [34, 10]),
+      seg([34, 58], [34, 66]),
+      seg([2, 34], [10, 34]),
+      seg([58, 34], [66, 34]),
+    ],
+    [],
+  );
+
+  const ringStroke = isUnreleased
+    ? "rgba(255, 250, 242, 0.78)"
+    : "rgba(255, 210, 189, 0.72)";
+  const accentStroke = isUnreleased ? "#fffaf2" : "#f25e3b";
+
+  return (
+    <svg
+      className={styles.sheetSeal}
+      viewBox="0 0 68 68"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d={outerRing}
+        stroke={ringStroke}
+        strokeWidth="1.2"
+        strokeDasharray="4 3"
+      />
+      <path d={innerRing} stroke={accentStroke} strokeWidth="1.4" />
+      {cardinalTicks.map((tick, idx) => (
+        <path
+          key={idx}
+          d={tick}
+          stroke={ringStroke}
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+      ))}
+      <circle cx="34" cy="34" r="3.5" fill={accentStroke} />
+    </svg>
+  );
 }
 
 export function VersionDeck({
   releases,
   stats,
-  onSelectVersion,
-  className,
+  onJumpToRelease,
 }: VersionDeckProps) {
-  const milestones = useMemo(
-    () => selectMilestoneReleases(releases),
-    [releases],
-  );
-  const count = milestones.length;
-
-  const [autoIndex, setAutoIndex] = useState(0);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
-  const [rovingIndex, setRovingIndex] = useState(0);
-
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const reducedMotion = useReducedMotionSafe();
-  const stageActivity = useViewportActivity(stageRef, {
-    paused: reducedMotion,
-    initialInView: true,
-  });
+  const featured = useMemo(() => selectFeaturedReleases(releases), [releases]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocusInside, setIsFocusInside] = useState(false);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const isUserControlled =
-    hoveredIndex !== null || focusedIndex !== null || pinnedIndex !== null;
+  const safeIndex =
+    featured.length > 0 ? Math.min(activeIndex, featured.length - 1) : 0;
+  const activeRelease = featured[safeIndex] ?? releases[0];
+  const isUserInteracting = isHovered || isFocusInside;
+  const shouldAutoCycle =
+    !reducedMotion && !isUserInteracting && featured.length > 1;
 
   useEffect(() => {
-    if (
-      count <= 1 ||
-      reducedMotion ||
-      !stageActivity.isActive ||
-      isUserControlled
-    ) {
+    if (!shouldAutoCycle) {
       return;
     }
 
-    const timerId = window.setInterval(() => {
-      setAutoIndex((prev) => (prev + 1) % count);
-    }, AUTO_CYCLE_INTERVAL_MS);
+    const timer = window.setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % featured.length);
+    }, IDLE_CYCLE_MS);
 
-    return () => window.clearInterval(timerId);
-  }, [count, reducedMotion, stageActivity.isActive, isUserControlled]);
-
-  const rawIndex =
-    hoveredIndex ?? focusedIndex ?? pinnedIndex ?? autoIndex;
-  const activeIndex = count > 0 ? Math.min(rawIndex, count - 1) : 0;
-  const activeRelease = milestones[activeIndex] ?? releases[0];
-
-  const scene = useMemo(() => {
-    const cam = createCamera(38, 0.56, 1.32);
-    const total = milestones.length;
-    const xSpacing = 54;
-    const yStep = 14;
-    const plateHalfW = 30;
-    const plateHalfD = 62;
-    const startX = -((total - 1) * xSpacing) / 2;
-    const startY = -((total - 1) * yStep) / 2;
-
-    const extrema: Point3[] = [
-      [startX - plateHalfW - 8, startY - plateHalfD - 10, 0],
-      [
-        startX + (total - 1) * xSpacing + plateHalfW + 8,
-        startY + (total - 1) * yStep + plateHalfD + 44,
-        36,
-      ],
-    ];
-    fitCamera(cam, extrema, DECK_WIDTH / 2 + 8, DECK_HEIGHT / 2 + 8);
-
-    const P = projectCamera(cam);
-    const front = createFacingPredicate(cam);
-
-    const spineOffsetY = 92;
-    const plates: ProjectedEditionPlate[] = milestones.map((release, i) => {
-      const cx = startX + i * xSpacing;
-      const cy = startY + i * yStep;
-      const z0 = (total - 1 - i) * 1.4;
-      const z1 = z0 + 13 + (release.status === 'unreleased' ? 2 : 0);
-
-      const geometry = createIsoPlateGeometry({
-        camera: cam,
-        project: P,
-        front,
-        x0: cx - plateHalfW,
-        y0: cy - plateHalfD,
-        x1: cx + plateHalfW,
-        y1: cy + plateHalfD,
-        z0,
-        z1,
-        radius: 6,
-        creaseInset: 2.2,
-        steps: 6,
-      });
-
-      const spinePtWorld: Point3 = [cx, startY + spineOffsetY, 0];
-      const plateFrontEdge: Point3 = [cx, cy + plateHalfD, z0 + 1];
-
-      const tierPipCenters: Point2[] = [];
-      const pipCount = release.isBreaking ? 3 : 2;
-      for (let p = 0; p < pipCount; p++) {
-        tierPipCenters.push(P(cx - 10 + p * 10, cy + 36, z1));
-      }
-
-      return {
-        index: i,
-        release,
-        geometry,
-        spineNodePoint: P(spinePtWorld[0], spinePtWorld[1], spinePtWorld[2]),
-        spineTickPath: seg(
-          P(plateFrontEdge[0], plateFrontEdge[1], plateFrontEdge[2]),
-          P(spinePtWorld[0], spinePtWorld[1], spinePtWorld[2]),
-        ),
-        accentBarPath: seg(
-          P(cx - 14, cy - 30, z1),
-          P(cx + 14, cy - 30, z1),
-        ),
-        tierPipCenters,
-      };
-    });
-
-    const sortedPlates = [...plates].sort(
-      (a, b) => a.geometry.depthKey - b.geometry.depthKey,
-    );
-
-    const spinePoints: Point2[] = plates.map((plate) => plate.spineNodePoint);
-    const datumLine = seg(
-      P(startX - 48, startY - plateHalfD - 14, 0),
-      P(
-        startX + (total - 1) * xSpacing + 48,
-        startY + (total - 1) * yStep - plateHalfD - 14,
-        0,
-      ),
-    );
-
-    return {
-      plates,
-      sortedPlates,
-      spinePoints,
-      datumLine,
+    return () => {
+      window.clearInterval(timer);
     };
-  }, [milestones]);
+  }, [shouldAutoCycle, featured.length]);
 
   if (!activeRelease) {
     return null;
   }
 
-  const spineProgress =
-    count > 1 ? activeIndex / (count - 1) : 1;
+  const selectAndFocus = (nextIndex: number) => {
+    const normalized =
+      ((nextIndex % featured.length) + featured.length) % featured.length;
+    setActiveIndex(normalized);
+    tabRefs.current[normalized]?.focus();
+  };
 
-  function selectTab(index: number, moveFocus: boolean) {
-    if (count === 0) return;
-    const wrapped = (index + count) % count;
-    setPinnedIndex(wrapped);
-    setRovingIndex(wrapped);
-    if (moveFocus) {
-      setFocusedIndex(wrapped);
-      tabRefs.current[wrapped]?.focus();
-    }
-  }
-
-  function handleTabKeyDown(
+  const handleTabKeyDown = (
     event: KeyboardEvent<HTMLButtonElement>,
     index: number,
-  ) {
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-      event.preventDefault();
-      selectTab(index + 1, true);
-    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      selectTab(index - 1, true);
-    } else if (event.key === 'Home') {
-      event.preventDefault();
-      selectTab(0, true);
-    } else if (event.key === 'End') {
-      event.preventDefault();
-      selectTab(count - 1, true);
-    } else if (event.key === 'Escape') {
-      event.preventDefault();
-      setPinnedIndex(null);
-      setHoveredIndex(null);
-      setFocusedIndex(null);
+  ) => {
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        event.preventDefault();
+        selectAndFocus(index + 1);
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        event.preventDefault();
+        selectAndFocus(index - 1);
+        break;
+      case "Home":
+        event.preventDefault();
+        selectAndFocus(0);
+        break;
+      case "End":
+        event.preventDefault();
+        selectAndFocus(featured.length - 1);
+        break;
+      default:
+        break;
     }
-  }
+  };
 
-  function handleSvgKeyDown(
-    event: KeyboardEvent<SVGGElement>,
-    index: number,
-  ) {
-    if (event.key === 'ArrowRight') {
-      event.preventDefault();
-      selectTab(index + 1, false);
-    } else if (event.key === 'ArrowLeft') {
-      event.preventDefault();
-      selectTab(index - 1, false);
-    } else if (event.key === 'Home') {
-      event.preventDefault();
-      selectTab(0, false);
-    } else if (event.key === 'End') {
-      event.preventDefault();
-      selectTab(count - 1, false);
-    } else if (event.key === 'Escape') {
-      event.preventDefault();
-      setPinnedIndex(null);
-      setHoveredIndex(null);
-      setFocusedIndex(null);
+  const handleStageBlur = (event: FocusEvent<HTMLDivElement>) => {
+    const nextFocused = event.relatedTarget as Node | null;
+    if (!event.currentTarget.contains(nextFocused)) {
+      setIsFocusInside(false);
     }
-  }
+  };
 
-  function handleJumpToRelease() {
-    const targetId = activeRelease.anchorId;
-    if (onSelectVersion) {
-      onSelectVersion(targetId);
+  const handleJump = () => {
+    if (onJumpToRelease) {
+      onJumpToRelease(activeRelease.anchorId);
       return;
     }
-
-    const focusEvent = new CustomEvent<{ anchorId: string }>(
-      CHANGELOG_FOCUS_EVENT,
-      {
-        detail: { anchorId: targetId },
-        cancelable: true,
-      },
-    );
-    const unhandled = window.dispatchEvent(focusEvent);
-    if (window.location.hash !== `#${targetId}`) {
-      window.history.replaceState(null, '', `#${targetId}`);
-    }
-    if (unhandled) {
-      const targetEl =
-        document.getElementById(targetId) ??
-        document.getElementById('releases');
-      targetEl?.scrollIntoView({
-        behavior: reducedMotion ? 'auto' : 'smooth',
-        block: 'start',
+    if (typeof window !== "undefined") {
+      window.history.replaceState(null, "", `#${activeRelease.anchorId}`);
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+      document.getElementById("releases")?.scrollIntoView({
+        behavior: reducedMotion ? "auto" : "smooth",
+        block: "start",
       });
     }
-  }
+  };
+
+  const provenanceStamp =
+    activeRelease.releaseDate &&
+    !activeRelease.statusLabel.includes(activeRelease.releaseDate)
+      ? `${activeRelease.statusLabel} · ${activeRelease.releaseDate}`
+      : activeRelease.statusLabel;
 
   return (
     <div
-      ref={stageRef}
-      className={className ? `${styles.deckRoot} ${className}` : styles.deckRoot}
-      onMouseLeave={() => setHoveredIndex(null)}
-      aria-label="AstraFlow release edition provenance deck"
+      className={styles.deckRoot}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocusCapture={() => setIsFocusInside(true)}
+      onBlurCapture={handleStageBlur}
     >
-      <div className={styles.topBar}>
-        <span>
-          THE EDITIONS / {stats ? `${stats.totalReleases} RECORDED` : 'EDITION DECK'}
-        </span>
-        <span className={styles.modePill}>
-          <span className={styles.modeDot} aria-hidden="true" />
-          <span>
-            {isUserControlled
-              ? `PINNED · v${activeRelease.version}`
-              : `AUTO-PULSE · v${activeRelease.version}`}
-          </span>
-        </span>
-      </div>
-
-      <div className={styles.canvasFrame}>
-        <svg
-          className={styles.canvasSvg}
-          viewBox={`0 0 ${DECK_WIDTH} ${DECK_HEIGHT}`}
-          role="group"
-          aria-label="Interactive isometric stack of six key AstraFlow release provenance plates"
-        >
-          {/* Background architectural datum & spine ticks (Rule 06 occluded behind prisms) */}
-          <path
-            d={scene.datumLine}
-            fill="none"
-            stroke={WARM_FOREST_PALETTE.border}
-            strokeWidth={1}
-            strokeDasharray="4 6"
-            aria-hidden="true"
-          />
-
-          {scene.plates.map((plate) => {
-            const isActive = plate.index === activeIndex;
-            return (
-              <path
-                key={`tick-${plate.release.version}`}
-                d={plate.spineTickPath}
-                fill="none"
-                stroke={
-                  isActive
-                    ? WARM_FOREST_PALETTE.signal
-                    : WARM_FOREST_PALETTE.border
-                }
-                strokeWidth={isActive ? 1.6 : 1}
-                strokeDasharray="2 3"
-                aria-hidden="true"
-              />
-            );
-          })}
-
-          {scene.spinePoints.length >= 2 ? (
-            <IsoSignalConduit
-              points={scene.spinePoints}
-              cornerRadius={4}
-              active
-              progress={spineProgress}
-              viewportActive={stageActivity.isActive}
-              surface="ivory"
-              baseColor={WARM_FOREST_PALETTE.muted}
-              baseStrokeWidth={1.3}
-              activeStrokeWidth={2.2}
-              pulseDurationMs={2400}
-              pulseRadius={3}
-              showTerminals
-              ariaLabel={`Release provenance conduit aligned at v${activeRelease.version}`}
-            />
-          ) : null}
-
-          {scene.sortedPlates.map((plate) => {
-            const isSelected = plate.index === activeIndex;
-            const isHovered = hoveredIndex === plate.index;
-            const liftPx = isSelected ? 15 : isHovered ? 7 : 0;
-            const variant = getPlateVariant(plate.release.status);
-            const isDark = variant === 'forest' || variant === 'dark-forest';
-            const barStroke = isSelected
-              ? WARM_FOREST_PALETTE.signal
-              : isDark
-                ? WARM_FOREST_PALETTE.peach
-                : WARM_FOREST_PALETTE.inkSecondary;
-
-            return (
-              <IsoPrism
-                key={plate.release.version}
-                geometry={plate.geometry}
-                variant={variant}
-                selected={isSelected}
-                active={isHovered}
-                liftPx={liftPx}
-                delayMs={staggerDelayMs(plate.index, activeIndex, 45)}
-                showDropGuides={isSelected || isHovered}
-                role="button"
-                ariaPressed={isSelected}
-                label={`Select edition v${plate.release.version}: ${plate.release.statusLabel}`}
-                onSelect={() => selectTab(plate.index, false)}
-                onHoverChange={(hovering) =>
-                  setHoveredIndex(hovering ? plate.index : null)
-                }
-                onFocusChange={(focused) =>
-                  setFocusedIndex(focused ? plate.index : null)
-                }
-                onKeyDown={(event) => handleSvgKeyDown(event, plate.index)}
-                dataTestId={`version-deck-plate-${plate.release.version}`}
-              >
-                <path
-                  d={plate.accentBarPath}
-                  fill="none"
-                  stroke={barStroke}
-                  strokeWidth={1.8}
-                  strokeLinecap="round"
-                  pointerEvents="none"
-                />
-                {plate.tierPipCenters.map(([px, py], pipIndex) => (
-                  <circle
-                    key={`pip-${plate.release.version}-${pipIndex}`}
-                    cx={r2(px)}
-                    cy={r2(py)}
-                    r={isSelected ? 2.4 : 1.7}
-                    fill={
-                      isSelected
-                        ? WARM_FOREST_PALETTE.signal
-                        : isDark
-                          ? WARM_FOREST_PALETTE.peach
-                          : WARM_FOREST_PALETTE.inkSecondary
-                    }
-                    pointerEvents="none"
-                  />
-                ))}
-              </IsoPrism>
-            );
-          })}
-        </svg>
-      </div>
-
-      <div
-        className={styles.tablist}
-        role="tablist"
-        aria-label="Key AstraFlow release provenance milestones"
-      >
-        {milestones.map((release, index) => {
-          const selected = activeIndex === index;
-          return (
-            <button
-              key={release.version}
-              ref={(el) => {
-                tabRefs.current[index] = el;
-              }}
-              type="button"
-              role="tab"
-              aria-selected={selected}
-              tabIndex={rovingIndex === index ? 0 : -1}
-              className={styles.tabBtn}
-              onClick={() => selectTab(index, true)}
-              onMouseEnter={() => setHoveredIndex(index)}
-              onFocus={() => {
-                setFocusedIndex(index);
-                setRovingIndex(index);
-              }}
-              onBlur={() =>
-                setFocusedIndex((curr) => (curr === index ? null : curr))
-              }
-              onKeyDown={(event) => handleTabKeyDown(event, index)}
-            >
-              <span className={styles.tabHead}>
-                <span className={styles.tabDot} aria-hidden="true" />
-                <span className={styles.tabVersion}>v{release.version}</span>
-              </span>
-              <span className={styles.tabTag}>
-                {getShortTag(release.status)}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className={styles.readoutCard} aria-live="polite">
-        <div className={styles.readoutMeta}>
-          <div className={styles.readoutLeft}>
-            <span className={styles.versionPill}>v{activeRelease.version}</span>
-            <span
-              className={`${styles.statusBadge} ${getStatusClass(
-                activeRelease.status,
-              )}`}
-            >
-              {activeRelease.statusLabel}
-            </span>
-          </div>
-          <span className={styles.dateMeta}>
-            {activeRelease.releaseDate
-              ? `Published ${activeRelease.releaseDate}`
-              : activeRelease.isUnreleased
-                ? 'Active source branch'
-                : 'Recorded in CHANGELOG.md'}
+      <div className={styles.editionStage}>
+        <div className={styles.stageTop}>
+          <p className={styles.stageKicker}>THE EDITIONS / SELECT TO INSPECT</p>
+          <span className={styles.stageStatus}>
+            <span className={styles.stagePulse} aria-hidden="true" />
+            {isUserInteracting
+              ? `INSPECTING · v${activeRelease.version}`
+              : "ARCHIVE IS CONTINUOUS"}
           </span>
         </div>
 
-        <p className={styles.readoutHeadline}>{activeRelease.headline}</p>
+        <svg
+          className={styles.stageField}
+          viewBox="0 0 640 390"
+          preserveAspectRatio="xMidYMid slice"
+          fill="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <pattern
+              id="changelog-stage-grid"
+              width="42"
+              height="42"
+              patternUnits="userSpaceOnUse"
+            >
+              <path
+                d="M 42 0 L 0 0 0 42"
+                fill="none"
+                stroke="rgba(8, 44, 38, 0.055)"
+                strokeWidth="1"
+              />
+            </pattern>
+          </defs>
 
-        <div className={styles.readoutFooter}>
-          <div className={styles.tagRow}>
-            {activeRelease.highlightTags.slice(0, 3).map((tag) => (
-              <span key={tag} className={styles.microTag}>
-                {tag}
-              </span>
-            ))}
+          <rect
+            x="0"
+            y="0"
+            width="640"
+            height="390"
+            fill="url(#changelog-stage-grid)"
+          />
+          <circle
+            cx="320"
+            cy="194"
+            r="154"
+            stroke="rgba(8, 44, 38, 0.1)"
+            strokeWidth="1"
+            strokeDasharray="3 5"
+          />
+          <circle
+            cx="320"
+            cy="194"
+            r="112"
+            stroke="rgba(8, 44, 38, 0.06)"
+            strokeWidth="1"
+          />
+
+          <path
+            d="M20 325 C150 278 253 350 320 236 S485 120 610 89"
+            stroke="rgba(242, 94, 59, 0.2)"
+            strokeWidth="4"
+            strokeLinecap="round"
+          />
+          <path
+            d="M20 325 C150 278 253 350 320 236 S485 120 610 89"
+            stroke="#f25e3b"
+            strokeWidth="1.65"
+            strokeLinecap="round"
+            className={styles.conduitFlow}
+          />
+          <circle cx="20" cy="325" r="3.5" fill="#f25e3b" />
+          <circle cx="610" cy="89" r="3.5" fill="#0a342b" />
+        </svg>
+
+        <div className={styles.stageDeck}>
+          <div className={styles.paperBack} aria-hidden="true">
+            <span className={styles.paperBackStamp}>ASTRAFLOW / THE ARCHIVE</span>
+            <span className={styles.paperBackRule} />
           </div>
 
-          <button
-            type="button"
-            className={styles.jumpBtn}
-            onClick={handleJumpToRelease}
+          <div className={styles.paperMiddle} aria-hidden="true">
+            <span className={styles.paperMiddleStamp}>ENGINEERED CLARITY</span>
+          </div>
+
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={activeRelease.version}
+              id={`edition-panel-${activeRelease.version}`}
+              role="tabpanel"
+              aria-labelledby={`edition-tab-${activeRelease.version}`}
+              className={`${styles.paperActive} ${
+                activeRelease.isUnreleased
+                  ? styles.paperActiveUnreleased
+                  : styles.paperActivePublished
+              }`}
+              initial={
+                reducedMotion
+                  ? { opacity: 0, rotate: -3 }
+                  : { opacity: 0, y: 18, rotate: -6, scale: 0.96 }
+              }
+              animate={{ opacity: 1, y: 0, rotate: -3, scale: 1 }}
+              exit={
+                reducedMotion
+                  ? { opacity: 0, rotate: -3 }
+                  : { opacity: 0, y: -14, rotate: 0, scale: 0.96 }
+              }
+              transition={{
+                duration: reducedMotion ? 0.08 : 0.34,
+                ease: [0.22, 0.75, 0.19, 1],
+              }}
+            >
+              <div className={styles.sheetHeader}>
+                <span className={styles.sheetPill}>{provenanceStamp}</span>
+                <span className={styles.sheetIndex}>
+                  {String(safeIndex + 1).padStart(2, "0")} /{" "}
+                  {String(featured.length).padStart(2, "0")}
+                </span>
+              </div>
+
+              <p className={styles.sheetVersion}>v{activeRelease.version}</p>
+
+              <div className={styles.sheetFooter}>
+                <div className={styles.sheetCopy}>
+                  <p className={styles.sheetHeadline}>{activeRelease.headline}</p>
+                  <p className={styles.sheetMeta}>
+                    {activeRelease.itemCount} recorded entries ·{" "}
+                    {activeRelease.isBreaking
+                      ? "Includes breaking changes"
+                      : "Non-breaking release"}
+                  </p>
+                </div>
+                <ArchivalSeal isUnreleased={activeRelease.isUnreleased} />
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className={styles.stageControl}>
+          <div
+            className={styles.tablist}
+            role="tablist"
+            aria-label="Key AstraFlow release provenance milestones"
           >
-            Jump to v{activeRelease.version} notes ↓
-          </button>
+            {featured.map((release, index) => {
+              const isSelected = index === safeIndex;
+              const activeClass = release.isUnreleased
+                ? styles.tabButtonUnreleasedActive
+                : styles.tabButtonActive;
+
+              return (
+                <button
+                  key={release.version}
+                  ref={(node) => {
+                    tabRefs.current[index] = node;
+                  }}
+                  id={`edition-tab-${release.version}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={isSelected}
+                  aria-controls={`edition-panel-${release.version}`}
+                  tabIndex={isSelected ? 0 : -1}
+                  className={`${styles.tabButton} ${
+                    isSelected ? activeClass : ""
+                  }`}
+                  onClick={() => setActiveIndex(index)}
+                  onKeyDown={(event) => handleTabKeyDown(event, index)}
+                >
+                  v{release.version}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className={styles.controlFooter}>
+            <p className={styles.controlSummary}>
+              {activeRelease.provenanceNote} ({stats.totalReleases} source
+              entries verified).
+            </p>
+            <button
+              type="button"
+              className={styles.jumpButton}
+              onClick={handleJump}
+            >
+              Jump to v{activeRelease.version} notes ↘
+            </button>
+          </div>
         </div>
       </div>
     </div>

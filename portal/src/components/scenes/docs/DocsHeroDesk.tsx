@@ -8,29 +8,16 @@ import {
   useState,
   type KeyboardEvent,
 } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import type { DocCategory, DocSummary } from '@/lib/docs';
-import {
-  createCamera,
-  createFacingPredicate,
-  createIsoPlateGeometry,
-  fitCamera,
-  IsoPrism,
-  IsoSignalConduit,
-  projectCamera,
-  r2,
-  seg,
-  staggerDelayMs,
-  useReducedMotionSafe,
-  useViewportActivity,
-  type Point3,
-} from '@/components/hairline';
+import { useReducedMotionSafe, useViewportActivity } from '@/components/hairline';
 import styles from './DocsHeroDesk.module.css';
 
 export interface DocsHeroDeskProps {
   docs?: DocSummary[];
 }
 
-interface CodexVolumeSpec {
+interface FolioVolumeSpec {
   id: string;
   num: string;
   shortTag: string;
@@ -38,16 +25,13 @@ interface CodexVolumeSpec {
   category: DocCategory;
   flagshipSlug: string;
   flagshipTitle: string;
-  apiPill: string;
+  apiBadge: string;
   summary: string;
   defaultMinutes: number;
-  cx: number;
-  cy: number;
-  zTop: number;
-  calloutShelf: 'top' | 'bottom';
+  sheetTone: 'ivory' | 'forest' | 'sand' | 'terracotta' | 'linen';
 }
 
-const CODEX_VOLUMES: readonly CodexVolumeSpec[] = [
+const FOLIO_VOLUMES: readonly FolioVolumeSpec[] = [
   {
     id: 'getting-started',
     num: '01',
@@ -56,13 +40,10 @@ const CODEX_VOLUMES: readonly CodexVolumeSpec[] = [
     category: 'Getting Started',
     flagshipSlug: 'getting-started',
     flagshipTitle: 'Getting Started with AstraFlow',
-    apiPill: 'IRequest<TResponse>',
-    summary: 'Package topology, DI registration, and your first end-to-end request.',
+    apiBadge: 'IRequest<T>',
+    summary: 'Package selection, DI registration, and your first compiled request flow.',
     defaultMinutes: 4,
-    cx: -96,
-    cy: 56,
-    zTop: 24,
-    calloutShelf: 'bottom',
+    sheetTone: 'ivory',
   },
   {
     id: 'core-mapping',
@@ -72,13 +53,10 @@ const CODEX_VOLUMES: readonly CodexVolumeSpec[] = [
     category: 'Core & Mapping',
     flagshipSlug: 'mapper',
     flagshipTitle: 'Explicit Object Mapping',
-    apiPill: 'IDeclaredObjectMappingRule',
-    summary: 'Mediator dispatch, pipeline behaviors, conventions, and explicit maps.',
+    apiBadge: 'IMapper',
+    summary: 'Source-generated dispatch, pipeline behaviors, and declared mapping rules.',
     defaultMinutes: 5,
-    cx: -48,
-    cy: 28,
-    zTop: 29,
-    calloutShelf: 'top',
+    sheetTone: 'forest',
   },
   {
     id: 'integrations',
@@ -88,60 +66,153 @@ const CODEX_VOLUMES: readonly CodexVolumeSpec[] = [
     category: 'Integrations',
     flagshipSlug: 'entity-framework-core',
     flagshipTitle: 'Entity Framework Core Projections',
-    apiPill: 'ProjectTo<TDto>()',
-    summary: 'ASP.NET Core ProblemDetails, EF Core SQL translation, and validation.',
+    apiBadge: 'MapAstraFlow',
+    summary: 'ASP.NET Core ProblemDetails, EF Core projections, and validation adapters.',
     defaultMinutes: 4,
-    cx: 0,
-    cy: 0,
-    zTop: 34,
-    calloutShelf: 'bottom',
+    sheetTone: 'sand',
   },
   {
-    id: 'diagnostics-cli',
+    id: 'diagnostics-testing',
     num: '04',
     shortTag: 'DIAGNOSE',
-    shelfTitle: 'Diagnostics & CLI',
+    shelfTitle: 'Diagnostics & Testing',
     category: 'Diagnostics, Tooling & Testing',
     flagshipSlug: 'diagnostics',
     flagshipTitle: 'Diagnostics & Inspection',
-    apiPill: 'IAstraFlowDiagnosticsReporter',
-    summary: 'Build-time Roslyn analyzers, generators, OpenTelemetry, CLI, and tests.',
+    apiBadge: 'AstraFlowTestHost',
+    summary: 'Build-time Roslyn analyzers, trace telemetry, CLI checks, and test hosts.',
     defaultMinutes: 5,
-    cx: 48,
-    cy: -28,
-    zTop: 39,
-    calloutShelf: 'top',
+    sheetTone: 'terracotta',
   },
   {
-    id: 'operations-adrs',
+    id: 'reference-adrs',
     num: '05',
     shortTag: 'ADRS & OPS',
-    shelfTitle: 'Operations & ADRs',
+    shelfTitle: 'Reference & ADRs',
     category: 'Architecture Decisions (ADRs)',
     flagshipSlug: 'adr/0001-generated-mapper',
-    flagshipTitle: 'ADR-0001: Generated Mapper',
-    apiPill: 'ADR-0001',
-    summary: 'Accepted ADRs, supply-chain security, benchmarks, and migration guides.',
-    defaultMinutes: 4,
-    cx: 96,
-    cy: -56,
-    zTop: 44,
-    calloutShelf: 'bottom',
+    flagshipTitle: 'ADR 0001: Source-Generated Mapper',
+    apiBadge: 'ADR-0001..03',
+    summary: 'Compatibility baselines, release governance, and locked design records.',
+    defaultMinutes: 5,
+    sheetTone: 'linen',
   },
-] as const;
+];
 
-const CYCLE_INTERVAL_MS = 3400;
+function FolioHairlineDiagram({
+  volumeId,
+  tone,
+}: {
+  volumeId: string;
+  tone: FolioVolumeSpec['sheetTone'];
+}) {
+  const isDarkSheet = tone === 'forest' || tone === 'terracotta';
+  const strokeMain = isDarkSheet ? 'rgba(255, 250, 242, 0.85)' : 'rgba(8, 44, 38, 0.78)';
+  const strokeSub = isDarkSheet ? 'rgba(255, 210, 189, 0.55)' : 'rgba(47, 91, 78, 0.45)';
+  const accent = isDarkSheet ? '#ffd2bd' : '#f25e3b';
+
+  if (volumeId === 'getting-started') {
+    return (
+      <svg aria-hidden="true" className={styles.sheetDiagram} viewBox="0 0 140 54">
+        <polygon
+          fill="none"
+          points="14,34 40,22 66,34 40,46"
+          stroke={strokeMain}
+          strokeWidth="1.25"
+        />
+        <polygon
+          fill="none"
+          points="74,20 100,8 126,20 100,32"
+          stroke={strokeMain}
+          strokeWidth="1.25"
+        />
+        <path
+          d="M 52 29 C 64 21, 72 21, 86 20"
+          fill="none"
+          stroke={accent}
+          strokeDasharray="3 2.5"
+          strokeWidth="1.6"
+        />
+        <circle cx="88" cy="20" fill={accent} r="2.6" />
+        <line stroke={strokeSub} strokeWidth="1" x1="14" x2="40" y1="49" y2="49" />
+      </svg>
+    );
+  }
+
+  if (volumeId === 'core-mapping') {
+    return (
+      <svg aria-hidden="true" className={styles.sheetDiagram} viewBox="0 0 140 54">
+        <polygon
+          fill="none"
+          points="18,18 46,6 74,18 46,30"
+          stroke={strokeMain}
+          strokeWidth="1.25"
+        />
+        <polygon
+          fill="none"
+          points="64,34 94,20 124,34 94,48"
+          stroke={strokeMain}
+          strokeWidth="1.25"
+        />
+        <path d="M 46 30 L 94 20" fill="none" stroke={accent} strokeWidth="1.6" />
+        <line stroke={strokeSub} strokeWidth="1" x1="18" x2="18" y1="18" y2="30" />
+        <line stroke={strokeSub} strokeWidth="1" x1="74" x2="74" y1="18" y2="30" />
+      </svg>
+    );
+  }
+
+  if (volumeId === 'integrations') {
+    return (
+      <svg aria-hidden="true" className={styles.sheetDiagram} viewBox="0 0 140 54">
+        <rect fill="none" height="22" rx="2.5" stroke={strokeMain} strokeWidth="1.25" width="32" x="12" y="16" />
+        <rect fill="none" height="28" rx="2.5" stroke={strokeMain} strokeWidth="1.25" width="32" x="54" y="13" />
+        <rect fill="none" height="22" rx="2.5" stroke={strokeMain} strokeWidth="1.25" width="32" x="96" y="16" />
+        <path d="M 44 27 L 54 27 M 86 27 L 96 27" stroke={accent} strokeWidth="1.8" />
+        <circle cx="70" cy="27" fill={accent} r="2.8" />
+      </svg>
+    );
+  }
+
+  if (volumeId === 'diagnostics-testing') {
+    return (
+      <svg aria-hidden="true" className={styles.sheetDiagram} viewBox="0 0 140 54">
+        <polyline
+          fill="none"
+          points="10,36 32,36 44,14 58,42 74,22 90,34 128,34"
+          stroke={accent}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.7"
+        />
+        <line stroke={strokeSub} strokeDasharray="3 3" strokeWidth="1" x1="10" x2="130" y1="45" y2="45" />
+        <circle cx="114" cy="18" fill="none" r="8" stroke={strokeMain} strokeWidth="1.2" />
+        <circle cx="114" cy="18" fill={accent} r="2.4" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" className={styles.sheetDiagram} viewBox="0 0 140 54">
+      <polygon fill="none" points="22,40 56,28 90,40 56,51" stroke={strokeSub} strokeWidth="1.15" />
+      <polygon fill="none" points="32,29 66,17 100,29 66,40" stroke={strokeMain} strokeWidth="1.2" />
+      <polygon fill="none" points="44,18 78,6 112,18 78,29" stroke={accent} strokeWidth="1.45" />
+      <circle cx="78" cy="18" fill={accent} r="2.3" />
+    </svg>
+  );
+}
 
 export function DocsHeroDesk({ docs = [] }: DocsHeroDeskProps) {
-  const stageRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const isInViewport = useViewportActivity(rootRef);
   const reducedMotion = useReducedMotionSafe();
-  const { isActive: viewportActive } = useViewportActivity(stageRef);
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovering, setIsHovering] = useState(false);
+  const [hasFocusWithin, setHasFocusWithin] = useState(false);
   const [userLocked, setUserLocked] = useState(false);
-  const [pointerInside, setPointerInside] = useState(false);
 
-  const docsBySlug = useMemo(() => {
+  const docBySlug = useMemo(() => {
     const map = new Map<string, DocSummary>();
     for (const doc of docs) {
       map.set(doc.slugPath, doc);
@@ -149,7 +220,7 @@ export function DocsHeroDesk({ docs = [] }: DocsHeroDeskProps) {
     return map;
   }, [docs]);
 
-  const countByCategory = useMemo(() => {
+  const categoryCounts = useMemo(() => {
     const counts = new Map<DocCategory, number>();
     for (const doc of docs) {
       counts.set(doc.category, (counts.get(doc.category) ?? 0) + 1);
@@ -157,394 +228,277 @@ export function DocsHeroDesk({ docs = [] }: DocsHeroDeskProps) {
     return counts;
   }, [docs]);
 
+  const autoSweepActive =
+    !reducedMotion && isInViewport && !isHovering && !hasFocusWithin && !userLocked;
+
   useEffect(() => {
-    if (reducedMotion || !viewportActive || userLocked || pointerInside) {
+    if (!autoSweepActive) {
       return;
     }
+
     const timer = window.setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % CODEX_VOLUMES.length);
-    }, CYCLE_INTERVAL_MS);
+      setActiveIndex((prev) => (prev + 1) % FOLIO_VOLUMES.length);
+    }, 4200);
+
     return () => window.clearInterval(timer);
-  }, [pointerInside, reducedMotion, userLocked, viewportActive]);
+  }, [autoSweepActive]);
 
-  const geometryScene = useMemo(() => {
-    const rawCam = createCamera(45, 0.5, 1.24);
-    const extremePoints: Point3[] = [
-      [-152, -106, 0],
-      [152, -106, 0],
-      [152, 106, 0],
-      [-152, 106, 0],
-      [-152, -106, 56],
-      [152, -106, 56],
-      [152, 106, 56],
-      [-152, 106, 56],
-    ];
-    const camera = fitCamera(rawCam, extremePoints, 320, 190);
-    const project = projectCamera(camera);
-    const front = createFacingPredicate(camera);
-
-    const chassis = createIsoPlateGeometry({
-      x0: -146,
-      y0: -100,
-      x1: 146,
-      y1: 100,
-      z0: 0,
-      z1: 9,
-      radius: 8,
-      creaseInset: 2.8,
-      camera,
-      project,
-      front,
-    });
-
-    const floorGridLines: string[] = [];
-    for (let x = -120; x <= 120; x += 48) {
-      floorGridLines.push(seg(project(x, -92, 9.05), project(x, 92, 9.05)));
-    }
-    for (let y = -80; y <= 80; y += 40) {
-      floorGridLines.push(seg(project(-136, y, 9.05), project(136, y, 9.05)));
-    }
-
-    const busWaypoints: Point3[] = CODEX_VOLUMES.map((vol) => [
-      vol.cx,
-      vol.cy + 34,
-      9.3,
-    ]);
-
-    const volumes = CODEX_VOLUMES.map((vol) => {
-      const geo = createIsoPlateGeometry({
-        x0: vol.cx - 20,
-        y0: vol.cy - 26,
-        x1: vol.cx + 20,
-        y1: vol.cy + 26,
-        z0: 9,
-        z1: vol.zTop,
-        radius: 3.5,
-        creaseInset: 1.5,
-        camera,
-        project,
-        front,
-      });
-
-      const spineCap = createIsoPlateGeometry({
-        x0: vol.cx - 15,
-        y0: vol.cy - 22,
-        x1: vol.cx + 15,
-        y1: vol.cy - 12,
-        z0: vol.zTop,
-        z1: vol.zTop + 4,
-        radius: 1.5,
-        creaseInset: 0.7,
-        camera,
-        project,
-        front,
-      });
-
-      const tapPath = seg(
-        project(vol.cx, vol.cy + 34, 9.3),
-        project(vol.cx, vol.cy + 26, 9.3),
-      );
-
-      const capCenter = project(vol.cx, vol.cy + 4, vol.zTop);
-      const leaderOrigin =
-        vol.calloutShelf === 'top'
-          ? project(vol.cx, vol.cy - 18, vol.zTop + 4)
-          : project(vol.cx, vol.cy + 34, 9.3);
-      const labelX = capCenter[0];
-      const labelY = vol.calloutShelf === 'top' ? 26 : 344;
-      const leaderPath =
-        vol.calloutShelf === 'top'
-          ? `M${r2(leaderOrigin[0])} ${r2(leaderOrigin[1] - 4)} L${r2(labelX)} ${r2(labelY + 14)}`
-          : `M${r2(leaderOrigin[0])} ${r2(leaderOrigin[1] + 4)} L${r2(labelX)} ${r2(labelY - 14)}`;
-
-      return {
-        spec: vol,
-        geo,
-        spineCap,
-        tapPath,
-        capCenter,
-        labelX,
-        labelY,
-        leaderPath,
-      };
-    });
-
-    return {
-      camera,
-      project,
-      chassis,
-      floorGridPath: floorGridLines.join(' '),
-      busWaypoints,
-      volumes,
-    };
-  }, []);
-
-  const activeVolume = CODEX_VOLUMES[activeIndex] ?? CODEX_VOLUMES[0];
-  const flagshipDoc = docsBySlug.get(activeVolume.flagshipSlug);
-  const categoryCount =
-    activeVolume.id === 'operations-adrs'
-      ? (countByCategory.get('Reference & Operations') ?? 0) +
-        (countByCategory.get('Architecture Decisions (ADRs)') ?? 0)
-      : (countByCategory.get(activeVolume.category) ?? 0);
-
-  const selectVolume = (idx: number, lock = false) => {
-    setActiveIndex(idx);
-    if (lock) {
+  const selectVolume = (index: number, lockIdleSweep: boolean) => {
+    const safeIndex = (index + FOLIO_VOLUMES.length) % FOLIO_VOLUMES.length;
+    setActiveIndex(safeIndex);
+    if (lockIdleSweep) {
       setUserLocked(true);
     }
   };
 
-  const handleVolumeKeyDown = (event: KeyboardEvent<SVGGElement>, index: number) => {
-    let nextIndex: number | null = null;
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let targetIndex: number | null = null;
     if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-      event.preventDefault();
-      nextIndex = (index + 1) % CODEX_VOLUMES.length;
+      targetIndex = (index + 1) % FOLIO_VOLUMES.length;
     } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      nextIndex = (index - 1 + CODEX_VOLUMES.length) % CODEX_VOLUMES.length;
+      targetIndex = (index - 1 + FOLIO_VOLUMES.length) % FOLIO_VOLUMES.length;
     } else if (event.key === 'Home') {
-      event.preventDefault();
-      nextIndex = 0;
+      targetIndex = 0;
     } else if (event.key === 'End') {
-      event.preventDefault();
-      nextIndex = CODEX_VOLUMES.length - 1;
+      targetIndex = FOLIO_VOLUMES.length - 1;
     } else if (event.key === 'Escape') {
       setUserLocked(false);
+      return;
     }
 
-    if (nextIndex !== null) {
-      selectVolume(nextIndex, true);
-      const nextId = CODEX_VOLUMES[nextIndex]?.id;
-      if (nextId) {
-        stageRef.current
-          ?.querySelector<SVGGElement>(`#codex-volume-tab-${nextId}`)
-          ?.focus();
-      }
+    if (targetIndex !== null) {
+      event.preventDefault();
+      selectVolume(targetIndex, true);
+      tabRefs.current[targetIndex]?.focus();
     }
   };
 
-  const activeOrigin = geometryScene.volumes[activeIndex]?.geo.restCenter ?? [320, 190];
-  const conduitProgress = 0.08 + (activeIndex / (CODEX_VOLUMES.length - 1)) * 0.92;
+  const activeVolume = FOLIO_VOLUMES[activeIndex];
+  const flagshipDoc = docBySlug.get(activeVolume.flagshipSlug);
+  const categoryCount =
+    activeVolume.id === 'reference-adrs'
+      ? (categoryCounts.get('Reference & Operations') ?? 0) +
+        (categoryCounts.get('Architecture Decisions (ADRs)') ?? 0)
+      : (categoryCounts.get(activeVolume.category) ?? 0);
 
   return (
     <div
-      className={styles.deskCard}
-      onMouseEnter={() => setPointerInside(true)}
-      onMouseLeave={() => setPointerInside(false)}
-      ref={stageRef}
+      className={styles.deskRoot}
+      onBlurCapture={(event) => {
+        const nextFocus = event.relatedTarget as Node | null;
+        if (!event.currentTarget.contains(nextFocus)) {
+          setHasFocusWithin(false);
+        }
+      }}
+      onFocusCapture={() => setHasFocusWithin(true)}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      ref={rootRef}
     >
       <div className={styles.deskHeader}>
         <span className={styles.deskEyebrow}>
-          <span aria-hidden="true" className={styles.deskPulseDot} />
-          OPTICAL CODEX / 5 ARCHITECTURAL VOLUMES
+          THE REFERENCE DESK / EXPLORE BY SUBJECT
         </span>
-        <span
-          className={`${styles.deskStatusBadge} ${
-            userLocked || pointerInside ? styles.deskStatusBadgeActive : ''
-          }`}
-        >
-          {userLocked ? 'PINNED' : pointerInside ? 'INSPECTING' : 'SCANNING'} · FOLIO{' '}
-          {activeVolume.num}
+        <span className={styles.liveStatus}>
+          <span
+            aria-hidden="true"
+            className={`${styles.liveDot} ${
+              autoSweepActive ? styles.liveDotSweep : ''
+            }`}
+          />
+          {userLocked
+            ? 'FOLIO PINNED · ESC TO RESUME'
+            : 'LIVE FOLIO · AUTO-SWEEP'}
         </span>
       </div>
 
-      <div className={styles.stageFrame}>
+      {/* Frameless open architectural folio desk */}
+      <div className={styles.deskStage}>
+        <div aria-hidden="true" className={styles.deskGrid} />
+
+        {/* Subtle concentric compass circles & continuous Signal Orange reader arc */}
         <svg
-          aria-label="Interactive isometric 5-volume AstraFlow documentation codex"
-          className={styles.deskSvg}
-          role="group"
-          viewBox="0 0 640 372"
+          aria-hidden="true"
+          className={styles.deskBackdropSvg}
+          viewBox="0 0 600 370"
         >
-          {/* Base drafted architectural plinth */}
-          <IsoPrism
-            geometry={geometryScene.chassis}
-            interactive={false}
-            strokeWidth={1.1}
-            variant="sand"
-          />
-
-          <path
-            d={geometryScene.floorGridPath}
+          <circle
+            cx="316"
+            cy="185"
             fill="none"
-            stroke="rgba(8, 44, 38, 0.1)"
-            strokeWidth={0.8}
+            r="96"
+            stroke="rgba(8, 44, 38, 0.08)"
+            strokeWidth="1"
           />
-
-          {/* Continuous optical bus + branch taps along desk apron */}
-          <IsoSignalConduit
-            active
-            baseStrokeWidth={1.15}
-            camera={geometryScene.camera}
-            cornerRadius={3}
-            progress={conduitProgress}
-            pulseRadius={2.8}
-            showTerminals
-            surface="ivory"
-            worldPoints={geometryScene.busWaypoints}
+          <circle
+            cx="316"
+            cy="185"
+            fill="none"
+            r="152"
+            stroke="rgba(8, 44, 38, 0.065)"
+            strokeDasharray="4 6"
+            strokeWidth="1"
           />
+          <circle
+            cx="316"
+            cy="185"
+            fill="none"
+            r="208"
+            stroke="rgba(8, 44, 38, 0.05)"
+            strokeWidth="1"
+          />
+          <path
+            d="M 38 296 C 148 250, 232 108, 358 112 S 506 202, 574 84"
+            fill="none"
+            stroke="rgba(242, 94, 59, 0.25)"
+            strokeWidth="1.5"
+          />
+          <path
+            className={
+              reducedMotion ? styles.readerArcStatic : styles.readerArcLive
+            }
+            d="M 38 296 C 148 250, 232 108, 358 112 S 506 202, 574 84"
+            fill="none"
+            stroke="#f25e3b"
+            strokeDasharray="24 14"
+            strokeLinecap="round"
+            strokeWidth="2.1"
+          />
+          <circle cx="574" cy="84" fill="#f25e3b" r="3.4" />
+        </svg>
 
-          {geometryScene.volumes.map((item, index) => {
+        {/* 5 Fanned 3D Perspective Physical Folio Sheets */}
+        <div
+          aria-label="Select codex volume"
+          className={styles.sheetsGroup}
+          role="group"
+        >
+          {FOLIO_VOLUMES.map((vol, index) => {
             const isActive = index === activeIndex;
+            const toneClass =
+              vol.sheetTone === 'forest'
+                ? styles.sheetForest
+                : vol.sheetTone === 'sand'
+                  ? styles.sheetSand
+                  : vol.sheetTone === 'terracotta'
+                    ? styles.sheetTerracotta
+                    : vol.sheetTone === 'linen'
+                      ? styles.sheetLinen
+                      : styles.sheetIvory;
+
             return (
-              <g key={`leader-${item.spec.id}`}>
-                <path
-                  d={item.tapPath}
-                  fill="none"
-                  stroke={isActive ? '#f25e3b' : '#9eb0a5'}
-                  strokeWidth={isActive ? 1.55 : 0.95}
-                />
-                <path
-                  d={item.leaderPath}
-                  fill="none"
-                  stroke={isActive ? '#f25e3b' : '#9eb0a5'}
-                  strokeDasharray={isActive ? undefined : '2 3'}
-                  strokeWidth={isActive ? 1.35 : 0.95}
-                />
-                <circle
-                  cx={r2(item.labelX)}
-                  cy={r2(
-                    item.spec.calloutShelf === 'top'
-                      ? item.labelY + 14
-                      : item.labelY - 14,
-                  )}
-                  fill={isActive ? '#f25e3b' : '#617267'}
-                  r={isActive ? 2.8 : 1.9}
-                />
-                <text
-                  className={`${styles.calloutText} ${
-                    isActive ? styles.calloutTextActive : ''
-                  }`}
-                  dominantBaseline="central"
-                  textAnchor="middle"
-                  x={r2(item.labelX)}
-                  y={r2(item.labelY)}
-                >
-                  {item.spec.num} {item.spec.shortTag}
-                </text>
-              </g>
+              <button
+                aria-pressed={isActive}
+                className={`${styles.folioSheet} ${toneClass} ${
+                  isActive ? styles.folioSheetActive : ''
+                }`}
+                data-testid={`docs-volume-${vol.num}`}
+                key={vol.id}
+                onClick={() => selectVolume(index, true)}
+                onFocus={() => selectVolume(index, false)}
+                onMouseEnter={() => {
+                  if (!userLocked) selectVolume(index, false);
+                }}
+                style={
+                  {
+                    '--sheet-index': index,
+                    '--sheet-z': isActive ? 20 : 6 - index,
+                  } as React.CSSProperties
+                }
+                type="button"
+              >
+                <span className={styles.sheetTop}>
+                  <span className={styles.sheetNum}>
+                    {vol.num} / {vol.shortTag}
+                  </span>
+                  <span className={styles.sheetApi}>{vol.apiBadge}</span>
+                </span>
+
+                <FolioHairlineDiagram tone={vol.sheetTone} volumeId={vol.id} />
+
+                <span className={styles.sheetFoot}>
+                  <strong className={styles.sheetTitle}>{vol.shelfTitle}</strong>
+                  <span aria-hidden="true" className={styles.sheetArrow}>
+                    ↗
+                  </span>
+                </span>
+              </button>
             );
           })}
-
-          {/* Interactive 5-volume codex stair (strictly painter's back-to-front order) */}
-          <g aria-label="Documentation track volumes" role="tablist">
-            {geometryScene.volumes.map((item, index) => {
-              const isActive = index === activeIndex;
-              const dx = item.geo.restCenter[0] - activeOrigin[0];
-              const dy = item.geo.restCenter[1] - activeOrigin[1];
-              const dist = Math.hypot(dx, dy);
-              const delayMs = isActive ? 0 : staggerDelayMs(dist, 240, 0.55);
-
-              return (
-                <IsoPrism
-                  active={isActive}
-                  activeStrokeWidth={1.85}
-                  ariaControls={`codex-lens-${item.spec.id}`}
-                  ariaLabel={`${item.spec.num} ${item.spec.shelfTitle} — ${item.spec.flagshipTitle}`}
-                  ariaSelected={isActive}
-                  className={styles.volumeGroup}
-                  dataTestId={`docs-volume-${item.spec.num}`}
-                  delayMs={delayMs}
-                  geometry={item.geo}
-                  id={`codex-volume-tab-${item.spec.id}`}
-                  interactive
-                  key={item.spec.id}
-                  liftPx={isActive ? 11 : 0}
-                  onFocusChange={(focused) => {
-                    if (focused) selectVolume(index, false);
-                  }}
-                  onHoverChange={(hovered) => {
-                    if (hovered) selectVolume(index, false);
-                  }}
-                  onKeyDown={(event) => handleVolumeKeyDown(event, index)}
-                  onSelect={() => selectVolume(index, true)}
-                  role="tab"
-                  selected={isActive}
-                  showDropGuides={isActive}
-                  strokeWidth={1.2}
-                  tabIndex={isActive ? 0 : -1}
-                  variant={isActive ? 'terracotta' : 'ivory'}
-                >
-                  {/* Sculpted spine bookmark relief cap */}
-                  <path
-                    d={item.spineCap.silPath}
-                    fill={isActive ? '#b73921' : '#0a342b'}
-                    stroke={isActive ? '#f25e3b' : '#2f5b4e'}
-                    strokeWidth={0.95}
-                  />
-                  {item.spineCap.creasePath ? (
-                    <path
-                      d={item.spineCap.creasePath}
-                      fill="none"
-                      stroke={isActive ? '#ffd2bd' : '#617267'}
-                      strokeWidth={0.75}
-                    />
-                  ) : null}
-                  {/* Etched volume index */}
-                  <text
-                    className={`${styles.volumeCapIndex} ${
-                      isActive ? styles.volumeCapIndexActive : ''
-                    }`}
-                    dominantBaseline="central"
-                    textAnchor="middle"
-                    x={r2(item.capCenter[0])}
-                    y={r2(item.capCenter[1])}
-                  >
-                    {item.spec.num}
-                  </text>
-                </IsoPrism>
-              );
-            })}
-          </g>
-        </svg>
+        </div>
       </div>
 
-      {/* Synchronized compact volume switcher rail */}
-      <div aria-label="Select codex volume" className={styles.trackTabStrip} role="group">
-        {CODEX_VOLUMES.map((vol, index) => {
+      {/* Synchronized compact subject tabs */}
+      <div
+        aria-label="Documentation track volumes"
+        className={styles.trackTablist}
+        role="tablist"
+      >
+        {FOLIO_VOLUMES.map((vol, index) => {
           const isActive = index === activeIndex;
           return (
             <button
-              aria-pressed={isActive}
-              className={`${styles.trackMiniBtn} ${
-                isActive ? styles.trackMiniBtnActive : ''
+              aria-controls={`codex-lens-${vol.id}`}
+              aria-selected={isActive}
+              className={`${styles.trackTab} ${
+                isActive ? styles.trackTabActive : ''
               }`}
+              id={`codex-volume-tab-${vol.id}`}
               key={vol.id}
               onClick={() => selectVolume(index, true)}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
               onMouseEnter={() => {
                 if (!userLocked) selectVolume(index, false);
               }}
+              ref={(el) => {
+                tabRefs.current[index] = el;
+              }}
+              role="tab"
+              tabIndex={isActive ? 0 : -1}
               type="button"
             >
-              <span className={styles.trackMiniNum}>{vol.num}</span>
-              <span className={styles.trackMiniName}>{vol.shelfTitle}</span>
+              <span className={styles.trackTabNum}>{vol.num}</span>
+              <span className={styles.trackTabTitle}>{vol.shelfTitle}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Live Active Volume Lens */}
+      {/* Bottom Reference Readout Bar */}
       <div
         aria-live="polite"
-        className={styles.activeLens}
+        className={styles.readoutBar}
         id={`codex-lens-${activeVolume.id}`}
       >
-        <div className={styles.lensBody}>
-          <div className={styles.lensMetaRow}>
-            <span>
-              FOLIO {activeVolume.num} / {activeVolume.shelfTitle}
-            </span>
-            {categoryCount > 0 ? <span>{categoryCount} guides</span> : null}
-            <span>~{flagshipDoc?.readingMinutes ?? activeVolume.defaultMinutes} min read</span>
-            <code className={styles.lensApiPill}>{activeVolume.apiPill}</code>
-          </div>
-          <h2 className={styles.lensTitle}>
-            {flagshipDoc?.title ?? activeVolume.flagshipTitle}
-          </h2>
-          <p className={styles.lensSummary}>{activeVolume.summary}</p>
-        </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            animate={{ opacity: 1, y: 0 }}
+            className={styles.readoutContent}
+            exit={reducedMotion ? {} : { opacity: 0, y: -4 }}
+            initial={reducedMotion ? false : { opacity: 0, y: 4 }}
+            key={activeVolume.id}
+            transition={{ duration: reducedMotion ? 0 : 0.16 }}
+          >
+            <div className={styles.readoutMeta}>
+              <span>
+                FOLIO {activeVolume.num} / {activeVolume.shelfTitle}
+              </span>
+              {categoryCount > 0 ? <span>{categoryCount} guides</span> : null}
+              <span>
+                ~{flagshipDoc?.readingMinutes ?? activeVolume.defaultMinutes} min read
+              </span>
+              <code className={styles.readoutApi}>{activeVolume.apiBadge}</code>
+            </div>
+
+            <h2 className={styles.readoutTitle}>
+              {flagshipDoc?.title ?? activeVolume.flagshipTitle}
+            </h2>
+            <p className={styles.readoutSummary}>{activeVolume.summary}</p>
+          </motion.div>
+        </AnimatePresence>
 
         <Link
-          className={styles.lensCta}
+          className={styles.readoutCta}
           href={`/docs/${activeVolume.flagshipSlug}`}
         >
           Open track guide <span aria-hidden="true">↗</span>

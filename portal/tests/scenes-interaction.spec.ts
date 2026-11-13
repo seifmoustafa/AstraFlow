@@ -651,8 +651,31 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       .getByRole("group", { name: "Synchronized architecture branch selectors" })
       .locator("button[aria-pressed]");
     await expect(branchBtns).toHaveCount(4);
+
+    const telemetryText = studySection.locator('[aria-live="polite"] p').first();
+    await expect(telemetryText).toBeVisible();
+
+    const checkTelemetryReadable = async (contextLabel: string) => {
+      const value = (await telemetryText.innerText()).trim();
+      expect(
+        value.toLowerCase(),
+        `${contextLabel}: telemetry leaked raw Hairline state (${value})`,
+      ).not.toMatch(/^(rest|idle|pulse|active)$/);
+      expect(
+        value.length,
+        `${contextLabel}: telemetry text unexpectedly terse (${value})`,
+      ).toBeGreaterThanOrEqual(14);
+    };
+
+    await checkTelemetryReadable("initial study state");
     await branchBtns.nth(2).click();
     await expect(branchBtns.nth(2)).toHaveAttribute("aria-pressed", "true");
+    await page.waitForTimeout(250);
+    await checkTelemetryReadable("after selecting branch 3");
+    await studySection.locator("svg").first().hover();
+    await page.mouse.move(10, 10);
+    await page.waitForTimeout(250);
+    await checkTelemetryReadable("after svg mouse leave");
 
     // Zero fake Discord / Slack / vanity stats
     const fullText = await page.locator("body").innerText();

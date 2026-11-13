@@ -1,8 +1,18 @@
-export { DocsHeroDesk, type DocsHeroDeskProps } from './DocsHeroDesk';
-export { DocsSearch, type DocsSearchProps } from './DocsSearch';
+export { DocsHeroDesk } from './DocsHeroDesk';
+export type { DocsHeroDeskProps } from './DocsHeroDesk';
+
+export { DocsSearch } from './DocsSearch';
+export type { DocsSearchProps } from './DocsSearch';
+
 export {
   CliCopyPill,
   DocEnhancements,
-  type CliCopyPillProps,
-  type DocEnhancementsProps,
+  DocMobileNavDrawer,
+  DocSidebarNav,
+} from './DocEnhancements';
+export type {
+  CliCopyPillProps,
+  DocEnhancementsProps,
+  DocMobileNavDrawerProps,
+  DocSidebarNavProps,
 } from './DocEnhancements';

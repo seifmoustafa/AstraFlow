@@ -5,14 +5,15 @@ import {
   DocsHeroDesk,
   DocsSearch,
 } from '@/components/scenes/docs';
-import docsStyles from '@/components/scenes/docs/DocsSearch.module.css';
+import heroStyles from '@/components/scenes/docs/DocsHeroDesk.module.css';
+import searchStyles from '@/components/scenes/docs/DocsSearch.module.css';
 import { getAllDocs, getDocCategories } from '@/lib/docs';
 import { LATEST_PUBLISHED_VERSION } from '@/lib/site-config';
 
 export const metadata: Metadata = {
   title: 'Documentation',
   description:
-    'Search and browse verified AstraFlow guides, package deep dives, compatibility tables, and Architecture Decision Records generated directly from repository markdown.',
+    'Search and browse verified AstraFlow guides, package deep dives, compatibility baselines, and Architecture Decision Records generated directly from repository markdown.',
   alternates: {
     canonical: '/docs',
   },
@@ -21,97 +22,102 @@ export const metadata: Metadata = {
 export default function DocsIndexPage() {
   const allDocs = getAllDocs();
   const categories = getDocCategories();
+  const adrCount =
+    categories.find((group) => group.category === 'Architecture Decisions (ADRs)')
+      ?.docs.length ?? 0;
   const quickStartCommand = `dotnet add package AstraFlow.Mediator --version ${LATEST_PUBLISHED_VERSION}`;
 
   return (
     <main id="main" data-page="docs">
-      <section className="hero">
-        <div className="site-wrap page-intro grid">
-          <div>
-            <p className="eyebrow">DOCUMENTATION / VERIFIED SOURCE</p>
-            <h1>
-              Read less. <span className="ital">Understand faster.</span>
+      <section className={`hero ${heroStyles.subhero}`}>
+        <div className={`site-wrap ${heroStyles.subheroGrid}`}>
+          <div className={heroStyles.heroCopy}>
+            <p className="eyebrow">THE DOCUMENTATION / ORIGINAL SOURCES</p>
+            <h1 className={heroStyles.heroTitle}>
+              Understand it.{' '}
+              <span className={`ital signal ${heroStyles.heroTitleEm}`}>
+                Then build it.
+              </span>
             </h1>
-            <p className="lead">
-              Every guide, integration reference, benchmark methodology, and Architecture Decision Record in this portal is indexed straight from the AstraFlow repository with draft notes and historical planning docs stripped out.
+            <p className={heroStyles.heroLead}>
+              Start with a request. Follow the API. Examine the trade-offs. Practical documentation that works like an instrument — not another marketing poster.
             </p>
-            <div className="cta-row">
+            <div className={heroStyles.heroActions}>
               <Link className="button button-primary" href="/docs/getting-started">
-                Quick start ↗
+                Start with the basics ↗
               </Link>
-              <a className="button button-outline" href="#living-desk">
-                Search docs ↓
+              <a className="button button-outline" href="#reference">
+                Explore the reference ↓
               </a>
             </div>
-
-            <dl className={docsStyles.heroStatsStrip}>
-              <div className={docsStyles.heroStatItem}>
-                <dt className={docsStyles.heroStatLabel}>Verified guides &amp; ADRs</dt>
-                <dd className={docsStyles.heroStatValue}>{allDocs.length}</dd>
-              </div>
-              <div className={docsStyles.heroStatItem}>
-                <dt className={docsStyles.heroStatLabel}>Architectural tracks</dt>
-                <dd className={docsStyles.heroStatValue}>{categories.length}</dd>
-              </div>
-              <div className={docsStyles.heroStatItem}>
-                <dt className={docsStyles.heroStatLabel}>Draft noise</dt>
-                <dd className={docsStyles.heroStatValue}>Zero</dd>
-              </div>
-            </dl>
+            <div className={heroStyles.heroStrip}>
+              <span>{allDocs.length} SOURCE GUIDES</span>
+              <span aria-hidden="true" className={heroStyles.heroStripDot}>
+                ·
+              </span>
+              <span>{categories.length} CURATED TRACKS</span>
+              <span aria-hidden="true" className={heroStyles.heroStripDot}>
+                ·
+              </span>
+              <span>{adrCount} ARCHITECTURE ADRS</span>
+            </div>
           </div>
 
           <DocsHeroDesk docs={allDocs} />
         </div>
       </section>
 
-      <section id="living-desk" className="section">
+      <section id="reference" className={searchStyles.referenceSection}>
         <div className="site-wrap">
-          <div className="section-head">
+          <header className={searchStyles.sectionHeader}>
             <p className="eyebrow">01 / LIVING REFERENCE DESK</p>
-            <h2>Search, filter, and preview before you open a page.</h2>
-            <p className="lead">
-              Press <kbd>/</kbd> or <kbd>Ctrl+K</kbd> to jump straight to the search bar, filter by architectural track, and inspect section headings or starter code right in the Reference Lens.
+            <h2 className={searchStyles.sectionTitle}>
+              Find the answer.{' '}
+              <span className="ital signal">Follow the source.</span>
+            </h2>
+            <p className={searchStyles.sectionIntroLead}>
+              Search the real documentation. Move with your keyboard. Open source-backed articles, inspect headings, and copy starter C# snippets without leaving the desk.
             </p>
-          </div>
+          </header>
 
           <DocsSearch docs={allDocs} categories={categories} />
         </div>
       </section>
 
-      <section id="category-index" className={docsStyles.directorySection}>
+      <section id="category-index" className={searchStyles.tracksSection}>
         <div className="site-wrap">
-          <header className={docsStyles.directoryHeader}>
-            <p className="eyebrow">02 / COMPLETE CURATED DIRECTORY</p>
-            <h2 className={docsStyles.directoryTitle}>
-              All {allDocs.length} guides across {categories.length} tracks.
+          <header className={searchStyles.tracksHeader}>
+            <p className="eyebrow">02 / CURATED SOURCE TRACKS</p>
+            <h2 className={searchStyles.tracksTitle}>
+              Six tracks, <span className="ital signal">zero draft clutter.</span>
             </h2>
-            <p className={docsStyles.directoryLead}>
-              Ordered from your first handler in Getting Started through Explicit Mapping, Integrations, Diagnostics &amp; Testing, Operational Reference, and locked Architecture Decision Records.
+            <p className={searchStyles.tracksLead}>
+              Every curated guide and Architecture Decision Record organized from your first compiled request to release operations and locked architectural records.
             </p>
           </header>
 
-          <div className={docsStyles.directoryGrid}>
+          <div className={searchStyles.tracksGrid}>
             {categories.map((group, groupIndex) => (
               <section
+                aria-label={`${group.category} documentation track`}
+                className={searchStyles.trackShelf}
                 key={group.category}
-                className={docsStyles.directoryCard}
-                aria-label={`${group.category} directory`}
               >
-                <div className={docsStyles.directoryCardHead}>
-                  <span className={docsStyles.directoryCatNum}>
-                    {String(groupIndex + 1).padStart(2, '0')}
+                <div className={searchStyles.trackShelfHead}>
+                  <span className={searchStyles.trackShelfNum}>
+                    TRACK {String(groupIndex + 1).padStart(2, '0')}
                   </span>
-                  <span className={docsStyles.directoryCatCount}>
-                    {group.docs.length} {group.docs.length === 1 ? 'doc' : 'docs'}
+                  <span className={searchStyles.trackShelfCount}>
+                    {group.docs.length} {group.docs.length === 1 ? 'guide' : 'guides'}
                   </span>
                 </div>
-                <h3 className={docsStyles.directoryCatTitle}>{group.category}</h3>
-                <ul className={docsStyles.directoryList}>
+                <h3 className={searchStyles.trackShelfTitle}>{group.category}</h3>
+                <ul className={searchStyles.trackShelfList}>
                   {group.docs.map((doc) => (
                     <li key={doc.slugPath}>
-                      <Link href={doc.href} className={docsStyles.directoryItemLink}>
+                      <Link className={searchStyles.trackShelfLink} href={doc.href}>
                         <span>{doc.title}</span>
-                        <span className={docsStyles.directoryItemMeta}>
+                        <span className={searchStyles.trackShelfMeta}>
                           {doc.isUnreleasedSource ? '2.4.0 · ' : ''}
                           {doc.readingMinutes}m
                         </span>
@@ -125,22 +131,28 @@ export default function DocsIndexPage() {
         </div>
       </section>
 
-      <section className={docsStyles.tenMinutesBand} aria-label="The first ten minutes">
-        <div className={`site-wrap ${docsStyles.tenMinutesInner}`}>
-          <p className={docsStyles.tenMinutesEyebrow}>THE FIRST TEN MINUTES</p>
-          <h2 className={docsStyles.tenMinutesHeading}>
-            Install one package,{' '}
-            <span className={docsStyles.tenMinutesItalic}>wire one handler,</span>{' '}
-            run one test.
-          </h2>
-          <p className={docsStyles.tenMinutesLead}>
-            Start with source-generated dispatch on .NET {LATEST_PUBLISHED_VERSION} without pulling in unnecessary abstractions or runtime reflection scanners.
-          </p>
-          <div className={docsStyles.tenMinutesActions}>
-            <CliCopyPill command={quickStartCommand} />
-            <Link href="/docs/getting-started" className={docsStyles.tenMinutesCta}>
-              Open Getting Started ↗
-            </Link>
+      <section className={searchStyles.calloutOuter} aria-label="The first ten minutes">
+        <div className="site-wrap">
+          <div className={searchStyles.docsCallout}>
+            <div className={searchStyles.docsCalloutCopy}>
+              <p className={searchStyles.calloutEyebrow}>THE FIRST TEN MINUTES</p>
+              <h2 className={searchStyles.calloutHeading}>
+                Get a request{' '}
+                <span className={searchStyles.calloutItalic}>
+                  through the system.
+                </span>
+              </h2>
+              <p className={searchStyles.calloutLead}>
+                Install the generated mediator on .NET {LATEST_PUBLISHED_VERSION}, register your handler assembly, and run your first verified slice in one pass.
+              </p>
+            </div>
+
+            <div className={searchStyles.docsCalloutActions}>
+              <CliCopyPill command={quickStartCommand} />
+              <Link className={searchStyles.calloutCta} href="/docs/getting-started">
+                Read getting started ↗
+              </Link>
+            </div>
           </div>
         </div>
       </section>

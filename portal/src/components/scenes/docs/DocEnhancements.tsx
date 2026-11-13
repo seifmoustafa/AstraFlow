@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { DocCategoryGroup } from '@/lib/docs';
 import type { TocItem } from '@/lib/markdown';
 import styles from './DocEnhancements.module.css';
 
@@ -9,6 +11,17 @@ export interface DocEnhancementsProps {
   title?: string;
   articleSelector?: string;
   tocSelector?: string;
+}
+
+export interface DocSidebarNavProps {
+  categories: DocCategoryGroup[];
+  activeSlugPath: string;
+}
+
+export interface DocMobileNavDrawerProps {
+  categories: DocCategoryGroup[];
+  activeSlugPath: string;
+  totalCount: number;
 }
 
 export async function copyTextToClipboard(text: string): Promise<boolean> {
@@ -41,6 +54,124 @@ export async function copyTextToClipboard(text: string): Promise<boolean> {
   }
 }
 
+export function DocSidebarNav({
+  categories,
+  activeSlugPath,
+}: DocSidebarNavProps) {
+  const [filterQuery, setFilterQuery] = useState('');
+
+  const filteredCategories = useMemo(() => {
+    const needle = filterQuery.trim().toLowerCase();
+    if (!needle) {
+      return categories;
+    }
+    return categories
+      .map((group) => ({
+        category: group.category,
+        docs: group.docs.filter(
+          (doc) =>
+            doc.title.toLowerCase().includes(needle) ||
+            doc.slugPath.toLowerCase().includes(needle) ||
+            doc.category.toLowerCase().includes(needle),
+        ),
+      }))
+      .filter((group) => group.docs.length > 0);
+  }, [categories, filterQuery]);
+
+  return (
+    <nav aria-label="Documentation track navigation" className={styles.sidebarNav}>
+      <Link className={styles.desktopNavBack} href="/docs">
+        ← All documentation
+      </Link>
+
+      <div className={styles.sidebarFilterWrap}>
+        <input
+          aria-label="Filter documentation sidebar"
+          autoComplete="off"
+          className={styles.sidebarFilterInput}
+          onChange={(event) => setFilterQuery(event.target.value)}
+          placeholder="Filter guides..."
+          type="search"
+          value={filterQuery}
+        />
+      </div>
+
+      {filteredCategories.length === 0 ? (
+        <p className={styles.sidebarEmpty}>No matching guide titles.</p>
+      ) : (
+        filteredCategories.map((group) => (
+          <div className={styles.desktopNavGroup} key={group.category}>
+            <p className={styles.desktopNavCategory}>{group.category}</p>
+            <div className={styles.desktopNavLinks}>
+              {group.docs.map((item) => {
+                const isCurrent = item.slugPath === activeSlugPath;
+                return (
+                  <Link
+                    aria-current={isCurrent ? 'page' : undefined}
+                    className={`${styles.desktopNavLink} ${
+                      isCurrent ? styles.desktopNavLinkCurrent : ''
+                    }`}
+                    href={item.href}
+                    key={item.slugPath}
+                  >
+                    {item.title}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))
+      )}
+    </nav>
+  );
+}
+
+export function DocMobileNavDrawer({
+  categories,
+  activeSlugPath,
+  totalCount,
+}: DocMobileNavDrawerProps) {
+  return (
+    <details className={styles.mobileNavDetails}>
+      <summary className={styles.mobileNavSummary}>
+        <span>
+          Browse {totalCount} docs across {categories.length} tracks
+        </span>
+        <span className={styles.mobileNavSummaryTag}>INDEX ▾</span>
+      </summary>
+      <div className={styles.mobileNavBody}>
+        <Link className={styles.desktopNavBack} href="/docs">
+          ← All documentation
+        </Link>
+        {categories.map((group) => (
+          <div key={group.category}>
+            <p className={styles.mobileNavCatLabel}>{group.category}</p>
+            <div className={styles.mobileNavLinks}>
+              {group.docs.map((item) => {
+                const isCurrent = item.slugPath === activeSlugPath;
+                return (
+                  <Link
+                    aria-current={isCurrent ? 'page' : undefined}
+                    className={
+                      isCurrent
+                        ? `${styles.mobileNavLink} ${styles.mobileNavLinkCurrent}`
+                        : styles.mobileNavLink
+                    }
+                    href={item.href}
+                    key={item.slugPath}
+                  >
+                    {item.title}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 export function DocEnhancements({
   toc,
   title,
@@ -52,7 +183,6 @@ export function DocEnhancements({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [liveStatus, setLiveStatus] = useState('');
 
-  // Top Signal Orange reading progress hairline
   useEffect(() => {
     const updateProgress = () => {
       const scrollable =
@@ -74,7 +204,6 @@ export function DocEnhancements({
     };
   }, []);
 
-  // Keep desktop .docs-toc in sync with the active heading ID
   useEffect(() => {
     const tocRoot = document.querySelector(tocSelector);
     if (!tocRoot) {
@@ -103,7 +232,6 @@ export function DocEnhancements({
     };
   }, [activeId, tocSelector]);
 
-  // IntersectionObserver scrollspy + pre.code-block copy bars + focusable table wraps
   useEffect(() => {
     const article = document.querySelector<HTMLElement>(articleSelector);
     if (!article) {
@@ -280,8 +408,8 @@ export function DocEnhancements({
         />
       </div>
 
-      <div className={styles.enhancerHost}>
-        {toc.length > 0 ? (
+      {toc.length > 0 ? (
+        <div className={styles.enhancerHost}>
           <nav
             aria-label={title ? `Sections in ${title}` : 'On this page'}
             className={styles.mobileToc}
@@ -324,11 +452,11 @@ export function DocEnhancements({
               </div>
             ) : null}
           </nav>
-        ) : null}
-
-        <div aria-live="polite" className={styles.srOnly} role="status">
-          {liveStatus}
         </div>
+      ) : null}
+
+      <div aria-live="polite" className={styles.srOnly} role="status">
+        {liveStatus}
       </div>
     </>
   );
@@ -364,7 +492,9 @@ export function CliCopyPill({ command }: CliCopyPillProps) {
     <div className={styles.cliCopyPill}>
       <code className={styles.cliCopyCode}>{command}</code>
       <button
-        aria-label={`Copy command: ${command}`}
+        aria-label={
+          copied ? `Copied ✓ command: ${command}` : `Copy command: ${command}`
+        }
         className={styles.cliCopyBtn}
         onClick={handleCopy}
         type="button"

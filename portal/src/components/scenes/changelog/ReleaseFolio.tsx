@@ -1,763 +1,691 @@
-'use client';
+"use client";
 
 import {
-  useCallback,
-  useEffect,
+  Fragment,
   useMemo,
   useRef,
   useState,
   type KeyboardEvent,
-} from 'react';
+} from "react";
+import { AnimatePresence, motion } from "motion/react";
+import {
+  circ,
+  poly,
+  rrect,
+  seg,
+  useReducedMotionSafe,
+} from "@/components/hairline";
 import type {
   ChangelogRelease,
   ChangelogStats,
   ReleaseProvenanceStatus,
-} from '@/lib/changelog';
-import { useReducedMotionSafe } from '@/components/hairline';
-import { CHANGELOG_FOCUS_EVENT } from './VersionDeck';
-import styles from './ReleaseFolio.module.css';
+} from "@/lib/changelog";
+import styles from "./ReleaseFolio.module.css";
 
-export type ChangelogFilterId =
-  | 'all'
-  | 'published-confirmed'
-  | 'unreleased'
-  | 'baseline-historical'
-  | 'github-unverified'
-  | 'breaking';
+export type ReleaseFilter =
+  | "all"
+  | "published"
+  | "historical"
+  | "unreleased"
+  | "github-unverified"
+  | "breaking";
 
 export interface ReleaseFolioProps {
-  releases: ChangelogRelease[];
+  releases: readonly ChangelogRelease[];
   stats: ChangelogStats;
-  className?: string;
+  selectedAnchor?: string;
+  onSelectRelease?: (anchorId: string) => void;
+  filter?: ReleaseFilter;
+  onFilterChange?: (filter: ReleaseFilter) => void;
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
 }
 
-function getStatusBadgeClass(status: ReleaseProvenanceStatus): string {
+function matchesFilter(
+  release: ChangelogRelease,
+  filter: ReleaseFilter,
+): boolean {
+  switch (filter) {
+    case "published":
+      return (
+        release.status === "published-confirmed" ||
+        release.status === "published-baseline"
+      );
+    case "historical":
+      return release.status === "historical-release";
+    case "unreleased":
+      return release.isUnreleased;
+    case "github-unverified":
+      return release.status === "github-unverified";
+    case "breaking":
+      return release.isBreaking;
+    case "all":
+    default:
+      return true;
+  }
+}
+
+function matchesQuery(release: ChangelogRelease, normalizedQuery: string): boolean {
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  const haystacks = [
+    release.version,
+    `v${release.version}`,
+    release.statusLabel,
+    release.provenanceNote,
+    release.headline,
+    release.rawQualifier ?? "",
+    ...release.highlightTags,
+    ...release.sections.flatMap((section) => [
+      section.title,
+      ...section.items.map((item) => item.text),
+    ]),
+  ];
+
+  return haystacks.some((value) =>
+    value.toLowerCase().includes(normalizedQuery),
+  );
+}
+
+function getBadgeStyleClass(status: ReleaseProvenanceStatus): string {
   switch (status) {
-    case 'unreleased':
+    case "unreleased":
       return styles.badgeUnreleased;
-    case 'published-confirmed':
-      return styles.badgeConfirmed;
-    case 'published-baseline':
-      return styles.badgeBaseline;
-    case 'github-unverified':
+    case "github-unverified":
       return styles.badgeUnverified;
-    default:
+    case "historical-release":
       return styles.badgeHistorical;
-  }
-}
-
-function getShortProvenanceCode(release: ChangelogRelease): string {
-  switch (release.status) {
-    case 'unreleased':
-      return `SOURCE ${release.version}`;
-    case 'published-confirmed':
-      return `NUGET ${release.version}`;
-    case 'published-baseline':
-      return 'BASELINE';
-    case 'github-unverified':
-      return 'UNVERIFIED';
+    case "published-confirmed":
+    case "published-baseline":
     default:
-      return 'HISTORICAL';
+      return styles.badgePublished;
   }
 }
 
-function getProvenanceBannerMeta(release: ChangelogRelease): {
-  title: string;
-  body: string;
-  toneClass: string;
-} {
-  if (release.status === 'unreleased') {
-    return {
-      title: `UNRELEASED REPOSITORY SOURCE · ${release.version}`,
-      body:
-        release.provenanceNote ||
-        'Active unreleased development in main source (includes AstraFlow.Assertions). Do not cite as published on NuGet.org.',
-      toneClass: styles.bannerUnreleased,
-    };
+function getShortSpineTag(release: ChangelogRelease): string {
+  if (release.isUnreleased) {
+    return "Unreleased Source";
   }
-  if (release.status === 'published-confirmed') {
-    return {
-      title: `PUBLISHED CONFIRMED ON NUGET · ${release.version}`,
-      body:
-        release.provenanceNote ||
-        'Verified published NuGet release suite across shipped packages.',
-      toneClass: styles.bannerConfirmed,
-    };
+  if (release.status === "published-confirmed") {
+    return release.releaseDate ? `NuGet · ${release.releaseDate}` : "Published Confirmed";
   }
-  if (release.status === 'github-unverified') {
-    return {
-      title: `GITHUB RELEASE / NUGET UNVERIFIED · ${release.version}`,
-      body:
-        release.provenanceNote ||
-        'Tagged on GitHub Releases without independently verified NuGet parity across all package IDs.',
-      toneClass: styles.bannerUnverified,
-    };
+  if (release.status === "published-baseline") {
+    return "Verified Baseline";
   }
-  if (release.status === 'published-baseline') {
-    return {
-      title: `VERIFIED PRIOR BASELINE · ${release.version}`,
-      body:
-        release.provenanceNote ||
-        'Verified baseline release preceding the 2.3.0 package series.',
-      toneClass: '',
-    };
+  if (release.status === "github-unverified") {
+    return "GitHub Unverified";
   }
-  return {
-    title: `RECORDED SOURCE MILESTONE · ${release.version}`,
-    body:
-      release.provenanceNote ||
-      'Historical release milestone preserved verbatim from CHANGELOG.md.',
-    toneClass: '',
-  };
+  return release.releaseDate ? `Historical · ${release.releaseDate}` : "Historical";
 }
 
-function getCategoryClass(normalizedTitle: string): string {
-  const key = normalizedTitle.toLowerCase();
-  if (key.includes('breaking')) return styles.categoryBreaking;
-  if (key.includes('add')) return styles.categoryAdded;
-  if (key.includes('fix') || key.includes('security')) return styles.categoryFixed;
-  return '';
+function FormattedNoteText({ text }: { text: string }) {
+  const parts = text.split(/(`[^`]+`)/g);
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+          return <code key={index}>{part.slice(1, -1)}</code>;
+        }
+        return <Fragment key={index}>{part}</Fragment>;
+      })}
+    </>
+  );
+}
+
+/**
+ * Pure Hairline corner geometry for the folio artwork sheet (zero SVG text).
+ */
+function FolioCornerGeometry() {
+  const frame = useMemo(
+    () => poly(rrect(4, 4, 40, 40, 6).map((sample) => [sample.u, sample.v])),
+    [],
+  );
+  const orbit = useMemo(
+    () => poly(circ(10, 20, 22, 22).map((sample) => [sample.u, sample.v])),
+    [],
+  );
+  const diag = useMemo(() => seg([10, 34], [34, 10]), []);
+
+  return (
+    <svg
+      className={styles.folioArtCorner}
+      viewBox="0 0 44 44"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path d={frame} stroke="rgba(8, 44, 38, 0.28)" strokeWidth="1.2" />
+      <path d={orbit} stroke="#b73921" strokeWidth="1.2" />
+      <path d={diag} stroke="rgba(8, 44, 38, 0.45)" strokeWidth="1.2" />
+      <circle cx="22" cy="22" r="2.5" fill="#082c26" />
+    </svg>
+  );
 }
 
 export function ReleaseFolio({
   releases,
   stats,
-  className,
+  selectedAnchor,
+  onSelectRelease,
+  filter,
+  onFilterChange,
+  searchQuery,
+  onSearchQueryChange,
 }: ReleaseFolioProps) {
-  const [filter, setFilter] = useState<ChangelogFilterId>('all');
-  const [query, setQuery] = useState('');
-  const [selectedAnchor, setSelectedAnchor] = useState<string>(
-    () => releases[0]?.anchorId ?? '',
-  );
-  const [notesExpanded, setNotesExpanded] = useState(true);
-  const [highlightedAnchor, setHighlightedAnchor] = useState<string | null>(
-    null,
-  );
-
-  const highlightTimerRef = useRef<number | null>(null);
-  const spineBtnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const stageRef = useRef<HTMLElement | null>(null);
   const reducedMotion = useReducedMotionSafe();
+  const [internalFilter, setInternalFilter] = useState<ReleaseFilter>("all");
+  const [internalSearch, setInternalSearch] = useState("");
+  const [internalAnchor, setInternalAnchor] = useState(
+    () => releases[0]?.anchorId ?? "",
+  );
+  const [isNotesExpanded, setIsNotesExpanded] = useState(true);
+  const rowRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const counts = useMemo(
-    () => ({
-      all: releases.length,
-      publishedConfirmed: releases.filter(
-        (item) => item.status === 'published-confirmed',
+  const activeFilter = filter ?? internalFilter;
+  const activeSearch = searchQuery ?? internalSearch;
+  const activeAnchor = selectedAnchor ?? internalAnchor;
+
+  const setFilter = (next: ReleaseFilter) => {
+    if (onFilterChange) {
+      onFilterChange(next);
+    } else {
+      setInternalFilter(next);
+    }
+  };
+
+  const setSearch = (next: string) => {
+    if (onSearchQueryChange) {
+      onSearchQueryChange(next);
+    } else {
+      setInternalSearch(next);
+    }
+  };
+
+  const selectRelease = (anchorId: string) => {
+    if (onSelectRelease) {
+      onSelectRelease(anchorId);
+    } else {
+      setInternalAnchor(anchorId);
+    }
+  };
+
+  const normalizedQuery = activeSearch.trim().toLowerCase();
+
+  const filteredReleases = useMemo(
+    () =>
+      releases.filter(
+        (release) =>
+          matchesFilter(release, activeFilter) &&
+          matchesQuery(release, normalizedQuery),
+      ),
+    [releases, activeFilter, normalizedQuery],
+  );
+
+  const activeIndex = useMemo(() => {
+    if (filteredReleases.length === 0) {
+      return -1;
+    }
+    const found = filteredReleases.findIndex(
+      (release) => release.anchorId === activeAnchor,
+    );
+    return found >= 0 ? found : 0;
+  }, [filteredReleases, activeAnchor]);
+
+  const activeRelease =
+    activeIndex >= 0 ? filteredReleases[activeIndex] : undefined;
+
+  const globalPosition = activeRelease
+    ? releases.findIndex((item) => item.anchorId === activeRelease.anchorId)
+    : -1;
+
+  const handleFilterClick = (nextFilter: ReleaseFilter) => {
+    setFilter(nextFilter);
+    const nextList = releases.filter(
+      (release) =>
+        matchesFilter(release, nextFilter) &&
+        matchesQuery(release, normalizedQuery),
+    );
+    if (
+      nextList.length > 0 &&
+      !nextList.some((release) => release.anchorId === activeAnchor)
+    ) {
+      selectRelease(nextList[0].anchorId);
+    }
+  };
+
+  const handleSearchChange = (nextQuery: string) => {
+    setSearch(nextQuery);
+    const nextNormalized = nextQuery.trim().toLowerCase();
+    const nextList = releases.filter(
+      (release) =>
+        matchesFilter(release, activeFilter) &&
+        matchesQuery(release, nextNormalized),
+    );
+    if (
+      nextList.length > 0 &&
+      !nextList.some((release) => release.anchorId === activeAnchor)
+    ) {
+      selectRelease(nextList[0].anchorId);
+    }
+  };
+
+  const handleReset = () => {
+    setFilter("all");
+    setSearch("");
+    if (releases[0]) {
+      selectRelease(releases[0].anchorId);
+    }
+  };
+
+  const handleRowKeyDown = (
+    event: KeyboardEvent<HTMLButtonElement>,
+    index: number,
+  ) => {
+    if (filteredReleases.length === 0) {
+      return;
+    }
+
+    let targetIndex: number | null = null;
+    if (event.key === "ArrowDown") {
+      targetIndex = Math.min(index + 1, filteredReleases.length - 1);
+    } else if (event.key === "ArrowUp") {
+      targetIndex = Math.max(index - 1, 0);
+    } else if (event.key === "Home") {
+      targetIndex = 0;
+    } else if (event.key === "End") {
+      targetIndex = filteredReleases.length - 1;
+    }
+
+    if (targetIndex !== null) {
+      event.preventDefault();
+      const target = filteredReleases[targetIndex];
+      if (target) {
+        selectRelease(target.anchorId);
+        rowRefs.current[targetIndex]?.focus();
+      }
+    }
+  };
+
+  const publishedConfirmedCount = useMemo(
+    () =>
+      releases.filter(
+        (r) =>
+          r.status === "published-confirmed" ||
+          r.status === "published-baseline",
       ).length,
-      unreleased: releases.filter((item) => item.status === 'unreleased').length,
-      baselineHistorical: releases.filter(
-        (item) =>
-          item.status === 'published-baseline' ||
-          item.status === 'historical-release',
-      ).length,
-      githubUnverified: releases.filter(
-        (item) => item.status === 'github-unverified',
-      ).length,
-      breaking: releases.filter((item) => item.isBreaking).length,
-    }),
     [releases],
   );
 
-  const normalizedQuery = query.trim().toLowerCase();
-
-  const filteredReleases = useMemo(() => {
-    return releases.filter((release) => {
-      if (
-        filter === 'published-confirmed' &&
-        release.status !== 'published-confirmed'
-      ) {
-        return false;
-      }
-      if (filter === 'unreleased' && release.status !== 'unreleased') {
-        return false;
-      }
-      if (
-        filter === 'baseline-historical' &&
-        release.status !== 'published-baseline' &&
-        release.status !== 'historical-release'
-      ) {
-        return false;
-      }
-      if (
-        filter === 'github-unverified' &&
-        release.status !== 'github-unverified'
-      ) {
-        return false;
-      }
-      if (filter === 'breaking' && !release.isBreaking) {
-        return false;
-      }
-
-      if (!normalizedQuery) return true;
-
-      if (
-        release.version.toLowerCase().includes(normalizedQuery) ||
-        `v${release.version}`.toLowerCase().includes(normalizedQuery) ||
-        release.headline.toLowerCase().includes(normalizedQuery) ||
-        release.statusLabel.toLowerCase().includes(normalizedQuery) ||
-        release.highlightTags.some((tag) =>
-          tag.toLowerCase().includes(normalizedQuery),
-        )
-      ) {
-        return true;
-      }
-
-      return release.sections.some(
-        (section) =>
-          section.title.toLowerCase().includes(normalizedQuery) ||
-          section.items.some(
-            (item) =>
-              !item.isNonePlaceholder &&
-              item.text.toLowerCase().includes(normalizedQuery),
-          ),
-      );
-    });
-  }, [releases, filter, normalizedQuery]);
-
-  const activeRelease = useMemo(() => {
-    const bySelection = filteredReleases.find(
-      (item) => item.anchorId === selectedAnchor,
-    );
-    return bySelection ?? filteredReleases[0] ?? releases[0] ?? null;
-  }, [filteredReleases, selectedAnchor, releases]);
-
-  const activeFilterIndex = useMemo(() => {
-    if (!activeRelease) return -1;
-    return filteredReleases.findIndex(
-      (item) => item.anchorId === activeRelease.anchorId,
-    );
-  }, [filteredReleases, activeRelease]);
-
-  const focusAnchor = useCallback(
-    (anchorId: string, shouldScroll = false): boolean => {
-      const normalized = anchorId.replace(/^#/, '');
-      const match = releases.find(
-        (item) =>
-          item.anchorId === normalized || `v${item.version}` === normalized,
-      );
-      if (!match) return false;
-
-      setFilter('all');
-      setQuery('');
-      setSelectedAnchor(match.anchorId);
-      setNotesExpanded(true);
-      setHighlightedAnchor(match.anchorId);
-
-      if (highlightTimerRef.current !== null) {
-        window.clearTimeout(highlightTimerRef.current);
-      }
-      highlightTimerRef.current = window.setTimeout(() => {
-        setHighlightedAnchor((curr) =>
-          curr === match.anchorId ? null : curr,
-        );
-      }, 2200);
-
-      if (shouldScroll) {
-        window.requestAnimationFrame(() => {
-          window.requestAnimationFrame(() => {
-            spineBtnRefs.current[match.anchorId]?.scrollIntoView({
-              block: 'nearest',
-            });
-            const stageEl =
-              document.getElementById(match.anchorId) ?? stageRef.current;
-            stageEl?.scrollIntoView({
-              behavior: reducedMotion ? 'auto' : 'smooth',
-              block: 'start',
-            });
-          });
-        });
-      }
-
-      return true;
-    },
-    [releases, reducedMotion],
+  const historicalArchiveCount = useMemo(
+    () => releases.filter((r) => r.status === "historical-release").length,
+    [releases],
   );
 
-  useEffect(() => {
-    const rafId = window.requestAnimationFrame(() => {
-      const initialHash = window.location.hash.replace(/^#/, '');
-      if (initialHash) {
-        focusAnchor(initialHash, false);
-      }
-    });
-
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace(/^#/, '');
-      if (hash) {
-        focusAnchor(hash, true);
-      }
-    };
-
-    const handleFocusEvent = (event: Event) => {
-      const custom = event as CustomEvent<{ anchorId?: string }>;
-      if (
-        custom.detail?.anchorId &&
-        focusAnchor(custom.detail.anchorId, true)
-      ) {
-        event.preventDefault();
-      }
-    };
-
-    window.addEventListener('hashchange', handleHashChange);
-    window.addEventListener(CHANGELOG_FOCUS_EVENT, handleFocusEvent);
-    return () => {
-      window.cancelAnimationFrame(rafId);
-      window.removeEventListener('hashchange', handleHashChange);
-      window.removeEventListener(CHANGELOG_FOCUS_EVENT, handleFocusEvent);
-      if (highlightTimerRef.current !== null) {
-        window.clearTimeout(highlightTimerRef.current);
-      }
-    };
-  }, [focusAnchor]);
-
-  function selectReleaseFromSpine(
-    release: ChangelogRelease,
-    moveFocus = false,
-  ) {
-    setSelectedAnchor(release.anchorId);
-    setNotesExpanded(true);
-    if (moveFocus) {
-      spineBtnRefs.current[release.anchorId]?.focus();
-    }
-    if (window.location.hash !== `#${release.anchorId}`) {
-      window.history.replaceState(null, '', `#${release.anchorId}`);
-    }
-  }
-
-  function handleSpineKeyDown(
-    event: KeyboardEvent<HTMLButtonElement>,
-    index: number,
-  ) {
-    if (filteredReleases.length === 0) return;
-    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
-      event.preventDefault();
-      const next =
-        filteredReleases[(index + 1) % filteredReleases.length];
-      if (next) selectReleaseFromSpine(next, true);
-    } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
-      event.preventDefault();
-      const prev =
-        filteredReleases[
-          (index - 1 + filteredReleases.length) % filteredReleases.length
-        ];
-      if (prev) selectReleaseFromSpine(prev, true);
-    } else if (event.key === 'Home') {
-      event.preventDefault();
-      const first = filteredReleases[0];
-      if (first) selectReleaseFromSpine(first, true);
-    } else if (event.key === 'End') {
-      event.preventDefault();
-      const last = filteredReleases[filteredReleases.length - 1];
-      if (last) selectReleaseFromSpine(last, true);
-    }
-  }
-
-  const filterButtons: Array<{
-    id: ChangelogFilterId;
+  const filterOptions: ReadonlyArray<{
+    key: ReleaseFilter;
     label: string;
     count: number;
   }> = [
-    { id: 'all', label: 'All', count: counts.all },
+    { key: "all", label: "All", count: stats.totalReleases },
     {
-      id: 'published-confirmed',
-      label: 'Published Confirmed',
-      count: counts.publishedConfirmed,
+      key: "published",
+      label: "Published Confirmed",
+      count: publishedConfirmedCount,
     },
     {
-      id: 'unreleased',
-      label: 'Unreleased Source',
-      count: counts.unreleased,
+      key: "historical",
+      label: "Historical Archive",
+      count: historicalArchiveCount,
     },
     {
-      id: 'baseline-historical',
-      label: 'Baseline & Historical',
-      count: counts.baselineHistorical,
+      key: "unreleased",
+      label: "Unreleased Source",
+      count: stats.unreleasedCount,
     },
     {
-      id: 'github-unverified',
-      label: 'GitHub Unverified',
-      count: counts.githubUnverified,
+      key: "github-unverified",
+      label: "GitHub Unverified",
+      count: stats.githubUnverifiedCount,
     },
     {
-      id: 'breaking',
-      label: 'Breaking Changes',
-      count: counts.breaking,
+      key: "breaking",
+      label: "Breaking Changes",
+      count: stats.breakingReleaseCount,
     },
   ];
 
-  const hasActiveFilter = filter !== 'all' || normalizedQuery.length > 0;
-  const activeBanner = activeRelease
-    ? getProvenanceBannerMeta(activeRelease)
-    : null;
-  const visibleSections = activeRelease
-    ? activeRelease.sections.filter((sec) => !sec.isEmptyNone)
-    : [];
-
   return (
-    <div className={className ? `${styles.folioRoot} ${className}` : styles.folioRoot}>
-      <div className={styles.controlsPanel} data-reveal="up">
-        <div className={styles.controlsTop}>
-          <div className={styles.searchWrap}>
+    <div className={styles.folio}>
+      <div className={styles.folioSelectors}>
+        <div className={styles.spineBar}>
+          <p className={styles.spineKicker}>RELEASE SPINE</p>
+          <p className={styles.spineCount}>
+            {filteredReleases.length} of {releases.length} source entries
+          </p>
+        </div>
+
+        <div className={styles.controlsBlock}>
+          <div className={styles.searchField}>
             <input
+              id="changelog-search"
               type="search"
               className={styles.searchInput}
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={`Search ${stats.totalReleases} releases by version, package, or change...`}
-              aria-label={`Search ${stats.totalReleases} AstraFlow releases`}
+              value={activeSearch}
+              onChange={(event) => handleSearchChange(event.target.value)}
+              placeholder="Filter by version, package, feature, or breaking change..."
+              aria-label={`Search ${releases.length} AstraFlow releases`}
             />
-            {query ? (
+            {activeSearch ? (
               <button
                 type="button"
-                className={styles.clearSearchBtn}
-                onClick={() => setQuery('')}
+                className={styles.clearButton}
+                onClick={() => handleSearchChange("")}
               >
                 Clear
               </button>
             ) : null}
           </div>
 
-          <div className={styles.resultSummary} aria-live="polite">
-            <span>
-              Showing {filteredReleases.length} of {releases.length} releases
-            </span>
-            {hasActiveFilter ? (
-              <button
-                type="button"
-                className={styles.resetBtn}
-                onClick={() => {
-                  setFilter('all');
-                  setQuery('');
-                }}
-              >
-                Reset filters
-              </button>
-            ) : null}
+          <div
+            className={styles.filterGroup}
+            role="group"
+            aria-label="Filter releases by provenance"
+          >
+            {filterOptions.map((option) => {
+              const isSelected = activeFilter === option.key;
+              return (
+                <button
+                  key={option.key}
+                  type="button"
+                  aria-pressed={isSelected}
+                  className={`${styles.filterPill} ${
+                    isSelected ? styles.filterPillActive : ""
+                  }`}
+                  onClick={() => handleFilterClick(option.key)}
+                >
+                  <span>{option.label}</span>
+                  <span className={styles.filterCount}>{option.count}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div
-          className={styles.filterRow}
-          role="group"
-          aria-label="Filter releases by provenance or breaking status"
-        >
-          {filterButtons.map((btn) => {
-            const pressed = filter === btn.id;
-            return (
-              <button
-                key={btn.id}
-                type="button"
-                aria-pressed={pressed}
-                className={styles.filterBtn}
-                onClick={() => {
-                  setFilter(btn.id);
-                  const firstMatch = releases.find((item) => {
-                    if (btn.id === 'published-confirmed') {
-                      return item.status === 'published-confirmed';
-                    }
-                    if (btn.id === 'unreleased') {
-                      return item.status === 'unreleased';
-                    }
-                    if (btn.id === 'baseline-historical') {
-                      return (
-                        item.status === 'published-baseline' ||
-                        item.status === 'historical-release'
-                      );
-                    }
-                    if (btn.id === 'github-unverified') {
-                      return item.status === 'github-unverified';
-                    }
-                    if (btn.id === 'breaking') return item.isBreaking;
-                    return true;
-                  });
-                  if (firstMatch) {
-                    setSelectedAnchor(firstMatch.anchorId);
-                  }
-                }}
-              >
-                <span>{btn.label}</span>
-                <span className={styles.filterCount}>({btn.count})</span>
-              </button>
-            );
-          })}
-        </div>
+        {filteredReleases.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p className={styles.emptyTitle}>No matching release entries</p>
+            <p className={styles.emptyCopy}>
+              No versions in CHANGELOG.md match the active provenance filter and
+              search query.
+            </p>
+            <button
+              type="button"
+              className={styles.stepButton}
+              onClick={handleReset}
+            >
+              Reset search and filters
+            </button>
+          </div>
+        ) : (
+          <ol
+            className={styles.folioList}
+            tabIndex={0}
+            aria-label="Changelog release entries"
+          >
+            {filteredReleases.map((release, index) => {
+              const isSelected = release.anchorId === activeRelease?.anchorId;
+              return (
+                <li key={release.anchorId} className={styles.folioListItem}>
+                  <button
+                    ref={(node) => {
+                      rowRefs.current[index] = node;
+                    }}
+                    type="button"
+                    aria-current={isSelected ? "true" : undefined}
+                    className={`${styles.folioRow} ${
+                      isSelected ? styles.folioRowActive : ""
+                    }`}
+                    onClick={() => selectRelease(release.anchorId)}
+                    onKeyDown={(event) => handleRowKeyDown(event, index)}
+                  >
+                    <span className={styles.folioRowMain}>
+                      <span className={styles.folioRowHeader}>
+                        <span className={styles.folioRowVersion}>
+                          v{release.version}
+                        </span>
+                        <span
+                          className={`${styles.folioRowTag} ${
+                            release.isUnreleased
+                              ? styles.folioRowTagUnreleased
+                              : ""
+                          }`}
+                        >
+                          {getShortSpineTag(release)}
+                        </span>
+                        {release.isBreaking ? (
+                          <span
+                            className={`${styles.folioRowTag} ${styles.folioRowTagBreaking}`}
+                          >
+                            Breaking
+                          </span>
+                        ) : null}
+                      </span>
+                      <span className={styles.folioRowHeadline}>
+                        {release.headline}
+                      </span>
+                    </span>
+                    <span className={styles.folioRowArrow} aria-hidden="true">
+                      ↗
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        )}
       </div>
 
-      <div className={styles.folioGrid}>
-        <div className={styles.spineColumn} data-reveal="up">
-          <div className={styles.spineHeader}>
-            <span>CHRONOLOGICAL SPINE</span>
-            <span>{filteredReleases.length} ENTRIES</span>
+      <aside className={styles.folioFeature} aria-label="Selected release folio">
+        {!activeRelease ? (
+          <div className={styles.emptyState}>
+            <p className={styles.emptyTitle}>Select a release</p>
+            <p className={styles.emptyCopy}>
+              Reset the filters on the left to inspect recorded editions from
+              CHANGELOG.md.
+            </p>
           </div>
-
-          <div
-            className={styles.spineListWrap}
-            tabIndex={0}
-            aria-label="Chronological release history list"
-          >
-            {filteredReleases.length === 0 ? (
-              <div className={styles.emptyState}>
-                <p>No releases match the active filter or search term.</p>
-                <button
-                  type="button"
-                  className={styles.resetBtn}
-                  onClick={() => {
-                    setFilter('all');
-                    setQuery('');
-                  }}
-                >
-                  Show all {releases.length} releases
-                </button>
+        ) : (
+          <article id={activeRelease.anchorId} className={styles.folioCard}>
+            <div className={styles.folioArt}>
+              <div className={styles.folioArtBack} aria-hidden="true">
+                <span className={styles.folioArtBackLabel}>SOURCE RECORD</span>
               </div>
-            ) : (
-              <ol className={styles.spineList}>
-                {filteredReleases.map((release, index) => {
-                  const isSelected =
-                    activeRelease?.anchorId === release.anchorId;
-                  return (
-                    <li key={release.version} className={styles.spineItem}>
-                      <button
-                        ref={(el) => {
-                          spineBtnRefs.current[release.anchorId] = el;
-                        }}
-                        type="button"
-                        aria-pressed={isSelected}
-                        className={styles.spineBtn}
-                        onClick={() => selectReleaseFromSpine(release)}
-                        onKeyDown={(event) => handleSpineKeyDown(event, index)}
-                      >
-                        <div className={styles.spineRowTop}>
-                          <div className={styles.spineVersionGroup}>
-                            <span className={styles.spineVersion}>
-                              v{release.version}
-                            </span>
-                            <span className={styles.spineDate}>
-                              {release.releaseDate ??
-                                (release.isUnreleased
-                                  ? 'Unreleased'
-                                  : release.rawQualifier ?? 'Source record')}
-                            </span>
-                          </div>
-                          <span
-                            className={`${styles.spineBadge} ${getStatusBadgeClass(
-                              release.status,
-                            )}`}
-                          >
-                            {getShortProvenanceCode(release)}
-                          </span>
-                        </div>
+              <div className={styles.folioArtMiddle} aria-hidden="true" />
 
-                        <p className={styles.spineHeadline}>{release.headline}</p>
-
-                        <div className={styles.spineMetaRow}>
-                          <span>{release.itemCount} changes</span>
-                          {release.isBreaking ? (
-                            <span className={styles.breakingChip}>
-                              Breaking changes
-                            </span>
-                          ) : null}
-                        </div>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ol>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.stageColumn} data-reveal="up">
-          {activeRelease ? (
-            <article
-              ref={stageRef}
-              id={activeRelease.anchorId}
-              className={`${styles.stageFolio}${
-                highlightedAnchor === activeRelease.anchorId
-                  ? ` ${styles.stageFolioHighlight}`
-                  : ''
-              }`}
-              aria-live="polite"
-            >
-              <div className={styles.stageTopMeta}>
-                <span>EDITION FOLIO / VERIFIED SOURCE RECORD</span>
-                <span>
-                  {activeFilterIndex >= 0
-                    ? `${activeFilterIndex + 1} OF ${filteredReleases.length}`
-                    : `v${activeRelease.version}`}
-                </span>
-              </div>
-
-              <header className={styles.stageHeader}>
-                <div className={styles.stageVersionLine}>
-                  <h3 className={styles.monumentalVersion}>
-                    v{activeRelease.version}
-                  </h3>
-                  <div className={styles.stagePills}>
-                    <span
-                      className={`${styles.spineBadge} ${getStatusBadgeClass(
-                        activeRelease.status,
-                      )}`}
-                    >
-                      {activeRelease.statusLabel}
-                    </span>
-                    {activeRelease.releaseDate ? (
-                      <span className={styles.highlightTag}>
-                        {activeRelease.releaseDate}
-                      </span>
-                    ) : null}
-                    {activeRelease.isBreaking ? (
-                      <span className={styles.breakingChip}>
-                        Breaking changes
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-
-                <p className={styles.stageHeadline}>{activeRelease.headline}</p>
-
-                {activeRelease.highlightTags.length > 0 ? (
-                  <div className={styles.highlightTags}>
-                    {activeRelease.highlightTags.map((tag) => (
-                      <span key={tag} className={styles.highlightTag}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </header>
-
-              {activeBanner ? (
-                <div
-                  className={`${styles.provenanceBanner} ${activeBanner.toneClass}`}
-                >
-                  <span className={styles.bannerTitle}>{activeBanner.title}</span>
-                  <p className={styles.bannerText}>{activeBanner.body}</p>
-                </div>
-              ) : null}
-
-              <div className={styles.drawerBar}>
-                <button
-                  type="button"
-                  aria-expanded={notesExpanded}
-                  aria-controls={`${activeRelease.anchorId}-detail`}
-                  className={styles.notesToggleBtn}
-                  onClick={() => setNotesExpanded((prev) => !prev)}
-                >
-                  {notesExpanded
-                    ? `Hide structured change notes (${activeRelease.itemCount})`
-                    : `Show structured change notes (${activeRelease.itemCount})`}
-                </button>
-              </div>
-
-              {notesExpanded ? (
-                <div
-                  id={`${activeRelease.anchorId}-detail`}
-                  className={styles.sectionsDetail}
-                >
-                  {activeRelease.isBreaking &&
-                  activeRelease.breakingChanges.length > 0 ? (
-                    <div className={styles.breakingAlert} role="note">
-                      <span className={styles.breakingTitle}>
-                        BREAKING / COMPATIBILITY NOTICE
-                      </span>
-                      <ul className={styles.itemList}>
-                        {activeRelease.breakingChanges.map((item, idx) => (
-                          <li
-                            key={`brk-${idx}`}
-                            dangerouslySetInnerHTML={{ __html: item.html }}
-                          />
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-
-                  {visibleSections.length > 0 ? (
-                    visibleSections.map((section) => {
-                      const items = section.items.filter(
-                        (item) => !item.isNonePlaceholder,
-                      );
-                      if (items.length === 0) return null;
-                      return (
-                        <section
-                          key={section.title}
-                          className={styles.sectionBlock}
-                          aria-label={`${section.title} changes in v${activeRelease.version}`}
-                        >
-                          <div className={styles.sectionHeadingRow}>
-                            <span
-                              className={`${styles.categoryBadge} ${getCategoryClass(
-                                section.normalizedTitle,
-                              )}`}
-                            >
-                              {section.title}
-                            </span>
-                            <span className={styles.categoryCount}>
-                              {items.length}{' '}
-                              {items.length === 1 ? 'item' : 'items'}
-                            </span>
-                          </div>
-                          <ul className={styles.itemList}>
-                            {items.map((item, itemIdx) => (
-                              <li
-                                key={`${section.title}-${itemIdx}`}
-                                dangerouslySetInnerHTML={{ __html: item.html }}
-                              />
-                            ))}
-                          </ul>
-                        </section>
-                      );
-                    })
-                  ) : (
-                    <div className={styles.sectionBlock}>
-                      <p className={styles.bannerText}>
-                        {activeRelease.rawHeading} — see CHANGELOG.md for full
-                        source context.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ) : null}
-
-              <footer className={styles.stageFooter}>
-                <button
-                  type="button"
-                  className={styles.stepBtn}
-                  disabled={activeFilterIndex <= 0}
-                  onClick={() => {
-                    const newer = filteredReleases[activeFilterIndex - 1];
-                    if (newer) selectReleaseFromSpine(newer);
-                  }}
-                >
-                  ← Newer edition
-                </button>
-                <button
-                  type="button"
-                  className={styles.stepBtn}
-                  disabled={
-                    activeFilterIndex < 0 ||
-                    activeFilterIndex >= filteredReleases.length - 1
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={activeRelease.version}
+                  className={styles.folioArtFront}
+                  initial={
+                    reducedMotion
+                      ? { opacity: 0, rotate: -6 }
+                      : { opacity: 0, y: 12, rotate: -9, scale: 0.97 }
                   }
-                  onClick={() => {
-                    const older = filteredReleases[activeFilterIndex + 1];
-                    if (older) selectReleaseFromSpine(older);
+                  animate={{ opacity: 1, y: 0, rotate: -6, scale: 1 }}
+                  exit={
+                    reducedMotion
+                      ? { opacity: 0, rotate: -6 }
+                      : { opacity: 0, y: -10, rotate: -3, scale: 0.97 }
+                  }
+                  transition={{
+                    duration: reducedMotion ? 0.08 : 0.28,
+                    ease: [0.22, 0.75, 0.19, 1],
                   }}
                 >
-                  Older edition →
-                </button>
+                  <p className={styles.folioArtEyebrow}>
+                    SOURCE EDITION /{" "}
+                    {String(Math.max(0, globalPosition) + 1).padStart(2, "0")}
+                  </p>
+                  <p className={styles.folioArtVersion}>
+                    v{activeRelease.version}
+                  </p>
+                  <div className={styles.folioArtBottom}>
+                    <p className={styles.folioArtProvenance}>
+                      {getShortSpineTag(activeRelease)}
+                    </p>
+                    <FolioCornerGeometry />
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+
+            <div className={styles.folioDetail}>
+              <div className={styles.badgeRow}>
+                <span
+                  className={`${styles.statusBadge} ${getBadgeStyleClass(
+                    activeRelease.status,
+                  )}`}
+                >
+                  {activeRelease.statusLabel}
+                </span>
+                {activeRelease.releaseDate ? (
+                  <span className={styles.dateChip}>
+                    Date · {activeRelease.releaseDate}
+                  </span>
+                ) : null}
+                {activeRelease.isBreaking ? (
+                  <span className={styles.breakingChip}>Breaking changes</span>
+                ) : null}
+              </div>
+
+              <h3 className={styles.folioHeadline}>{activeRelease.headline}</h3>
+              <p className={styles.folioProvenance}>
+                {activeRelease.provenanceNote}
+              </p>
+
+              {activeRelease.highlightTags.length > 0 ? (
+                <ul className={styles.tagList} aria-label="Highlighted areas">
+                  {activeRelease.highlightTags.slice(0, 6).map((tag) => (
+                    <li key={tag} className={styles.tagItem}>
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              <button
+                type="button"
+                className={styles.notesToggle}
+                aria-expanded={isNotesExpanded}
+                aria-controls={`${activeRelease.anchorId}-detail`}
+                onClick={() => setIsNotesExpanded((prev) => !prev)}
+              >
+                <span>
+                  {isNotesExpanded
+                    ? "Hide release notes"
+                    : "Show release notes"}
+                </span>
+                <span className={styles.notesCount}>
+                  {activeRelease.itemCount}{" "}
+                  {activeRelease.itemCount === 1 ? "entry" : "entries"}
+                </span>
+              </button>
+
+              <div
+                id={`${activeRelease.anchorId}-detail`}
+                hidden={!isNotesExpanded}
+                className={styles.notesDetail}
+              >
+                {activeRelease.sections.some((section) =>
+                  section.items.some((item) => !item.isNonePlaceholder),
+                ) ? (
+                  activeRelease.sections.map((section) => {
+                    const substantiveItems = section.items.filter(
+                      (item) => !item.isNonePlaceholder,
+                    );
+                    if (substantiveItems.length === 0) {
+                      return null;
+                    }
+                    const isBreakingSection =
+                      section.normalizedTitle === "Breaking Changes";
+
+                    return (
+                      <section
+                        key={section.title}
+                        className={styles.sectionBlock}
+                      >
+                        <h4
+                          className={`${styles.sectionHeading} ${
+                            isBreakingSection
+                              ? styles.sectionHeadingBreaking
+                              : ""
+                          }`}
+                        >
+                          {section.title}
+                        </h4>
+                        <ul className={styles.sectionItems}>
+                          {substantiveItems.map((item, idx) => (
+                            <li key={idx} className={styles.sectionItem}>
+                              <FormattedNoteText text={item.text} />
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
+                    );
+                  })
+                ) : (
+                  <p className={styles.emptyNotes}>
+                    No bulleted item deltas were parsed for{" "}
+                    <code>{activeRelease.rawHeading}</code>. Inspect the raw
+                    CHANGELOG.md record via the source link below.
+                  </p>
+                )}
+              </div>
+
+              <div className={styles.folioActions}>
+                <div className={styles.stepButtons}>
+                  <button
+                    type="button"
+                    className={styles.stepButton}
+                    disabled={activeIndex <= 0}
+                    onClick={() => {
+                      const prev = filteredReleases[activeIndex - 1];
+                      if (prev) {
+                        selectRelease(prev.anchorId);
+                      }
+                    }}
+                  >
+                    ← Newer
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.stepButton}
+                    disabled={activeIndex >= filteredReleases.length - 1}
+                    onClick={() => {
+                      const next = filteredReleases[activeIndex + 1];
+                      if (next) {
+                        selectRelease(next.anchorId);
+                      }
+                    }}
+                  >
+                    Older →
+                  </button>
+                </div>
+
                 <a
+                  className={styles.sourceLink}
                   href={activeRelease.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={styles.changelogLink}
                 >
-                  View in CHANGELOG.md ↗
+                  Full source notes ↗
                 </a>
-              </footer>
-            </article>
-          ) : null}
-        </div>
-      </div>
+              </div>
+            </div>
+          </article>
+        )}
+      </aside>
     </div>
   );
 }

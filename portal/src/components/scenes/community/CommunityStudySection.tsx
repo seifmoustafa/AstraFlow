@@ -113,9 +113,32 @@ export function CommunityStudySection({
   const activeItem = STUDY_QUESTIONS[activeIndex] ?? STUDY_QUESTIONS[0];
 
   const handleRelayRead = useCallback((text: string) => {
-    if (text && text.trim().length > 0) {
-      setRelayCaption(text);
+    const trimmed = text.trim();
+    if (!trimmed) {
+      return;
     }
+
+    const normalized = trimmed.toLowerCase();
+    if (
+      normalized === 'rest' ||
+      normalized === 'idle' ||
+      normalized === 'pulse' ||
+      normalized === 'active'
+    ) {
+      setRelayCaption(
+        'Continuous four-branch study relay sweeping active subsystem pathways.',
+      );
+      return;
+    }
+
+    if (trimmed.length < 14) {
+      setRelayCaption(
+        `Study relay tracking active branch (${trimmed}) across AstraFlow subsystems.`,
+      );
+      return;
+    }
+
+    setRelayCaption(trimmed);
   }, []);
 
   function focusCard(nextIndex: number) {

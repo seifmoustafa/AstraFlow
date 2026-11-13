@@ -1,11 +1,7 @@
-export {
-  VersionDeck,
-  CHANGELOG_FOCUS_EVENT,
-  type VersionDeckProps,
-} from './VersionDeck';
-
+export { ChangelogShell, type ChangelogShellProps } from "./ChangelogShell";
+export { VersionDeck, type VersionDeckProps } from "./VersionDeck";
 export {
   ReleaseFolio,
+  type ReleaseFilter,
   type ReleaseFolioProps,
-  type ChangelogFilterId,
-} from './ReleaseFolio';
+} from "./ReleaseFolio";

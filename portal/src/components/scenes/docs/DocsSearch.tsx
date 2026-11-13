@@ -9,11 +9,13 @@ import {
   useState,
   type KeyboardEvent,
 } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import type {
   DocCategory,
   DocCategoryGroup,
   DocSummary,
 } from '@/lib/docs';
+import { useReducedMotionSafe } from '@/components/hairline';
 import styles from './DocsSearch.module.css';
 
 export interface DocsSearchProps {
@@ -122,9 +124,11 @@ export function DocsSearch({
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const cardRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const resetCopyTimerRef = useRef<number | null>(null);
+  const reducedMotion = useReducedMotionSafe();
 
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<DocCategory | 'All'>('All');
+  const [showAllUnfiltered, setShowAllUnfiltered] = useState(false);
   const [activeSlugPath, setActiveSlugPath] = useState<string>(() => {
     const initial = docs.find((d) => d.slugPath === initialSlugPath);
     return initial?.slugPath ?? docs[0]?.slugPath ?? '';
@@ -150,12 +154,27 @@ export function DocsSearch({
     [docs, query, selectedCategory],
   );
 
+  const isDefaultUnfilteredView =
+    selectedCategory === 'All' && query.trim() === '';
+  const hasCollapsibleOverflow =
+    isDefaultUnfilteredView && filteredDocs.length > 10;
+  const visibleDocs =
+    hasCollapsibleOverflow && !showAllUnfiltered
+      ? filteredDocs.slice(0, 10)
+      : filteredDocs;
+
   const activeDoc = useMemo(() => {
-    if (filteredDocs.length === 0) return null;
+    if (visibleDocs.length === 0) return null;
     return (
-      filteredDocs.find((d) => d.slugPath === activeSlugPath) ?? filteredDocs[0]
+      visibleDocs.find((d) => d.slugPath === activeSlugPath) ?? visibleDocs[0]
     );
-  }, [activeSlugPath, filteredDocs]);
+  }, [activeSlugPath, visibleDocs]);
+
+  const activeDocIndex = useMemo(() => {
+    if (!activeDoc) return 0;
+    const found = visibleDocs.findIndex((d) => d.slugPath === activeDoc.slugPath);
+    return found >= 0 ? found : 0;
+  }, [activeDoc, visibleDocs]);
 
   useEffect(() => {
     const handleWindowKeyDown = (event: globalThis.KeyboardEvent) => {
@@ -240,7 +259,7 @@ export function DocsSearch({
     let targetIndex: number | null = null;
     if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
       event.preventDefault();
-      targetIndex = Math.min(filteredDocs.length - 1, index + 1);
+      targetIndex = Math.min(visibleDocs.length - 1, index + 1);
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
       event.preventDefault();
       if (index === 0) {
@@ -253,11 +272,15 @@ export function DocsSearch({
       targetIndex = 0;
     } else if (event.key === 'End') {
       event.preventDefault();
-      targetIndex = filteredDocs.length - 1;
+      targetIndex = visibleDocs.length - 1;
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      searchInputRef.current?.focus();
+      return;
     }
 
-    if (targetIndex !== null && filteredDocs[targetIndex]) {
-      setActiveSlugPath(filteredDocs[targetIndex].slugPath);
+    if (targetIndex !== null && visibleDocs[targetIndex]) {
+      setActiveSlugPath(visibleDocs[targetIndex].slugPath);
       cardRefs.current[targetIndex]?.focus();
     }
   };
@@ -266,6 +289,7 @@ export function DocsSearch({
     if (!activeDoc?.firstCodeSnippet) return;
     const ok = await copyText(activeDoc.firstCodeSnippet.code);
     if (!ok) return;
+
     setCopiedSlug(activeDoc.slugPath);
     if (resetCopyTimerRef.current !== null) {
       window.clearTimeout(resetCopyTimerRef.current);
@@ -278,76 +302,102 @@ export function DocsSearch({
   const snippetCopied = Boolean(activeDoc && copiedSlug === activeDoc.slugPath);
 
   return (
-    <div className={styles.deskRoot}>
-      <div className={styles.controlsBar}>
-        <div className={styles.searchRow}>
-          <div className={styles.searchFieldWrap}>
-            <span aria-hidden="true" className={styles.searchIcon}>
-              ⌕
-            </span>
-            <input
-              aria-label="Search all AstraFlow documentation"
-              autoComplete="off"
-              className={styles.searchInput}
-              id={inputId}
-              onChange={(event) => handleQueryChange(event.target.value)}
-              onKeyDown={handleInputKeyDown}
-              placeholder="Search APIs, mediator pipelines, mapping, analyzers, ADRs..."
-              ref={searchInputRef}
-              type="search"
-              value={query}
-            />
-            <span aria-hidden="true" className={styles.keycapGroup}>
-              <kbd className={styles.keycap}>/</kbd>
-              <kbd className={styles.keycap}>⌘ K</kbd>
-            </span>
-          </div>
+    <div className={styles.craftReference}>
+      <div className={styles.topRuleLine}>
+        <span className={styles.topRuleLeft}>
+          FIND THE RIGHT ANSWER / SOURCE-BASED
+        </span>
+        <span className={styles.topRuleCount} role="status">
+          {filteredDocs.length === docs.length
+            ? `${docs.length} SOURCE ARTICLES`
+            : `${filteredDocs.length} OF ${docs.length} SOURCE ARTICLES`}
+        </span>
+      </div>
 
-          <span aria-live="polite" className={styles.resultCount} role="status">
-            {filteredDocs.length} of {docs.length} guides
-          </span>
-        </div>
-
-        <div
-          aria-label="Filter documentation categories"
-          className={styles.filterGroup}
-          role="group"
-        >
-          <button
-            aria-pressed={selectedCategory === 'All'}
-            className={`${styles.filterPill} ${
-              selectedCategory === 'All' ? styles.filterPillActive : ''
-            }`}
-            onClick={() => handleCategoryChange('All')}
-            type="button"
-          >
-            <span>All tracks</span>
-            <span className={styles.filterCount}>{docs.length}</span>
-          </button>
-
-          {CATEGORY_ORDER.map((category) => {
-            const count = categoryCounts.get(category) ?? 0;
-            if (count === 0) return null;
-            const isPressed = selectedCategory === category;
-            return (
-              <button
-                aria-pressed={isPressed}
-                className={`${styles.filterPill} ${
-                  isPressed ? styles.filterPillActive : ''
-                }`}
-                key={category}
-                onClick={() => handleCategoryChange(category)}
-                type="button"
-              >
-                <span>{category}</span>
-                <span className={styles.filterCount}>{count}</span>
-              </button>
-            );
-          })}
+      {/* Giant Frameless Editorial Underline Search Bar */}
+      <div className={styles.underlineSearchBar}>
+        <span aria-hidden="true" className={styles.searchGlyph}>
+          ⌕
+        </span>
+        <label className={styles.srOnly} htmlFor={inputId}>
+          Search all AstraFlow documentation
+        </label>
+        <input
+          aria-label="Search all AstraFlow documentation"
+          autoComplete="off"
+          className={styles.underlineInput}
+          id={inputId}
+          onChange={(event) => handleQueryChange(event.target.value)}
+          onKeyDown={handleInputKeyDown}
+          placeholder="Search APIs, projections, pipelines, guides..."
+          ref={searchInputRef}
+          type="search"
+          value={query}
+        />
+        <div className={styles.searchKeycaps}>
+          {query ? (
+            <button
+              className={styles.clearBtn}
+              onClick={() => {
+                handleQueryChange('');
+                searchInputRef.current?.focus();
+              }}
+              type="button"
+            >
+              Clear
+            </button>
+          ) : null}
+          <kbd aria-hidden="true" className={styles.kbdChip}>
+            /
+          </kbd>
+          <kbd aria-hidden="true" className={styles.kbdChip}>
+            ⌘ K
+          </kbd>
         </div>
       </div>
 
-      <div className={styles.workbench}>
+      {/* Track Filter Pills */}
+      <div
+        aria-label="Filter documentation categories"
+        className={styles.filterPills}
+        role="group"
+      >
+        <button
+          aria-pressed={selectedCategory === 'All'}
+          className={`${styles.filterPill} ${
+            selectedCategory === 'All' ? styles.filterPillActive : ''
+          }`}
+          onClick={() => handleCategoryChange('All')}
+          type="button"
+        >
+          <span>All topics</span>
+          <span className={styles.filterCount}>{docs.length}</span>
+        </button>
+
+        {CATEGORY_ORDER.map((category) => {
+          const count = categoryCounts.get(category) ?? 0;
+          if (count === 0) return null;
+          const isPressed = selectedCategory === category;
+
+          return (
+            <button
+              aria-pressed={isPressed}
+              className={`${styles.filterPill} ${
+                isPressed ? styles.filterPillActive : ''
+              }`}
+              key={category}
+              onClick={() => handleCategoryChange(category)}
+              type="button"
+            >
+              <span>{category}</span>
+              <span className={styles.filterCount}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 2-Column Results Grid + Sticky Warm-Parchment Reference Lens */}
+      <div className={styles.craftReferenceGrid}>
         <div
           aria-label="Matching documentation results"
           className={styles.resultsGrid}
@@ -355,172 +405,214 @@ export function DocsSearch({
         >
           {filteredDocs.length === 0 ? (
             <div className={styles.emptyState} role="status">
+              <h3>No matching articles</h3>
               <p>
-                No guides matched <strong>“{query}”</strong> in{' '}
-                <strong>{selectedCategory}</strong>.
+                Try searching for <code>mediator</code>, <code>mapper</code>,{' '}
+                <code>diagnostics</code>, or clear your category filter.
               </p>
               <button
-                className={styles.resetBtn}
+                className="button button-outline"
                 onClick={() => {
                   setQuery('');
                   setSelectedCategory('All');
-                  setActiveSlugPath(docs[0]?.slugPath ?? '');
+                  searchInputRef.current?.focus();
                 }}
                 type="button"
               >
-                Reset search & filters
+                Reset search filters
               </button>
             </div>
           ) : (
-            filteredDocs.map((doc, index) => {
-              const isSelected = activeDoc?.slugPath === doc.slugPath;
-              return (
-                <article
-                  className={`${styles.docCard} ${
-                    isSelected ? styles.docCardSelected : ''
-                  }`}
-                  key={doc.slugPath}
-                >
+            <>
+              {visibleDocs.map((doc, index) => {
+                const isSelected = activeDoc?.slugPath === doc.slugPath;
+                return (
+                  <article
+                    className={`${styles.resultCard} ${
+                      isSelected ? styles.resultCardActive : ''
+                    }`}
+                    key={doc.slugPath}
+                  >
+                    <button
+                      aria-pressed={isSelected}
+                      className={styles.cardInspectBtn}
+                      onClick={() => setActiveSlugPath(doc.slugPath)}
+                      onFocus={() => setActiveSlugPath(doc.slugPath)}
+                      onKeyDown={(event) => handleCardKeyDown(event, index)}
+                      onMouseEnter={() => setActiveSlugPath(doc.slugPath)}
+                      ref={(el) => {
+                        cardRefs.current[index] = el;
+                      }}
+                      type="button"
+                    >
+                      <div className={styles.cardEyebrowRow}>
+                        <span className={styles.cardEyebrow}>
+                          {String(index + 1).padStart(2, '0')} / {doc.category}
+                        </span>
+                        {doc.isUnreleasedSource ? (
+                          <span className={styles.unreleasedTag}>2.4.0 SOURCE</span>
+                        ) : null}
+                      </div>
+                      <strong className={styles.cardTitle}>{doc.title}</strong>
+                      <span className={styles.cardSummary}>{doc.summary}</span>
+                      <span className={styles.cardFocusHint}>
+                        {isSelected ? 'IN FOCUS · INSPECTED' : 'SELECT TO INSPECT'}
+                      </span>
+                    </button>
+
+                    <div className={styles.cardFooter}>
+                      <span className={styles.cardMeta}>
+                        {doc.readingMinutes} min read
+                      </span>
+                      <Link className={styles.cardOpenLink} href={doc.href}>
+                        Open guide
+                        <span className={styles.srOnly}> — {doc.title}</span>{' '}
+                        <span aria-hidden="true">↗</span>
+                      </Link>
+                    </div>
+                  </article>
+                );
+              })}
+
+              {hasCollapsibleOverflow ? (
+                <div className={styles.showAllToggleWrap}>
                   <button
-                    aria-pressed={isSelected}
-                    className={styles.cardInspectBtn}
-                    onClick={() => setActiveSlugPath(doc.slugPath)}
-                    onFocus={() => setActiveSlugPath(doc.slugPath)}
-                    onKeyDown={(event) => handleCardKeyDown(event, index)}
-                    onMouseEnter={() => setActiveSlugPath(doc.slugPath)}
-                    ref={(el) => {
-                      cardRefs.current[index] = el;
-                    }}
+                    aria-expanded={showAllUnfiltered}
+                    className={styles.showAllToggleBtn}
+                    onClick={() => setShowAllUnfiltered((prev) => !prev)}
                     type="button"
                   >
-                    <div className={styles.cardEyebrowRow}>
-                      <span className={styles.cardEyebrow}>
-                        {String(index + 1).padStart(2, '0')} / {doc.category}
-                      </span>
-                      {doc.isUnreleasedSource ? (
-                        <span className={styles.unreleasedTag}>2.4.0 SOURCE</span>
-                      ) : null}
-                    </div>
-                    <strong className={styles.cardTitle}>{doc.title}</strong>
-                    <span className={styles.cardSummary}>{doc.summary}</span>
-                  </button>
-
-                  <div className={styles.cardFooter}>
-                    <span className={styles.cardMeta}>
-                      {doc.readingMinutes} min read
+                    <span>
+                      {showAllUnfiltered
+                        ? 'Collapse to featured 10 articles ↑'
+                        : `Show all ${filteredDocs.length} source articles ↓`}
                     </span>
-                    <Link className={styles.cardOpenLink} href={doc.href}>
-                      Open guide
-                      <span className={styles.srOnly}> — {doc.title}</span>{' '}
-                      <span aria-hidden="true">↗</span>
-                    </Link>
-                  </div>
-                </article>
-              );
-            })
+                    <span className={styles.showAllMeta}>
+                      {showAllUnfiltered
+                        ? `SHOWING ${filteredDocs.length} OF ${filteredDocs.length}`
+                        : `SHOWING 10 OF ${filteredDocs.length} · OR FILTER ABOVE`}
+                    </span>
+                  </button>
+                </div>
+              ) : null}
+            </>
           )}
         </div>
 
         <aside
           aria-label="Live document inspector preview"
           aria-live="polite"
-          className={styles.lensCard}
+          className={styles.lensInspector}
         >
-          {activeDoc ? (
-            <>
-              <div className={styles.lensTopBar}>
-                <span className={styles.lensEyebrow}>
-                  REFERENCE LENS / ACTIVE
-                </span>
-                <span className={styles.lensSourcePath}>{activeDoc.sourcePath}</span>
-              </div>
+          <div className={styles.lensHeader}>
+            <span className={styles.lensEyebrow}>
+              REFERENCE LENS / <strong>ACTIVE INSPECTION</strong>
+            </span>
+            {activeDoc ? (
+              <span className={styles.lensSourcePath}>{activeDoc.sourcePath}</span>
+            ) : null}
+          </div>
 
-              <h3 className={styles.lensTitle}>{activeDoc.title}</h3>
+          <div aria-hidden="true" className={styles.inspectorRule}>
+            <span />
+          </div>
 
-              <div className={styles.lensMetaRow}>
-                <span>{activeDoc.category}</span>
-                <span>{activeDoc.readingMinutes} min read</span>
-                <span>{activeDoc.wordCount} words</span>
-                {activeDoc.isUnreleasedSource ? (
-                  <span className={styles.unreleasedTag}>2.4.0 UNRELEASED SOURCE</span>
-                ) : null}
-              </div>
-
-              <p className={styles.lensSummary}>{activeDoc.summary}</p>
-
-              {activeDoc.toc.length > 0 ? (
-                <div>
-                  <p className={styles.lensSectionLabel}>On this page</p>
-                  <div className={styles.headingPillGrid}>
-                    {activeDoc.toc.slice(0, 6).map((heading) => (
-                      <Link
-                        className={styles.headingPill}
-                        href={`${activeDoc.href}#${heading.id}`}
-                        key={heading.id}
-                      >
-                        {heading.text}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              {activeDoc.firstCodeSnippet ? (
-                <div className={styles.codePreviewWrap}>
-                  <div className={styles.codePreviewBar}>
-                    <span className={styles.codePreviewLang}>
-                      {activeDoc.firstCodeSnippet.lang.toUpperCase()} PREVIEW
+          <AnimatePresence mode="wait">
+            {activeDoc ? (
+              <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                exit={reducedMotion ? {} : { opacity: 0, y: -6 }}
+                initial={reducedMotion ? false : { opacity: 0, y: 6 }}
+                key={activeDoc.slugPath}
+                transition={{ duration: reducedMotion ? 0 : 0.16 }}
+              >
+                <div className={styles.inspectorIndexLine}>
+                  <span>
+                    {String(activeDocIndex + 1).padStart(2, '0')} /{' '}
+                    {String(filteredDocs.length).padStart(2, '0')} ·{' '}
+                    {activeDoc.category} · {activeDoc.readingMinutes} MIN READ
+                  </span>
+                  {activeDoc.isUnreleasedSource ? (
+                    <span className={styles.unreleasedTag}>
+                      2.4.0 UNRELEASED SOURCE
                     </span>
-                    <button
-                      aria-label={
-                        snippetCopied
-                          ? `Copied ✓ (${activeDoc.firstCodeSnippet.lang.toUpperCase()} preview)`
-                          : `Copy snippet (${activeDoc.firstCodeSnippet.lang.toUpperCase()} preview)`
-                      }
-                      className={styles.copyBtn}
-                      onClick={handleCopyPreviewSnippet}
-                      type="button"
-                    >
-                      {snippetCopied ? 'Copied ✓' : 'Copy snippet'}
-                    </button>
-                  </div>
-                  <pre className={styles.codePreviewPre} tabIndex={0}>
-                    <code
-                      className={`language-${activeDoc.firstCodeSnippet.lang}`}
-                      dangerouslySetInnerHTML={{
-                        __html: activeDoc.firstCodeSnippet.html,
-                      }}
-                    />
-                  </pre>
+                  ) : null}
                 </div>
-              ) : null}
 
-              <div className={styles.lensActions}>
-                <Link className="button button-primary" href={activeDoc.href}>
-                  Read full guide{' '}
-                  <span aria-hidden="true" className="arrow">
+                <h3 className={styles.lensTitle}>{activeDoc.title}</h3>
+                <p className={styles.lensSummary}>{activeDoc.summary}</p>
+
+                {activeDoc.toc.length > 0 ? (
+                  <div className={styles.tocPreviewBox}>
+                    <p className={styles.lensSectionLabel}>On this page</p>
+                    <div className={styles.headingPillGrid}>
+                      {activeDoc.toc.slice(0, 5).map((heading) => (
+                        <Link
+                          className={styles.headingPill}
+                          href={`${activeDoc.href}#${heading.id}`}
+                          key={heading.id}
+                        >
+                          {heading.text}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+
+                {activeDoc.firstCodeSnippet ? (
+                  <div className={styles.codePreviewWrap}>
+                    <div className={styles.codePreviewBar}>
+                      <span className={styles.codePreviewLang}>
+                        {activeDoc.firstCodeSnippet.lang.toUpperCase()} PREVIEW
+                      </span>
+                      <button
+                        aria-label={
+                          snippetCopied
+                            ? `Copied ✓ (${activeDoc.firstCodeSnippet.lang.toUpperCase()} preview)`
+                            : `Copy snippet (${activeDoc.firstCodeSnippet.lang.toUpperCase()} preview)`
+                        }
+                        className={styles.copyBtn}
+                        onClick={handleCopyPreviewSnippet}
+                        type="button"
+                      >
+                        {snippetCopied ? 'Copied ✓' : 'Copy snippet'}
+                      </button>
+                    </div>
+                    <pre className={styles.codePreviewPre} tabIndex={0}>
+                      <code
+                        className={`language-${activeDoc.firstCodeSnippet.lang}`}
+                        dangerouslySetInnerHTML={{
+                          __html: activeDoc.firstCodeSnippet.html,
+                        }}
+                      />
+                    </pre>
+                  </div>
+                ) : null}
+
+                <Link className={styles.inspectorActionLink} href={activeDoc.href}>
+                  <span>Explore this reference</span>
+                  <span aria-hidden="true" className={styles.inspectorArrow}>
                     ↗
                   </span>
                 </Link>
-                <a
-                  className="button button-outline"
-                  href={activeDoc.githubUrl}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  View markdown source{' '}
-                  <span aria-hidden="true" className="arrow">
-                    ↗
-                  </span>
-                </a>
-              </div>
-            </>
-          ) : (
-            <p className={styles.lensSummary}>
-              Select a documentation guide or adjust your filters to inspect its table of
-              contents and source code preview.
-            </p>
-          )}
+
+                <div className={styles.inspectorFooter}>
+                  <a
+                    className={styles.inspectorGithubLink}
+                    href={activeDoc.githubUrl}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    View source on GitHub ↗
+                  </a>
+                </div>
+              </motion.div>
+            ) : (
+              <p className={styles.lensSummary} key="empty">
+                Select an article or clear your search filter to inspect headings and starter code.
+              </p>
+            )}
+          </AnimatePresence>
         </aside>
       </div>
     </div>
