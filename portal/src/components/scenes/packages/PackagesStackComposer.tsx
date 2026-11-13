@@ -11,6 +11,7 @@ import {
   type KeyboardEvent,
 } from 'react';
 import type { AstraFlowPackage, ComposerPreset } from '@/lib/packages';
+import { LATEST_PUBLISHED_VERSION } from '@/lib/site-config';
 import {
   createCamera,
   createFacingPredicate,
@@ -353,7 +354,7 @@ export function PackagesStackComposer({
       case 'tool':
         return (
           stack.toolBlock ||
-          '# Select AstraFlow.Cli under Build-Time & Tooling to generate:\n# dotnet tool install --global AstraFlow.Cli --version 2.3.0'
+          `# Select AstraFlow.Cli under Build-Time & Tooling to generate:\n# dotnet tool install --global AstraFlow.Cli --version ${LATEST_PUBLISHED_VERSION}`
         );
       case 'combined':
         return stack.combinedBlock;
@@ -416,7 +417,7 @@ export function PackagesStackComposer({
           <div className={styles.topBarMeta}>
             <p className={styles.topKicker}>
               <span className={styles.topDot} aria-hidden="true" />
-              INTERACTIVE STACK COMPOSER · VERIFIED 2.3.0 MANIFEST
+              INTERACTIVE STACK COMPOSER · VERIFIED {LATEST_PUBLISHED_VERSION} MANIFEST
             </p>
             <div className={styles.telemetryPills}>
               <span className={styles.telemetryChip}>{packages.length} packages</span>

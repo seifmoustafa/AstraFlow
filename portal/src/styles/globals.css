@@ -34,13 +34,6 @@ body::before {
   pointer-events: none;
 }
 
-section[id],
-h2[id],
-h3[id],
-div[id] {
-  scroll-margin-top: 92px;
-}
-
 a {
   color: inherit;
   text-decoration: none;
@@ -3062,11 +3055,6 @@ h3 {
 @media (max-width: 770px) {
   html {
     scroll-padding-top: 75px;
-  }
-  section[id],
-  h2[id],
-  div[id] {
-    scroll-margin-top: 75px;
   }
   .brand strong {
     font-size: 22px;

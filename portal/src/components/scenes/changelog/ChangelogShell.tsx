@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useReducedMotionSafe } from "@/components/hairline";
 import {
   HeroStageEntrance,
   HeroTextReveal,
   MagneticButton,
+  scrollToElementOrHash,
 } from "@/components/motion";
 import type { ChangelogRelease, ChangelogStats } from "@/lib/changelog";
-import { GITHUB_LINKS } from "@/lib/site-config";
+import { GITHUB_LINKS, LATEST_PUBLISHED_DATE } from "@/lib/site-config";
 import { ReleaseFolio, type ReleaseFilter } from "./ReleaseFolio";
 import { VersionDeck } from "./VersionDeck";
 import styles from "./ChangelogShell.module.css";
@@ -20,7 +20,6 @@ export interface ChangelogShellProps {
 }
 
 export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
-  const reducedMotion = useReducedMotionSafe();
   const [selectedAnchor, setSelectedAnchor] = useState(
     () => releases[0]?.anchorId ?? "",
   );
@@ -30,7 +29,7 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
   useEffect(() => {
     const syncFromHash = () => {
       const rawHash = window.location.hash.replace(/^#/, "");
-      if (!rawHash) {
+      if (!rawHash || rawHash === "releases") {
         return;
       }
       const match = releases.find((release) => release.anchorId === rawHash);
@@ -38,6 +37,7 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
         setSelectedAnchor(match.anchorId);
         setFilter("all");
         setSearchQuery("");
+        scrollToElementOrHash("releases");
       }
     };
 
@@ -63,10 +63,7 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
 
     if (typeof window !== "undefined") {
       window.history.replaceState(null, "", `#${anchorId}`);
-      document.getElementById("releases")?.scrollIntoView({
-        behavior: reducedMotion ? "auto" : "smooth",
-        block: "start",
-      });
+      scrollToElementOrHash("releases");
     }
   };
 
@@ -113,11 +110,11 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
             >
               <span className={styles.provenanceItem}>
                 <span className={styles.provenanceDotSignal} aria-hidden="true" />
-                {stats.latestVersion} Latest Milestone
+                {stats.latestPublishedVersion} Published Suite
               </span>
               <span className={styles.provenanceItem}>
                 <span className={styles.provenanceDotForest} aria-hidden="true" />
-                {stats.latestPublishedVersion} NuGet Suite
+                Published {LATEST_PUBLISHED_DATE}
               </span>
               <span className={styles.provenanceItem}>
                 {stats.totalReleases} Recorded Editions
@@ -148,8 +145,11 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
               All {stats.totalReleases} AstraFlow editions —{" "}
               {stats.latestCount} latest milestone, {stats.majorCount} major
               releases, {stats.featureCount} feature updates,{" "}
-              {stats.historicalCount} archive releases, and{" "}
-              {stats.breakingReleaseCount} with breaking changes.
+              {stats.historicalCount} archive releases
+              {stats.deprecatedReleaseCount > 0
+                ? `, ${stats.deprecatedReleaseCount} deprecated`
+                : ""}
+              , and {stats.breakingReleaseCount} with breaking changes.
             </p>
           </div>
 

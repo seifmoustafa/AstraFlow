@@ -1,12 +1,18 @@
 import { readRepoText } from './repo-paths';
-import { getGitHubBlobUrl, GITHUB_LINKS } from './site-config';
+import {
+  getGitHubBlobUrl,
+  GITHUB_LINKS,
+  LATEST_PUBLISHED_DATE,
+  LATEST_PUBLISHED_VERSION,
+} from './site-config';
 import { renderMarkdown } from './markdown';
 
 export type ReleaseProvenanceStatus =
   | 'latest'
   | 'major'
   | 'feature'
-  | 'historical';
+  | 'historical'
+  | 'deprecated';
 
 export interface ChangelogItem {
   text: string;
@@ -31,11 +37,14 @@ export interface ChangelogRelease {
   provenanceNote: string;
   isPublished: boolean;
   isUnreleased: boolean;
+  isDeprecated: boolean;
+  hasDeprecations: boolean;
   isBreaking: boolean;
   headline: string;
   highlightTags: string[];
   sections: ChangelogSection[];
   breakingChanges: ChangelogItem[];
+  deprecations: ChangelogItem[];
   itemCount: number;
   anchorId: string;
   githubUrl: string;
@@ -51,6 +60,7 @@ export interface ChangelogStats {
   latestVersion: string;
   latestPublishedVersion: string;
   breakingReleaseCount: number;
+  deprecatedReleaseCount: number;
 }
 
 interface RawReleaseBlock {
@@ -74,9 +84,18 @@ function cleanPlainText(markdown: string): string {
     .trim();
 }
 
+function isDeprecatedQualifier(rawQualifier: string | null): boolean {
+  return Boolean(rawQualifier && /\b(deprecated|yanked|retired)\b/i.test(rawQualifier));
+}
+
+function isUnreleasedQualifier(rawQualifier: string | null): boolean {
+  return Boolean(rawQualifier && /\bunreleased\b/i.test(rawQualifier));
+}
+
 function classifyProvenance(
   version: string,
-  rawQualifier: string | null
+  rawQualifier: string | null,
+  isNewestActive: boolean
 ): {
   status: ReleaseProvenanceStatus;
   statusLabel: string;
@@ -84,18 +103,48 @@ function classifyProvenance(
   releaseDate: string | null;
   isPublished: boolean;
   isUnreleased: boolean;
+  isDeprecated: boolean;
 } {
   const qualifierDate = rawQualifier?.match(/(\d{4}-\d{2}-\d{2})/);
+  const extractedDate = qualifierDate ? qualifierDate[1] : null;
 
-  if (version === '2.4.0' || (rawQualifier && /unreleased/i.test(rawQualifier))) {
+  if (isDeprecatedQualifier(rawQualifier)) {
+    return {
+      status: 'deprecated',
+      statusLabel: 'Deprecated',
+      provenanceNote: `Deprecated AstraFlow release (${version})${extractedDate ? ` (${extractedDate})` : ''} — upgrade to AstraFlow ${LATEST_PUBLISHED_VERSION}.`,
+      releaseDate: extractedDate,
+      isPublished: false,
+      isUnreleased: false,
+      isDeprecated: true,
+    };
+  }
+
+  if (isUnreleasedQualifier(rawQualifier)) {
+    return {
+      status: 'latest',
+      statusLabel: 'Upcoming Milestone',
+      provenanceNote:
+        'Next AstraFlow development milestone currently prepared on the release branch.',
+      releaseDate: extractedDate,
+      isPublished: false,
+      isUnreleased: true,
+      isDeprecated: false,
+    };
+  }
+
+  if (isNewestActive || version === LATEST_PUBLISHED_VERSION) {
+    const releaseDate =
+      extractedDate ??
+      (version === LATEST_PUBLISHED_VERSION ? LATEST_PUBLISHED_DATE : null);
     return {
       status: 'latest',
       statusLabel: 'Latest Milestone',
-      provenanceNote:
-        'Current AstraFlow development milestone featuring fluent assertions, analyzer refinements, and developer tooling updates.',
-      releaseDate: qualifierDate ? qualifierDate[1] : null,
+      provenanceNote: `Latest published NuGet suite release${releaseDate ? ` (${releaseDate})` : ''} across runtime, integration, analyzer, and generator packages.`,
+      releaseDate,
       isPublished: true,
       isUnreleased: false,
+      isDeprecated: false,
     };
   }
 
@@ -104,32 +153,24 @@ function classifyProvenance(
       status: 'major',
       statusLabel: 'Major Release',
       provenanceNote: `Major AstraFlow platform milestone (${version}).`,
-      releaseDate: qualifierDate ? qualifierDate[1] : null,
+      releaseDate: extractedDate,
       isPublished: true,
       isUnreleased: false,
+      isDeprecated: false,
     };
   }
 
-  if (version === '2.3.0') {
-    const releaseDate = qualifierDate ? qualifierDate[1] : '2026-11-10';
+  if (/^[2-9]\.[1-9]\d*\.\d+$/.test(version)) {
+    const releaseDate =
+      extractedDate ?? (version === '2.3.0' ? '2026-11-10' : null);
     return {
       status: 'feature',
       statusLabel: 'Feature Release',
-      provenanceNote: `Latest stable NuGet suite release (${releaseDate}) across runtime, integration, analyzer, and generator packages.`,
+      provenanceNote: `Feature release in the AstraFlow 2.x series (${version})${releaseDate ? ` (${releaseDate})` : ''}.`,
       releaseDate,
       isPublished: true,
       isUnreleased: false,
-    };
-  }
-
-  if (/^2\.[1-9]\d*\.\d+$/.test(version)) {
-    return {
-      status: 'feature',
-      statusLabel: 'Feature Release',
-      provenanceNote: `Feature release in the AstraFlow 2.x series (${version}).`,
-      releaseDate: qualifierDate ? qualifierDate[1] : null,
-      isPublished: true,
-      isUnreleased: false,
+      isDeprecated: false,
     };
   }
 
@@ -137,9 +178,10 @@ function classifyProvenance(
     status: 'historical',
     statusLabel: 'Archive Release',
     provenanceNote: `Archive release from the AstraFlow 1.x line (${version}).`,
-    releaseDate: qualifierDate ? qualifierDate[1] : null,
+    releaseDate: extractedDate,
     isPublished: true,
     isUnreleased: false,
+    isDeprecated: false,
   };
 }
 
@@ -165,7 +207,7 @@ function sanitizeChangelogMarkdown(rawText: string): string {
     /v2\.1\.0\s+source\s+is\s+merged/i.test(text) ||
     /NuGet publication has not been verified/i.test(text)
   ) {
-    return 'v2.1.0 release archive note — superseded by current 2.3.0 packages.';
+    return `v2.1.0 release archive note — superseded by current ${LATEST_PUBLISHED_VERSION} packages.`;
   }
 
   text = text
@@ -323,7 +365,9 @@ function parseSections(lines: string[]): ChangelogSection[] {
 function extractHighlightTags(
   version: string,
   sections: ChangelogSection[],
-  breakingChanges: ChangelogItem[]
+  breakingChanges: ChangelogItem[],
+  deprecations: ChangelogItem[],
+  isDeprecatedRelease: boolean
 ): string[] {
   const tags: string[] = [];
   const corpus = sections
@@ -333,6 +377,9 @@ function extractHighlightTags(
 
   if (breakingChanges.length > 0) {
     tags.push('Breaking Changes');
+  }
+  if (isDeprecatedRelease || deprecations.length > 0) {
+    tags.push('Deprecated');
   }
   if (sections.some((s) => s.normalizedTitle === 'Security' && !s.isEmptyNone)) {
     tags.push('Security');
@@ -373,6 +420,7 @@ function deriveHeadline(
     'Added',
     'Changed',
     'Fixed',
+    'Deprecated',
     'Security',
     'Changes',
   ];
@@ -433,6 +481,7 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
   }
 
   const releases: ChangelogRelease[] = [];
+  let hasSeenNewestActive = false;
 
   for (const block of rawBlocks) {
     const headingMatch = block.rawHeading.match(/^(\d+\.\d+\.\d+)(?:\s*\(([^)]+)\))?/);
@@ -442,7 +491,15 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
 
     const version = headingMatch[1];
     const rawQualifier = headingMatch[2]?.trim() ?? null;
-    const provenance = classifyProvenance(version, rawQualifier);
+    const isNewestActive =
+      !hasSeenNewestActive &&
+      !isDeprecatedQualifier(rawQualifier) &&
+      !isUnreleasedQualifier(rawQualifier);
+    if (isNewestActive) {
+      hasSeenNewestActive = true;
+    }
+
+    const provenance = classifyProvenance(version, rawQualifier, isNewestActive);
     const sections = parseSections(block.lines);
 
     const breakingSection = sections.find(
@@ -453,6 +510,14 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
     );
     const isBreaking = breakingChanges.length > 0;
 
+    const deprecatedSection = sections.find(
+      (section) => section.normalizedTitle === 'Deprecated'
+    );
+    const deprecations = (deprecatedSection?.items ?? []).filter(
+      (item) => !item.isNonePlaceholder
+    );
+    const hasDeprecations = provenance.isDeprecated || deprecations.length > 0;
+
     const itemCount = sections.reduce(
       (count, section) =>
         count + section.items.filter((item) => !item.isNonePlaceholder).length,
@@ -460,10 +525,9 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
     );
 
     const anchorId = `v${version.replace(/[^a-zA-Z0-9.-]/g, '-')}`;
-    const githubUrl =
-      provenance.status === 'latest'
-        ? getGitHubBlobUrl('CHANGELOG.md')
-        : `${GITHUB_LINKS.releases}/tag/v${version}`;
+    const githubUrl = provenance.isUnreleased
+      ? getGitHubBlobUrl('CHANGELOG.md')
+      : `${GITHUB_LINKS.releases}/tag/v${version}`;
 
     const sanitizedQualifier =
       rawQualifier && /unverified|unreleased|not on nuget/i.test(rawQualifier)
@@ -484,11 +548,20 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
       provenanceNote: provenance.provenanceNote,
       isPublished: provenance.isPublished,
       isUnreleased: provenance.isUnreleased,
+      isDeprecated: provenance.isDeprecated,
+      hasDeprecations,
       isBreaking,
       headline: deriveHeadline(version, sections, provenance.statusLabel),
-      highlightTags: extractHighlightTags(version, sections, breakingChanges),
+      highlightTags: extractHighlightTags(
+        version,
+        sections,
+        breakingChanges,
+        deprecations,
+        provenance.isDeprecated
+      ),
       sections,
       breakingChanges,
+      deprecations,
       itemCount,
       anchorId,
       githubUrl,
@@ -512,10 +585,15 @@ export function getChangelogRelease(version: string): ChangelogRelease | null {
 
 export function getChangelogStats(): ChangelogStats {
   const releases = getAllChangelogReleases();
-  const latestRelease = releases.find((release) => release.status === 'latest') ?? releases[0];
+  const latestRelease =
+    releases.find((release) => release.status === 'latest') ??
+    releases.find((release) => !release.isDeprecated) ??
+    releases[0];
   const latestStable =
-    releases.find((release) => release.version === '2.3.0') ??
-    releases.find((release) => release.status === 'feature') ??
+    releases.find(
+      (release) => release.version === LATEST_PUBLISHED_VERSION && !release.isDeprecated
+    ) ??
+    releases.find((release) => release.isPublished && !release.isDeprecated) ??
     latestRelease;
 
   return {
@@ -524,9 +602,10 @@ export function getChangelogStats(): ChangelogStats {
     majorCount: releases.filter((release) => release.status === 'major').length,
     featureCount: releases.filter((release) => release.status === 'feature').length,
     historicalCount: releases.filter((release) => release.status === 'historical').length,
-    publishedCount: releases.length,
-    latestVersion: latestRelease?.version ?? '2.4.0',
-    latestPublishedVersion: latestStable?.version ?? '2.3.0',
+    publishedCount: releases.filter((release) => release.isPublished).length,
+    latestVersion: latestRelease?.version ?? LATEST_PUBLISHED_VERSION,
+    latestPublishedVersion: latestStable?.version ?? LATEST_PUBLISHED_VERSION,
     breakingReleaseCount: releases.filter((release) => release.isBreaking).length,
+    deprecatedReleaseCount: releases.filter((release) => release.hasDeprecations).length,
   };
 }

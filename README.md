@@ -4,11 +4,9 @@
 
 AstraFlow is a set of .NET packages for explicit request dispatch, object mapping, diagnostics, and test workflows. Each capability is a separate package, so applications can depend on the parts they use.
 
-**Current release:** `2.3.0` (reported published by the maintainer)
+**Current release:** `2.4.0` (published 2026-11-13; per maintainer confirmation)
 
-**Next release work:** `2.4.0` is in development. It is not available from NuGet yet.
-
-The 2.4.0 assertion foundation and enterprise generated-mapping phase are implemented. The generator suite has 80 passing tests, and all 313 solution tests pass. Local Release build, package, clean-consumer, API, upgrade, changelog, and reproducibility gates pass; hosted CI and remote SourceLink verification remain. The 2.4.0 package remains unpublished. Generated mediator dispatch is a separate roadmap candidate, not committed release scope.
+AstraFlow `2.4.0` adds the standalone, framework-neutral `AstraFlow.Assertions` package and expands compile-time generated mapping for inherited entity properties, nullable value flows, and record/primary-constructor DTOs across all 16 modular packages.
 
 ## What AstraFlow provides
 
@@ -25,7 +23,7 @@ AstraFlow does not choose an application architecture, add background work, or r
 For an application that uses both mediator and explicit mapper:
 
 ```powershell
-dotnet add package AstraFlow --version 2.3.0
+dotnet add package AstraFlow --version 2.4.0
 ```
 
 For focused dependencies, install only the package needed. For example, use `AstraFlow.Mediator` without the mapper, or `AstraFlow.Mapper` without the mediator. The [package selection guide](docs/package-selection.md) lists all package boundaries and target frameworks.

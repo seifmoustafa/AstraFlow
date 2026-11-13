@@ -268,6 +268,12 @@
   color: #8f2410;
 }
 
+.folioRowTagDeprecated {
+  background: #fcefde;
+  border-color: rgba(154, 78, 22, 0.36);
+  color: #6b3410;
+}
+
 .folioRowHeadline {
   margin: 0;
   font-size: 13.5px;
@@ -489,8 +495,14 @@
   color: #fffaf2;
 }
 
+.badgeDeprecated {
+  background: #6b3410;
+  color: #fffaf2;
+}
+
 .dateChip,
-.breakingChip {
+.breakingChip,
+.deprecatedChip {
   display: inline-flex;
   align-items: center;
   padding: 5px 10px;
@@ -512,6 +524,12 @@
   background: #fbe3d8;
   border: 1px solid rgba(168, 50, 27, 0.35);
   color: #7f210f;
+}
+
+.deprecatedChip {
+  background: #fcefde;
+  border: 1px solid rgba(154, 78, 22, 0.38);
+  color: #6b3410;
 }
 
 .folioHeadline {
@@ -619,6 +637,10 @@
 
 .sectionHeadingBreaking {
   color: #a8321b;
+}
+
+.sectionHeadingDeprecated {
+  color: #8a4412;
 }
 
 .sectionItems {

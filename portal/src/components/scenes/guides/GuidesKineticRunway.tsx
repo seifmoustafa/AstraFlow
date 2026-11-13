@@ -14,6 +14,7 @@ import type { LearningMilestone } from '@/lib/guides';
 import {
   LATEST_PUBLISHED_VERSION,
 } from '@/lib/site-config';
+import { scrollToElementOrHash } from '@/components/motion';
 import {
   createCamera,
   createFacingPredicate,
@@ -96,7 +97,6 @@ export interface GuidesHeroQuickJumpProps {
 }
 
 export function GuidesHeroQuickJump({ milestones }: GuidesHeroQuickJumpProps) {
-  const reducedMotion = useReducedMotionSafe();
   const [syncedIndex, setSyncedIndex] = useState(0);
 
   useEffect(() => {
@@ -153,11 +153,7 @@ export function GuidesHeroQuickJump({ milestones }: GuidesHeroQuickJumpProps) {
               onClick={() => {
                 setSyncedIndex(idx);
                 dispatchGuidesSelectEvent(idx);
-                const target = document.getElementById('guides-runway');
-                target?.scrollIntoView({
-                  behavior: reducedMotion ? 'auto' : 'smooth',
-                  block: 'start',
-                });
+                scrollToElementOrHash('guides-runway');
               }}
             >
               <span className={styles.quickJumpTop}>

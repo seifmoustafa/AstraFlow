@@ -13,6 +13,11 @@ These rules govern the Next.js 16 developer web portal under `portal/` and its s
   - `portal/src/lib/changelog.ts`
   - `portal/src/content/ui-copy.ts`
 - Follow `.agents/skills/portal-maintenance/SKILL.md` whenever synchronizing portal data or documentation, and run the portal verification suite (`npm run typecheck`, `npx eslint . --max-warnings 0`, `npm run build`, `npm run test:e2e`) before completion.
+- **Version, Deck & Playground Scalability Rules**:
+  - Published status is anchored by `Directory.Build.props` (`<Version>`), `CHANGELOG.md` (`## X.Y.Z (published YYYY-MM-DD)` vs `## X.Y.Z (unreleased)`), and `portal/src/lib/site-config.ts` (`LATEST_PUBLISHED_VERSION`, `LATEST_PUBLISHED_DATE`).
+  - `VersionDeck` on `/changelog` uses an automatic **6-card sliding window** driven by `CHANGELOG.md` (pinning the newest active edition and major landmarks, retiring older minor editions cleanly to `ReleaseFolio` so adding versions never breaks hero deck geometry).
+  - Adding new packages or interactive stack layers requires updating `portal/src/lib/packages.ts` (`PACKAGE_CATALOG` + `PACKAGE_CATEGORIES` + `PACKAGE_PRESETS`); `PackagesModuleLoom`, `PackagesStackComposer`, and `stack-resolver.ts` scale heights, plates, and camera fit automatically from catalog metadata.
+  - Mark deprecated releases via `## X.Y.Z (deprecated ...)` or per-release `### Deprecated` bullets in `CHANGELOG.md`; `changelog.ts` and `ReleaseFolio` surface `Deprecated` filters, badges, and section accents while excluding yanked/deprecated versions from `VersionDeck` hero promotion.
 
 ## 2. Warm Forest Design & Structure Preservation
 

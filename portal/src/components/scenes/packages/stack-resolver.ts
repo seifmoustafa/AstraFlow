@@ -4,6 +4,7 @@ import type {
   ResolvedPackageStack,
   StackWarning,
 } from '@/lib/packages';
+import { LATEST_PUBLISHED_VERSION } from '@/lib/site-config';
 
 export type PackageSpec = AstraFlowPackage;
 
@@ -97,7 +98,8 @@ export function resolvePackageStackClient(
   const packageOrder = packages.map((pkg) => pkg.id);
   const packageMap = new Map(packages.map((pkg) => [pkg.id, pkg]));
   const latestPublishedVersion =
-    packages.find((pkg) => pkg.isPublished && pkg.publishedVersion)?.publishedVersion ?? '2.3.0';
+    packages.find((pkg) => pkg.isPublished && pkg.publishedVersion)?.publishedVersion ??
+    LATEST_PUBLISHED_VERSION;
 
   const normalizedSet = new Set<string>();
   for (const id of selectedIds) {

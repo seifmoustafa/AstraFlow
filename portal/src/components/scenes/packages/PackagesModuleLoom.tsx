@@ -30,6 +30,8 @@ import {
   type Point3,
   type Projector,
 } from '@/components/hairline';
+import { scrollToElementOrHash } from '@/components/motion';
+import { LATEST_PUBLISHED_VERSION } from '@/lib/site-config';
 import { dispatchStageStackEvent } from './stack-resolver';
 import styles from './PackagesModuleLoom.module.css';
 
@@ -579,13 +581,7 @@ export function PackagesModuleLoom({
       mode: 'replace',
     });
 
-    const target = document.getElementById(composerAnchorId);
-    if (target) {
-      target.scrollIntoView({
-        behavior: reducedMotion ? 'auto' : 'smooth',
-        block: 'start',
-      });
-    }
+    scrollToElementOrHash(composerAnchorId);
   };
 
   const activePackages = useMemo(() => {
@@ -611,10 +607,11 @@ export function PackagesModuleLoom({
 
   const releaseStatusLabel = useMemo(() => {
     if (activeModule.id === 'tooling') {
-      return 'Published · 2.3.0 (PrivateAssets + .NET Tool)';
+      return `Published · ${LATEST_PUBLISHED_VERSION} (PrivateAssets + .NET Tool)`;
     }
     const publishedVersion =
-      activePackages.find((pkg) => pkg.publishedVersion)?.publishedVersion ?? '2.3.0';
+      activePackages.find((pkg) => pkg.publishedVersion)?.publishedVersion ??
+      LATEST_PUBLISHED_VERSION;
     return `Published · ${publishedVersion} NuGet`;
   }, [activeModule.id, activePackages]);
 

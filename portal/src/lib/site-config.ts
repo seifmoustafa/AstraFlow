@@ -7,12 +7,11 @@ export const SITE_TAGLINE = 'ENGINEERED CLARITY';
 export const SITE_DESCRIPTION =
   'Explicit .NET packages for mediator dispatch, object mapping, query projections, compile-time analyzers, source generators, diagnostics, and test workflows.';
 
-export const LATEST_PUBLISHED_VERSION = '2.3.0';
-export const LATEST_PUBLISHED_DATE = '2026-11-10';
+export const LATEST_PUBLISHED_VERSION = '2.4.0';
+export const LATEST_PUBLISHED_DATE = '2026-11-13';
 export const LATEST_PUBLISHED_PROVENANCE =
-  'Latest stable release (2026-11-10)';
-export const PREVIOUS_PUBLISHED_VERSION = '2.2.0';
-export const UNRELEASED_SOURCE_VERSION = '2.4.0';
+  'Latest stable release (2026-11-13)';
+export const PREVIOUS_PUBLISHED_VERSION = '2.3.0';
 
 export const LICENSE_NAME = 'MIT';
 

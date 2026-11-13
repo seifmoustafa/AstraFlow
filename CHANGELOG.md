@@ -2,7 +2,7 @@
 
 All notable AstraFlow changes are tracked here.
 
-## 2.4.0 (unreleased)
+## 2.4.0 (published 2026-11-13; per maintainer confirmation)
 
 ### Breaking Changes
 

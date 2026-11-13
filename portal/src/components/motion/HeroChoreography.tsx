@@ -284,9 +284,9 @@ export function MagneticButton({
     onMouseLeave?.(event);
   };
 
-  const isInternal = href.startsWith("/") || href.startsWith("#");
+  const isInternalRoute = href.startsWith("/");
 
-  if (isInternal) {
+  if (isInternalRoute) {
     return (
       <Link
         {...anchorProps}

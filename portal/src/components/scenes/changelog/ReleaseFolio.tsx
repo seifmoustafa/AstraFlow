@@ -28,7 +28,8 @@ export type ReleaseFilter =
   | "major"
   | "feature"
   | "historical"
-  | "breaking";
+  | "breaking"
+  | "deprecated";
 
 export interface ReleaseFolioProps {
   releases: readonly ChangelogRelease[];
@@ -56,6 +57,8 @@ function matchesFilter(
       return release.status === "historical";
     case "breaking":
       return release.isBreaking;
+    case "deprecated":
+      return release.hasDeprecations;
     case "all":
     default:
       return true;
@@ -97,6 +100,8 @@ function getBadgeStyleClass(status: ReleaseProvenanceStatus): string {
       return styles.badgePublished;
     case "feature":
       return styles.badgeFeature;
+    case "deprecated":
+      return styles.badgeDeprecated;
     case "historical":
     default:
       return styles.badgeHistorical;
@@ -104,6 +109,11 @@ function getBadgeStyleClass(status: ReleaseProvenanceStatus): string {
 }
 
 function getShortSpineTag(release: ChangelogRelease): string {
+  if (release.status === "deprecated") {
+    return release.releaseDate
+      ? `Deprecated · ${release.releaseDate}`
+      : "Deprecated";
+  }
   if (release.status === "latest") {
     return release.releaseDate
       ? `Latest · ${release.releaseDate}`
@@ -331,6 +341,15 @@ export function ReleaseFolio({
       label: "Breaking Changes",
       count: stats.breakingReleaseCount,
     },
+    ...(stats.deprecatedReleaseCount > 0
+      ? [
+          {
+            key: "deprecated" as const,
+            label: "Deprecated",
+            count: stats.deprecatedReleaseCount,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -437,7 +456,9 @@ export function ReleaseFolio({
                           className={`${styles.folioRowTag} ${
                             release.status === "latest"
                               ? styles.folioRowTagLatest
-                              : ""
+                              : release.status === "deprecated"
+                                ? styles.folioRowTagDeprecated
+                                : ""
                           }`}
                         >
                           {getShortSpineTag(release)}
@@ -447,6 +468,14 @@ export function ReleaseFolio({
                             className={`${styles.folioRowTag} ${styles.folioRowTagBreaking}`}
                           >
                             Breaking
+                          </span>
+                        ) : null}
+                        {release.hasDeprecations &&
+                        release.status !== "deprecated" ? (
+                          <span
+                            className={`${styles.folioRowTag} ${styles.folioRowTagDeprecated}`}
+                          >
+                            Deprecated
                           </span>
                         ) : null}
                       </span>
@@ -536,6 +565,10 @@ export function ReleaseFolio({
                 {activeRelease.isBreaking ? (
                   <span className={styles.breakingChip}>Breaking changes</span>
                 ) : null}
+                {activeRelease.hasDeprecations &&
+                activeRelease.status !== "deprecated" ? (
+                  <span className={styles.deprecatedChip}>Deprecations</span>
+                ) : null}
               </div>
 
               <h3 className={styles.folioHeadline}>{activeRelease.headline}</h3>
@@ -589,6 +622,8 @@ export function ReleaseFolio({
                     }
                     const isBreakingSection =
                       section.normalizedTitle === "Breaking Changes";
+                    const isDeprecatedSection =
+                      section.normalizedTitle === "Deprecated";
 
                     return (
                       <section
@@ -599,7 +634,9 @@ export function ReleaseFolio({
                           className={`${styles.sectionHeading} ${
                             isBreakingSection
                               ? styles.sectionHeadingBreaking
-                              : ""
+                              : isDeprecatedSection
+                                ? styles.sectionHeadingDeprecated
+                                : ""
                           }`}
                         >
                           {section.title}

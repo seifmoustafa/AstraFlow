@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { AstraFlowPackage } from '@/lib/packages';
-import { useReducedMotionSafe } from '@/components/hairline';
+import { scrollToElementOrHash } from '@/components/motion';
 import {
   dispatchStageStackEvent,
   PACKAGE_LAYER_GROUPS,
@@ -24,7 +24,6 @@ export function PackagesDirectory({
 }: PackagesDirectoryProps) {
   const [activeLayer, setActiveLayer] = useState<ComposerLayerKey | 'all'>('all');
   const [query, setQuery] = useState('');
-  const reducedMotion = useReducedMotionSafe();
 
   const filteredPackages = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -52,13 +51,7 @@ export function PackagesDirectory({
       mode: 'add',
     });
 
-    const target = document.getElementById(composerAnchorId);
-    if (target) {
-      target.scrollIntoView({
-        behavior: reducedMotion ? 'auto' : 'smooth',
-        block: 'start',
-      });
-    }
+    scrollToElementOrHash(composerAnchorId);
   };
 
   return (

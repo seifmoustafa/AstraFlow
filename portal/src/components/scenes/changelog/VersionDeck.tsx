@@ -15,17 +15,11 @@ import {
   seg,
   useReducedMotionSafe,
 } from "@/components/hairline";
+import { scrollToElementOrHash } from "@/components/motion";
 import type { ChangelogRelease, ChangelogStats } from "@/lib/changelog";
 import styles from "./VersionDeck.module.css";
 
-const FEATURED_VERSIONS = [
-  "2.4.0",
-  "2.3.0",
-  "2.2.0",
-  "2.1.0",
-  "2.0.0",
-  "1.0.0",
-] as const;
+const MAX_FEATURED_CARDS = 6;
 
 const IDLE_CYCLE_MS = 4500;
 
@@ -35,24 +29,48 @@ export interface VersionDeckProps {
   onJumpToRelease?: (anchorId: string) => void;
 }
 
+/**
+ * Selects a bounded 6-card sliding window from parsed CHANGELOG.md releases:
+ * 1) Excludes deprecated/yanked versions from hero promotion (they remain in ReleaseFolio).
+ * 2) Pins the newest active edition first and retains up to two major landmarks (including 1.0.0).
+ * 3) Fills remaining slots with the most recent active releases, preserving chronological order.
+ */
 function selectFeaturedReleases(
   releases: readonly ChangelogRelease[],
+  maxCards = MAX_FEATURED_CARDS,
 ): ChangelogRelease[] {
-  const byVersion = new Map(releases.map((release) => [release.version, release]));
-  const picked: ChangelogRelease[] = [];
+  const active = releases.filter((release) => !release.isDeprecated);
+  const pool = active.length > 0 ? active : [...releases];
 
-  for (const version of FEATURED_VERSIONS) {
-    const match = byVersion.get(version);
-    if (match) {
-      picked.push(match);
+  if (pool.length <= maxCards) {
+    return pool;
+  }
+
+  const selected = new Set<string>();
+  selected.add(pool[0].version);
+
+  const origin = pool.find((release) => release.version === "1.0.0");
+  if (origin) {
+    selected.add(origin.version);
+  }
+
+  const majorCandidates = pool.filter(
+    (release) => release.status === "major" && !selected.has(release.version),
+  );
+  for (const major of majorCandidates.slice(0, 1)) {
+    if (selected.size < maxCards) {
+      selected.add(major.version);
     }
   }
 
-  if (picked.length > 0) {
-    return picked;
+  for (const release of pool) {
+    if (selected.size >= maxCards) {
+      break;
+    }
+    selected.add(release.version);
   }
 
-  return releases.slice(0, 6);
+  return pool.filter((release) => selected.has(release.version));
 }
 
 /**
@@ -201,10 +219,7 @@ export function VersionDeck({
     if (typeof window !== "undefined") {
       window.history.replaceState(null, "", `#${activeRelease.anchorId}`);
       window.dispatchEvent(new HashChangeEvent("hashchange"));
-      document.getElementById("releases")?.scrollIntoView({
-        behavior: reducedMotion ? "auto" : "smooth",
-        block: "start",
-      });
+      scrollToElementOrHash("releases", { immediate: reducedMotion });
     }
   };
 

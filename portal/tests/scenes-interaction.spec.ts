@@ -481,7 +481,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const runwayWorkbench = page.locator("#runway-workbench-panel");
     await expect(runwayWorkbench).toContainText("AstraFlow.Assertions");
     await expect(runwayWorkbench).toContainText("Should()");
-    await expect(runwayWorkbench).toContainText("AstraFlow 2.3.0 Suite");
+    await expect(runwayWorkbench).toContainText("AstraFlow 2.4.0 Suite");
     await expect(runwayWorkbench).not.toContainText(/unreleased|not on nuget/i);
     await checkDesktopPreNoOverflow("Milestone 06");
     await expect(
@@ -506,6 +506,20 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     page,
   }) => {
     await page.goto("/changelog", { waitUntil: "networkidle" });
+
+    // Hero primary CTA smoothly scrolls to #releases and updates the URL hash
+    const exploreCta = page.getByRole("link", {
+      name: /Explore release notes/i,
+    });
+    await expect(exploreCta).toBeVisible();
+    await exploreCta.click();
+    await page.waitForFunction(() => {
+      const target = document.getElementById("releases");
+      if (!target) return false;
+      const top = target.getBoundingClientRect().top;
+      return window.location.hash === "#releases" && window.scrollY > 200 && top < 260;
+    });
+    await page.evaluate(() => window.scrollTo(0, 0));
 
     const folioTablist = page.getByRole("tablist", {
       name: "Key AstraFlow release milestones",
@@ -574,7 +588,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       {
         id: "v2.4.0",
         versionText: /^v2\.4\.0$/,
-        provenancePattern: /Latest Milestone|fluent assertions/i,
+        provenancePattern: /Latest Milestone|2026-11-13/i,
       },
       {
         id: "v2.3.0",

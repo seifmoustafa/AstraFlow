@@ -28,6 +28,7 @@ import {
   type Point2,
   type Point3,
 } from '@/components/hairline';
+import { LATEST_PUBLISHED_VERSION } from '@/lib/site-config';
 import styles from './LivingFlowAtlas.module.css';
 
 export type FlowCapabilityId = 'dispatch' | 'mapping' | 'diagnostics' | 'testing';
@@ -43,7 +44,7 @@ export type FlowAtlasState =
       readonly capability: 'dispatch';
       readonly stage: FlowStageIndex;
       readonly packageId: 'AstraFlow.Mediator';
-      readonly packageVersion: '2.3.0';
+      readonly packageVersion: string;
       readonly docHref: '/docs/mediator';
       readonly pulsePaused: boolean;
       readonly copyStatus: 'idle' | 'copied' | 'fallback';
@@ -52,7 +53,7 @@ export type FlowAtlasState =
       readonly capability: 'mapping';
       readonly stage: FlowStageIndex;
       readonly packageId: 'AstraFlow.Mapper';
-      readonly packageVersion: '2.3.0';
+      readonly packageVersion: string;
       readonly docHref: '/docs/mapper';
       readonly pulsePaused: boolean;
       readonly copyStatus: 'idle' | 'copied' | 'fallback';
@@ -61,7 +62,7 @@ export type FlowAtlasState =
       readonly capability: 'diagnostics';
       readonly stage: FlowStageIndex;
       readonly packageId: 'AstraFlow.Diagnostics';
-      readonly packageVersion: '2.3.0';
+      readonly packageVersion: string;
       readonly docHref: '/docs/diagnostics';
       readonly pulsePaused: boolean;
       readonly copyStatus: 'idle' | 'copied' | 'fallback';
@@ -70,7 +71,7 @@ export type FlowAtlasState =
       readonly capability: 'testing';
       readonly stage: FlowStageIndex;
       readonly packageId: 'AstraFlow.Testing';
-      readonly packageVersion: '2.3.0';
+      readonly packageVersion: string;
       readonly docHref: '/docs/testing';
       readonly pulsePaused: boolean;
       readonly copyStatus: 'idle' | 'copied' | 'fallback';
@@ -96,7 +97,7 @@ interface CapabilitySpec {
   readonly indexLabel: string;
   readonly shortTab: string;
   readonly packageId: FlowAtlasState['packageId'];
-  readonly packageVersion: '2.3.0';
+  readonly packageVersion: string;
   readonly docHref: FlowAtlasState['docHref'];
   readonly docLabel: string;
   readonly headline: string;
@@ -111,7 +112,7 @@ const CAPABILITIES: Readonly<Record<FlowCapabilityId, CapabilitySpec>> = {
     indexLabel: '01',
     shortTab: 'Request Dispatch',
     packageId: 'AstraFlow.Mediator',
-    packageVersion: '2.3.0',
+    packageVersion: LATEST_PUBLISHED_VERSION,
     docHref: '/docs/mediator',
     docLabel: 'Mediator guide',
     headline: 'A request, intentionally routed.',
@@ -184,7 +185,7 @@ const CAPABILITIES: Readonly<Record<FlowCapabilityId, CapabilitySpec>> = {
     indexLabel: '02',
     shortTab: 'Object Mapping',
     packageId: 'AstraFlow.Mapper',
-    packageVersion: '2.3.0',
+    packageVersion: LATEST_PUBLISHED_VERSION,
     docHref: '/docs/mapper',
     docLabel: 'Mapper guide',
     headline: 'Mapping is an explicit decision.',
@@ -258,7 +259,7 @@ const CAPABILITIES: Readonly<Record<FlowCapabilityId, CapabilitySpec>> = {
     indexLabel: '03',
     shortTab: 'Diagnostics',
     packageId: 'AstraFlow.Diagnostics',
-    packageVersion: '2.3.0',
+    packageVersion: LATEST_PUBLISHED_VERSION,
     docHref: '/docs/diagnostics',
     docLabel: 'Diagnostics guide',
     headline: 'What is knowable, visible.',
@@ -329,7 +330,7 @@ const CAPABILITIES: Readonly<Record<FlowCapabilityId, CapabilitySpec>> = {
     indexLabel: '04',
     shortTab: 'Testing Harnesses',
     packageId: 'AstraFlow.Testing',
-    packageVersion: '2.3.0',
+    packageVersion: LATEST_PUBLISHED_VERSION,
     docHref: '/docs/testing',
     docLabel: 'Testing guide',
     headline: 'Verify handlers without guesswork.',
@@ -387,7 +388,7 @@ const CAPABILITIES: Readonly<Record<FlowCapabilityId, CapabilitySpec>> = {
         role: 'RESULT',
         heading: 'Verify dispatched messages and clean diagnostic reports',
         explanation:
-          'Confirm SingleSent<CreateOrder>() and ShouldHaveNoDiagnosticErrors() using AstraFlow.Testing (published 2.3.0 on NuGet).',
+          `Confirm SingleSent<CreateOrder>() and ShouldHaveNoDiagnosticErrors() using AstraFlow.Testing (published ${LATEST_PUBLISHED_VERSION} on NuGet).`,
         apiSymbol: 'ShouldHaveNoDiagnosticErrors()',
         highlightLines: [13, 14],
       },
@@ -856,7 +857,7 @@ export function LivingFlowAtlas({
               Walk through a documented AstraFlow capability. Switch flows,
               select any stage plinth, and inspect the synchronized C# lines.{' '}
               <strong className={styles.captionStrong}>
-                Conceptual shapes grounded in verified 2.3.0 packages.
+                Conceptual shapes grounded in verified {LATEST_PUBLISHED_VERSION} packages.
               </strong>
             </p>
           </div>

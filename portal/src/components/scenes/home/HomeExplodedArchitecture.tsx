@@ -28,6 +28,7 @@ import {
   type Point2,
   type ReadonlyPoint3,
 } from '@/components/hairline';
+import { LATEST_PUBLISHED_VERSION } from '@/lib/site-config';
 import styles from './HomeExplodedArchitecture.module.css';
 
 export type AssemblyLayerIndex = 0 | 1 | 2;
@@ -97,7 +98,7 @@ const LAYER_SPECS: readonly AssemblyLayerSpec[] = [
       {
         id: 'contracts',
         name: 'AstraFlow.Contracts',
-        version: '2.3.0',
+        version: LATEST_PUBLISHED_VERSION,
         role: 'Zero-dependency request, notification, and stream contracts',
         href: '/packages#directory',
       },
@@ -127,14 +128,14 @@ const LAYER_SPECS: readonly AssemblyLayerSpec[] = [
       {
         id: 'mediator',
         name: 'AstraFlow.Mediator',
-        version: '2.3.0',
+        version: LATEST_PUBLISHED_VERSION,
         role: 'Request dispatch, pipeline behaviors, and notification fan-out',
         href: '/packages#directory',
       },
       {
         id: 'mapper',
         name: 'AstraFlow.Mapper',
-        version: '2.3.0',
+        version: LATEST_PUBLISHED_VERSION,
         role: 'Declared mapping rules and EF-safe projection builders',
         href: '/packages#directory',
       },
@@ -164,21 +165,21 @@ const LAYER_SPECS: readonly AssemblyLayerSpec[] = [
       {
         id: 'diagnostics',
         name: 'AstraFlow.Diagnostics',
-        version: '2.3.0',
+        version: LATEST_PUBLISHED_VERSION,
         role: 'Structured dispatch snapshots and safe redaction reporters',
         href: '/packages#directory',
       },
       {
         id: 'analyzers',
         name: 'AstraFlow.Analyzers',
-        version: '2.3.0',
+        version: LATEST_PUBLISHED_VERSION,
         role: 'Compile-time Roslyn analyzer rules & code fixes',
         href: '/packages#directory',
       },
       {
         id: 'testing',
         name: 'AstraFlow.Testing',
-        version: '2.3.0',
+        version: LATEST_PUBLISHED_VERSION,
         role: 'Deterministic FakeMediator and PipelineTestHarness<,>',
         href: '/packages#directory',
       },
@@ -491,7 +492,7 @@ export function HomeExplodedArchitecture({
               Every package occupies an explicit plane: shared abstractions sit above dispatch and mapping, grounded by static analyzers and deterministic test harnesses.
             </p>
             <div className={styles.headerMeta}>
-              <span className={styles.metaPill}>NuGet Suite · 2.3.0</span>
+              <span className={styles.metaPill}>NuGet Suite · {LATEST_PUBLISHED_VERSION}</span>
               <Link href="/packages#directory" className={styles.metaLink}>
                 Browse package matrix -&gt;
               </Link>
@@ -937,7 +938,7 @@ export function HomeExplodedArchitecture({
                   {activeSpec.docsLabel} -&gt;
                 </Link>
                 <Link href="/packages#directory" className={styles.detailDocLink}>
-                  All packages (2.3.0) -&gt;
+                  All packages ({LATEST_PUBLISHED_VERSION}) -&gt;
                 </Link>
               </div>
             </div>

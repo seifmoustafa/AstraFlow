@@ -1,5 +1,6 @@
 export {
   SmoothScrollProvider,
+  scrollToElementOrHash,
   type SmoothScrollProviderProps,
 } from "./SmoothScrollProvider";
 export {
