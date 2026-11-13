@@ -28,17 +28,70 @@ import {
   useReducedMotionSafe,
   useViewportActivity,
   WARM_FOREST_PALETTE,
+  type IsoCamera,
+  type FacingPredicate,
   type IsoPlateGeometry,
+  type IsoPrismVariant,
   type Point2,
   type Point3,
   type Projector,
 } from '@/components/hairline';
 import styles from './GuidesKineticRunway.module.css';
 
+export const GUIDES_SELECT_EVENT = 'astraflow:select-milestone';
+
+export interface GuidesSelectEventDetail {
+  index: number;
+}
+
+export function dispatchGuidesSelectEvent(index: number): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(
+    new CustomEvent<GuidesSelectEventDetail>(GUIDES_SELECT_EVENT, {
+      detail: { index },
+    }),
+  );
+}
+
 export interface GuidesKineticRunwayProps {
   milestones: LearningMilestone[];
   initialMilestoneId?: string;
   className?: string;
+}
+
+export interface GuidesHeroQuickJumpProps {
+  milestones: Pick<LearningMilestone, 'id' | 'stepNumber' | 'shortTitle'>[];
+}
+
+export function GuidesHeroQuickJump({ milestones }: GuidesHeroQuickJumpProps) {
+  const reducedMotion = useReducedMotionSafe();
+
+  return (
+    <div
+      className={styles.quickJumpStrip}
+      role="group"
+      aria-label="Quick jump to learning milestone"
+    >
+      {milestones.map((m, idx) => (
+        <button
+          key={m.id}
+          type="button"
+          className={styles.quickJumpBtn}
+          onClick={() => {
+            dispatchGuidesSelectEvent(idx);
+            const target = document.getElementById('guides-runway');
+            target?.scrollIntoView({
+              behavior: reducedMotion ? 'auto' : 'smooth',
+              block: 'start',
+            });
+          }}
+        >
+          <span className={styles.quickJumpIndex}>{m.stepNumber}</span>
+          <span>{m.shortTitle}</span>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 interface LocalCheckSpec {
@@ -89,9 +142,14 @@ const DEFAULT_LOCAL_CHECK: LocalCheckSpec = {
   note: 'Builds and tests the complete AstraFlow solution from source.',
 };
 
-const SVG_WIDTH = 840;
-const SVG_HEIGHT = 270;
-const PLATE_HALF = 24;
+const SVG_WIDTH = 900;
+const SVG_HEIGHT = 320;
+const PLATE_HALF = 28;
+
+interface MiniatureBlock {
+  geometry: IsoPlateGeometry;
+  tone: 'primary' | 'secondary' | 'accent';
+}
 
 interface StationGeometryEntry {
   index: number;
@@ -101,88 +159,125 @@ interface StationGeometryEntry {
   z1: number;
   conduitAnchor: Point3;
   geometry: IsoPlateGeometry;
+  miniatures: MiniatureBlock[];
+  bridgeVectors: string[];
   baseDropLine: string;
-  markPaths: string[];
+  badgeTickLine: string;
+  badgeCenter: Point2;
   dotCenters: Point2[];
 }
 
-function buildStationMark(
+function buildStationMiniatures(
   index: number,
-  P: Projector,
+  camera: IsoCamera,
+  project: Projector,
+  front: FacingPredicate,
   cx: number,
   cy: number,
   zTop: number,
-): string[] {
+): {
+  miniatures: MiniatureBlock[];
+  bridgeVectors: string[];
+  peakZ: number;
+} {
+  const makeBox = (
+    dx0: number,
+    dy0: number,
+    dx1: number,
+    dy1: number,
+    dz0: number,
+    dz1: number,
+    tone: MiniatureBlock['tone'],
+    radius = 2.2,
+  ): MiniatureBlock => ({
+    tone,
+    geometry: createIsoPlateGeometry({
+      camera,
+      project,
+      front,
+      x0: cx + dx0,
+      y0: cy + dy0,
+      x1: cx + dx1,
+      y1: cy + dy1,
+      z0: zTop + dz0,
+      z1: zTop + dz1,
+      radius,
+      creaseInset: 1.2,
+      steps: 4,
+    }),
+  });
+
+  let raw: MiniatureBlock[] = [];
+  const bridgeVectors: string[] = [];
+  let peakZ = zTop + 10;
+
   switch (index) {
     case 0: {
-      // Contracts frame
-      const sq: Point2[] = [
-        P(cx - 9, cy - 9, zTop),
-        P(cx + 9, cy - 9, zTop),
-        P(cx + 9, cy + 9, zTop),
-        P(cx - 9, cy + 9, zTop),
-        P(cx - 9, cy - 9, zTop),
+      // 01 Contracts: twin interlocking contract tablets
+      raw = [
+        makeBox(-14, -12, -1, 4, 0, 6.5, 'primary'),
+        makeBox(-1, -4, 14, 12, 2.5, 9.5, 'secondary'),
       ];
-      return [
-        open(sq),
-        seg(P(cx - 4, cy, zTop), P(cx + 4, cy, zTop)),
-      ];
+      peakZ = zTop + 9.5;
+      break;
     }
     case 1: {
-      // Mediator pipeline layers
-      return [
-        seg(P(cx - 10, cy - 5, zTop), P(cx + 10, cy - 5, zTop)),
-        seg(P(cx - 7, cy, zTop), P(cx + 7, cy, zTop)),
-        seg(P(cx - 10, cy + 5, zTop), P(cx + 10, cy + 5, zTop)),
+      // 02 Mediator & Pipelines: 3 stepped pipeline arches flanking central handler core
+      raw = [
+        makeBox(-16, -6, -9, 6, 0, 5.5, 'secondary'),
+        makeBox(-6, -16, 6, -9, 0, 5.5, 'secondary'),
+        makeBox(-6.5, -6.5, 6.5, 6.5, 0, 12, 'accent', 2.8),
+        makeBox(9, -6, 16, 6, 0, 5.5, 'secondary'),
       ];
+      peakZ = zTop + 12;
+      break;
     }
     case 2: {
-      // Explicit mapping transfer
-      return [
-        seg(P(cx - 10, cy - 6, zTop), P(cx - 2, cy - 6, zTop)),
-        seg(P(cx - 2, cy - 6, zTop), P(cx + 4, cy + 6, zTop)),
-        seg(P(cx + 4, cy + 6, zTop), P(cx + 10, cy + 6, zTop)),
-        seg(P(cx - 10, cy + 6, zTop), P(cx - 3, cy + 6, zTop)),
+      // 03 Explicit Mapping: separated Source & DTO prisms bridged by directional vector
+      raw = [
+        makeBox(-16, -13, -3, 2, 0, 7.5, 'secondary'),
+        makeBox(3, -2, 16, 13, 0, 7.5, 'primary'),
       ];
+      const pStart = project(cx - 2, cy - 3, zTop + 7.8);
+      const pEnd = project(cx + 3, cy + 2, zTop + 7.8);
+      bridgeVectors.push(seg(pStart, pEnd));
+      peakZ = zTop + 9.5;
+      break;
     }
     case 3: {
-      // Generators diamond + core
-      const inner: Point2[] = [
-        P(cx, cy - 9, zTop),
-        P(cx + 9, cy, zTop),
-        P(cx, cy + 9, zTop),
-        P(cx - 9, cy, zTop),
-        P(cx, cy - 9, zTop),
+      // 04 Source Generators: central Roslyn compiler die + emitted code slab
+      raw = [
+        makeBox(-11, -11, 5, 5, 0, 10.5, 'accent', 3),
+        makeBox(3, 3, 16, 16, 0, 4.8, 'secondary', 2),
       ];
-      return [
-        open(inner),
-        seg(P(cx - 3.5, cy, zTop), P(cx + 3.5, cy, zTop)),
-      ];
+      peakZ = zTop + 10.5;
+      break;
     }
     case 4: {
-      // Diagnostics telemetry waveform
-      return [
-        open([
-          P(cx - 11, cy + 4, zTop),
-          P(cx - 5, cy + 4, zTop),
-          P(cx - 2, cy - 7, zTop),
-          P(cx + 3, cy + 6, zTop),
-          P(cx + 6, cy - 2, zTop),
-          P(cx + 11, cy - 2, zTop),
-        ]),
+      // 05 Diagnostics & CLI: 3 ascending 3D telemetry bar prisms
+      raw = [
+        makeBox(-15, -5, -7, 5, 0, 4.5, 'secondary'),
+        makeBox(-4, -5, 4, 5, 0, 8.5, 'primary'),
+        makeBox(7, -5, 15, 5, 0, 12.5, 'accent'),
       ];
+      peakZ = zTop + 12.5;
+      break;
     }
     default: {
-      // Testing verification check
-      return [
-        open([
-          P(cx - 8, cy + 1, zTop),
-          P(cx - 2, cy + 7, zTop),
-          P(cx + 10, cy - 7, zTop),
-        ]),
+      // 06 Testing & Harnesses: U-shaped test harness cradle enclosing raised verified terracotta prism
+      raw = [
+        makeBox(-15, -14, -7, 11, 0, 6.5, 'secondary'),
+        makeBox(-7, -14, 15, -7, 0, 6.5, 'secondary'),
+        makeBox(-5.5, -5.5, 5.5, 6.5, 0, 11.5, 'accent', 2.8),
+        makeBox(7, -7, 15, 11, 0, 6.5, 'secondary'),
       ];
+      peakZ = zTop + 11.5;
+      break;
     }
   }
+
+  raw.sort((a, b) => a.geometry.depthKey - b.geometry.depthKey);
+  return { miniatures: raw, bridgeVectors, peakZ };
 }
 
 function getPackageQualifier(pkg: string): string | null {
@@ -217,7 +312,8 @@ export function GuidesKineticRunway({
 
   const [activeIndex, setActiveIndex] = useState<number>(initialIdx);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [pulsePaused, setPulsePaused] = useState<boolean>(false);
+  const [hasInteracted, setHasInteracted] = useState<boolean>(false);
+  const [waveIndex, setWaveIndex] = useState<number>(0);
   const [copiedKind, setCopiedKind] = useState<'code' | 'cli' | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState<string>('');
 
@@ -227,7 +323,7 @@ export function GuidesKineticRunway({
 
   const reducedMotion = useReducedMotionSafe();
   const stageActivity = useViewportActivity(stageRef, {
-    paused: pulsePaused || reducedMotion,
+    paused: reducedMotion,
     initialInView: true,
   });
 
@@ -239,18 +335,55 @@ export function GuidesKineticRunway({
     };
   }, []);
 
+  // Gentle idle beacon wave along stations without altering deterministic activeIndex tab state
+  useEffect(() => {
+    if (
+      reducedMotion ||
+      !stageActivity.isActive ||
+      hasInteracted ||
+      hoveredIndex !== null ||
+      milestones.length <= 1
+    ) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setWaveIndex((prev) => (prev + 1) % milestones.length);
+    }, 2200);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [reducedMotion, stageActivity.isActive, hasInteracted, hoveredIndex, milestones.length]);
+
+  // Listen to hero quick-jump milestone selection events
+  useEffect(() => {
+    const onExternalSelect = (event: Event) => {
+      const custom = event as CustomEvent<GuidesSelectEventDetail>;
+      if (typeof custom.detail?.index === 'number') {
+        const clamped = Math.max(0, Math.min(milestones.length - 1, custom.detail.index));
+        setHasInteracted(true);
+        setActiveIndex(clamped);
+      }
+    };
+    window.addEventListener(GUIDES_SELECT_EVENT, onExternalSelect);
+    return () => {
+      window.removeEventListener(GUIDES_SELECT_EVENT, onExternalSelect);
+    };
+  }, [milestones.length]);
+
   const count = milestones.length;
 
   const scene = useMemo(() => {
     const safeCount = Math.max(1, count);
     const mid = (safeCount - 1) / 2;
-    const stepX = 68;
-    const stepY = 64;
-    const zRise = 5.5;
+    const stepX = 76;
+    const stepY = 72;
+    const zRise = 6;
     const plateHeight = 11;
-    const maxLiftWorld = 12;
+    const maxLiftAndBadgeWorld = 34;
 
-    const cam = createCamera(45, 0.5, 1.34);
+    const cam = createCamera(45, 0.5, 1.36);
     const extrema: Point3[] = [];
     for (let i = 0; i < safeCount; i++) {
       const cx = (i - mid) * stepX;
@@ -260,11 +393,11 @@ export function GuidesKineticRunway({
       extrema.push(
         [cx - PLATE_HALF, cy - PLATE_HALF, 0],
         [cx + PLATE_HALF, cy + PLATE_HALF, 0],
-        [cx - PLATE_HALF, cy + PLATE_HALF, z1 + maxLiftWorld],
-        [cx + PLATE_HALF, cy - PLATE_HALF, z1 + maxLiftWorld],
+        [cx - PLATE_HALF, cy + PLATE_HALF, z1 + maxLiftAndBadgeWorld],
+        [cx + PLATE_HALF, cy - PLATE_HALF, z1 + maxLiftAndBadgeWorld],
       );
     }
-    fitCamera(cam, extrema, SVG_WIDTH / 2, SVG_HEIGHT / 2 + 12);
+    fitCamera(cam, extrema, SVG_WIDTH / 2, SVG_HEIGHT / 2 + 16);
 
     const P = projectCamera(cam);
     const front = createFacingPredicate(cam);
@@ -288,21 +421,35 @@ export function GuidesKineticRunway({
         y1: cy + PLATE_HALF,
         z0,
         z1,
-        radius: 6,
-        creaseInset: 2,
+        radius: 7,
+        creaseInset: 2.4,
         steps: 6,
       });
+
+      const { miniatures, bridgeVectors, peakZ } = buildStationMiniatures(
+        i,
+        cam,
+        P,
+        front,
+        cx,
+        cy,
+        z1,
+      );
 
       const baseFoot = P(cx, cy, z0);
       const groundPoint = P(cx, cy, 0);
       groundRailPoints.push(groundPoint);
+
+      const badgeAnchor = P(cx, cy, peakZ + 1.5);
+      const badgeCenter: Point2 = [badgeAnchor[0], badgeAnchor[1] - 24];
+      const badgeTickLine = seg(badgeAnchor, [badgeCenter[0], badgeCenter[1] + 9]);
 
       const dotCenters: Point2[] = [];
       const dotCount = i + 1;
       const dotSpan = (dotCount - 1) * 4.4;
       for (let d = 0; d < dotCount; d++) {
         const offset = -dotSpan / 2 + d * 4.4;
-        dotCenters.push(P(cx + offset * 0.72, cy + 16 + offset * 0.3, z1));
+        dotCenters.push(P(cx + offset * 0.72, cy + 20 + offset * 0.3, z1));
       }
 
       conduitPoints.push([cx, cy, z0 + 5.5]);
@@ -314,8 +461,11 @@ export function GuidesKineticRunway({
         z1,
         conduitAnchor: [cx, cy, z0 + 5.5],
         geometry,
+        miniatures,
+        bridgeVectors,
         baseDropLine: seg(baseFoot, groundPoint),
-        markPaths: buildStationMark(i, P, cx, cy, z1),
+        badgeTickLine,
+        badgeCenter,
         dotCenters,
       });
     }
@@ -346,6 +496,7 @@ export function GuidesKineticRunway({
 
   function selectMilestone(nextIndex: number, moveFocus = false) {
     const wrapped = (nextIndex + count) % count;
+    setHasInteracted(true);
     setActiveIndex(wrapped);
     setCopiedKind(null);
     const chosen = milestones[wrapped];
@@ -415,6 +566,7 @@ export function GuidesKineticRunway({
 
   return (
     <div
+      id="guides-runway"
       ref={stageRef}
       className={className ? `${styles.root} ${className}` : styles.root}
     >
@@ -432,6 +584,10 @@ export function GuidesKineticRunway({
             </div>
 
             <div className={styles.stageControls}>
+              <span className={styles.signalLiveBadge}>
+                <span className={styles.signalLiveDot} aria-hidden="true" />
+                SIGNAL PULSE · CONTINUOUS
+              </span>
               <button
                 type="button"
                 className={styles.navBtn}
@@ -447,20 +603,6 @@ export function GuidesKineticRunway({
                 aria-label="Next milestone"
               >
                 Next milestone →
-              </button>
-              <button
-                type="button"
-                className={styles.navBtn}
-                aria-pressed={pulsePaused}
-                disabled={reducedMotion}
-                title={
-                  reducedMotion
-                    ? 'Motion paused by prefers-reduced-motion'
-                    : undefined
-                }
-                onClick={() => setPulsePaused((prev) => !prev)}
-              >
-                {pulsePaused ? 'Resume signal ▶' : 'Pause signal ⏸'}
               </button>
             </div>
           </div>
@@ -506,21 +648,21 @@ export function GuidesKineticRunway({
               <IsoSignalConduit
                 points={scene.projectedConduit}
                 cornerRadius={6}
-                active={safeActiveIndex > 0}
-                progress={conduitProgress}
-                paused={pulsePaused}
+                active
+                progress={Math.max(0.2, conduitProgress)}
+                paused={false}
                 viewportActive={stageActivity.isActive}
                 surface="ivory"
                 baseColor={WARM_FOREST_PALETTE.muted}
                 baseStrokeWidth={1.35}
-                activeStrokeWidth={2.2}
-                pulseDurationMs={2600}
-                pulseRadius={3.2}
+                activeStrokeWidth={2.4}
+                pulseDurationMs={2500}
+                pulseRadius={3.4}
                 showTerminals
                 ariaLabel={`Learning progression signal from Contracts to ${active.shortTitle}`}
               />
 
-              {/* Opaque isometric plinths rendered back-to-front (Rules 01, 02, 04, 06, 09, 10) */}
+              {/* Opaque isometric plinths + genuine 3D miniature assemblies in Painter's Order */}
               {scene.sortedStations.map((station) => {
                 const milestone = milestones[station.index];
                 if (!milestone) return null;
@@ -528,9 +670,17 @@ export function GuidesKineticRunway({
                 const isSelected = station.index === safeActiveIndex;
                 const isTraversed = station.index < safeActiveIndex;
                 const isHovered = hoveredIndex === station.index;
-                const liftPx = isSelected ? 12 : isHovered ? 5 : 0;
+                const isIdleWave =
+                  !hasInteracted && hoveredIndex === null && waveIndex === station.index;
+                const liftPx = isSelected
+                  ? 12
+                  : isHovered
+                    ? 6
+                    : isIdleWave
+                      ? 3.5
+                      : 0;
 
-                const variant = isSelected
+                const variant: IsoPrismVariant = isSelected
                   ? milestone.unreleasedNote
                     ? 'terracotta'
                     : 'forest'
@@ -538,13 +688,23 @@ export function GuidesKineticRunway({
                     ? 'sand'
                     : 'ivory';
 
-                const markStroke = isSelected
-                  ? milestone.unreleasedNote
-                    ? WARM_FOREST_PALETTE.ink
-                    : WARM_FOREST_PALETTE.peach
-                  : isTraversed
-                    ? WARM_FOREST_PALETTE.inkSecondary
-                    : WARM_FOREST_PALETTE.ink;
+                const resolveMiniatureVariant = (
+                  tone: MiniatureBlock['tone'],
+                ): IsoPrismVariant => {
+                  if (tone === 'accent') {
+                    return isSelected
+                      ? milestone.unreleasedNote
+                        ? 'ivory'
+                        : 'terracotta'
+                      : isIdleWave
+                        ? 'terracotta'
+                        : 'forest';
+                  }
+                  if (tone === 'primary') {
+                    return isSelected ? 'sand' : 'ivory';
+                  }
+                  return isSelected ? 'ivory' : 'sand';
+                };
 
                 const dotFill = isSelected
                   ? WARM_FOREST_PALETTE.signal
@@ -558,7 +718,7 @@ export function GuidesKineticRunway({
                     geometry={station.geometry}
                     variant={variant}
                     selected={isSelected}
-                    active={isHovered}
+                    active={isHovered || isIdleWave}
                     liftPx={liftPx}
                     delayMs={staggerDelayMs(station.index, safeActiveIndex, 45)}
                     showDropGuides={isSelected || isHovered}
@@ -566,34 +726,95 @@ export function GuidesKineticRunway({
                     ariaPressed={isSelected}
                     label={`Select milestone ${milestone.stepNumber}: ${milestone.shortTitle}`}
                     onSelect={() => selectMilestone(station.index)}
-                    onHoverChange={(hovering) =>
-                      setHoveredIndex(hovering ? station.index : null)
+                    onHoverChange={(hover) =>
+                      setHoveredIndex(hover ? station.index : null)
                     }
                     onKeyDown={(event) => handleSvgKeyDown(event, station.index)}
                     dataTestId={`runway-station-${milestone.id}`}
                   >
-                    {station.markPaths.map((d, idx) => (
+                    {/* Genuine 3D isometric miniature sub-assemblies sorted back-to-front */}
+                    {station.miniatures.map((mini, idx) => (
+                      <IsoPrism
+                        key={`mini-${station.index}-${idx}`}
+                        geometry={mini.geometry}
+                        variant={resolveMiniatureVariant(mini.tone)}
+                        interactive={false}
+                        strokeWidth={0.9}
+                        creaseStrokeWidth={0.65}
+                      />
+                    ))}
+
+                    {/* Mapping vector bridge when applicable */}
+                    {station.bridgeVectors.map((d, idx) => (
                       <path
-                        key={`mark-${station.index}-${idx}`}
+                        key={`vec-${station.index}-${idx}`}
                         d={d}
                         fill="none"
-                        stroke={markStroke}
-                        strokeWidth={1.3}
+                        stroke={WARM_FOREST_PALETTE.signal}
+                        strokeWidth={2}
                         strokeLinecap="round"
-                        strokeLinejoin="round"
                         pointerEvents="none"
                       />
                     ))}
+
                     {station.dotCenters.map(([dx, dy], dotIdx) => (
                       <circle
                         key={`dot-${station.index}-${dotIdx}`}
                         cx={r2(dx)}
                         cy={r2(dy)}
-                        r={1.35}
+                        r={1.4}
                         fill={dotFill}
                         pointerEvents="none"
                       />
                     ))}
+
+                    {/* Crisp floating step number pill above each station */}
+                    <g pointerEvents="none" aria-hidden="true">
+                      <path
+                        d={station.badgeTickLine}
+                        fill="none"
+                        stroke={
+                          isSelected || isIdleWave
+                            ? WARM_FOREST_PALETTE.signal
+                            : WARM_FOREST_PALETTE.muted
+                        }
+                        strokeWidth={1}
+                        strokeDasharray="2 2.5"
+                      />
+                      <rect
+                        x={r2(station.badgeCenter[0] - 15)}
+                        y={r2(station.badgeCenter[1] - 9)}
+                        width={30}
+                        height={18}
+                        rx={9}
+                        fill={
+                          isSelected
+                            ? WARM_FOREST_PALETTE.forest
+                            : isIdleWave
+                              ? WARM_FOREST_PALETTE.peach
+                              : WARM_FOREST_PALETTE.paperRaised
+                        }
+                        stroke={
+                          isSelected || isIdleWave
+                            ? WARM_FOREST_PALETTE.signal
+                            : WARM_FOREST_PALETTE.border
+                        }
+                        strokeWidth={1.1}
+                      />
+                      <text
+                        x={r2(station.badgeCenter[0])}
+                        y={r2(station.badgeCenter[1] + 3.4)}
+                        textAnchor="middle"
+                        className={styles.floatingStepText}
+                        fill={
+                          isSelected
+                            ? WARM_FOREST_PALETTE.paperRaised
+                            : WARM_FOREST_PALETTE.ink
+                        }
+                      >
+                        {milestone.stepNumber}
+                      </text>
+                    </g>
                   </IsoPrism>
                 );
               })}
@@ -777,7 +998,9 @@ export function GuidesKineticRunway({
                     {copiedKind === 'cli' ? 'Copied ✓' : 'Copy CLI check'}
                   </button>
                 </div>
-                <code className={styles.verifyCmd} tabIndex={0}>{localCheck.command}</code>
+                <code className={styles.verifyCmd} tabIndex={0}>
+                  {localCheck.command}
+                </code>
                 <p className={styles.verifyCaption}>{localCheck.note}</p>
               </div>
             </div>

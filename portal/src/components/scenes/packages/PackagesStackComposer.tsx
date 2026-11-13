@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import {
+  Fragment,
   useEffect,
   useId,
   useMemo,
@@ -14,6 +15,8 @@ import {
   createCamera,
   createFacingPredicate,
   createIsoPlateGeometry,
+  EASE_LIFT_CSS,
+  EASE_LIFT_DURATION_MS,
   fitCamera,
   IsoPrism,
   IsoSignalConduit,
@@ -53,6 +56,17 @@ export interface PackagesStackComposerProps {
   initialSelectedIds?: string[];
   stagedRequest?: StagedStackPayload | null;
   showDirectory?: boolean;
+}
+
+const STACK_SVG_WIDTH = 470;
+const STACK_SVG_HEIGHT = 450;
+
+function formatStackLeaderLabel(pkgId: string, isUnreleased: boolean): string {
+  const short = pkgId
+    .replace(/^AstraFlow\.?/, '')
+    .replace('EntityFrameworkCore', 'EF Core');
+  const base = short || 'AstraFlow';
+  return isUnreleased ? `${base} 2.4*` : base.toUpperCase();
 }
 
 export function PackagesStackComposer({
@@ -198,27 +212,27 @@ export function PackagesStackComposer({
     return ids.every((id) => set.has(id));
   };
 
-  // Living Isometric Stack Geometry
+  // Enlarged Living Isometric Stack Geometry with multi-solid 2-tier plates + leader ticks
   const stackGeometry = useMemo(() => {
     const effective = stack.effectivePackages;
     const count = effective.length;
     const cam = createCamera(
       45,
       0.5,
-      count <= 4 ? 1.38 : count <= 8 ? 1.24 : count <= 12 ? 1.12 : 1.02,
+      count <= 4 ? 1.44 : count <= 8 ? 1.28 : count <= 12 ? 1.15 : 1.04,
     );
 
-    const stepZ = count <= 4 ? 24 : count <= 8 ? 18 : count <= 12 ? 14 : 11;
-    const plateH = count <= 4 ? 9 : count <= 8 ? 8 : count <= 12 ? 7 : 6;
-    const maxZ = Math.max(1, count - 1) * stepZ + plateH + 14;
+    const stepZ = count <= 4 ? 26 : count <= 8 ? 20 : count <= 12 ? 15 : 12;
+    const plateH = count <= 4 ? 10 : count <= 8 ? 8.5 : count <= 12 ? 7.5 : 6.5;
+    const maxZ = Math.max(1, count - 1) * stepZ + plateH + 20;
 
     const extremePoints: Point3[] = [
-      [-64, -64, 0],
-      [64, 64, 0],
-      [-64, -64, maxZ],
-      [64, 64, maxZ],
+      [-74, -74, 0],
+      [74, 74, 0],
+      [-74, -74, maxZ],
+      [74, 74, maxZ],
     ];
-    fitCamera(cam, extremePoints, 180, 198);
+    fitCamera(cam, extremePoints, 166, 232);
 
     const project = projectCamera(cam);
     const front = createFacingPredicate(cam);
@@ -227,22 +241,22 @@ export function PackagesStackComposer({
       camera: cam,
       project,
       front,
-      x0: -64,
-      y0: -64,
-      x1: 64,
-      y1: 64,
+      x0: -70,
+      y0: -70,
+      x1: 70,
+      y1: 70,
       z0: 0,
-      z1: 4,
-      radius: 10,
-      creaseInset: 4,
+      z1: 5,
+      radius: 12,
+      creaseInset: 5,
       steps: 8,
     });
 
     const layers = effective.map((pkg, idx) => {
-      const z0 = 6 + idx * stepZ;
+      const z0 = 8 + idx * stepZ;
       const z1 = z0 + plateH;
       const isDirect = stack.selectedIds.includes(pkg.id);
-      const halfSpan = isDirect ? 54 : 58;
+      const halfSpan = isDirect ? 56 : 62;
       const geom = createIsoPlateGeometry({
         camera: cam,
         project,
@@ -253,26 +267,49 @@ export function PackagesStackComposer({
         y1: halfSpan,
         z0,
         z1,
-        radius: 8,
-        creaseInset: 3.2,
+        radius: 9,
+        creaseInset: 3.6,
         steps: 8,
       });
+
+      const trimGeom = isDirect
+        ? createIsoPlateGeometry({
+            camera: cam,
+            project,
+            front,
+            x0: -halfSpan + 14,
+            y0: -halfSpan + 14,
+            x1: halfSpan - 14,
+            y1: halfSpan - 14,
+            z0: z1,
+            z1: z1 + Math.max(2.5, plateH * 0.34),
+            radius: 5,
+            creaseInset: 2,
+            steps: 6,
+          })
+        : null;
+
+      const rightCornerAnchor = project(halfSpan, -halfSpan, z0 + plateH * 0.6);
 
       return {
         pkg,
         index: idx,
         isDirect,
         geom,
+        trimGeom,
+        rightCornerAnchor,
       };
     });
 
-    const spineStartZ = 6;
+    const spineStartZ = 8;
     const spineEndZ =
-      count > 0 ? 6 + (count - 1) * stepZ + plateH : 24;
+      count > 0 ? 8 + (count - 1) * stepZ + plateH : 26;
     const spinePoints: Point3[] = [
-      [0, -68, spineStartZ],
-      [0, -68, spineEndZ],
+      [0, -76, spineStartZ],
+      [0, -76, spineEndZ],
     ];
+
+    const centerFoot = project(0, 0, 5);
 
     return {
       cam,
@@ -280,6 +317,7 @@ export function PackagesStackComposer({
       baseFootprint,
       layers,
       spinePoints,
+      centerFoot,
     };
   }, [stack.effectivePackages, stack.selectedIds]);
 
@@ -382,6 +420,15 @@ export function PackagesStackComposer({
               <span className={styles.topDot} aria-hidden="true" />
               INTERACTIVE STACK COMPOSER · VERIFIED 2.3.0 MANIFEST
             </p>
+            <div className={styles.telemetryPills}>
+              <span className={styles.telemetryChip}>{packages.length} packages</span>
+              <span className={styles.telemetryChip}>
+                {stack.selectedIds.length} direct
+              </span>
+              <span className={styles.telemetryChip}>
+                {stack.effectivePackages.length} effective
+              </span>
+            </div>
             {stagedBanner ? (
               <span className={styles.stagedBanner} role="status" aria-live="polite">
                 {stagedBanner}
@@ -441,7 +488,10 @@ export function PackagesStackComposer({
                 title={preset.summary}
                 onClick={() => applyPresetIds(preset.packageIds, preset.label)}
               >
-                {preset.label}
+                <span>{preset.label}</span>
+                <span className={styles.presetCountBadge}>
+                  {preset.packageIds.length}
+                </span>
               </button>
             ))}
           </div>
@@ -487,7 +537,7 @@ export function PackagesStackComposer({
             </div>
 
             {visibleGroups.length > 0 ? (
-              <div className={styles.groupList}>
+              <div className={styles.groupList} tabIndex={0}>
                 {visibleGroups.map((group) => (
                   <section
                     key={group.key}
@@ -572,7 +622,7 @@ export function PackagesStackComposer({
             )}
           </div>
 
-          {/* Center Pane: Live Isometric Living Stack SVG */}
+          {/* Center Pane: Enlarged Living Isometric Stack SVG */}
           <div ref={stackStageRef} className={styles.stackPane}>
             <div className={styles.stackHeader}>
               <h3 className={styles.stackTitle}>LIVING ISOMETRIC STACK</h3>
@@ -585,15 +635,26 @@ export function PackagesStackComposer({
             <div className={styles.stackCanvas}>
               <svg
                 className={styles.stackSvg}
-                viewBox="0 0 360 390"
+                viewBox={`0 0 ${STACK_SVG_WIDTH} ${STACK_SVG_HEIGHT}`}
                 role="group"
                 aria-label={`Isometric stack visualization showing ${stack.effectivePackages.length} effective packages`}
               >
+                {/* Drafting rings around stack base */}
+                <circle
+                  cx={r2(stackGeometry.centerFoot[0])}
+                  cy={r2(stackGeometry.centerFoot[1] - 10)}
+                  r={124}
+                  fill="none"
+                  stroke="rgba(180, 205, 189, 0.14)"
+                  strokeDasharray="3 7"
+                  aria-hidden="true"
+                />
+
                 {/* Base architectural chassis guide */}
                 <IsoPrism
                   geometry={stackGeometry.baseFootprint}
                   variant="dark-forest"
-                  strokeWidth={1}
+                  strokeWidth={1.05}
                   creaseStrokeWidth={0.75}
                 />
 
@@ -608,15 +669,15 @@ export function PackagesStackComposer({
                     progress={1}
                     paused={!viewportActive}
                     showTerminals
-                    pulseRadius={2.4}
+                    pulseRadius={2.6}
                   />
                 ) : (
                   <text
-                    x={180}
-                    y={170}
+                    x={STACK_SVG_WIDTH / 2}
+                    y={215}
                     textAnchor="middle"
-                    fill="#9bb8a8"
-                    fontSize={11}
+                    fill="#b4cdbd"
+                    fontSize={11.5}
                     fontFamily="var(--font-mono)"
                     fontWeight={700}
                   >
@@ -624,7 +685,7 @@ export function PackagesStackComposer({
                   </text>
                 )}
 
-                {/* Dynamic stacked IsoPrism layers */}
+                {/* Dynamic multi-solid stacked IsoPrism layers */}
                 {stackGeometry.layers.map((layer) => {
                   const isFocused = activeLayerPkg?.id === layer.pkg.id;
                   const isHovered = hoveredLayerId === layer.pkg.id;
@@ -641,6 +702,12 @@ export function PackagesStackComposer({
                     variant = 'ivory';
                   }
 
+                  const trimVariant: IsoPrismVariant = isUnreleased
+                    ? 'ivory'
+                    : variant === 'sand' || variant === 'ivory'
+                      ? 'forest'
+                      : 'sand';
+
                   const textColor =
                     variant === 'sand' ||
                     variant === 'ivory' ||
@@ -648,52 +715,134 @@ export function PackagesStackComposer({
                       ? WARM_FOREST_PALETTE.ink
                       : WARM_FOREST_PALETTE.paperRaised;
 
-                  const labelShort = layer.pkg.id.replace(/^AstraFlow\.?/, '') || 'AstraFlow';
+                  const leaderText = formatStackLeaderLabel(layer.pkg.id, isUnreleased);
+
+                  const showFaceBadge =
+                    isFocused ||
+                    layer.index === stackGeometry.layers.length - 1 ||
+                    isUnreleased ||
+                    stackGeometry.layers.length <= 5;
+
+                  const liftPx = isFocused ? 7 : isHovered ? 3.5 : 0;
+                  const delayMs = staggerDelayMs(layer.index, activeLayerIndex, 35);
+                  const overlayTransformStyle = {
+                    transform:
+                      Math.abs(liftPx) > 0.001
+                        ? `translate3d(0, ${r2(-liftPx)}px, 0)`
+                        : 'translate3d(0, 0, 0)',
+                    transition: reducedMotion
+                      ? 'none'
+                      : `transform ${EASE_LIFT_DURATION_MS}ms ${EASE_LIFT_CSS} ${delayMs}ms`,
+                  };
 
                   return (
-                    <IsoPrism
-                      key={layer.pkg.id}
-                      geometry={layer.geom}
-                      variant={variant}
-                      active={isHovered}
-                      selected={isFocused}
-                      liftPx={isFocused ? 6 : isHovered ? 3 : 0}
-                      delayMs={staggerDelayMs(layer.index, activeLayerIndex, 35)}
-                      showDropGuides={isFocused}
-                      label={`${layer.pkg.id} (${
-                        isUnreleased
-                          ? '2.4.0 Unreleased Source'
-                          : layer.isDirect
-                            ? 'Selected'
-                            : 'Implied reference'
-                      })`}
-                      onSelect={() => setFocusedPkgId(layer.pkg.id)}
-                      onHoverChange={(hover) =>
-                        setHoveredLayerId(hover ? layer.pkg.id : null)
-                      }
-                      onFocusChange={(focus) =>
-                        setHoveredLayerId(focus ? layer.pkg.id : null)
-                      }
-                    >
-                      {(isFocused ||
-                        layer.index === stackGeometry.layers.length - 1 ||
-                        isUnreleased ||
-                        stackGeometry.layers.length <= 6) && (
-                        <text
-                          x={r2(layer.geom.topCenter[0])}
-                          y={r2(layer.geom.topCenter[1] + 3)}
-                          textAnchor="middle"
-                          fontFamily="var(--font-mono)"
-                          fontSize={9}
-                          fontWeight={700}
-                          fill={textColor}
-                          pointerEvents="none"
+                    <Fragment key={layer.pkg.id}>
+                      <IsoPrism
+                        geometry={layer.geom}
+                        variant={variant}
+                        active={isHovered}
+                        selected={isFocused}
+                        liftPx={liftPx}
+                        delayMs={delayMs}
+                        showDropGuides={isFocused}
+                        label={`${layer.pkg.id} (${
+                          isUnreleased
+                            ? '2.4.0 Unreleased Source'
+                            : layer.isDirect
+                              ? 'Selected'
+                              : 'Implied reference'
+                        })`}
+                        onSelect={() => setFocusedPkgId(layer.pkg.id)}
+                        onHoverChange={(hover) =>
+                          setHoveredLayerId(hover ? layer.pkg.id : null)
+                        }
+                        onFocusChange={(focus) =>
+                          setHoveredLayerId(focus ? layer.pkg.id : null)
+                        }
+                      >
+                        {layer.trimGeom ? (
+                          <IsoPrism
+                            geometry={layer.trimGeom}
+                            variant={trimVariant}
+                            interactive={false}
+                            strokeWidth={0.85}
+                            creaseStrokeWidth={0.6}
+                          />
+                        ) : null}
+                      </IsoPrism>
+
+                      {showFaceBadge ||
+                      isFocused ||
+                      layer.index === stackGeometry.layers.length - 1 ? (
+                        <g
                           aria-hidden="true"
+                          pointerEvents="none"
+                          style={overlayTransformStyle}
                         >
-                          {isUnreleased ? `${labelShort} · 2.4*` : labelShort.toUpperCase()}
-                        </text>
-                      )}
-                    </IsoPrism>
+                          {showFaceBadge ? (
+                            <g>
+                              <line
+                                x1={r2(layer.rightCornerAnchor[0])}
+                                y1={r2(layer.rightCornerAnchor[1])}
+                                x2={r2(Math.min(STACK_SVG_WIDTH - 110, layer.rightCornerAnchor[0] + 18))}
+                                y2={r2(layer.rightCornerAnchor[1])}
+                                stroke={
+                                  isFocused
+                                    ? WARM_FOREST_PALETTE.signal
+                                    : 'rgba(255, 253, 247, 0.35)'
+                                }
+                                strokeWidth={1}
+                              />
+                              <circle
+                                cx={r2(layer.rightCornerAnchor[0])}
+                                cy={r2(layer.rightCornerAnchor[1])}
+                                r={2}
+                                fill={
+                                  isFocused
+                                    ? WARM_FOREST_PALETTE.signal
+                                    : WARM_FOREST_PALETTE.peach
+                                }
+                              />
+                              <text
+                                x={r2(Math.min(STACK_SVG_WIDTH - 106, layer.rightCornerAnchor[0] + 22))}
+                                y={r2(layer.rightCornerAnchor[1] + 3)}
+                                textAnchor="start"
+                                fontFamily="var(--font-mono)"
+                                fontSize={9}
+                                fontWeight={700}
+                                fill={
+                                  isFocused
+                                    ? WARM_FOREST_PALETTE.peach
+                                    : '#d8ebe0'
+                                }
+                              >
+                                {leaderText}
+                              </text>
+                            </g>
+                          ) : null}
+
+                          {isFocused || layer.index === stackGeometry.layers.length - 1 ? (
+                            <text
+                              x={r2(layer.geom.topCenter[0])}
+                              y={r2(layer.geom.topCenter[1] + 3)}
+                              textAnchor="middle"
+                              fontFamily="var(--font-mono)"
+                              fontSize={8.5}
+                              fontWeight={700}
+                              fill={
+                                layer.trimGeom
+                                  ? trimVariant === 'forest'
+                                    ? WARM_FOREST_PALETTE.paperRaised
+                                    : WARM_FOREST_PALETTE.ink
+                                  : textColor
+                              }
+                            >
+                              {String(layer.index + 1).padStart(2, '0')}
+                            </text>
+                          ) : null}
+                        </g>
+                      ) : null}
+                    </Fragment>
                   );
                 })}
               </svg>
@@ -758,6 +907,11 @@ export function PackagesStackComposer({
                 <h3 className={styles.outputCount}>
                   {stack.packageCount} package{stack.packageCount === 1 ? '' : 's'} selected
                 </h3>
+              </div>
+              <div className={styles.terminalStatusDots} aria-hidden="true">
+                <span />
+                <span />
+                <span />
               </div>
             </div>
 

@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "explainer",
+  "quality": "showcase",
+  "startedAt": "2026-11-12T22:36:08.475Z",
+  "specification": {
+    "path": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\candidate.archify.md",
+    "sha256": "5031278a61f6c2a45762d33089a4c40b1cd22abae89264885b96601a7339e933",
+    "bytes": 5444
+  },
+  "artifact": {
+    "path": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.html",
+    "sha256": "bcb66e20b5ad662334398f0bb2e2c760a49848be17e3b0f197e725754a7a0e38",
+    "bytes": 573748
+  },
+  "stages": {
+    "browser-check": {
+      "status": "not-run",
+      "execution": "not-requested"
+    },
+    "validate": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": null,
+      "execution": "embedded-in-deliver",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\seifmoustafa\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "explainer",
+        "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\candidate.archify.md",
+        "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.html",
+        "--quality",
+        "showcase",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "ok": true,
+        "command": "validate",
+        "specification": {
+          "sha256": "5031278a61f6c2a45762d33089a4c40b1cd22abae89264885b96601a7339e933",
+          "bytes": 5444
+        },
+        "validation": {
+          "checksPassed": 4,
+          "checkCount": 4,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        }
+      }
+    },
+    "deliver": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 6367,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\seifmoustafa\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "deliver",
+        "explainer",
+        "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\candidate.archify.md",
+        "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.html",
+        "--quality",
+        "showcase",
+        "--json"
+      ],
+      "receipt": {
+        "schemaVersion": 1,
+        "receiptId": "44d02cab-a89d-43a5-a2f6-b53739dfdcce",
+        "ok": true,
+        "command": "deliver",
+        "type": "explainer",
+        "input": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\candidate.archify.md",
+        "output": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.html",
+        "explainer": {
+          "preparedSha256": "b41449751562ce7a2db559e61280fbf19e82a97a653a1c6917c856005f2e9c88",
+          "dependencies": [
+            {
+              "kind": "diagram-spec",
+              "id": "portal-arch",
+              "inline": true,
+              "sha256": "0b3bd8f69b8a916db418f6fc7edcf6fd2681c59cfc35f89762543b196effff59",
+              "bytes": 1709
+            }
+          ]
+        },
+        "specification": {
+          "sha256": "5031278a61f6c2a45762d33089a4c40b1cd22abae89264885b96601a7339e933",
+          "bytes": 5444
+        },
+        "artifact": {
+          "sha256": "bcb66e20b5ad662334398f0bb2e2c760a49848be17e3b0f197e725754a7a0e38",
+          "bytes": 573748
+        },
+        "validation": {
+          "checksPassed": 4,
+          "checkCount": 4,
+          "compositionProfile": "showcase",
+          "compositionStatus": "pass",
+          "errors": 0,
+          "warnings": 0
+        },
+        "update": {
+          "status": "unavailable",
+          "installedVersion": null,
+          "availableVersion": null,
+          "releaseNotes": null,
+          "checkedAt": null,
+          "source": null,
+          "noticeRequired": false,
+          "noticeText": null,
+          "reason": "disabled"
+        }
+      }
+    },
+    "check": {
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 2074,
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:\\Users\\seifmoustafa\\.agents\\skills\\archify\\bin\\archify.mjs",
+        "check",
+        "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.html",
+        "--require-provenance"
+      ],
+      "receipt": {
+        "ok": true,
+        "file": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.html",
+        "family": "explainer",
+        "artifact": {
+          "sha256": "bcb66e20b5ad662334398f0bb2e2c760a49848be17e3b0f197e725754a7a0e38",
+          "bytes": 573748
+        },
+        "checks": [
+          {
+            "name": "explainer_structure",
+            "ok": true,
+            "details": [
+              "42 unique DOM IDs"
+            ]
+          },
+          {
+            "name": "explainer_payload_identity",
+            "ok": true,
+            "details": []
+          },
+          {
+            "name": "explainer_dependencies",
+            "ok": true,
+            "details": [
+              "1 frozen dependencies"
+            ]
+          },
+          {
+            "name": "explainer_native_diagrams",
+            "ok": true,
+            "details": [
+              "portal-arch: pass"
+            ]
+          }
+        ],
+        "composition": {
+          "schemaVersion": 1,
+          "profile": "showcase",
+          "status": "pass",
+          "summary": {
+            "errors": 0,
+            "warnings": 0
+          },
+          "issues": [],
+          "nativeDiagrams": [
+            {
+              "id": "portal-arch",
+              "receipt": {
+                "ok": true,
+                "file": "C:\\Users\\SEIFMO~1\\AppData\\Local\\Temp\\archify-explainer-check-Eq0lvs\\child.html",
+                "artifact": {
+                  "sha256": "cc6286676a116e57bb11e3c90fe2f3460a8b884a02353bb1dc9b6e9535be14c7",
+                  "bytes": 838852
+                },
+                "checks": [
+                  {
+                    "name": "single_svg",
+                    "ok": true,
+                    "details": [
+                      "found 1 <svg> block(s)"
+                    ]
+                  },
+                  {
+                    "name": "finite_svg",
+                    "ok": true,
+                    "details": []
+                  },
+                  {
+                    "name": "orthogonal_arrows",
+                    "ok": true,
+                    "details": []
+                  },
+                  {
+                    "name": "label_route_clearance",
+                    "ok": true,
+                    "details": []
+                  },
+                  {
+                    "name": "relationship_crossings",
+                    "ok": true,
+                    "details": []
+                  },
+                  {
+                    "name": "relationship_corridors",
+                    "ok": true,
+                    "details": []
+                  },
+                  {
+                    "name": "container_border_runs",
+                    "ok": true,
+                    "details": []
+                  },
+                  {
+                    "name": "route_rhythm",
+                    "ok": true,
+                    "details": []
+                  },
+                  {
+                    "name": "legend_clearance",
+                    "ok": true,
+                    "details": []
+                  }
+                ],
+                "composition": {
+                  "schemaVersion": 1,
+                  "profile": "showcase",
+                  "status": "pass",
+                  "summary": {
+                    "errors": 0,
+                    "warnings": 0
+                  },
+                  "metrics": {
+                    "properCrossings": 0,
+                    "resolvedCrossovers": 2,
+                    "ambiguousCorridors": 0,
+                    "arrowheadCollisions": 0,
+                    "containerBorderRuns": 0,
+                    "labelRouteClearanceIssues": 0,
+                    "labelCanvasOverflowIssues": 0,
+                    "minLabelRouteClearance": 19,
+                    "desktopReadabilityIssues": 0,
+                    "viewportHeightIssues": 0,
+                    "minProjectedNodeTextPx": 8,
+                    "maxBends": 2,
+                    "routesOverSuggestedBends": 0,
+                    "maxStretch": 1.089,
+                    "routesOverSuggestedStretch": 0,
+                    "minSegmentPx": 24,
+                    "minInteriorSegmentPx": 276,
+                    "shortSegmentCount": 0,
+                    "shortEndpointSegmentCount": 0,
+                    "shortInteriorSegmentCount": 0,
+                    "microSegmentCount": 0
+                  },
+                  "suggestedLimits": {
+                    "bendsPerRelationship": 2,
+                    "stretch": 1.35,
+                    "segmentPx": 16,
+                    "microSegmentPx": 8
+                  },
+                  "routeReview": {
+                    "crossings": [
+                      {
+                        "left": {
+                          "id": "data-engine-to-package-docs-1",
+                          "from": "data-engine",
+                          "to": "package-docs",
+                          "label": "16 pkgs, 62 docs",
+                          "collectionIndex": 2,
+                          "artifactIndex": 3
+                        },
+                        "right": {
+                          "id": "data-engine-to-editorial-scenes-1",
+                          "from": "data-engine",
+                          "to": "editorial-scenes",
+                          "label": "36 releases",
+                          "collectionIndex": 3,
+                          "artifactIndex": 4
+                        },
+                        "point": [
+                          514,
+                          203
+                        ],
+                        "sharedNode": "data-engine"
+                      },
+                      {
+                        "left": {
+                          "id": "data-engine-to-editorial-scenes-1",
+                          "from": "data-engine",
+                          "to": "editorial-scenes",
+                          "label": "36 releases",
+                          "collectionIndex": 3,
+                          "artifactIndex": 4
+                        },
+                        "right": {
+                          "id": "hairline-kernel-to-package-docs-1",
+                          "from": "hairline-kernel",
+                          "to": "package-docs",
+                          "label": "loom &amp; composer",
+                          "collectionIndex": 5,
+                          "artifactIndex": 6
+                        },
+                        "point": [
+                          514,
+                          242
+                        ]
+                      }
+                    ],
+                    "detours": []
+                  },
+                  "leadingSpace": {
+                    "measured": true,
+                    "emptyTopPx": 80,
+                    "emptyTopRatio": 0.138,
+                    "occupiedTop": 80,
+                    "viewBoxTop": 0,
+                    "canvasHeight": 580,
+                    "typicalNodeHeight": 60,
+                    "reviewSuggested": false
+                  },
+                  "desktopReadability": {
+                    "budgetBasis": "legacy-930",
+                    "readerContract": "declared-wide-v1",
+                    "availableDiagramWidth": 930,
+                    "actualBudgetPx": 930,
+                    "limit": "legacy",
+                    "requestedTargetPx": 7.5,
+                    "requestedTargetMet": true,
+                    "hardFloorPx": 6,
+                    "hardFloorMet": true,
+                    "minimumOwner": {
+                      "kind": "edge",
+                      "id": "repo-files-to-data-engine-1",
+                      "from": "repo-files",
+                      "to": "data-engine"
+                    },
+                    "minimumSourceTextPx": 8,
+                    "minimumProjectedTextPx": 8,
+                    "semanticTextCount": 14
+                  },
+                  "issues": []
+                }
+              }
+            }
+          ]
+        },
+        "diagnostics": [],
+        "provenance": "current",
+        "deliveryReceiptId": "44d02cab-a89d-43a5-a2f6-b53739dfdcce"
+      }
+    }
+  },
+  "browserCheck": {
+    "requested": false,
+    "ran": false
+  },
+  "diagnostics": [],
+  "evidence": {
+    "receipt": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.finalize.json",
+    "summaryReceipt": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "finishedAt": "2026-11-12T22:36:17.805Z",
+  "durationMs": 9329,
+  "update": {
+    "status": "unavailable",
+    "installedVersion": null,
+    "availableVersion": null,
+    "releaseNotes": null,
+    "checkedAt": null,
+    "source": null,
+    "noticeRequired": false,
+    "noticeText": null,
+    "reason": "check-failed"
+  }
+}

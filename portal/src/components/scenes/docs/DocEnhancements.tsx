@@ -1,17 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { TocItem } from '@/lib/markdown';
-import styles from './DocArticleEnhancer.module.css';
+import styles from './DocEnhancements.module.css';
 
-export interface DocArticleEnhancerProps {
+export interface DocEnhancementsProps {
   toc: TocItem[];
   title?: string;
   articleSelector?: string;
   tocSelector?: string;
 }
 
-async function copyTextToClipboard(text: string): Promise<boolean> {
+export async function copyTextToClipboard(text: string): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     try {
       await navigator.clipboard.writeText(text);
@@ -41,24 +41,49 @@ async function copyTextToClipboard(text: string): Promise<boolean> {
   }
 }
 
-export function DocArticleEnhancer({
+export function DocEnhancements({
   toc,
   title,
   articleSelector = '.docs-prose',
   tocSelector = '.docs-toc',
-}: DocArticleEnhancerProps) {
+}: DocEnhancementsProps) {
+  const [progress, setProgress] = useState(0);
   const [activeId, setActiveId] = useState<string>(toc[0]?.id ?? '');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [liveStatus, setLiveStatus] = useState('');
 
-  // Keep desktop .docs-toc in sync with the active section ID
+  // Top Signal Orange reading progress hairline
+  useEffect(() => {
+    const updateProgress = () => {
+      const scrollable =
+        document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollable <= 0) {
+        setProgress(0);
+        return;
+      }
+      const ratio = Math.min(1, Math.max(0, window.scrollY / scrollable));
+      setProgress(Math.round(ratio * 100));
+    };
+
+    updateProgress();
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', updateProgress);
+      window.removeEventListener('resize', updateProgress);
+    };
+  }, []);
+
+  // Keep desktop .docs-toc in sync with the active heading ID
   useEffect(() => {
     const tocRoot = document.querySelector(tocSelector);
     if (!tocRoot) {
       return;
     }
 
-    const links = Array.from(tocRoot.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'));
+    const links = Array.from(
+      tocRoot.querySelectorAll<HTMLAnchorElement>('a[href^="#"]'),
+    );
     for (const link of links) {
       const hash = link.getAttribute('href')?.slice(1) ?? '';
       const isMatch = Boolean(activeId && hash === activeId);
@@ -78,7 +103,7 @@ export function DocArticleEnhancer({
     };
   }, [activeId, tocSelector]);
 
-  // Lightweight IntersectionObserver scrollspy + code block copy buttons
+  // IntersectionObserver scrollspy + pre.code-block copy bars + focusable table wraps
   useEffect(() => {
     const article = document.querySelector<HTMLElement>(articleSelector);
     if (!article) {
@@ -88,7 +113,15 @@ export function DocArticleEnhancer({
     const abortController = new AbortController();
     const { signal } = abortController;
 
-    // 1. Scrollspy over heading anchors inside the article
+    const tableWraps = Array.from(
+      article.querySelectorAll<HTMLElement>('.md-table-wrap'),
+    );
+    for (const wrap of tableWraps) {
+      if (!wrap.hasAttribute('tabindex')) {
+        wrap.tabIndex = 0;
+      }
+    }
+
     const headings = Array.from(
       article.querySelectorAll<HTMLElement>('h2[id], h3[id], h4[id]'),
     );
@@ -119,7 +152,6 @@ export function DocArticleEnhancer({
             }
           }
 
-          // Fallback: pick last heading scrolled past top offset
           const offset = 118;
           let fallbackId = headings[0]?.id ?? '';
           for (const heading of headings) {
@@ -142,8 +174,9 @@ export function DocArticleEnhancer({
       }
     }
 
-    // 2. Enhance pre.code-block elements with copy bar
-    const preBlocks = Array.from(article.querySelectorAll<HTMLPreElement>('pre.code-block'));
+    const preBlocks = Array.from(
+      article.querySelectorAll<HTMLPreElement>('pre.code-block'),
+    );
     const cleanups: Array<() => void> = [];
 
     for (const pre of preBlocks) {
@@ -153,6 +186,7 @@ export function DocArticleEnhancer({
 
       const rawLang = (pre.dataset.lang || 'text').toUpperCase();
       pre.tabIndex = 0;
+
       const wrapper = document.createElement('div');
       wrapper.className = styles.codeBlockWrap;
 
@@ -167,13 +201,14 @@ export function DocArticleEnhancer({
       button.type = 'button';
       button.className = styles.codeCopyButton;
       button.textContent = 'Copy';
-      button.setAttribute('aria-label', `Copy ${rawLang} code snippet`);
+      button.setAttribute('aria-label', `Copy ${rawLang} code`);
 
       let resetTimer: number | null = null;
       button.addEventListener(
         'click',
         async () => {
-          const codeText = pre.querySelector('code')?.textContent ?? pre.textContent ?? '';
+          const codeText =
+            pre.querySelector('code')?.textContent ?? pre.textContent ?? '';
           const ok = await copyTextToClipboard(codeText);
           if (!ok) {
             return;
@@ -181,7 +216,7 @@ export function DocArticleEnhancer({
 
           button.textContent = 'Copied ✓';
           button.classList.add(styles.codeCopyButtonCopied);
-          setLiveStatus(`${rawLang} code snippet copied to clipboard.`);
+          setLiveStatus(`${rawLang} code copied to clipboard.`);
 
           if (resetTimer !== null) {
             window.clearTimeout(resetTimer);
@@ -230,50 +265,112 @@ export function DocArticleEnhancer({
   const activeTocItem = toc.find((item) => item.id === activeId) ?? toc[0] ?? null;
 
   return (
-    <div className={styles.enhancerHost}>
-      {toc.length > 0 ? (
-        <nav aria-label={title ? `Sections in ${title}` : 'On this page'} className={styles.mobileToc}>
-          <button
-            aria-controls="doc-mobile-toc-panel"
-            aria-expanded={drawerOpen}
-            className={styles.mobileTocButton}
-            onClick={() => setDrawerOpen((prev) => !prev)}
-            type="button"
-          >
-            <span className={styles.mobileTocCurrent}>
-              {activeTocItem ? activeTocItem.text : 'On this page'}
-            </span>
-            <span className={styles.mobileTocMeta}>
-              <span>{toc.length} sections</span>
-              <span aria-hidden="true">{drawerOpen ? '−' : '+'}</span>
-            </span>
-          </button>
-
-          {drawerOpen ? (
-            <div className={styles.mobileTocPanel} id="doc-mobile-toc-panel">
-              {toc.map((item) => {
-                const isActive = item.id === activeId;
-                return (
-                  <a
-                    aria-current={isActive ? 'location' : undefined}
-                    className={`${styles.mobileTocLink} ${isActive ? styles.mobileTocLinkActive : ''}`}
-                    data-level={item.level}
-                    href={`#${item.id}`}
-                    key={item.id}
-                    onClick={() => setDrawerOpen(false)}
-                  >
-                    {item.text}
-                  </a>
-                );
-              })}
-            </div>
-          ) : null}
-        </nav>
-      ) : null}
-
-      <div aria-live="polite" className={styles.srOnly} role="status">
-        {liveStatus}
+    <>
+      <div
+        aria-label="Article reading progress"
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={progress}
+        className={styles.readingProgressTrack}
+        role="progressbar"
+      >
+        <div
+          className={styles.readingProgressBar}
+          style={{ width: `${progress}%` }}
+        />
       </div>
+
+      <div className={styles.enhancerHost}>
+        {toc.length > 0 ? (
+          <nav
+            aria-label={title ? `Sections in ${title}` : 'On this page'}
+            className={styles.mobileToc}
+          >
+            <button
+              aria-controls="doc-mobile-toc-panel"
+              aria-expanded={drawerOpen}
+              className={styles.mobileTocButton}
+              onClick={() => setDrawerOpen((prev) => !prev)}
+              type="button"
+            >
+              <span className={styles.mobileTocCurrent}>
+                {activeTocItem ? activeTocItem.text : 'On this page'}
+              </span>
+              <span className={styles.mobileTocMeta}>
+                <span>{toc.length} sections</span>
+                <span aria-hidden="true">{drawerOpen ? '−' : '+'}</span>
+              </span>
+            </button>
+
+            {drawerOpen ? (
+              <div className={styles.mobileTocPanel} id="doc-mobile-toc-panel">
+                {toc.map((item) => {
+                  const isActive = item.id === activeId;
+                  return (
+                    <a
+                      aria-current={isActive ? 'location' : undefined}
+                      className={`${styles.mobileTocLink} ${
+                        isActive ? styles.mobileTocLinkActive : ''
+                      }`}
+                      data-level={item.level}
+                      href={`#${item.id}`}
+                      key={item.id}
+                      onClick={() => setDrawerOpen(false)}
+                    >
+                      {item.text}
+                    </a>
+                  );
+                })}
+              </div>
+            ) : null}
+          </nav>
+        ) : null}
+
+        <div aria-live="polite" className={styles.srOnly} role="status">
+          {liveStatus}
+        </div>
+      </div>
+    </>
+  );
+}
+
+export interface CliCopyPillProps {
+  command: string;
+}
+
+export function CliCopyPill({ command }: CliCopyPillProps) {
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  const handleCopy = async () => {
+    const ok = await copyTextToClipboard(command);
+    if (!ok) return;
+    setCopied(true);
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+    }
+    timerRef.current = window.setTimeout(() => setCopied(false), 1800);
+  };
+
+  return (
+    <div className={styles.cliCopyPill}>
+      <code className={styles.cliCopyCode}>{command}</code>
+      <button
+        aria-label={`Copy command: ${command}`}
+        className={styles.cliCopyBtn}
+        onClick={handleCopy}
+        type="button"
+      >
+        {copied ? 'Copied ✓' : 'Copy'}
+      </button>
     </div>
   );
 }

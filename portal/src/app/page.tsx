@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SignalArchitectureHero } from "@/components/home/SignalArchitectureHero";
 import {
+  HomeDetailsMatterSection,
   HomeExplodedArchitecture,
   LivingFlowAtlas,
 } from "@/components/scenes/home";
@@ -77,17 +78,19 @@ export default function HomePage() {
     <main id="main" data-page="home">
       <SignalArchitectureHero />
 
-      <div className="site-wrap">
-        <div className="proof-strip">
-          {PROOF_ITEMS.map((item) => (
-            <div key={item.num} className="proof">
-              <span className="num">{item.num}</span>
-              <div>
-                <strong>{item.title}</strong>
-                <small>{item.caption}</small>
+      <div className="proof-strip-band">
+        <div className="site-wrap">
+          <div className="proof-strip">
+            {PROOF_ITEMS.map((item) => (
+              <div key={item.num} className="proof">
+                <span className="num">{item.num}</span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <small>{item.caption}</small>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
@@ -97,7 +100,7 @@ export default function HomePage() {
 
       <section className="editorial-panel v10-modules-section">
         <div className="site-wrap">
-          <div className="section-head">
+          <div className="section-head" data-reveal="up">
             <div>
               <p className="eyebrow">04 / MODULAR BY CHOICE</p>
               <h2>
@@ -113,26 +116,48 @@ export default function HomePage() {
           </div>
 
           <div className="card-list">
-            {MODULE_CARDS.map((card) => (
-              <Link key={card.index} className="line-card" href={card.href}>
+            {MODULE_CARDS.map((card, idx) => (
+              <Link
+                key={card.index}
+                className="line-card"
+                href={card.href}
+                data-reveal="up"
+                data-reveal-delay={String(idx * 45)}
+              >
                 <span className="index tiny">{card.index}</span>
                 <h3>{card.title}</h3>
                 <small>{card.summary}</small>
               </Link>
             ))}
           </div>
+        </div>
+      </section>
 
-          <div className="v10-start-strip">
-            <div>
-              <span className="tiny">READY WHEN YOU ARE</span>
-              <h3>Begin with one responsibility.</h3>
-              <p>
-                Use the package-selection guide to choose the smallest useful
-                dependency.
-              </p>
-            </div>
-            <Link className="button button-primary" href="/docs/quick-start">
+      <HomeDetailsMatterSection />
+
+      <section
+        className="ending-cta-band"
+        aria-labelledby="ending-cta-heading"
+      >
+        <div className="site-wrap ending-cta-inner">
+          <div className="ending-cta-copy" data-reveal="up">
+            <p className="eyebrow">06 / READY WHEN YOU ARE</p>
+            <h2 id="ending-cta-heading">
+              Begin with one
+              <br />
+              <span className="v10-ital">responsibility.</span>
+            </h2>
+            <p>
+              Read the guide. Choose the smallest useful dependency. Stay in
+              control.
+            </p>
+          </div>
+          <div className="ending-cta-actions" data-reveal="up">
+            <Link className="button button-primary" href="/docs/getting-started">
               Read the quick start <span aria-hidden="true">↗</span>
+            </Link>
+            <Link className="button button-outline" href="/packages">
+              Explore packages <span aria-hidden="true">↗</span>
             </Link>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -23,7 +24,6 @@ import {
   fitCamera,
   IsoPrism,
   IsoSignalConduit,
-  open,
   projectCamera,
   r2,
   seg,
@@ -31,7 +31,10 @@ import {
   useReducedMotionSafe,
   useViewportActivity,
   WARM_FOREST_PALETTE,
+  type FacingPredicate,
+  type IsoCamera,
   type IsoPlateGeometry,
+  type IsoPrismVariant,
   type Point2,
   type Point3,
   type Projector,
@@ -130,7 +133,7 @@ const SHORT_LABELS: Record<string, string> = {
   'pull-requests': 'Pull Requests',
   'contributing-guide': 'Contributing',
   'security-policy': 'Security',
-  'documentation-hub': 'Architecture Docs',
+  'documentation-hub': 'Architecture',
 };
 
 interface StationLayoutSpec {
@@ -141,151 +144,175 @@ interface StationLayoutSpec {
 
 const STATION_LAYOUT: StationLayoutSpec[] = [
   {
-    cx: -124,
-    cy: -36,
+    cx: -138,
+    cy: -40,
     conduit: [
-      [-34, -18, 4],
-      [-80, -18, 4],
-      [-80, -36, 4],
-      [-104, -36, 4],
+      [-40, -20, 4],
+      [-88, -20, 4],
+      [-88, -40, 4],
+      [-115, -40, 4],
     ],
   },
   {
-    cx: -36,
-    cy: -124,
+    cx: -42,
+    cy: -136,
     conduit: [
-      [-18, -34, 4],
-      [-18, -80, 4],
-      [-36, -80, 4],
-      [-36, -104, 4],
+      [-20, -40, 4],
+      [-20, -90, 4],
+      [-42, -90, 4],
+      [-42, -114, 4],
     ],
   },
   {
-    cx: 102,
-    cy: -102,
+    cx: 112,
+    cy: -112,
     conduit: [
-      [34, -22, 4],
-      [68, -22, 4],
-      [68, -102, 4],
-      [82, -102, 4],
+      [40, -24, 4],
+      [76, -24, 4],
+      [76, -112, 4],
+      [89, -112, 4],
     ],
   },
   {
-    cx: 124,
-    cy: 36,
+    cx: 138,
+    cy: 40,
     conduit: [
-      [34, 18, 4],
-      [80, 18, 4],
-      [80, 36, 4],
-      [104, 36, 4],
+      [40, 20, 4],
+      [88, 20, 4],
+      [88, 40, 4],
+      [115, 40, 4],
     ],
   },
   {
-    cx: 36,
-    cy: 124,
+    cx: 42,
+    cy: 136,
     conduit: [
-      [18, 34, 4],
-      [18, 80, 4],
-      [36, 80, 4],
-      [36, 104, 4],
+      [20, 40, 4],
+      [20, 90, 4],
+      [42, 90, 4],
+      [42, 114, 4],
     ],
   },
   {
-    cx: -102,
-    cy: 102,
+    cx: -112,
+    cy: 112,
     conduit: [
-      [-34, 22, 4],
-      [-68, 22, 4],
-      [-68, 102, 4],
-      [-82, 102, 4],
+      [-40, 24, 4],
+      [-76, 24, 4],
+      [-76, 112, 4],
+      [-89, 112, 4],
     ],
   },
 ];
 
-const SVG_WIDTH = 640;
-const SVG_HEIGHT = 320;
-const STATION_HALF = 21;
-const HUB_HALF = 34;
+const SVG_WIDTH = 680;
+const SVG_HEIGHT = 350;
+const STATION_HALF = 23;
+const HUB_BASE_HALF = 43;
+const HUB_COLLAR_HALF = 35;
+const HUB_CROWN_HALF = 27;
+const AUTO_ROUTE_INTERVAL_MS = 3000;
 
-function buildPathwayGlyph(
+interface MiniSculptureBlock {
+  key: string;
+  geometry: IsoPlateGeometry;
+  variant: IsoPrismVariant;
+}
+
+interface ProjectedStation {
+  index: number;
+  geometry: IsoPlateGeometry;
+  conduitPoints: Point2[];
+  miniBlocks: MiniSculptureBlock[];
+  accentDotCenter: Point2;
+}
+
+function buildMiniSculptureBlocks(
   index: number,
+  camera: IsoCamera,
   P: Projector,
+  front: FacingPredicate,
   cx: number,
   cy: number,
-  zTop: number,
-): string[] {
+): MiniSculptureBlock[] {
+  const plate = (
+    key: string,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    z0: number,
+    z1: number,
+    variant: IsoPrismVariant,
+    radius = 2,
+  ): MiniSculptureBlock => ({
+    key,
+    variant,
+    geometry: createIsoPlateGeometry({
+      camera,
+      project: P,
+      front,
+      x0: cx + x0,
+      y0: cy + y0,
+      x1: cx + x1,
+      y1: cy + y1,
+      z0,
+      z1,
+      radius,
+      creaseInset: 1.1,
+      steps: 4,
+    }),
+  });
+
+  let blocks: MiniSculptureBlock[];
   switch (index) {
     case 0:
-      // Repository source frame
-      return [
-        open([
-          P(cx - 8, cy - 8, zTop),
-          P(cx + 8, cy - 8, zTop),
-          P(cx + 8, cy + 8, zTop),
-          P(cx - 8, cy + 8, zTop),
-          P(cx - 8, cy - 8, zTop),
-        ]),
-        seg(P(cx - 3, cy, zTop), P(cx + 3, cy, zTop)),
+      // 01 Repository: stepped archive cube monolith + slate top plate
+      blocks = [
+        plate('repo-base', -9, -8, 9, 8, 8, 14, 'ivory', 2.4),
+        plate('repo-core', -5, -4, 6, 5, 14, 19, 'forest', 1.8),
       ];
+      break;
     case 1:
-      // Issues target ring diamond
-      return [
-        open([
-          P(cx, cy - 8, zTop),
-          P(cx + 8, cy, zTop),
-          P(cx, cy + 8, zTop),
-          P(cx - 8, cy, zTop),
-          P(cx, cy - 8, zTop),
-        ]),
+      // 02 Issues: diagnostic plinth + glowing beacon turret
+      blocks = [
+        plate('issue-pad', -9, -9, 9, 9, 8, 13, 'ivory', 2.4),
+        plate('issue-beacon', -4, -4, 4, 4, 13, 21, 'terracotta', 1.6),
       ];
+      break;
     case 2:
-      // Pull requests merge branch
-      return [
-        seg(P(cx - 8, cy - 6, zTop), P(cx + 8, cy + 6, zTop)),
-        open([
-          P(cx - 8, cy + 6, zTop),
-          P(cx, cy + 6, zTop),
-          P(cx + 3, cy + 2, zTop),
-        ]),
+      // 03 Pull Requests: twin input branch blocks + joined merge bridge
+      blocks = [
+        plate('pr-branch-a', -11, -8, -2, 1, 8, 14, 'forest', 1.8),
+        plate('pr-branch-b', 2, -8, 11, 1, 8, 14, 'ivory', 1.8),
+        plate('pr-merge', -6, 1, 6, 10, 8, 17, 'terracotta', 2),
       ];
+      break;
     case 3:
-      // Contributing checklist bars
-      return [
-        seg(P(cx - 8, cy - 5, zTop), P(cx + 8, cy - 5, zTop)),
-        seg(P(cx - 8, cy, zTop), P(cx + 6, cy, zTop)),
-        seg(P(cx - 8, cy + 5, zTop), P(cx + 8, cy + 5, zTop)),
+      // 04 Contributing: three ascending verification steps
+      blocks = [
+        plate('step-1', -11, -8, -4, 8, 8, 11, 'ivory', 1.5),
+        plate('step-2', -3, -8, 4, 8, 8, 14, 'sand', 1.5),
+        plate('step-3', 5, -8, 12, 8, 8, 18, 'forest', 1.5),
       ];
+      break;
     case 4:
-      // Security shield polygon
-      return [
-        open([
-          P(cx, cy - 8, zTop),
-          P(cx + 7, cy - 4, zTop),
-          P(cx + 6, cy + 4, zTop),
-          P(cx, cy + 9, zTop),
-          P(cx - 6, cy + 4, zTop),
-          P(cx - 7, cy - 4, zTop),
-          P(cx, cy - 8, zTop),
-        ]),
+      // 05 Security: dark bastion base + terracotta vault lock turret
+      blocks = [
+        plate('sec-bastion', -10, -9, 10, 9, 8, 14, 'dark-forest', 2.6),
+        plate('sec-core', -5, -5, 5, 5, 14, 19, 'terracotta', 1.8),
       ];
+      break;
     default:
-      // Architecture docs twin pages
-      return [
-        open([
-          P(cx - 8, cy - 6, zTop),
-          P(cx, cy - 6, zTop),
-          P(cx, cy + 7, zTop),
-          P(cx - 8, cy + 7, zTop),
-          P(cx - 8, cy - 6, zTop),
-        ]),
-        open([
-          P(cx, cy - 6, zTop),
-          P(cx + 8, cy - 6, zTop),
-          P(cx + 8, cy + 7, zTop),
-          P(cx, cy + 7, zTop),
-        ]),
+      // 06 Architecture Docs: twin architectural folio slabs side-by-side
+      blocks = [
+        plate('docs-leaf-l', -11, -8, -1, 8, 8, 14, 'ivory', 2),
+        plate('docs-leaf-r', 1, -8, 11, 8, 8, 17, 'forest', 2),
       ];
+      break;
   }
+
+  return blocks.sort((a, b) => a.geometry.depthKey - b.geometry.depthKey);
 }
 
 function formatDestinationBadge(href: string): string {
@@ -328,14 +355,6 @@ function getGovernanceRuleForPathway(
   };
 }
 
-interface ProjectedStation {
-  index: number;
-  geometry: IsoPlateGeometry;
-  conduitPoints: Point2[];
-  glyphPaths: string[];
-  dotCenter: Point2;
-}
-
 export function CommunityContributionCurrent({
   pathways,
   governance,
@@ -349,6 +368,9 @@ export function CommunityContributionCurrent({
     return FALLBACK_PATHWAYS;
   }, [pathways, governance]);
 
+  const count = effectivePathways.length;
+
+  const [autoIndex, setAutoIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
@@ -362,40 +384,95 @@ export function CommunityContributionCurrent({
     initialInView: true,
   });
 
-  const activeIndex = hoveredIndex ?? focusedIndex ?? pinnedIndex;
+  const userActiveIndex = hoveredIndex ?? focusedIndex ?? pinnedIndex;
+  const isUserActive = userActiveIndex !== null;
+
+  useEffect(() => {
+    if (
+      count <= 1 ||
+      reducedMotion ||
+      !stageActivity.isActive ||
+      isUserActive
+    ) {
+      return;
+    }
+
+    const timerId = window.setInterval(() => {
+      setAutoIndex((prev) => (prev + 1) % count);
+    }, AUTO_ROUTE_INTERVAL_MS);
+
+    return () => window.clearInterval(timerId);
+  }, [count, reducedMotion, stageActivity.isActive, isUserActive]);
+
+  const displayIndex = userActiveIndex ?? autoIndex;
 
   const scene = useMemo(() => {
     const cam = createCamera(45, 0.5, 1.24);
     const extrema: Point3[] = [
-      [-HUB_HALF, -HUB_HALF, 0],
-      [HUB_HALF, HUB_HALF, 18],
+      [-HUB_BASE_HALF, -HUB_BASE_HALF, 0],
+      [HUB_BASE_HALF, HUB_BASE_HALF, 22],
     ];
     for (let i = 0; i < effectivePathways.length; i++) {
       const spec = STATION_LAYOUT[i % STATION_LAYOUT.length];
       extrema.push(
         [spec.cx - STATION_HALF, spec.cy - STATION_HALF, 0],
-        [spec.cx + STATION_HALF, spec.cy + STATION_HALF, 20],
+        [spec.cx + STATION_HALF, spec.cy + STATION_HALF, 32],
       );
     }
-    fitCamera(cam, extrema, SVG_WIDTH / 2, SVG_HEIGHT / 2 + 4);
+    fitCamera(cam, extrema, SVG_WIDTH / 2, SVG_HEIGHT / 2 + 6);
 
     const P = projectCamera(cam);
     const front = createFacingPredicate(cam);
 
-    const hubGeometry = createIsoPlateGeometry({
+    const hubBaseGeometry = createIsoPlateGeometry({
       camera: cam,
       project: P,
       front,
-      x0: -HUB_HALF,
-      y0: -HUB_HALF,
-      x1: HUB_HALF,
-      y1: HUB_HALF,
-      z0: 4,
-      z1: 15,
-      radius: 7,
+      x0: -HUB_BASE_HALF,
+      y0: -HUB_BASE_HALF,
+      x1: HUB_BASE_HALF,
+      y1: HUB_BASE_HALF,
+      z0: 0,
+      z1: 6,
+      radius: 8,
       creaseInset: 2.5,
       steps: 8,
     });
+
+    const hubCollarGeometry = createIsoPlateGeometry({
+      camera: cam,
+      project: P,
+      front,
+      x0: -HUB_COLLAR_HALF,
+      y0: -HUB_COLLAR_HALF,
+      x1: HUB_COLLAR_HALF,
+      y1: HUB_COLLAR_HALF,
+      z0: 6,
+      z1: 11,
+      radius: 7,
+      creaseInset: 2,
+      steps: 8,
+    });
+
+    const hubCrownGeometry = createIsoPlateGeometry({
+      camera: cam,
+      project: P,
+      front,
+      x0: -HUB_CROWN_HALF,
+      y0: -HUB_CROWN_HALF,
+      x1: HUB_CROWN_HALF,
+      y1: HUB_CROWN_HALF,
+      z0: 11,
+      z1: 18,
+      radius: 6,
+      creaseInset: 2,
+      steps: 6,
+    });
+
+    const guideLines = [
+      seg(P(-165, 0, 0), P(165, 0, 0)),
+      seg(P(0, -165, 0), P(0, 165, 0)),
+    ];
 
     const stations: ProjectedStation[] = effectivePathways.map((_, i) => {
       const spec = STATION_LAYOUT[i % STATION_LAYOUT.length];
@@ -409,7 +486,7 @@ export function CommunityContributionCurrent({
         y1: spec.cy + STATION_HALF,
         z0: 0,
         z1: 8,
-        radius: 5,
+        radius: 5.5,
         creaseInset: 1.8,
         steps: 6,
       });
@@ -418,8 +495,8 @@ export function CommunityContributionCurrent({
         index: i,
         geometry,
         conduitPoints: spec.conduit.map((pt) => P(pt[0], pt[1], pt[2])),
-        glyphPaths: buildPathwayGlyph(i, P, spec.cx, spec.cy, 8),
-        dotCenter: P(spec.cx, spec.cy + 13, 8),
+        miniBlocks: buildMiniSculptureBlocks(i, cam, P, front, spec.cx, spec.cy),
+        accentDotCenter: P(spec.cx, spec.cy + 16, 8),
       };
     });
 
@@ -428,7 +505,7 @@ export function CommunityContributionCurrent({
       | { kind: 'station'; depthKey: number; station: ProjectedStation };
 
     const solids: RenderSolid[] = [
-      { kind: 'hub' as const, depthKey: hubGeometry.depthKey },
+      { kind: 'hub' as const, depthKey: hubBaseGeometry.depthKey },
       ...stations.map((station) => ({
         kind: 'station' as const,
         depthKey: station.geometry.depthKey,
@@ -437,14 +514,16 @@ export function CommunityContributionCurrent({
     ].sort((a, b) => a.depthKey - b.depthKey);
 
     return {
-      hubGeometry,
+      hubBaseGeometry,
+      hubCollarGeometry,
+      hubCrownGeometry,
+      guideLines,
       stations,
       solids,
     };
   }, [effectivePathways]);
 
-  const activePathway =
-    activeIndex !== null ? effectivePathways[activeIndex] ?? null : null;
+  const activePathway = effectivePathways[displayIndex] ?? effectivePathways[0];
 
   const activeRule = activePathway
     ? getGovernanceRuleForPathway(activePathway, governance)
@@ -455,9 +534,8 @@ export function CommunityContributionCurrent({
           'dotnet test AstraFlow.slnx -c Release --no-build',
       };
 
-  const count = effectivePathways.length;
-
   function focusStation(nextIndex: number) {
+    if (count === 0) return;
     const wrapped = (nextIndex + count) % count;
     setRovingIndex(wrapped);
     setFocusedIndex(wrapped);
@@ -492,6 +570,7 @@ export function CommunityContributionCurrent({
     event: KeyboardEvent<SVGGElement>,
     index: number,
   ) {
+    if (count === 0) return;
     if (event.key === 'ArrowRight') {
       event.preventDefault();
       const next = (index + 1) % count;
@@ -518,8 +597,11 @@ export function CommunityContributionCurrent({
     }
   }
 
-  const hubLeftPct = (scene.hubGeometry.topCenter[0] / SVG_WIDTH) * 100;
-  const hubTopPct = (scene.hubGeometry.topCenter[1] / SVG_HEIGHT) * 100;
+  const hubLeftPct = (scene.hubCrownGeometry.topCenter[0] / SVG_WIDTH) * 100;
+  const hubTopPct = (scene.hubCrownGeometry.topCenter[1] / SVG_HEIGHT) * 100;
+  const shortActiveLabel = activePathway
+    ? SHORT_LABELS[activePathway.id] ?? activePathway.title
+    : 'Repository';
 
   return (
     <div
@@ -532,14 +614,19 @@ export function CommunityContributionCurrent({
         <span>FIGURE 05 / CONTRIBUTION CURRENT</span>
         <span
           className={`${styles.statePill}${
-            activePathway ? ` ${styles.statePillActive}` : ''
+            isUserActive ? ` ${styles.statePillActive}` : ''
           }`}
         >
-          {activePathway
-            ? `SIGNAL ACTIVE · ${activePathway.number} ${
-                SHORT_LABELS[activePathway.id] ?? activePathway.title
-              }`
-            : 'IDLE · HOVER OR ARROW A NODE'}
+          <span className={styles.stateDot} aria-hidden="true" />
+          <span>
+            {isUserActive
+              ? `${pinnedIndex !== null ? 'PINNED · ' : ''}SIGNAL ACTIVE · ${
+                  activePathway?.number ?? '01'
+                } ${shortActiveLabel}`
+              : `IDLE / AUTO-ROUTING · ${
+                  activePathway?.number ?? '01'
+                } ${shortActiveLabel}`}
+          </span>
         </span>
       </div>
 
@@ -549,13 +636,27 @@ export function CommunityContributionCurrent({
             className={styles.networkSvg}
             viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
             role="group"
-            aria-label="Isometric AstraFlow contribution network connecting the central hub to six repository pathways"
+            aria-label="Isometric AstraFlow contribution network connecting the central multi-tier hub to six repository pathways"
           >
+            {/* Subtle drafting crosshair datum lines behind conduits (Rule 06) */}
+            {scene.guideLines.map((d, guideIdx) => (
+              <path
+                key={`guide-${guideIdx}`}
+                d={d}
+                fill="none"
+                stroke={WARM_FOREST_PALETTE.border}
+                strokeWidth={1}
+                strokeDasharray="3 7"
+                opacity={0.75}
+                aria-hidden="true"
+              />
+            ))}
+
             {/* Orthogonal-isometric conduits painted behind opaque plinths (Rule 06) */}
             {scene.stations.map((station) => {
               const pathway = effectivePathways[station.index];
               if (!pathway) return null;
-              const isIlluminated = activeIndex === station.index;
+              const isIlluminated = displayIndex === station.index;
               return (
                 <IsoSignalConduit
                   key={`conduit-${pathway.id}`}
@@ -567,30 +668,49 @@ export function CommunityContributionCurrent({
                   viewportActive={stageActivity.isActive}
                   surface="ivory"
                   baseColor={WARM_FOREST_PALETTE.border}
-                  baseStrokeWidth={1.3}
-                  activeStrokeWidth={2.2}
+                  baseStrokeWidth={1.35}
+                  activeStrokeWidth={2.4}
                   pulseDurationMs={1900}
-                  pulseRadius={3}
+                  pulseRadius={3.2}
                   showTerminals
                   ariaLabel={`Conduit between AstraFlow core hub and ${pathway.title}`}
                 />
               );
             })}
 
-            {/* Painter-sorted opaque solids: central hub + 6 pathway stations */}
+            {/* Painter-sorted opaque solids: sculpted 3-tier central hub + 6 pathway stations */}
             {scene.solids.map((solid) => {
               if (solid.kind === 'hub') {
                 return (
-                  <IsoPrism
-                    key="central-hub"
-                    geometry={scene.hubGeometry}
-                    variant="ivory"
-                    active={activeIndex !== null}
-                    interactive={false}
-                    strokeWidth={1.35}
-                    activeStrokeWidth={1.75}
-                    dataTestId="community-hub-plinth"
-                  />
+                  <g key="central-hub-stack">
+                    <IsoPrism
+                      geometry={scene.hubBaseGeometry}
+                      variant="dark-forest"
+                      active={displayIndex !== null}
+                      interactive={false}
+                      strokeWidth={1.35}
+                      activeStrokeWidth={1.65}
+                      dataTestId="community-hub-base"
+                    />
+                    <IsoPrism
+                      geometry={scene.hubCollarGeometry}
+                      variant="terracotta"
+                      active
+                      interactive={false}
+                      strokeWidth={1.2}
+                      activeStrokeWidth={1.6}
+                      dataTestId="community-hub-collar"
+                    />
+                    <IsoPrism
+                      geometry={scene.hubCrownGeometry}
+                      variant="ivory"
+                      active={isUserActive}
+                      interactive={false}
+                      strokeWidth={1.35}
+                      activeStrokeWidth={1.75}
+                      dataTestId="community-hub-plinth"
+                    />
+                  </g>
                 );
               }
 
@@ -598,7 +718,7 @@ export function CommunityContributionCurrent({
               const pathway = effectivePathways[station.index];
               if (!pathway) return null;
 
-              const isHighlighted = activeIndex === station.index;
+              const isHighlighted = displayIndex === station.index;
               const isPinned = pinnedIndex === station.index;
 
               return (
@@ -608,12 +728,8 @@ export function CommunityContributionCurrent({
                   variant={isHighlighted ? 'terracotta' : 'sand'}
                   selected={isPinned}
                   active={isHighlighted}
-                  liftPx={isHighlighted ? 10 : 0}
-                  delayMs={
-                    activeIndex !== null
-                      ? staggerDelayMs(station.index, activeIndex, 35)
-                      : 0
-                  }
+                  liftPx={isHighlighted ? 11 : 0}
+                  delayMs={staggerDelayMs(station.index, displayIndex, 35)}
                   showDropGuides={isHighlighted}
                   role="button"
                   ariaPressed={isPinned}
@@ -635,30 +751,26 @@ export function CommunityContributionCurrent({
                   onKeyDown={(event) => handleSvgKeyDown(event, station.index)}
                   dataTestId={`community-station-${pathway.id}`}
                 >
-                  {station.glyphPaths.map((d, gIdx) => (
-                    <path
-                      key={`glyph-${pathway.id}-${gIdx}`}
-                      d={d}
-                      fill="none"
-                      stroke={
-                        isHighlighted
-                          ? WARM_FOREST_PALETTE.ink
-                          : WARM_FOREST_PALETTE.inkSecondary
-                      }
-                      strokeWidth={1.25}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      pointerEvents="none"
+                  {station.miniBlocks.map((block) => (
+                    <IsoPrism
+                      key={block.key}
+                      geometry={block.geometry}
+                      variant={block.variant}
+                      active={isHighlighted}
+                      interactive={false}
+                      liftPx={0}
+                      strokeWidth={0.95}
+                      activeStrokeWidth={1.15}
                     />
                   ))}
                   <circle
-                    cx={r2(station.dotCenter[0])}
-                    cy={r2(station.dotCenter[1])}
-                    r={1.5}
+                    cx={r2(station.accentDotCenter[0])}
+                    cy={r2(station.accentDotCenter[1])}
+                    r={isHighlighted ? 2.1 : 1.5}
                     fill={
                       isHighlighted
                         ? WARM_FOREST_PALETTE.signal
-                        : WARM_FOREST_PALETTE.muted
+                        : WARM_FOREST_PALETTE.inkSecondary
                     }
                     pointerEvents="none"
                   />
@@ -667,7 +779,7 @@ export function CommunityContributionCurrent({
             })}
           </svg>
 
-          {/* Canonical A mark anchored cleanly over the central Warm Ivory plinth */}
+          {/* Canonical A mark anchored cleanly over the Warm Ivory crown cap */}
           <div
             className={styles.hubEmblem}
             style={{
@@ -680,8 +792,8 @@ export function CommunityContributionCurrent({
             <img
               src="/brand/mark-on-light.svg"
               alt=""
-              width={46}
-              height={37}
+              width={44}
+              height={35}
             />
           </div>
         </div>
@@ -694,7 +806,7 @@ export function CommunityContributionCurrent({
         aria-label="AstraFlow contribution pathways"
       >
         {effectivePathways.map((pathway, index) => {
-          const isHighlighted = activeIndex === index;
+          const isHighlighted = displayIndex === index;
           const isPinned = pinnedIndex === index;
           const shortLabel = SHORT_LABELS[pathway.id] ?? pathway.title;
 
@@ -731,65 +843,50 @@ export function CommunityContributionCurrent({
       </div>
 
       {/* Inset Active Pathway Readout (CONDUIT INSPECTOR) */}
-      <div
-        className={styles.inspectorPanel}
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <div className={styles.inspectorHeader}>
-          <div className={styles.inspectorTitleGroup}>
-            <span className={styles.inspectorKicker}>
-              CONDUIT INSPECTOR ·{' '}
-              {activePathway
-                ? `${activePathway.number} ${
-                    (
-                      SHORT_LABELS[activePathway.id] ?? activePathway.title
-                    ).toUpperCase()
-                  }`
-                : 'RESTING HUB'}
-            </span>
+      {activePathway ? (
+        <div
+          className={styles.inspectorPanel}
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <div className={styles.inspectorHeader}>
+            <div className={styles.inspectorTitleGroup}>
+              <span className={styles.inspectorKicker}>
+                CONDUIT INSPECTOR · {activePathway.number}{' '}
+                {shortActiveLabel.toUpperCase()}
+              </span>
+            </div>
+
+            {pinnedIndex !== null ? (
+              <button
+                type="button"
+                className={styles.clearBtn}
+                onClick={() => {
+                  setPinnedIndex(null);
+                  setHoveredIndex(null);
+                  setFocusedIndex(null);
+                }}
+              >
+                Reset idle
+              </button>
+            ) : null}
           </div>
 
-          {pinnedIndex !== null ? (
-            <button
-              type="button"
-              className={styles.clearBtn}
-              onClick={() => {
-                setPinnedIndex(null);
-                setHoveredIndex(null);
-              }}
-            >
-              Reset idle
-            </button>
-          ) : null}
-        </div>
+          <h2 className={styles.inspectorHeading}>{activePathway.title}</h2>
 
-        <h2 className={styles.inspectorHeading}>
-          {activePathway
-            ? activePathway.title
-            : 'One open repository. Six verified ways to engage.'}
-        </h2>
+          <p className={styles.inspectorPurpose}>{activePathway.summary}</p>
 
-        <p className={styles.inspectorPurpose}>
-          {activePathway
-            ? activePathway.summary
-            : 'Hover, focus, or press Left/Right arrow keys across stations 01–06 to energize a contribution conduit and inspect its governance rule.'}
-        </p>
+          <div className={styles.governanceRule}>
+            <strong>{activeRule.label}</strong>
+            <span>{activeRule.text}</span>
+          </div>
 
-        <div className={styles.governanceRule}>
-          <strong>{activeRule.label}</strong>
-          <span>{activeRule.text}</span>
-        </div>
+          <div className={styles.inspectorFooter}>
+            <span className={styles.destBadge}>
+              {formatDestinationBadge(activePathway.href)}
+            </span>
 
-        <div className={styles.inspectorFooter}>
-          <span className={styles.destBadge}>
-            {formatDestinationBadge(
-              activePathway ? activePathway.href : GITHUB_LINKS.repo,
-            )}
-          </span>
-
-          {activePathway ? (
-            activePathway.isExternal ? (
+            {activePathway.isExternal ? (
               <a
                 href={activePathway.href}
                 target="_blank"
@@ -802,19 +899,10 @@ export function CommunityContributionCurrent({
               <Link href={activePathway.href} className={styles.destLink}>
                 Open destination ↗
               </Link>
-            )
-          ) : (
-            <a
-              href={GITHUB_LINKS.repo}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.destLink}
-            >
-              Open destination ↗
-            </a>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

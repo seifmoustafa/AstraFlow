@@ -9,14 +9,12 @@ import { readRepoText, resolveRepoPath } from './repo-paths';
 import { getGitHubBlobUrl } from './site-config';
 
 export type DocCategory =
-  | 'Start Here'
+  | 'Getting Started'
   | 'Core & Mapping'
-  | 'Tooling & Quality'
-  | 'Integrations & Security'
-  | 'Governance & Releases'
-  | 'ADRs'
-  | 'Plans & Evidence'
-  | 'Strategy';
+  | 'Integrations'
+  | 'Diagnostics, Tooling & Testing'
+  | 'Reference & Operations'
+  | 'Architecture Decisions (ADRs)';
 
 export interface DocNavLink {
   slug: string[];
@@ -45,6 +43,7 @@ export interface DocSummary {
   prev: DocNavLink | null;
   next: DocNavLink | null;
   toc: TocItem[];
+  isUnreleasedSource: boolean;
 }
 
 export interface DocDetail extends DocSummary {
@@ -59,32 +58,32 @@ export interface DocCategoryGroup {
 
 export const DOC_SLUG_ALIASES: ReadonlyMap<string, string> = new Map([
   ['quick-start', 'getting-started'],
-  ['release-verification', 'release-checklist'],
-  ['nuget-publishing', 'publishing'],
+  ['mapping', 'mapper'],
+  ['efcore', 'entity-framework-core'],
+  ['ef-core', 'entity-framework-core'],
+  ['validation', 'fluentvalidation'],
   ['branch-protection-rollout', 'security-and-supply-chain'],
   ['readme', 'overview'],
   ['index', 'overview'],
 ]);
 
-const DOC_CATEGORY_ORDER: readonly DocCategory[] = [
-  'Start Here',
+export const DOC_CATEGORY_ORDER: readonly DocCategory[] = [
+  'Getting Started',
   'Core & Mapping',
-  'Tooling & Quality',
-  'Integrations & Security',
-  'Governance & Releases',
-  'ADRs',
-  'Plans & Evidence',
-  'Strategy',
+  'Integrations',
+  'Diagnostics, Tooling & Testing',
+  'Reference & Operations',
+  'Architecture Decisions (ADRs)',
 ];
 
 const CURATED_DOC_ORDER: readonly string[] = [
+  // 1. Getting Started
   'overview',
   'getting-started',
   'package-selection',
   'architecture',
   'compatibility',
-  'version-upgrade-guide',
-  'migration-cookbook',
+  // 2. Core & Mapping
   'mediator',
   'mediator-scenarios',
   'mapper',
@@ -92,42 +91,41 @@ const CURATED_DOC_ORDER: readonly string[] = [
   'convention-mapping',
   'projections',
   'projection-scenarios',
-  'api-reference',
-  'troubleshooting',
-  'testing',
-  'assertions',
-  'diagnostics',
-  'diagnostics-endpoint-safety',
-  'analyzers',
-  'generators',
-  'cli',
-  'benchmarks',
+  // 3. Integrations
   'aspnetcore',
   'entity-framework-core',
   'fluentvalidation',
+  // 4. Diagnostics, Tooling & Testing
+  'diagnostics',
+  'diagnostics-endpoint-safety',
   'observability',
+  'analyzers',
+  'generators',
+  'cli',
+  'testing',
+  'assertions',
+  // 5. Reference & Operations
   'security',
   'security-and-supply-chain',
   'api-governance',
-  'publishing',
-  'release-checklist',
-  'community-release-guide',
-  'roadmap',
+  'api-reference',
+  'benchmarks',
   'engineering-blueprint',
-  'branding',
-  'future-ideas',
-  'design-v1.6.1-candidate-followups',
-  'design-v1.6.2-inheritance-polymorphism',
+  'version-upgrade-guide',
+  'migration-cookbook',
+  'troubleshooting',
+  // 6. Architecture Decisions (ADRs)
+  'adr/0001-generated-mapper',
+  'adr/0002-generated-mediator',
+  'adr/0003-flow-manifest',
 ];
 
 const CATEGORY_BY_SLUG: Record<string, DocCategory> = {
-  overview: 'Start Here',
-  'getting-started': 'Start Here',
-  'package-selection': 'Start Here',
-  architecture: 'Start Here',
-  compatibility: 'Start Here',
-  'version-upgrade-guide': 'Start Here',
-  'migration-cookbook': 'Start Here',
+  overview: 'Getting Started',
+  'getting-started': 'Getting Started',
+  'package-selection': 'Getting Started',
+  architecture: 'Getting Started',
+  compatibility: 'Getting Started',
 
   mediator: 'Core & Mapping',
   'mediator-scenarios': 'Core & Mapping',
@@ -136,63 +134,73 @@ const CATEGORY_BY_SLUG: Record<string, DocCategory> = {
   'convention-mapping': 'Core & Mapping',
   projections: 'Core & Mapping',
   'projection-scenarios': 'Core & Mapping',
-  'api-reference': 'Core & Mapping',
-  troubleshooting: 'Core & Mapping',
 
-  testing: 'Tooling & Quality',
-  assertions: 'Tooling & Quality',
-  diagnostics: 'Tooling & Quality',
-  'diagnostics-endpoint-safety': 'Tooling & Quality',
-  analyzers: 'Tooling & Quality',
-  generators: 'Tooling & Quality',
-  cli: 'Tooling & Quality',
-  benchmarks: 'Tooling & Quality',
+  aspnetcore: 'Integrations',
+  'entity-framework-core': 'Integrations',
+  fluentvalidation: 'Integrations',
 
-  aspnetcore: 'Integrations & Security',
-  'entity-framework-core': 'Integrations & Security',
-  fluentvalidation: 'Integrations & Security',
-  observability: 'Integrations & Security',
-  security: 'Integrations & Security',
-  'security-and-supply-chain': 'Integrations & Security',
+  diagnostics: 'Diagnostics, Tooling & Testing',
+  'diagnostics-endpoint-safety': 'Diagnostics, Tooling & Testing',
+  observability: 'Diagnostics, Tooling & Testing',
+  analyzers: 'Diagnostics, Tooling & Testing',
+  generators: 'Diagnostics, Tooling & Testing',
+  cli: 'Diagnostics, Tooling & Testing',
+  testing: 'Diagnostics, Tooling & Testing',
+  assertions: 'Diagnostics, Tooling & Testing',
 
-  'api-governance': 'Governance & Releases',
-  publishing: 'Governance & Releases',
-  'release-checklist': 'Governance & Releases',
-  'community-release-guide': 'Governance & Releases',
-  roadmap: 'Governance & Releases',
-  'engineering-blueprint': 'Governance & Releases',
-  branding: 'Governance & Releases',
-  'future-ideas': 'Governance & Releases',
-  'design-v1.6.1-candidate-followups': 'Governance & Releases',
-  'design-v1.6.2-inheritance-polymorphism': 'Governance & Releases',
+  security: 'Reference & Operations',
+  'security-and-supply-chain': 'Reference & Operations',
+  'api-governance': 'Reference & Operations',
+  'api-reference': 'Reference & Operations',
+  benchmarks: 'Reference & Operations',
+  'engineering-blueprint': 'Reference & Operations',
+  'version-upgrade-guide': 'Reference & Operations',
+  'migration-cookbook': 'Reference & Operations',
+  troubleshooting: 'Reference & Operations',
 };
 
-const FALLBACK_TITLES: Record<string, string> = {
-  'benchmark-results/v2.1-draft/generated-mapping-bdn-short':
-    'Generated Mapping Short Benchmark (v2.1 Draft)',
-  'benchmark-results/v2.1-draft/generated-mapping-bdn-mapperly-short':
-    'Generated Mapping vs Mapperly Benchmark (v2.1 Draft)',
-  'benchmark-results/v2.1-draft/generated-mapping-first-call-cold':
-    'Generated Mapping First-Call Cold Start (v2.1 Draft)',
-};
+const EXCLUDED_DOC_PREFIXES = [
+  'plans/',
+  'decisions/',
+  'benchmark-results/',
+  'strategy/',
+  'api-baselines/',
+] as const;
+
+const EXCLUDED_DOC_FILES = new Set<string>([
+  'future-ideas.md',
+  'release-checklist.md',
+  'publishing.md',
+  'community-release-guide.md',
+  'branding.md',
+  'roadmap.md',
+  'design-v1.6.md',
+  'design-v1.6.html',
+]);
+
+function isExcludedDocRelativePath(relPath: string): boolean {
+  const normalized = relPath.replace(/\\/g, '/').toLowerCase();
+  if (EXCLUDED_DOC_PREFIXES.some((prefix) => normalized.startsWith(prefix))) {
+    return true;
+  }
+  const baseName = path.posix.basename(normalized);
+  if (EXCLUDED_DOC_FILES.has(baseName)) {
+    return true;
+  }
+  if (/^design-v1\.6/i.test(baseName)) {
+    return true;
+  }
+  return false;
+}
 
 function classifyDocCategory(slugPath: string): DocCategory {
-  if (slugPath.startsWith('adr/')) return 'ADRs';
-  if (
-    slugPath.startsWith('plans/') ||
-    slugPath.startsWith('decisions/') ||
-    slugPath.startsWith('benchmark-results/')
-  ) {
-    return 'Plans & Evidence';
+  if (slugPath.startsWith('adr/')) {
+    return 'Architecture Decisions (ADRs)';
   }
-  if (slugPath.startsWith('strategy/')) return 'Strategy';
-  return CATEGORY_BY_SLUG[slugPath] ?? 'Governance & Releases';
+  return CATEGORY_BY_SLUG[slugPath] ?? 'Reference & Operations';
 }
 
 function titleCaseFromSlug(slugPath: string): string {
-  if (FALLBACK_TITLES[slugPath]) {
-    return FALLBACK_TITLES[slugPath];
-  }
   const base = path.posix.basename(slugPath);
   return base
     .split(/[-_]+/)
@@ -325,7 +333,7 @@ function extractPlainProse(markdown: string): {
   const firstParagraph =
     paragraphs[0] ??
     allPlainTokens.find((token) => token.length > 20) ??
-    'BenchmarkDotNet measurement summary from the AstraFlow repository.';
+    'Repository-backed technical reference documentation for AstraFlow.';
 
   const truncateAtWord = (text: string, maxLen: number): string => {
     if (text.length <= maxLen) return text;
@@ -349,7 +357,7 @@ function extractPlainProse(markdown: string): {
   };
 }
 
-function collectMarkdownFiles(dir: string, prefix = ''): string[] {
+function discoverDocRelativePaths(dir: string, prefix = ''): string[] {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   const files: string[] = [];
 
@@ -357,8 +365,16 @@ function collectMarkdownFiles(dir: string, prefix = ''): string[] {
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      files.push(...collectMarkdownFiles(full, rel));
-    } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
+      const normalizedPrefix = `${rel.replace(/\\/g, '/').toLowerCase()}/`;
+      if (EXCLUDED_DOC_PREFIXES.some((excluded) => normalizedPrefix.startsWith(excluded))) {
+        continue;
+      }
+      files.push(...discoverDocRelativePaths(full, rel));
+    } else if (
+      entry.isFile() &&
+      entry.name.toLowerCase().endsWith('.md') &&
+      !isExcludedDocRelativePath(rel)
+    ) {
       files.push(rel);
     }
   }
@@ -384,12 +400,13 @@ function buildDocsIndex(): DocDetail[] {
   }
 
   const docsDir = resolveRepoPath('docs');
-  const relativeFiles = collectMarkdownFiles(docsDir);
+  const relativeFiles = discoverDocRelativePaths(docsDir);
 
   const rawEntries: RawDocEntry[] = relativeFiles.map((relPath) => {
-    const slugPath = relPath.slice(0, -'.md'.length);
+    const normalizedRel = relPath.replace(/\\/g, '/');
+    const slugPath = normalizedRel.slice(0, -'.md'.length);
     const slug = slugPath.split('/');
-    const sourcePath = `docs/${relPath}`;
+    const sourcePath = `docs/${normalizedRel}`;
     const markdown = readRepoText('docs', ...slug.slice(0, -1), `${slug[slug.length - 1]}.md`);
     return {
       slug,
@@ -408,7 +425,7 @@ function buildDocsIndex(): DocDetail[] {
     slugPath: 'overview',
     sourcePath: 'README.md',
     markdown: readmeMarkdown,
-    category: 'Start Here',
+    category: 'Getting Started',
     title: 'AstraFlow Overview',
   });
 
@@ -479,6 +496,7 @@ function buildDocsIndex(): DocDetail[] {
       toc: rendered.toc,
       html: rendered.html,
       resolvedFromAlias: null,
+      isUnreleasedSource: entry.slugPath === 'assertions',
     };
   });
 
@@ -507,12 +525,14 @@ function toDocSummary(doc: DocDetail): DocSummary {
     prev: doc.prev,
     next: doc.next,
     toc: doc.toc,
+    isUnreleasedSource: doc.isUnreleasedSource,
   };
 }
 
 /**
- * Returns all canonical repository documents (all files under `docs/` plus root `README.md` at `overview`),
- * without duplicating alias routes.
+ * Returns all curated developer documentation pages (authoritative guides under `docs/`,
+ * accepted ADRs under `docs/adr/`, plus root `README.md` mapped at `overview`),
+ * excluding internal maintainer/planning scratchpads.
  */
 export function getAllDocs(): DocSummary[] {
   return buildDocsIndex().map(toDocSummary);
@@ -539,13 +559,17 @@ export function getAllDocSlugs(): string[][] {
 
 /**
  * Returns Next.js App Router `generateStaticParams()` entries for `/docs/[...slug]`,
- * covering all canonical docs as well as documented slug aliases (`quick-start`, etc.).
+ * covering all curated canonical docs as well as documented slug aliases (`quick-start`, etc.).
  */
 export function getAllDocRouteParams(): { slug: string[] }[] {
-  const canonical = buildDocsIndex().map((doc) => ({ slug: doc.slug }));
-  const aliasEntries = Array.from(DOC_SLUG_ALIASES.keys()).map((alias) => ({
-    slug: alias.split('/'),
-  }));
+  const docs = buildDocsIndex();
+  const canonicalSet = new Set(docs.map((doc) => doc.slugPath));
+  const canonical = docs.map((doc) => ({ slug: doc.slug }));
+  const aliasEntries = Array.from(DOC_SLUG_ALIASES.entries())
+    .filter(([, target]) => canonicalSet.has(target))
+    .map(([alias]) => ({
+      slug: alias.split('/'),
+    }));
   return [...canonical, ...aliasEntries];
 }
 
@@ -573,7 +597,6 @@ export function getDocBySlug(slugInput: string[] | string): DocDetail | null {
     }
   }
 
-  // Case-insensitive canonical fallback
   for (const [key, doc] of cachedDocBySlug?.entries() ?? []) {
     if (key.toLowerCase() === normalized) {
       return doc;

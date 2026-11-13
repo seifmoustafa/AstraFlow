@@ -1,0 +1,287 @@
+.deskCard {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background:
+    radial-gradient(ellipse 75% 65% at 50% 42%, rgba(255, 253, 247, 0.9), rgba(236, 229, 217, 0.45)),
+    var(--paper-raised);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.deskHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 14px 20px;
+  border-block-end: 1px solid var(--line);
+  background: rgba(255, 253, 247, 0.92);
+}
+
+.deskEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 10.5px/1.2 var(--font-mono);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.deskPulseDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal);
+  flex: none;
+}
+
+.deskStatusBadge {
+  font: 700 10px/1.2 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--sand);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.deskStatusBadgeActive {
+  background: var(--peach);
+  border-color: var(--action);
+  color: var(--ink);
+}
+
+.stageFrame {
+  position: relative;
+  padding: 12px 14px 4px;
+  background:
+    linear-gradient(rgba(8, 44, 38, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(8, 44, 38, 0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.deskSvg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 365px;
+  overflow: visible;
+}
+
+.volumeGroup {
+  cursor: pointer;
+}
+
+.calloutButton {
+  cursor: pointer;
+}
+
+.calloutText {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  fill: var(--ink-secondary);
+  transition: fill 0.22s ease;
+}
+
+.calloutTextActive {
+  fill: var(--action);
+}
+
+.volumeCapIndex {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  fill: var(--ink);
+  pointer-events: none;
+  user-select: none;
+}
+
+.volumeCapIndexActive {
+  fill: var(--action);
+}
+
+.trackTabStrip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px 16px 12px;
+  border-block-start: 1px solid var(--line);
+  background: rgba(247, 243, 235, 0.72);
+}
+
+.trackMiniBtn {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  text-align: start;
+  cursor: pointer;
+  min-width: 0;
+  transition:
+    border-color 0.2s var(--ease-polish),
+    background-color 0.2s var(--ease-polish),
+    transform 0.2s var(--ease-polish);
+}
+
+.trackMiniBtn:hover {
+  border-color: var(--action);
+  transform: translateY(-1px);
+}
+
+.trackMiniBtn:focus-visible {
+  outline: 2px solid var(--signal-bright);
+  outline-offset: 2px;
+}
+
+.trackMiniBtnActive {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fffdf7;
+}
+
+.trackMiniNum {
+  font: 700 9.5px/1.1 var(--font-mono);
+  letter-spacing: 0.09em;
+  color: var(--action);
+}
+
+.trackMiniBtnActive .trackMiniNum {
+  color: var(--peach);
+}
+
+.trackMiniName {
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.activeLens {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px 18px;
+  padding: 16px 20px;
+  background: var(--forest-deep);
+  color: #fffdf7;
+  border-block-start: 2px solid var(--signal);
+}
+
+.lensBody {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.lensMetaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  font: 700 10.5px/1.3 var(--font-mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--peach);
+}
+
+.lensApiPill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 210, 189, 0.14);
+  border: 1px solid rgba(255, 210, 189, 0.42);
+  color: #fffdf7;
+  font: 700 11px/1.3 var(--font-mono);
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.lensTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: #ffffff;
+}
+
+.lensSummary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d7ebe0;
+}
+
+.lensCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  background: var(--action);
+  border: 1px solid var(--signal);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s var(--ease-polish),
+    transform 0.2s var(--ease-polish);
+}
+
+.lensCta:hover {
+  background: #9f2f19;
+  transform: translateY(-1px);
+}
+
+.lensCta:focus-visible {
+  outline: 2px solid var(--peach);
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .trackTabStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .activeLens {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lensCta {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 460px) {
+  .deskHeader {
+    padding: 12px 14px;
+  }
+  .stageFrame {
+    padding: 8px 8px 2px;
+  }
+  .trackTabStrip {
+    padding: 8px 12px 10px;
+  }
+  .activeLens {
+    padding: 14px;
+  }
+}

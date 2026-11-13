@@ -160,35 +160,49 @@
   color: #9ec2ae;
 }
 
-.pulseControl {
-  appearance: none;
+.signalLivePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   background: #082c26;
   color: #f7f3eb;
   border: 1px solid #356958;
-  border-radius: 4px;
-  padding: 7px 12px;
+  border-radius: 999px;
+  padding: 5px 12px;
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  min-height: 32px;
-  transition: border-color 180ms ease, background-color 180ms ease;
+  min-height: 28px;
 }
 
-.pulseControl:hover:not(:disabled) {
-  border-color: var(--signal, #f25e3b);
-  background: #0a342b;
+.signalLiveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal, #f25e3b);
+  box-shadow: 0 0 0 4px rgba(242, 94, 59, 0.2);
+  animation: atlasLiveDotPulse 2.2s ease-in-out infinite;
+  flex: none;
 }
 
-.pulseControl[aria-pressed="true"] {
-  border-color: var(--peach, #ffd2bd);
-  color: var(--peach, #ffd2bd);
+@keyframes atlasLiveDotPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.62;
+    transform: scale(0.84);
+  }
 }
 
-.pulseControl:focus-visible {
-  outline: 2px solid var(--signal, #f25e3b);
-  outline-offset: 2px;
+@media (prefers-reduced-motion: reduce) {
+  .signalLiveDot {
+    animation: none;
+  }
 }
 
 /* Open architectural capability segmented selector */
@@ -929,7 +943,6 @@
   .capabilityTab,
   .stageButton,
   .codeLine,
-  .pulseControl,
   .copyButton,
   .navBtnPrimary,
   .navBtnSecondary {

@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getCommunityGovernance } from "@/lib/community";
 import { GITHUB_LINKS } from "@/lib/site-config";
-import { CommunityContributionCurrent } from "@/components/scenes/community";
+import {
+  CommunityContributionCurrent,
+  CommunityStudySection,
+} from "@/components/scenes/community";
 
 export const metadata: Metadata = {
   title: "Community",
@@ -88,9 +91,9 @@ export default function CommunityPage() {
 
       <section className="editorial-panel">
         <div className="site-wrap">
-          <div className="section-head">
+          <div className="section-head" data-reveal="up">
             <div>
-              <p className="eyebrow">PUBLIC GOVERNANCE</p>
+              <p className="eyebrow">02 / PUBLIC GOVERNANCE</p>
               <h2>Six ways to engage.</h2>
             </div>
             <p className="section-caption">
@@ -99,7 +102,7 @@ export default function CommunityPage() {
             </p>
           </div>
 
-          <div className="card-list">
+          <div className="card-list" data-reveal="up">
             {governance.pathways.map((pathway) =>
               pathway.isExternal ? (
                 <a
@@ -141,7 +144,7 @@ export default function CommunityPage() {
             )}
           </div>
 
-          <div className="community-governance-grid">
+          <div className="community-governance-grid" data-reveal="up">
             <article className="community-governance-card">
               <span className="tiny signal">CONTRIBUTING.MD / CHECKLIST</span>
               <h3>Build &amp; verification baseline</h3>
@@ -216,6 +219,8 @@ export default function CommunityPage() {
           </div>
         </div>
       </section>
+
+      <CommunityStudySection />
     </main>
   );
 }

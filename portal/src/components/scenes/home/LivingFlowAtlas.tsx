@@ -79,7 +79,6 @@ export type FlowAtlasState =
 type FlowAtlasAction =
   | { type: 'SELECT_CAPABILITY'; capability: FlowCapabilityId }
   | { type: 'SELECT_STAGE'; stage: FlowStageIndex }
-  | { type: 'TOGGLE_PULSE' }
   | { type: 'SET_COPY_STATUS'; status: 'idle' | 'copied' | 'fallback' };
 
 interface StageSpec {
@@ -446,11 +445,6 @@ function reduceFlowAtlasState(
         stage: action.stage,
         copyStatus: 'idle',
       };
-    case 'TOGGLE_PULSE':
-      return {
-        ...state,
-        pulsePaused: !state.pulsePaused,
-      };
     case 'SET_COPY_STATUS':
       return {
         ...state,
@@ -749,7 +743,7 @@ export function LivingFlowAtlas({
 
   const reducedMotion = useReducedMotionSafe();
   const { isActive: viewportActive } = useViewportActivity(sectionRef, {
-    paused: state.pulsePaused || reducedMotion,
+    paused: reducedMotion,
     initialInView: true,
   });
 
@@ -835,7 +829,7 @@ export function LivingFlowAtlas({
   const activeTabId = `flow-cap-tab-${state.capability}`;
   const activeStageTabId = `flow-stage-tab-${state.stage}`;
   const conduitProgress = sceneGeom.stageProgressFractions[state.stage];
-  const isPulsePaused = state.pulsePaused || reducedMotion || !viewportActive;
+  const isPulsePaused = reducedMotion || !viewportActive;
 
   return (
     <section
@@ -845,7 +839,7 @@ export function LivingFlowAtlas({
       id="experience"
     >
       <div className={styles.inner}>
-        <div className={styles.intro}>
+        <div className={styles.intro} data-reveal="up">
           <div>
             <p className={styles.eyebrow}>02 / FOLLOW THE ENGINE</p>
             <h2 id="flow-atlas-heading" className={styles.heading}>
@@ -877,20 +871,10 @@ export function LivingFlowAtlas({
             <span className={styles.provenanceMeta}>
               {spec.packageId} · {spec.packageVersion}
             </span>
-            <button
-              type="button"
-              className={styles.pulseControl}
-              aria-pressed={state.pulsePaused}
-              disabled={reducedMotion}
-              title={
-                reducedMotion
-                  ? 'Signal pulse paused by reduced-motion preference'
-                  : undefined
-              }
-              onClick={() => dispatch({ type: 'TOGGLE_PULSE' })}
-            >
-              {state.pulsePaused ? 'Resume pulse ▶' : 'Pause pulse Ⅱ'}
-            </button>
+            <span className={styles.signalLivePill}>
+              <span aria-hidden="true" className={styles.signalLiveDot} />
+              SIGNAL LIVE
+            </span>
           </div>
         </div>
 

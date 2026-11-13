@@ -240,24 +240,51 @@ test.describe("AstraFlow Brand Lock Verification", () => {
       expect(footerWordmarkMetrics.scrollWidth).toBeLessThanOrEqual(
         footerWordmarkMetrics.clientWidth + 1,
       );
+
+      // 6. Zero visible pause/stop/resume signal/motion toggle buttons anywhere
+      const forbiddenMotionButtons = await page.evaluate(() => {
+        const btns = Array.from(document.querySelectorAll("button"));
+        return btns
+          .filter((btn) => {
+            const style = getComputedStyle(btn);
+            const rect = btn.getBoundingClientRect();
+            const isVisible =
+              style.display !== "none" &&
+              style.visibility !== "hidden" &&
+              rect.width > 0 &&
+              rect.height > 0;
+            const text =
+              `${btn.textContent ?? ""} ${btn.getAttribute("aria-label") ?? ""}`.trim();
+            return (
+              isVisible &&
+              /\b(pause|stop|resume)\s+(signal|pulse|animation|motion)\b/i.test(
+                text,
+              )
+            );
+          })
+          .map(
+            (btn) => btn.textContent?.trim() || btn.getAttribute("aria-label"),
+          );
+      });
+      expect(forbiddenMotionButtons).toEqual([]);
     });
   }
 
-  test("keeps Home Hero A mark and h1 stationary across 1200ms and pauses/resumes .signature-route signal", async ({
+  test("keeps Home Hero A mark and h1 stationary across 1200ms with continuous signal and full-bleed Proof Strip band", async ({
     page,
   }) => {
     await page.goto("/", { waitUntil: "networkidle" });
 
     const signatureA = page.locator(".v10-logo-svg .signature-a").first();
     const heroHeading = page.locator("#v10-hero-heading");
-    const heroSection = page.locator("section.v10-home-hero");
-    const motionToggle = page.locator("#v10-motion-toggle");
     const signatureRoute = page.locator("#signature-route").first();
+    const proofBand = page.locator(".proof-strip-band").first();
 
     await expect(signatureA).toBeVisible();
     await expect(heroHeading).toBeVisible();
-    await expect(motionToggle).toBeVisible();
     await expect(signatureRoute).toBeVisible();
+    await expect(proofBand).toBeVisible();
+    await expect(page.locator("#v10-motion-toggle")).toHaveCount(0);
 
     const boxAStart = await signatureA.boundingBox();
     const boxH1Start = await heroHeading.boundingBox();
@@ -276,36 +303,69 @@ test.describe("AstraFlow Brand Lock Verification", () => {
       expect(Math.abs(boxH1End![key] - boxH1Start![key])).toBeLessThanOrEqual(1);
     }
 
-    // Verify PAUSE SIGNAL / RESUME SIGNAL toggle behavior
-    await expect(motionToggle).toHaveAttribute("aria-pressed", "false");
-    await expect(heroSection).toHaveAttribute("data-signal-paused", "false");
-    await expect(motionToggle).toContainText(/PAUSE SIGNAL/i);
-
-    const initialPlayState = await signatureRoute.evaluate(
+    const playState = await signatureRoute.evaluate(
       (el) => getComputedStyle(el).animationPlayState,
     );
-    expect(initialPlayState).toBe("running");
+    expect(playState).toBe("running");
 
-    await motionToggle.click();
+    const proofBandMetrics = await proofBand.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return {
+        width: rect.width,
+        innerWidth: window.innerWidth,
+        backgroundColor: getComputedStyle(el).backgroundColor,
+      };
+    });
+    expect(
+      Math.abs(proofBandMetrics.width - proofBandMetrics.innerWidth),
+    ).toBeLessThanOrEqual(2);
 
-    await expect(motionToggle).toHaveAttribute("aria-pressed", "true");
-    await expect(heroSection).toHaveAttribute("data-signal-paused", "true");
-    await expect(motionToggle).toContainText(/RESUME SIGNAL/i);
+    const proofBgRgb = parseRgb(proofBandMetrics.backgroundColor);
+    expect(proofBgRgb).not.toBeNull();
+    expect(relativeLuminance(proofBgRgb!)).toBeGreaterThan(0.94);
+  });
 
-    const pausedPlayState = await signatureRoute.evaluate(
-      (el) => getComputedStyle(el).animationPlayState,
-    );
-    expect(pausedPlayState).toBe("paused");
+  test("displays header GitHub repository icon link cleanly on desktop and inside opened mobile drawer", async ({
+    page,
+  }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
 
-    await motionToggle.click();
+    const viewportWidth = page.viewportSize()?.width ?? 1440;
+    if (viewportWidth > 900) {
+      const desktopGhLink = page
+        .locator(
+          '.site-header .header-actions a[aria-label="AstraFlow GitHub repository"]',
+        )
+        .first();
+      await expect(desktopGhLink).toBeVisible();
+      await expect(desktopGhLink).toHaveAttribute(
+        "href",
+        "https://github.com/seifmoustafa/AstraFlow",
+      );
+      await expect(desktopGhLink.locator("svg").first()).toBeVisible();
+      const rect = await desktopGhLink.boundingBox();
+      expect(rect).not.toBeNull();
+      expect(rect!.width).toBeGreaterThan(16);
+      expect(rect!.height).toBeGreaterThan(16);
+      expect(rect!.x + rect!.width).toBeLessThanOrEqual(viewportWidth + 1);
+    } else {
+      const menuBtn = page.locator("button.mobile-menu");
+      const mobileGhLink = page.locator(
+        'nav#main-menu a[aria-label="AstraFlow GitHub repository"]',
+      );
+      await expect(menuBtn).toBeVisible();
+      await expect(mobileGhLink).not.toBeVisible();
 
-    await expect(motionToggle).toHaveAttribute("aria-pressed", "false");
-    await expect(heroSection).toHaveAttribute("data-signal-paused", "false");
-    await expect(motionToggle).toContainText(/PAUSE SIGNAL/i);
+      await menuBtn.click();
+      await expect(mobileGhLink).toBeVisible();
+      await expect(mobileGhLink).toHaveAttribute(
+        "href",
+        "https://github.com/seifmoustafa/AstraFlow",
+      );
+      await expect(mobileGhLink.locator("svg").first()).toBeVisible();
 
-    const resumedPlayState = await signatureRoute.evaluate(
-      (el) => getComputedStyle(el).animationPlayState,
-    );
-    expect(resumedPlayState).toBe("running");
+      await page.keyboard.press("Escape");
+      await expect(menuBtn).toHaveAttribute("aria-expanded", "false");
+    }
   });
 });

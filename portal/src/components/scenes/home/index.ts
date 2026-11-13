@@ -15,3 +15,9 @@ export {
   type AssemblyViewMode,
   type HomeExplodedArchitectureProps,
 } from './HomeExplodedArchitecture';
+
+export {
+  HomeDetailsMatterSection,
+  type DetailsPlaneIndex,
+  type HomeDetailsMatterSectionProps,
+} from './HomeDetailsMatterSection';

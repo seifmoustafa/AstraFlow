@@ -1,0 +1,401 @@
+.readingProgressTrack {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  height: 3px;
+  z-index: 60;
+  pointer-events: none;
+  background: rgba(8, 44, 38, 0.08);
+}
+
+.readingProgressBar {
+  height: 100%;
+  background: var(--signal);
+  transition: width 0.08s linear;
+}
+
+.enhancerHost {
+  margin-block-end: 20px;
+}
+
+.mobileToc {
+  display: none;
+}
+
+.mobileTocButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: start;
+}
+
+.mobileTocButton:hover,
+.mobileTocButton:focus-visible {
+  border-color: var(--action);
+  outline: none;
+}
+
+.mobileTocButton:focus-visible {
+  box-shadow: 0 0 0 2px var(--signal-bright);
+}
+
+.mobileTocMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 10.5px/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--action);
+  flex: none;
+}
+
+.mobileTocCurrent {
+  color: var(--ink-secondary);
+  font-weight: 600;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.mobileTocPanel {
+  margin-block-start: 6px;
+  padding: 10px 14px;
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.mobileTocLink {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 4px;
+  color: var(--ink-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 1.4;
+  border-inline-start: 2px solid transparent;
+}
+
+.mobileTocLink[data-level='3'],
+.mobileTocLink[data-level='4'] {
+  padding-inline-start: 20px;
+  font-size: 12px;
+  color: var(--ink-body);
+}
+
+.mobileTocLink:hover,
+.mobileTocLink:focus-visible {
+  color: var(--action);
+  background: var(--paper);
+  outline: none;
+}
+
+.mobileTocLinkActive {
+  color: var(--action);
+  font-weight: 700;
+  border-inline-start-color: var(--signal);
+  background: var(--paper);
+}
+
+/* Applied imperatively by scrollspy onto desktop .docs-toc links */
+.activeTocLink {
+  color: var(--action) !important;
+  font-weight: 700;
+  border-inline-start: 2px solid var(--signal);
+  padding-inline-start: 10px;
+  margin-inline-start: -12px;
+}
+
+/* Injected copy bar wrapper around .docs-prose pre.code-block */
+.codeBlockWrap {
+  margin-block: 20px 24px;
+  border-radius: 8px;
+  border: 1px solid #20493e;
+  overflow: hidden;
+  background: var(--forest-deep);
+}
+
+.codeBlockBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--forest);
+  border-block-end: 1px solid #20493e;
+}
+
+.codeBlockLang {
+  font: 700 10.5px/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--peach);
+}
+
+.codeCopyButton {
+  appearance: none;
+  border: 1px solid #376053;
+  background: var(--forest-deep);
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font: 700 11px/1.2 var(--font-mono);
+  cursor: pointer;
+  transition:
+    border-color 0.2s var(--ease-polish),
+    background-color 0.2s var(--ease-polish);
+}
+
+.codeCopyButton:hover,
+.codeCopyButton:focus-visible {
+  border-color: var(--signal);
+  outline: none;
+}
+
+.codeCopyButton:focus-visible {
+  box-shadow: 0 0 0 2px var(--signal);
+}
+
+.codeCopyButtonCopied {
+  border-color: var(--signal);
+  color: var(--peach);
+}
+
+.codeBlockPreEnhanced {
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Copyable command pill for closing band */
+.cliCopyPill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--forest-deep);
+  border: 1px solid #2b5c4d;
+  color: #f4f7f2;
+  max-width: 100%;
+}
+
+.cliCopyCode {
+  font: 700 12.5px/1.4 var(--font-mono);
+  color: var(--peach);
+  overflow-wrap: anywhere;
+}
+
+.cliCopyBtn {
+  appearance: none;
+  border: 1px solid var(--signal);
+  background: var(--action);
+  color: #ffffff;
+  border-radius: 5px;
+  padding: 6px 12px;
+  font: 700 11px/1.2 var(--font-mono);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cliCopyBtn:hover,
+.cliCopyBtn:focus-visible {
+  background: #9f2f19;
+  outline: 2px solid var(--peach);
+  outline-offset: 2px;
+}
+
+/* Mobile collapsible sidebar navigation drawer */
+.mobileNavDetails {
+  display: none;
+  margin-block-end: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-raised);
+}
+
+.mobileNavSummary {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  font-weight: 750;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.mobileNavSummary::-webkit-details-marker {
+  display: none;
+}
+
+.mobileNavSummaryTag {
+  font: 700 10px/1 var(--font-mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--action);
+}
+
+.mobileNavBody {
+  border-block-start: 1px solid var(--line);
+  padding: 12px 16px 16px;
+  display: grid;
+  gap: 14px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.mobileNavCatLabel {
+  margin: 0 0 6px;
+  font: 700 10px/1.2 var(--font-mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.mobileNavLinks {
+  display: grid;
+  gap: 4px;
+}
+
+.mobileNavLink {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 5px;
+  font-size: 13px;
+  color: var(--ink);
+  border: 1px solid transparent;
+}
+
+.mobileNavLink:hover {
+  border-color: var(--line);
+  color: var(--action);
+}
+
+.mobileNavLinkCurrent {
+  background: var(--sand);
+  border-color: var(--action);
+  color: var(--action);
+  font-weight: 700;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 1080px) {
+  .mobileToc {
+    display: block;
+  }
+  .mobileNavDetails {
+    display: block;
+  }
+}
+
+/* Article reader banners, desktop sticky sidebar, and adjacent pager refinements */
+.provenanceBanner {
+  margin-block-end: 20px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: var(--sand);
+  border-inline-start: 3px solid var(--signal);
+  font: 700 11.5px/1.55 var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.provenanceLink {
+  color: var(--action);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.unreleasedBanner {
+  margin-block-end: 20px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: var(--peach);
+  border: 1px solid var(--action);
+  border-inline-start: 4px solid var(--action);
+  font: 700 12px/1.55 var(--font-sans);
+  color: var(--ink);
+}
+
+.desktopNavColumn {
+  position: sticky;
+  inset-block-start: 98px;
+  align-self: start;
+  max-height: calc(100vh - 118px);
+  overflow-y: auto;
+}
+
+.desktopNavBack {
+  font-weight: 700;
+  color: var(--action) !important;
+}
+
+.desktopNavGroup {
+  border-block-end: 0 !important;
+  padding: 14px 0 4px !important;
+}
+
+.desktopNavCategory {
+  margin: 0 0 8px;
+  padding-inline-start: 8px;
+  font: 700 10px/1.3 var(--font-mono);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+.tocFooterLink {
+  display: inline-block;
+  margin-block-start: 14px;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--line);
+  font: 700 11px/1.4 var(--font-mono);
+  color: var(--action) !important;
+}
+
+@media (max-width: 1080px) {
+  .desktopNavColumn {
+    display: none !important;
+  }
+  .readerLayout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .readingProgressBar {
+    transition: none;
+  }
+}

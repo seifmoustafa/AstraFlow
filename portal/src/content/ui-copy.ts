@@ -20,6 +20,9 @@ export const UI_COPY = {
     mobileMenuLabel: "Menu ☰",
     mobileMenuAriaLabelOpen: "Close navigation menu",
     mobileMenuAriaLabelClosed: "Open navigation menu",
+    githubAriaLabel: "AstraFlow GitHub repository",
+    githubTitle: "View AstraFlow on GitHub",
+    githubDrawerLabel: "GitHub Repository ↗",
     ctaLabel: "Get started ↗",
     ctaHref: "/docs/quick-start",
     navItems: [
@@ -78,6 +81,7 @@ export const UI_COPY = {
     secondaryHref: "#experience",
     metaItems: ["MIT LICENSED", "MODULAR PACKAGES", "DOCUMENTED APIS"] as const,
     stageTopLabel: "FIGURE 01 / REQUEST TO RESULT",
+    liveSignalLabel: "LIVE SIGNAL · CONTINUOUS",
     pauseLabel: "PAUSE SIGNAL",
     resumeLabel: "RESUME SIGNAL",
     pauseAriaLabel: "PAUSE SIGNAL — pause hero trace animation",

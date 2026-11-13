@@ -2,7 +2,14 @@
 
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from 'react';
 import {
   IsoPrism,
   IsoSignalConduit,
@@ -241,6 +248,8 @@ export function HomeExplodedArchitecture({
   const [activeLayer, setActiveLayer] = useState<AssemblyLayerIndex>(initialLayer);
   const [hoveredLayer, setHoveredLayer] = useState<AssemblyLayerIndex | null>(null);
   const [viewMode, setViewMode] = useState<AssemblyViewMode>(initialMode);
+  const [isPointerInside, setIsPointerInside] = useState(false);
+  const [isFocusInside, setIsFocusInside] = useState(false);
 
   const sectionRef = useRef<HTMLElement | null>(null);
   const reducedMotion = useReducedMotionSafe();
@@ -250,6 +259,17 @@ export function HomeExplodedArchitecture({
     paused: reducedMotion,
     initialInView: true,
   });
+
+  const isIdleCycleActive =
+    !reducedMotion && viewportActive && !isPointerInside && !isFocusInside;
+
+  useEffect(() => {
+    if (!isIdleCycleActive) return;
+    const interval = window.setInterval(() => {
+      setActiveLayer((prev) => ((prev + 1) % 3) as AssemblyLayerIndex);
+    }, 3800);
+    return () => window.clearInterval(interval);
+  }, [isIdleCycleActive]);
 
   const headingId = useId();
   const detailPanelId = useId();
@@ -440,10 +460,21 @@ export function HomeExplodedArchitecture({
       id={sectionId}
       className={className ? `${styles.section} ${className}` : styles.section}
       aria-labelledby={headingId}
+      onPointerEnter={() => setIsPointerInside(true)}
+      onPointerLeave={() => {
+        setIsPointerInside(false);
+        setHoveredLayer(null);
+      }}
+      onFocusCapture={() => setIsFocusInside(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setIsFocusInside(false);
+        }
+      }}
     >
       <div className={styles.container}>
         {/* ── Section Intro ── */}
-        <header className={styles.header}>
+        <header className={styles.header} data-reveal="up">
           <div className={styles.headerCopy}>
             <p className={styles.eyebrow}>
               <span className={styles.eyebrowDot} aria-hidden="true" />
@@ -469,13 +500,15 @@ export function HomeExplodedArchitecture({
         </header>
 
         {/* ── Interactive Workspace ── */}
-        <div className={styles.workspace}>
+        <div className={styles.workspace} data-reveal="up">
           {/* Open Hairline Isometric Stage */}
           <div className={styles.stageColumn}>
             <div className={styles.stageToolbar}>
               <span className={styles.stageCaption}>
                 <span className={styles.stageIndicatorDot} aria-hidden="true" />
-                HAIRLINE ISOMETRIC STACK · 3 TIERS
+                {isIdleCycleActive
+                  ? 'HAIRLINE ISOMETRIC STACK · AUTO-CYCLING'
+                  : 'HAIRLINE ISOMETRIC STACK · INTERACTIVE FOCUS'}
               </span>
 
               <button
@@ -840,7 +873,7 @@ export function HomeExplodedArchitecture({
             <div
               id={detailPanelId}
               className={styles.detailPanel}
-              aria-live="polite"
+              aria-live={isPointerInside || isFocusInside ? 'polite' : 'off'}
             >
               <div>
                 <div className={styles.detailTop}>

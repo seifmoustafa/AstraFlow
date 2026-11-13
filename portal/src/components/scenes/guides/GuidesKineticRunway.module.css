@@ -1,3 +1,50 @@
+.heroDraftingWrap {
+  position: relative;
+  background:
+    radial-gradient(ellipse 70% 55% at 72% 28%, rgba(236, 229, 217, 0.52), transparent 72%),
+    linear-gradient(90deg, rgba(8, 44, 38, 0.028) 1px, transparent 1px),
+    linear-gradient(rgba(8, 44, 38, 0.028) 1px, transparent 1px);
+  background-size: auto, 48px 48px, 48px 48px;
+}
+
+.quickJumpStrip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 20px;
+}
+
+.quickJumpBtn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font: 650 11.5px/1.2 var(--font-mono);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s var(--ease-polish);
+}
+
+.quickJumpBtn:hover {
+  border-color: var(--signal);
+  color: var(--action);
+  transform: translateY(-1px);
+}
+
+.quickJumpIndex {
+  color: var(--action);
+  font-weight: 800;
+}
+
 .root {
   width: 100%;
   min-width: 0;
@@ -7,7 +54,7 @@
 .stageCard {
   background: var(--paper-raised);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: var(--shadow);
 }
@@ -52,6 +99,43 @@
   gap: 8px;
 }
 
+.signalLiveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--paper);
+  color: var(--ink);
+  font: 700 10px/1.2 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.signalLiveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 0 3px rgba(242, 94, 59, 0.16);
+  animation: runwayPulse 2.1s ease-in-out infinite;
+}
+
+@keyframes runwayPulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.48;
+    transform: scale(0.84);
+  }
+}
+
 .navBtn {
   appearance: none;
   display: inline-flex;
@@ -66,6 +150,7 @@
   font: 700 11px/1.2 var(--font-mono);
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  cursor: pointer;
   transition:
     border-color 0.2s ease,
     background-color 0.2s ease,
@@ -77,15 +162,9 @@
   color: var(--action);
 }
 
-.navBtn[aria-pressed="true"] {
-  background: var(--peach);
-  border-color: var(--signal);
-  color: #6b2914;
-}
-
 .runwayCanvasWrap {
   position: relative;
-  padding: 16px 20px 10px;
+  padding: 18px 20px 12px;
   background:
     radial-gradient(ellipse 68% 60% at 52% 48%, rgba(236, 229, 217, 0.55), transparent 72%),
     linear-gradient(90deg, rgba(8, 44, 38, 0.028) 1px, transparent 1px),
@@ -99,8 +178,16 @@
   display: block;
   width: 100%;
   height: auto;
-  max-height: 265px;
+  max-height: 315px;
   overflow: visible;
+}
+
+.floatingStepText {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  pointer-events: none;
 }
 
 .stationTabs {
@@ -182,7 +269,7 @@
 
 .workbenchPanel {
   display: grid;
-  grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.15fr);
   gap: 28px;
   padding: 28px 28px 30px;
   background: var(--paper-raised);
@@ -220,7 +307,7 @@
 
 .provenancePublished {
   background: #dcebe0;
-  color: #245740;
+  color: #1f4f39;
 }
 
 .provenanceUnreleased {
@@ -249,7 +336,7 @@
   font: 700 10px/1.4 var(--font-mono);
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink-secondary);
   margin-block-end: 8px;
 }
 
@@ -351,7 +438,7 @@
   background: var(--forest-deep);
   color: #e4f2ea;
   border: 1px solid #20493e;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
   min-width: 0;
 }
@@ -363,8 +450,9 @@
   justify-content: space-between;
   gap: 10px;
   padding: 11px 16px;
+  background: rgba(10, 52, 43, 0.55);
   border-block-end: 1px solid #1b4338;
-  color: #a9ceba;
+  color: #cbe2d5;
   font: 700 11px/1.3 var(--font-mono);
 }
 
@@ -378,7 +466,7 @@
 
 .copyBtn {
   appearance: none;
-  background: rgba(10, 52, 43, 0.8);
+  background: rgba(10, 52, 43, 0.88);
   border: 1px solid #477264;
   color: #f4f7f2;
   border-radius: 4px;
@@ -398,12 +486,16 @@
   background: #14493b;
 }
 
+/* Eliminate horizontal scrollbar at all viewports via crisp soft wrapping */
 .codePre {
   margin: 0;
   padding: 18px;
-  overflow-x: auto;
-  font: 12.5px/1.7 var(--font-mono);
-  color: #ddf0e5;
+  overflow-x: visible;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font: 12px/1.72 var(--font-mono);
+  color: #e4f2ea;
 }
 
 .codePre code {
@@ -411,13 +503,14 @@
   border: 0;
   padding: 0;
   color: inherit;
+  white-space: inherit;
 }
 
 .verifyBox {
   background: var(--sand);
   border: 1px solid var(--border);
   border-inline-start: 3px solid var(--forest);
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 8px 8px 0;
   padding: 14px 16px;
   min-width: 0;
 }
@@ -449,6 +542,7 @@
   font: 700 10px/1.2 var(--font-mono);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  cursor: pointer;
 }
 
 .verifyCopyBtn:hover {
@@ -462,11 +556,12 @@
   padding: 10px 12px;
   background: var(--paper-raised);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  font: 12px/1.55 var(--font-mono);
+  border-radius: 5px;
+  font: 12px/1.6 var(--font-mono);
   color: var(--ink);
-  overflow-x: auto;
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .verifyCaption {
@@ -522,7 +617,7 @@
   }
 
   .runwaySvg {
-    max-height: 175px;
+    max-height: 195px;
   }
 
   .stationTabs {
@@ -566,10 +661,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .signalLiveDot {
+    animation: none;
+  }
+
   .navBtn,
   .stationTab,
   .pkgPill,
-  .copyBtn {
+  .copyBtn,
+  .quickJumpBtn {
     transition: none;
   }
 }

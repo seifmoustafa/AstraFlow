@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "explainer",
+  "quality": "showcase",
+  "specification": {
+    "path": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\candidate.archify.md",
+    "sha256": "5031278a61f6c2a45762d33089a4c40b1cd22abae89264885b96601a7339e933",
+    "bytes": 5444
+  },
+  "artifact": {
+    "path": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.html",
+    "sha256": "bcb66e20b5ad662334398f0bb2e2c760a49848be17e3b0f197e725754a7a0e38",
+    "bytes": 573748
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "not-run"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.finalize.json",
+    "summaryReceipt": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.finalize-summary.json"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 9329,
+  "browserCheck": {
+    "requested": false,
+    "ran": false
+  }
+}

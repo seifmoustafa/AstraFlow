@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import {
+  useEffect,
   useId,
   useMemo,
   useRef,
@@ -16,14 +17,18 @@ import {
   fitCamera,
   IsoPrism,
   IsoSignalConduit,
+  open,
   projectCamera,
   r2,
+  seg,
   staggerDelayMs,
   useReducedMotionSafe,
   useViewportActivity,
   WARM_FOREST_PALETTE,
   type IsoPrismVariant,
+  type Point2,
   type Point3,
+  type Projector,
 } from '@/components/hairline';
 import { dispatchStageStackEvent } from './stack-resolver';
 import styles from './PackagesModuleLoom.module.css';
@@ -41,10 +46,9 @@ interface LoomModuleSpec {
   index: string;
   shortLabel: string;
   plateTitle: string;
-  plateSub: string;
   name: string;
-  packageIds: readonly string[];
-  stagePackageIds: readonly string[];
+  packageIds: string[];
+  stagePackageIds: string[];
   fallbackTfms: string;
   summary: string;
   docHref: string;
@@ -59,18 +63,23 @@ interface LoomModuleSpec {
     radius: number;
     creaseInset: number;
   };
-  centerXY: readonly [number, number];
-  conduitWorldPoints: readonly Point3[];
+  capInset: number;
+  capHeight: number;
+  centerXY: [number, number];
+  conduitWorldPoints: Point3[];
   variant: IsoPrismVariant;
 }
 
+const SVG_WIDTH = 640;
+const SVG_HEIGHT = 452;
+
+// Painter's order: chassis -> back-most (tooling) -> flanks (testing, diagnostics) -> mediator -> front (mapper)
 const LOOM_MODULES: readonly LoomModuleSpec[] = [
   {
     id: 'contracts',
     index: '01',
     shortLabel: 'Contracts',
     plateTitle: 'CONTRACTS',
-    plateSub: 'CORE CHASSIS · 2.3.0',
     name: 'AstraFlow.Contracts Chassis',
     packageIds: ['AstraFlow.Contracts'],
     stagePackageIds: ['AstraFlow.Contracts'],
@@ -80,20 +89,22 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     docHref: '/docs/package-selection#astraflowcontracts',
     docLabel: 'Contracts boundary docs',
     bounds: {
-      x0: -98,
-      y0: -98,
-      x1: 98,
-      y1: 98,
+      x0: -118,
+      y0: -118,
+      x1: 118,
+      y1: 118,
       z0: 0,
       z1: 10,
-      radius: 12,
-      creaseInset: 6,
+      radius: 14,
+      creaseInset: 7,
     },
+    capInset: 0,
+    capHeight: 0,
     centerXY: [0, 0],
     conduitWorldPoints: [
-      [-64, 0, 10],
+      [-76, 0, 10],
       [0, 0, 10],
-      [64, 0, 10],
+      [76, 0, 10],
     ],
     variant: 'sand',
   },
@@ -102,7 +113,6 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     index: '06',
     shortLabel: 'Generators & CLI',
     plateTitle: 'GEN + CLI',
-    plateSub: 'PRIVATEASSETS · TOOL',
     name: 'Generators, Analyzers & CLI',
     packageIds: ['AstraFlow.Generators', 'AstraFlow.Analyzers', 'AstraFlow.Cli'],
     stagePackageIds: ['AstraFlow.Generators', 'AstraFlow.Analyzers', 'AstraFlow.Cli'],
@@ -112,20 +122,22 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     docHref: '/docs/generators',
     docLabel: 'Generators & CLI docs',
     bounds: {
-      x0: -96,
-      y0: -96,
-      x1: -30,
-      y1: -30,
-      z0: 86,
-      z1: 94,
-      radius: 7,
+      x0: -112,
+      y0: -112,
+      x1: -44,
+      y1: -44,
+      z0: 102,
+      z1: 111,
+      radius: 8,
       creaseInset: 3,
     },
-    centerXY: [-63, -63],
+    capInset: 10,
+    capHeight: 5.5,
+    centerXY: [-78, -78],
     conduitWorldPoints: [
-      [-63, -63, 86],
-      [-63, -63, 10],
-      [-63, 0, 10],
+      [-78, -78, 102],
+      [-78, -78, 10],
+      [-78, 0, 10],
       [0, 0, 10],
     ],
     variant: 'ivory',
@@ -135,7 +147,6 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     index: '05',
     shortLabel: 'Testing',
     plateTitle: 'TESTING',
-    plateSub: 'HARNESS · 2.3.0 / 2.4*',
     name: 'Testing Harnesses & Assertions',
     packageIds: ['AstraFlow.Testing', 'AstraFlow.Assertions'],
     stagePackageIds: ['AstraFlow.Testing'],
@@ -145,20 +156,22 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     docHref: '/docs/testing',
     docLabel: 'Testing guide',
     bounds: {
-      x0: -104,
-      y0: -8,
-      x1: -40,
-      y1: 56,
-      z0: 48,
-      z1: 56,
-      radius: 7,
+      x0: -140,
+      y0: -4,
+      x1: -76,
+      y1: 60,
+      z0: 66,
+      z1: 75,
+      radius: 8,
       creaseInset: 3,
     },
-    centerXY: [-72, 24],
+    capInset: 10,
+    capHeight: 5.5,
+    centerXY: [-108, 28],
     conduitWorldPoints: [
-      [-72, 24, 48],
-      [-72, 24, 10],
-      [-72, 0, 10],
+      [-108, 28, 66],
+      [-108, 28, 10],
+      [-108, 0, 10],
       [0, 0, 10],
     ],
     variant: 'ivory',
@@ -168,7 +181,6 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     index: '04',
     shortLabel: 'Diagnostics',
     plateTitle: 'DIAGNOSTICS',
-    plateSub: 'AFD* · SECURITY',
     name: 'Diagnostics, Security & Telemetry',
     packageIds: ['AstraFlow.Diagnostics', 'AstraFlow.Security', 'AstraFlow.OpenTelemetry'],
     stagePackageIds: ['AstraFlow.Diagnostics', 'AstraFlow.Security'],
@@ -178,20 +190,22 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     docHref: '/docs/diagnostics',
     docLabel: 'Diagnostics & security',
     bounds: {
-      x0: -8,
-      y0: -104,
-      x1: 56,
-      y1: -40,
-      z0: 48,
-      z1: 56,
-      radius: 7,
+      x0: -4,
+      y0: -140,
+      x1: 60,
+      y1: -76,
+      z0: 66,
+      z1: 75,
+      radius: 8,
       creaseInset: 3,
     },
-    centerXY: [24, -72],
+    capInset: 10,
+    capHeight: 5.5,
+    centerXY: [28, -108],
     conduitWorldPoints: [
-      [24, -72, 48],
-      [24, -72, 10],
-      [0, -72, 10],
+      [28, -108, 66],
+      [28, -108, 10],
+      [0, -108, 10],
       [0, 0, 10],
     ],
     variant: 'ivory',
@@ -201,7 +215,6 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     index: '02',
     shortLabel: 'Mediator',
     plateTitle: 'MEDIATOR',
-    plateSub: 'DISPATCH · 2.3.0',
     name: 'Mediator & Request Pipelines',
     packageIds: ['AstraFlow.Mediator', 'AstraFlow.AspNetCore', 'AstraFlow.FluentValidation'],
     stagePackageIds: ['AstraFlow.Mediator'],
@@ -211,18 +224,20 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     docHref: '/docs/mediator',
     docLabel: 'Mediator guide',
     bounds: {
-      x0: -42,
-      y0: -42,
-      x1: 42,
-      y1: 42,
-      z0: 74,
-      z1: 84,
-      radius: 8,
+      x0: -38,
+      y0: -38,
+      x1: 38,
+      y1: 38,
+      z0: 72,
+      z1: 82,
+      radius: 9,
       creaseInset: 3.6,
     },
+    capInset: 11,
+    capHeight: 6,
     centerXY: [0, 0],
     conduitWorldPoints: [
-      [0, 0, 74],
+      [0, 0, 72],
       [0, 0, 10],
     ],
     variant: 'forest',
@@ -232,7 +247,6 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     index: '03',
     shortLabel: 'Mapper',
     plateTitle: 'MAPPER',
-    plateSub: 'PROJECTIONS · 2.3.0',
     name: 'Explicit Mapper & Projections',
     packageIds: [
       'AstraFlow.Mapper',
@@ -246,27 +260,28 @@ const LOOM_MODULES: readonly LoomModuleSpec[] = [
     docHref: '/docs/mapper',
     docLabel: 'Mapper & projections',
     bounds: {
-      x0: 24,
-      y0: 24,
-      x1: 92,
-      y1: 92,
-      z0: 36,
-      z1: 44,
-      radius: 7,
-      creaseInset: 3,
+      x0: 44,
+      y0: 44,
+      x1: 110,
+      y1: 110,
+      z0: 42,
+      z1: 51,
+      radius: 8,
+      creaseInset: 3.2,
     },
-    centerXY: [58, 58],
+    capInset: 10,
+    capHeight: 5.5,
+    centerXY: [77, 77],
     conduitWorldPoints: [
-      [58, 58, 36],
-      [58, 58, 10],
-      [58, 0, 10],
+      [77, 77, 42],
+      [77, 77, 10],
+      [77, 0, 10],
       [0, 0, 10],
     ],
     variant: 'ivory',
   },
 ] as const;
 
-// Display tabs in crisp 01..06 architectural sequence
 const TAB_ORDER: readonly LoomModuleId[] = [
   'contracts',
   'mediator',
@@ -275,6 +290,69 @@ const TAB_ORDER: readonly LoomModuleId[] = [
   'testing',
   'tooling',
 ];
+
+const AUTO_CYCLE_ORDER: readonly LoomModuleId[] = [
+  'mediator',
+  'mapper',
+  'diagnostics',
+  'testing',
+  'tooling',
+  'contracts',
+];
+
+function buildModuleEmblemPaths(
+  id: LoomModuleId,
+  project: Projector,
+  cx: number,
+  cy: number,
+  zTop: number,
+): string[] {
+  switch (id) {
+    case 'mediator':
+      return [
+        seg(project(cx - 8, cy - 4, zTop), project(cx + 8, cy - 4, zTop)),
+        seg(project(cx - 5, cy, zTop), project(cx + 5, cy, zTop)),
+        seg(project(cx - 8, cy + 4, zTop), project(cx + 8, cy + 4, zTop)),
+      ];
+    case 'mapper':
+      return [
+        seg(project(cx - 7, cy - 4, zTop), project(cx - 1, cy - 4, zTop)),
+        seg(project(cx - 1, cy - 4, zTop), project(cx + 3, cy + 4, zTop)),
+        seg(project(cx + 3, cy + 4, zTop), project(cx + 8, cy + 4, zTop)),
+      ];
+    case 'diagnostics':
+      return [
+        open([
+          project(cx - 8, cy + 3, zTop),
+          project(cx - 3, cy + 3, zTop),
+          project(cx - 1, cy - 5, zTop),
+          project(cx + 3, cy + 5, zTop),
+          project(cx + 5, cy - 1, zTop),
+          project(cx + 8, cy - 1, zTop),
+        ]),
+      ];
+    case 'testing':
+      return [
+        open([
+          project(cx - 6, cy + 1, zTop),
+          project(cx - 1, cy + 6, zTop),
+          project(cx + 7, cy - 5, zTop),
+        ]),
+      ];
+    case 'tooling':
+      return [
+        open([
+          project(cx, cy - 7, zTop),
+          project(cx + 7, cy, zTop),
+          project(cx, cy + 7, zTop),
+          project(cx - 7, cy, zTop),
+          project(cx, cy - 7, zTop),
+        ]),
+      ];
+    default:
+      return [];
+  }
+}
 
 export interface PackagesModuleLoomProps {
   packages?: AstraFlowPackage[];
@@ -297,16 +375,53 @@ export function PackagesModuleLoom({
 
   const [uncontrolledId, setUncontrolledId] = useState<LoomModuleId>('mediator');
   const [hoveredId, setHoveredId] = useState<LoomModuleId | null>(null);
-  const [userPaused, setUserPaused] = useState(false);
+  const [isShellHovered, setIsShellHovered] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const activeModuleId = controlledModuleId ?? uncontrolledId;
   const inspectedModuleId = hoveredId ?? activeModuleId;
 
   const reducedMotion = useReducedMotionSafe();
   const { isActive: viewportActive } = useViewportActivity(stageRef, {
-    paused: userPaused || reducedMotion,
+    paused: reducedMotion,
     initialInView: true,
   });
+
+  // Gentle autonomous capability cycle when idle; pauses on hover/focus/click
+  useEffect(() => {
+    if (
+      reducedMotion ||
+      !viewportActive ||
+      hasInteracted ||
+      isShellHovered ||
+      hoveredId !== null
+    ) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      const currentIdx = AUTO_CYCLE_ORDER.indexOf(activeModuleId);
+      const nextId =
+        AUTO_CYCLE_ORDER[(currentIdx + 1 + AUTO_CYCLE_ORDER.length) % AUTO_CYCLE_ORDER.length];
+      if (controlledModuleId === undefined) {
+        setUncontrolledId(nextId);
+      }
+      onSelectModule?.(nextId);
+    }, 3600);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [
+    reducedMotion,
+    viewportActive,
+    hasInteracted,
+    isShellHovered,
+    hoveredId,
+    activeModuleId,
+    controlledModuleId,
+    onSelectModule,
+  ]);
 
   const packageById = useMemo(
     () => new Map(packages.map((pkg) => [pkg.id, pkg])),
@@ -324,12 +439,12 @@ export function PackagesModuleLoom({
   const sceneGeometry = useMemo(() => {
     const cam = createCamera(45, 0.5, 1.32);
     const extremePoints: Point3[] = [
-      [-108, -108, 0],
-      [102, 102, 0],
-      [-108, 60, 108],
-      [60, -108, 108],
+      [-146, -146, 0],
+      [130, 130, 0],
+      [-146, 72, 140],
+      [72, -146, 140],
     ];
-    fitCamera(cam, extremePoints, 300, 224);
+    fitCamera(cam, extremePoints, SVG_WIDTH / 2, SVG_HEIGHT / 2 + 4);
 
     const project = projectCamera(cam);
     const front = createFacingPredicate(cam);
@@ -350,32 +465,80 @@ export function PackagesModuleLoom({
         steps: 8,
       });
 
+      const capGeom =
+        mod.capHeight > 0
+          ? createIsoPlateGeometry({
+              camera: cam,
+              project,
+              front,
+              x0: mod.bounds.x0 + mod.capInset,
+              y0: mod.bounds.y0 + mod.capInset,
+              x1: mod.bounds.x1 - mod.capInset,
+              y1: mod.bounds.y1 - mod.capInset,
+              z0: mod.bounds.z1,
+              z1: mod.bounds.z1 + mod.capHeight,
+              radius: Math.max(4, mod.bounds.radius - 3),
+              creaseInset: 2,
+              steps: 6,
+            })
+          : null;
+
       const guideStart = project(mod.centerXY[0], mod.centerXY[1], 10);
       const guideEnd = project(mod.centerXY[0], mod.centerXY[1], mod.bounds.z0);
+      const emblemPaths = buildModuleEmblemPaths(
+        mod.id,
+        project,
+        mod.centerXY[0],
+        mod.centerXY[1],
+        mod.bounds.z1 + mod.capHeight + 0.5,
+      );
+
+      // Anchor floating badge pill cleanly above/outside plate cap so no text clips edges
+      const capAnchor = project(
+        mod.centerXY[0],
+        mod.centerXY[1],
+        mod.bounds.z1 + mod.capHeight,
+      );
 
       return {
         spec: mod,
         geom,
+        capGeom,
         guideStart,
         guideEnd,
+        emblemPaths,
+        capAnchor,
       };
     });
 
     const chassisCenter = project(0, 0, 10);
-    const leftFiducial = project(-114, 18, 12);
-    const rightFiducial = project(18, -114, 12);
+    const chassisFrontCorner = project(118, 118, 4);
+    const chassisRailY = Math.min(SVG_HEIGHT - 28, chassisFrontCorner[1] + 24);
+    const leftFiducial = project(-134, 24, 10);
+    const rightFiducial = project(24, -134, 10);
+
+    // Subtle surface bus hairlines across the Contracts foundation plate
+    const busCrossX: [Point2, Point2] = [project(-104, 0, 10.2), project(104, 0, 10.2)];
+    const busCrossY: [Point2, Point2] = [project(0, -104, 10.2), project(0, 104, 10.2)];
 
     return {
       cam,
       project,
       plates,
       chassisCenter,
+      chassisFrontCorner,
+      chassisRailY,
       leftFiducial,
       rightFiducial,
+      busCrossX,
+      busCrossY,
     };
   }, []);
 
-  const selectModule = (id: LoomModuleId) => {
+  const selectModule = (id: LoomModuleId, userInitiated = true) => {
+    if (userInitiated) {
+      setHasInteracted(true);
+    }
     if (controlledModuleId === undefined) {
       setUncontrolledId(id);
     }
@@ -401,11 +564,12 @@ export function PackagesModuleLoom({
 
     event.preventDefault();
     const nextId = TAB_ORDER[nextIndex];
-    selectModule(nextId);
+    selectModule(nextId, true);
     tabRefs.current[nextId]?.focus();
   };
 
   const handleStageInComposer = () => {
+    setHasInteracted(true);
     const stageIds = [...activeModule.stagePackageIds];
     onStageCapability?.(stageIds, activeModule.id);
     dispatchStageStackEvent({
@@ -462,58 +626,52 @@ export function PackagesModuleLoom({
   }, [activeModule.id, activePackages]);
 
   const panelId = `${baseId}-inspector`;
+  const isChassisSelected = activeModule.id === 'contracts';
 
   return (
     <div
       ref={stageRef}
       className={styles.loomShell}
       aria-label="AstraFlow interactive isometric module loom"
+      onMouseEnter={() => setIsShellHovered(true)}
+      onMouseLeave={() => setIsShellHovered(false)}
     >
       <div className={styles.loomHeader}>
         <p className={styles.loomTitle}>
           <span className={styles.loomDot} aria-hidden="true" />
           ISOMETRIC MODULE LOOM · CONTRACTS CHASSIS
         </p>
-        <button
-          type="button"
-          className={styles.motionBtn}
-          aria-pressed={userPaused}
-          disabled={reducedMotion}
-          title={
-            reducedMotion
-              ? 'Signal motion paused by system reduced-motion setting'
-              : undefined
-          }
-          onClick={() => setUserPaused((prev) => !prev)}
-        >
-          {userPaused ? 'Resume signal ▶' : 'Pause signal Ⅱ'}
-        </button>
+        <span className={styles.liveStatusPill}>
+          <span className={styles.livePulseDot} aria-hidden="true" />
+          6 CAPABILITY PLANES · LIVE
+        </span>
       </div>
 
       <div className={styles.stageFrame}>
         <svg
           className={styles.loomSvg}
-          viewBox="0 0 600 410"
+          viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
           role="group"
           aria-label="Interactive isometric capability modules docked onto the AstraFlow.Contracts chassis"
         >
+          {/* Architectural drafting rings centered behind chassis */}
           <g
             fill="none"
             stroke={WARM_FOREST_PALETTE.border}
             strokeWidth={0.9}
-            opacity={0.7}
+            opacity={0.75}
             aria-hidden="true"
           >
             <circle
               cx={r2(sceneGeometry.chassisCenter[0])}
-              cy={r2(sceneGeometry.chassisCenter[1] - 42)}
-              r={194}
+              cy={r2(sceneGeometry.chassisCenter[1] - 48)}
+              r={208}
               strokeDasharray="3 8"
             />
             <circle
               cx={r2(sceneGeometry.chassisCenter[0])}
-              cy={r2(sceneGeometry.chassisCenter[1] - 42)}
-              r={138}
+              cy={r2(sceneGeometry.chassisCenter[1] - 48)}
+              r={148}
               opacity={0.55}
             />
           </g>
@@ -558,29 +716,98 @@ export function PackagesModuleLoom({
                 selected={isSelected}
                 liftPx={isSelected ? 5 : isHovered ? 3 : 0}
                 showDropGuides={isEnergized}
-                label={`${chassis.spec.name} (${chassis.spec.plateSub})`}
+                label={`${chassis.spec.plateTitle} — ${chassis.spec.name}`}
                 ariaPressed={isSelected}
-                onSelect={() => selectModule('contracts')}
+                onSelect={() => selectModule('contracts', true)}
                 onHoverChange={(hover) =>
                   setHoveredId(hover ? 'contracts' : null)
                 }
                 onFocusChange={(focused) =>
                   setHoveredId(focused ? 'contracts' : null)
                 }
+                dataTestId="loom-plate-contracts"
               >
-                <text
-                  x={r2(chassis.geom.topCenter[0])}
-                  y={r2(chassis.geom.topCenter[1] + 54)}
-                  textAnchor="middle"
-                  className={styles.plateTitle}
-                  fill={WARM_FOREST_PALETTE.ink}
-                  aria-hidden="true"
-                >
-                  ASTRAFLOW.CONTRACTS CHASSIS
-                </text>
+                <line
+                  x1={r2(sceneGeometry.busCrossX[0][0])}
+                  y1={r2(sceneGeometry.busCrossX[0][1])}
+                  x2={r2(sceneGeometry.busCrossX[1][0])}
+                  y2={r2(sceneGeometry.busCrossX[1][1])}
+                  stroke={WARM_FOREST_PALETTE.border}
+                  strokeWidth={0.9}
+                  strokeDasharray="3 4"
+                  pointerEvents="none"
+                />
+                <line
+                  x1={r2(sceneGeometry.busCrossY[0][0])}
+                  y1={r2(sceneGeometry.busCrossY[0][1])}
+                  x2={r2(sceneGeometry.busCrossY[1][0])}
+                  y2={r2(sceneGeometry.busCrossY[1][1])}
+                  stroke={WARM_FOREST_PALETTE.border}
+                  strokeWidth={0.9}
+                  strokeDasharray="3 4"
+                  pointerEvents="none"
+                />
               </IsoPrism>
             );
           })()}
+
+          {/* Front-bottom architectural drafting rail callout for AstraFlow.Contracts (zero occlusion with MAPPER) */}
+          <g aria-hidden="true">
+            <line
+              x1={r2(sceneGeometry.chassisFrontCorner[0])}
+              y1={r2(sceneGeometry.chassisFrontCorner[1])}
+              x2={r2(sceneGeometry.chassisFrontCorner[0])}
+              y2={r2(sceneGeometry.chassisRailY - 12)}
+              stroke={
+                isChassisSelected
+                  ? WARM_FOREST_PALETTE.signal
+                  : WARM_FOREST_PALETTE.muted
+              }
+              strokeWidth={1.15}
+              strokeDasharray="2 3"
+            />
+            <circle
+              cx={r2(sceneGeometry.chassisFrontCorner[0])}
+              cy={r2(sceneGeometry.chassisFrontCorner[1])}
+              r={2.5}
+              fill={
+                isChassisSelected
+                  ? WARM_FOREST_PALETTE.signal
+                  : WARM_FOREST_PALETTE.inkSecondary
+              }
+            />
+            <rect
+              x={r2(SVG_WIDTH / 2 - 146)}
+              y={r2(sceneGeometry.chassisRailY - 12)}
+              width={292}
+              height={22}
+              rx={11}
+              fill={
+                isChassisSelected
+                  ? WARM_FOREST_PALETTE.forest
+                  : WARM_FOREST_PALETTE.paperRaised
+              }
+              stroke={
+                isChassisSelected
+                  ? WARM_FOREST_PALETTE.signal
+                  : WARM_FOREST_PALETTE.border
+              }
+              strokeWidth={1.1}
+            />
+            <text
+              x={r2(SVG_WIDTH / 2)}
+              y={r2(sceneGeometry.chassisRailY + 2)}
+              textAnchor="middle"
+              className={styles.chassisRailLabel}
+              fill={
+                isChassisSelected
+                  ? WARM_FOREST_PALETTE.peach
+                  : WARM_FOREST_PALETTE.ink
+              }
+            >
+              ASTRAFLOW.CONTRACTS · SHARED FOUNDATION
+            </text>
+          </g>
 
           {/* Vertical guide rails + surface registration conduits connecting modules to Contracts */}
           {sceneGeometry.plates.slice(1).map((entry) => {
@@ -608,22 +835,21 @@ export function PackagesModuleLoom({
                   surface="ivory"
                   active={isModuleActive}
                   progress={isModuleActive ? 1 : 0}
-                  paused={userPaused || !viewportActive || !isDirectSelection}
+                  paused={!viewportActive || !isDirectSelection}
                   showTerminals
-                  pulseRadius={2.3}
+                  pulseRadius={2.5}
                   baseStrokeWidth={1}
-                  activeStrokeWidth={isDirectSelection ? 1.85 : 1.25}
+                  activeStrokeWidth={isDirectSelection ? 2 : 1.3}
                 />
               </g>
             );
           })}
 
-          {/* Upper 5 dockable capability modules in back-to-front painter's order */}
-          {sceneGeometry.plates.slice(1).map((entry, idx) => {
+          {/* Upper 5 2-tier sculpted capability modules in back-to-front painter's order */}
+          {sceneGeometry.plates.slice(1).map((entry) => {
             const spec = entry.spec;
             const isSelected = activeModule.id === spec.id;
             const isHovered = hoveredId === spec.id;
-            const isTesting = spec.id === 'testing';
             const modTabIndex = TAB_ORDER.indexOf(spec.id);
 
             const liftPx = isSelected ? 12 : isHovered ? 6 : 0;
@@ -633,16 +859,20 @@ export function PackagesModuleLoom({
                 ? 'forest'
                 : 'ivory';
 
-            const labelFill =
-              variant === 'forest'
-                ? WARM_FOREST_PALETTE.paperRaised
-                : WARM_FOREST_PALETTE.ink;
-            const subFill =
-              variant === 'forest'
-                ? WARM_FOREST_PALETTE.peach
-                : isTesting && isSelected
-                  ? WARM_FOREST_PALETTE.action
-                  : WARM_FOREST_PALETTE.inkSecondary;
+            const capVariant: IsoPrismVariant = isSelected
+              ? 'ivory'
+              : spec.id === 'mediator'
+                ? 'terracotta'
+                : 'sand';
+
+            const emblemStroke =
+              capVariant === 'terracotta'
+                ? WARM_FOREST_PALETTE.ink
+                : WARM_FOREST_PALETTE.forest;
+
+            const pillWidth = Math.max(76, spec.plateTitle.length * 7.6 + 18);
+            const pillX = entry.capAnchor[0] - pillWidth / 2;
+            const pillY = entry.capAnchor[1] - 33;
 
             return (
               <IsoPrism
@@ -658,43 +888,85 @@ export function PackagesModuleLoom({
                   40,
                 )}
                 showDropGuides={isSelected || isHovered}
-                label={`${spec.plateTitle} ${spec.plateSub} — Inspect ${spec.name}`}
+                label={`${spec.plateTitle} — ${spec.name}`}
                 ariaPressed={isSelected}
-                onSelect={() => selectModule(spec.id)}
+                onSelect={() => selectModule(spec.id, true)}
                 onHoverChange={(hover) => setHoveredId(hover ? spec.id : null)}
                 onFocusChange={(focused) =>
                   setHoveredId(focused ? spec.id : null)
                 }
                 dataTestId={`loom-plate-${spec.id}`}
               >
-                <text
-                  x={r2(entry.geom.topCenter[0])}
-                  y={r2(entry.geom.topCenter[1] - 2)}
-                  textAnchor="middle"
-                  className={styles.plateTitle}
-                  fill={labelFill}
-                  aria-hidden="true"
-                >
-                  {spec.plateTitle}
-                </text>{' '}
-                <text
-                  x={r2(entry.geom.topCenter[0])}
-                  y={r2(entry.geom.topCenter[1] + 10)}
-                  textAnchor="middle"
-                  className={styles.plateSub}
-                  fill={subFill}
-                  aria-hidden="true"
-                >
-                  {spec.plateSub}
-                </text>
-                {idx === 3 ? (
-                  <circle
-                    cx={r2(entry.geom.topCenter[0] + 34)}
-                    cy={r2(entry.geom.topCenter[1] - 12)}
-                    r={2.5}
-                    fill={WARM_FOREST_PALETTE.signal}
-                  />
+                {/* Sculpted upper 3D collar prism + architectural emblem */}
+                {entry.capGeom ? (
+                  <IsoPrism
+                    geometry={entry.capGeom}
+                    variant={capVariant}
+                    interactive={false}
+                    strokeWidth={0.95}
+                    creaseStrokeWidth={0.7}
+                  >
+                    {entry.emblemPaths.map((d, idx) => (
+                      <path
+                        key={`emblem-${spec.id}-${idx}`}
+                        d={d}
+                        fill="none"
+                        stroke={emblemStroke}
+                        strokeWidth={1.35}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        pointerEvents="none"
+                      />
+                    ))}
+                  </IsoPrism>
                 ) : null}
+
+                {/* High-contrast crisp floating pill title (zero plateSub clutter) */}
+                <g pointerEvents="none" aria-hidden="true">
+                  <line
+                    x1={r2(entry.capAnchor[0])}
+                    y1={r2(entry.capAnchor[1] - 9)}
+                    x2={r2(entry.capAnchor[0])}
+                    y2={r2(pillY + 18)}
+                    stroke={
+                      isSelected
+                        ? WARM_FOREST_PALETTE.signal
+                        : WARM_FOREST_PALETTE.inkSecondary
+                    }
+                    strokeWidth={1}
+                  />
+                  <rect
+                    x={r2(pillX)}
+                    y={r2(pillY)}
+                    width={r2(pillWidth)}
+                    height={18}
+                    rx={9}
+                    fill={
+                      isSelected
+                        ? WARM_FOREST_PALETTE.forest
+                        : WARM_FOREST_PALETTE.paperRaised
+                    }
+                    stroke={
+                      isSelected
+                        ? WARM_FOREST_PALETTE.signal
+                        : WARM_FOREST_PALETTE.border
+                    }
+                    strokeWidth={1.1}
+                  />
+                  <text
+                    x={r2(entry.capAnchor[0])}
+                    y={r2(pillY + 12.2)}
+                    textAnchor="middle"
+                    className={styles.plateLabelPillText}
+                    fill={
+                      isSelected
+                        ? WARM_FOREST_PALETTE.paperRaised
+                        : WARM_FOREST_PALETTE.ink
+                    }
+                  >
+                    {spec.plateTitle}
+                  </text>
+                </g>
               </IsoPrism>
             );
           })}
@@ -723,7 +995,9 @@ export function PackagesModuleLoom({
               aria-controls={panelId}
               tabIndex={isSelected ? 0 : -1}
               className={styles.moduleBtn}
-              onClick={() => selectModule(mod.id)}
+              onClick={() => selectModule(mod.id, true)}
+              onMouseEnter={() => setHoveredId(mod.id)}
+              onMouseLeave={() => setHoveredId(null)}
               onKeyDown={(e) => handleTabKeyDown(e, idx)}
             >
               <span className={styles.moduleBtnIndex}>{mod.index}</span>

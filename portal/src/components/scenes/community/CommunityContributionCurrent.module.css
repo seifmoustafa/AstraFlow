@@ -28,25 +28,34 @@
 .statePill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
-  border-radius: 4px;
+  gap: 7px;
+  padding: 4px 10px;
+  border-radius: 999px;
   background: var(--paper-raised);
   border: 1px solid var(--border);
   color: var(--ink);
 }
 
+.stateDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: none;
+  background: var(--signal);
+  box-shadow: 0 0 0 3px rgba(242, 94, 59, 0.2);
+}
+
 .statePillActive {
   background: var(--peach);
-  border-color: #e49c7b;
+  border-color: #d96846;
   color: #7c2b12;
 }
 
 .networkStage {
   position: relative;
-  padding: 14px 12px 10px;
+  padding: 16px 14px 12px;
   background:
-    radial-gradient(circle at 50% 48%, rgba(255, 253, 247, 0.92), rgba(247, 243, 235, 0.65) 70%),
+    radial-gradient(circle at 50% 48%, rgba(255, 253, 247, 0.94), rgba(247, 243, 235, 0.68) 70%),
     linear-gradient(90deg, rgba(8, 44, 38, 0.025) 1px, transparent 1px),
     linear-gradient(rgba(8, 44, 38, 0.025) 1px, transparent 1px),
     var(--paper);
@@ -57,7 +66,7 @@
 .svgWrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 640 / 320;
+  aspect-ratio: 680 / 350;
 }
 
 .networkSvg {

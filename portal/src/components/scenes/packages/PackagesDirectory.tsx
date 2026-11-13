@@ -119,6 +119,8 @@ export function PackagesDirectory({
             return (
               <article
                 key={pkg.id}
+                id={pkg.id}
+                data-reveal="up"
                 className={`${styles.card} ${
                   !pkg.isPublished ? styles.cardUnreleased : ''
                 }`}

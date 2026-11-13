@@ -198,6 +198,18 @@ async function captureScreenshots(browser, portalBaseUrl) {
         waitUntil: "networkidle",
       });
       await page.evaluate(() => document.fonts?.ready);
+      await page.evaluate(async () => {
+        const maxScroll = Math.max(0, document.body.scrollHeight - window.innerHeight);
+        const step = Math.max(360, Math.floor(window.innerHeight * 0.7));
+        for (let y = 0; y <= maxScroll; y += step) {
+          window.scrollTo({ top: y, behavior: "instant" });
+          await new Promise((r) => setTimeout(r, 90));
+        }
+        window.scrollTo({ top: maxScroll, behavior: "instant" });
+        await new Promise((r) => setTimeout(r, 120));
+        window.scrollTo({ top: 0, behavior: "instant" });
+      });
+      await page.waitForFunction(() => window.scrollY === 0);
       await page.waitForTimeout(300);
 
       const fileName = `${item.slug}-${spec.name}.png`;
@@ -402,12 +414,28 @@ async function captureVideos(browser, portalBaseUrl) {
       "01-home-hero-signal.webm",
       async (page) => {
         await page.goto(`${portalBaseUrl}/`, { waitUntil: "networkidle" });
-        await page.waitForTimeout(1300);
-        const toggle = page.locator("#v10-motion-toggle");
-        await toggle.click();
-        await page.waitForTimeout(900);
-        await toggle.click();
         await page.waitForTimeout(1200);
+        await page.locator(".proof-strip-band").first().scrollIntoViewIfNeeded();
+        await page.waitForTimeout(750);
+        const details = page.locator("section#details");
+        await details.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(550);
+        const planeGroup = details.getByRole("group", {
+          name: "Inspect architectural depth planes",
+        });
+        await planeGroup
+          .getByRole("button", { name: /Execution Spine/i })
+          .click();
+        await page.waitForTimeout(600);
+        await planeGroup
+          .getByRole("button", { name: /Verification Base/i })
+          .click();
+        await page.waitForTimeout(600);
+        await page
+          .locator(".ending-cta-band")
+          .first()
+          .scrollIntoViewIfNeeded();
+        await page.waitForTimeout(800);
       },
     ),
   );
@@ -520,23 +548,43 @@ async function captureVideos(browser, portalBaseUrl) {
           await page.waitForTimeout(450);
         }
 
-        await page.locator("section#releases").scrollIntoViewIfNeeded();
+        const releases = page.locator("section#releases");
+        await releases.scrollIntoViewIfNeeded();
         await page.waitForTimeout(450);
-        await page
+        await releases
           .getByRole("button", { name: /Published Confirmed/i })
           .first()
           .click();
         await page.waitForTimeout(550);
-        await page
+        await releases
           .getByRole("button", { name: /Unreleased Source/i })
           .first()
           .click();
         await page.waitForTimeout(550);
-        await page.getByRole("button", { name: /^All\b/i }).first().click();
+        await releases.getByRole("button", { name: /^All\b/i }).first().click();
+        await page.waitForTimeout(450);
+
+        await releases
+          .locator("ol button")
+          .filter({ has: page.locator("span", { hasText: /^v2\.3\.0$/ }) })
+          .first()
+          .click();
+        await page.waitForTimeout(600);
+        await releases
+          .locator("ol button")
+          .filter({ has: page.locator("span", { hasText: /^v2\.0\.0$/ }) })
+          .first()
+          .click();
+        await page.waitForTimeout(550);
+        await releases
+          .locator("ol button")
+          .filter({ has: page.locator("span", { hasText: /^v2\.4\.0$/ }) })
+          .first()
+          .click();
         await page.waitForTimeout(450);
 
         const toggle24 = page
-          .locator('article[id="v2.4.0"] button[aria-expanded]')
+          .locator('article[id="v2.4.0"] button[aria-controls="v2.4.0-detail"]')
           .first();
         await toggle24.click();
         await page.waitForTimeout(450);
@@ -566,10 +614,31 @@ async function captureVideos(browser, portalBaseUrl) {
         await nodes.nth(0).focus();
         for (let i = 1; i < 6; i++) {
           await page.keyboard.press("ArrowRight");
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(450);
         }
         await page.keyboard.press("Escape");
+        await page.waitForTimeout(350);
+
+        const studySection = page.locator(
+          'section[aria-labelledby="community-study-heading"]',
+        );
+        await studySection.scrollIntoViewIfNeeded();
         await page.waitForTimeout(450);
+        const studyCards = studySection
+          .getByRole("group", {
+            name: "Architectural study questions across AstraFlow subsystems",
+          })
+          .locator("button");
+        await studyCards.nth(1).click();
+        await page.waitForTimeout(550);
+        const branchSelectors = studySection
+          .getByRole("group", {
+            name: "Synchronized architecture branch selectors",
+          })
+          .locator("button");
+        await branchSelectors.nth(2).hover();
+        await branchSelectors.nth(2).click();
+        await page.waitForTimeout(600);
       },
     ),
   );

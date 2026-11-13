@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLearningMilestones } from "@/lib/guides";
 import { UNRELEASED_SOURCE_VERSION } from "@/lib/site-config";
-import { GuidesKineticRunway } from "@/components/scenes/guides";
+import {
+  GuidesHeroQuickJump,
+  GuidesKineticRunway,
+} from "@/components/scenes/guides";
+import runwayStyles from "@/components/scenes/guides/GuidesKineticRunway.module.css";
 
 export const metadata: Metadata = {
   title: "Guides",
@@ -18,7 +22,7 @@ export default function GuidesPage() {
 
   return (
     <main id="main" data-page="guides">
-      <section className="hero">
+      <section className={`hero ${runwayStyles.heroDraftingWrap}`}>
         <div className="site-wrap guides-hero-grid">
           <div>
             <p className="eyebrow">LEARNING SHOULD FEEL LIKE FORWARD MOTION</p>
@@ -27,11 +31,21 @@ export default function GuidesPage() {
               <br />
               <span className="ital signal">to confident.</span>
             </h1>
+            <GuidesHeroQuickJump
+              milestones={milestones.map(({ id, stepNumber, shortTitle }) => ({
+                id,
+                stepNumber,
+                shortTitle,
+              }))}
+            />
           </div>
-          <p className="lead" style={{ maxWidth: 340, color: "var(--muted)" }}>
-            Four progression stages and six runnable .NET milestones — from
-            dependency-free contracts to Roslyn analyzers and testing harnesses.
-          </p>
+          <div>
+            <p className="lead" style={{ maxWidth: 380, color: "var(--ink-secondary)" }}>
+              Six stepped .NET architecture journeys through verified codebase APIs — from
+              zero-dependency contracts and mediator pipelines to compile-time Roslyn
+              analyzers, diagnostics, and 2.4.0 source testing harnesses.
+            </p>
+          </div>
         </div>
 
         <GuidesKineticRunway milestones={milestones} />
@@ -39,9 +53,9 @@ export default function GuidesPage() {
 
       <section className="editorial-panel">
         <div className="site-wrap">
-          <div className="section-head">
+          <div className="section-head" data-reveal="up">
             <div>
-              <p className="eyebrow">SIX PRACTICAL PATHS</p>
+              <p className="eyebrow">02 / SIX PRACTICAL PATHS</p>
               <h2>Learn by doing.</h2>
             </div>
             <p className="section-caption">
@@ -55,6 +69,7 @@ export default function GuidesPage() {
               <Link
                 key={milestone.id}
                 href={milestone.docHref}
+                data-reveal="up"
                 className="line-card"
               >
                 <span className="tiny index">

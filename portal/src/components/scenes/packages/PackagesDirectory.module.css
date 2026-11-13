@@ -74,7 +74,8 @@
   flex-direction: column;
   gap: 12px;
   min-width: 0;
-  transition: background-color 0.2s ease;
+  scroll-margin-top: 96px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {

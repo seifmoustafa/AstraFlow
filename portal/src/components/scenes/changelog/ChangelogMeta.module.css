@@ -1,0 +1,111 @@
+.heroColumn {
+  min-width: 0;
+}
+
+.provenancePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 24px;
+}
+
+.provenancePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--paper-raised);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+
+.provenanceDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex: none;
+  background: var(--forest);
+}
+
+.provenanceDotSignal {
+  background: var(--signal);
+}
+
+.accuracyNotice {
+  margin-block-start: 38px;
+  padding: 20px 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  border-inline-start: 4px solid var(--signal);
+  background: var(--paper);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+}
+
+.accuracyCopy {
+  display: grid;
+  gap: 5px;
+  max-width: 760px;
+}
+
+.accuracyEyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--action);
+}
+
+.accuracyText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-body);
+}
+
+.accuracyLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 15px;
+  border-radius: 8px;
+  border: 1px solid var(--ink);
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.accuracyLink:hover {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: var(--paper-raised);
+}
+
+.accuracyLink:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .accuracyLink {
+    width: 100%;
+    justify-content: center;
+  }
+}

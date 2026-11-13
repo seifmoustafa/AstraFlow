@@ -33,13 +33,16 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
 
     await page.goto("/", { waitUntil: "networkidle" });
 
-    // SignalArchitectureHero keyboard toggle
-    const heroToggle = page.locator("#v10-motion-toggle");
-    await heroToggle.focus();
-    await page.keyboard.press("Space");
-    await expect(heroToggle).toHaveAttribute("aria-pressed", "true");
-    await page.keyboard.press("Enter");
-    await expect(heroToggle).toHaveAttribute("aria-pressed", "false");
+    // SignalArchitectureHero continuous signal (zero pause/resume toggle)
+    await expect(page.locator("#v10-motion-toggle")).toHaveCount(0);
+    await expect(page.locator(".v10-live-status").first()).toContainText(
+      /LIVE SIGNAL/i,
+    );
+    const sigPlayState = await page
+      .locator("#signature-route")
+      .first()
+      .evaluate((el) => getComputedStyle(el).animationPlayState);
+    expect(sigPlayState).toBe("running");
 
     // LivingFlowAtlas capability tabs & synchronized C# highlight lines
     const capDispatch = page.locator("#flow-cap-tab-dispatch");
@@ -140,6 +143,46 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await layerInspection.focus();
     await page.keyboard.press("Space");
     await expect(layerInspection).toHaveAttribute("aria-pressed", "true");
+
+    // Section 05 / THE DETAILS MATTER: depth plane focus pills & Hairline SVG
+    const details = page.locator("section#details");
+    await details.scrollIntoViewIfNeeded();
+    await expect(details).toContainText("Geometry with meaning.");
+    await expect(
+      details.locator(
+        '[role="img"][aria-label="Exploded isometric AstraFlow architecture figure"]',
+      ),
+    ).toBeVisible();
+
+    const planeGroup = details.getByRole("group", {
+      name: "Inspect architectural depth planes",
+    });
+    const plane01 = planeGroup.getByRole("button", {
+      name: /Contracts Plane/i,
+    });
+    const plane02 = planeGroup.getByRole("button", {
+      name: /Execution Spine/i,
+    });
+    const plane03 = planeGroup.getByRole("button", {
+      name: /Verification Base/i,
+    });
+    await expect(plane01).toHaveAttribute("aria-pressed", "true");
+    await plane02.click();
+    await expect(plane02).toHaveAttribute("aria-pressed", "true");
+    await plane03.focus();
+    await page.keyboard.press("Space");
+    await expect(plane03).toHaveAttribute("aria-pressed", "true");
+
+    // Section 06 / READY WHEN YOU ARE full-bleed ending CTA band
+    const endingBand = page.locator(
+      'section.ending-cta-band[aria-labelledby="ending-cta-heading"]',
+    );
+    await endingBand.scrollIntoViewIfNeeded();
+    await expect(endingBand).toContainText("Begin with one");
+    await expect(endingBand).toContainText("responsibility.");
+    await expect(
+      endingBand.getByRole("link", { name: /Read the quick start/i }),
+    ).toHaveAttribute("href", "/docs/getting-started");
 
     expect(errors).toEqual([]);
   });
@@ -244,6 +287,26 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await toolTab.focus();
     await page.keyboard.press("ArrowLeft");
     await expect(xmlTab).toHaveAttribute("aria-selected", "true");
+
+    // PackagesModuleLoom SVG contains zero legacy DISPATCH/PROJECTIONS 2.3.0 sub-labels
+    const loomSvgTexts = await page
+      .locator('svg:has([data-testid="loom-plate-contracts"]) text')
+      .allInnerTexts();
+    expect(loomSvgTexts.length).toBeGreaterThan(0);
+    expect(
+      loomSvgTexts.some((txt) =>
+        /(DISPATCH|PROJECTIONS)\s*·\s*2\.3\.0/i.test(txt),
+      ),
+    ).toBe(false);
+
+    // section#composer (01 / THE ASSEMBLY BENCH) spans full viewport width
+    const composerWidthMetrics = await composer.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return { width: rect.width, innerWidth: window.innerWidth };
+    });
+    expect(
+      Math.abs(composerWidthMetrics.width - composerWidthMetrics.innerWidth),
+    ).toBeLessThanOrEqual(2);
   });
 
   test("4. Docs DocsReferenceDesk, DocArticleEnhancer, /docs/quick-start alias, and ADR route", async ({
@@ -254,6 +317,43 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       .grantPermissions(["clipboard-read", "clipboard-write"])
       .catch(() => {});
     await page.goto("/docs", { waitUntil: "networkidle" });
+
+    // DocsHeroDesk codex volumes + Active Volume Lens + zero internal draft leaks
+    const volumeTabs = page
+      .getByRole("tablist", { name: "Documentation track volumes" })
+      .getByRole("tab");
+    await expect(volumeTabs).toHaveCount(5);
+
+    const volumeBtns = page
+      .getByRole("group", { name: "Select codex volume" })
+      .locator("button");
+    await expect(volumeBtns).toHaveCount(5);
+
+    const lens = page.locator('[id^="codex-lens-"]').first();
+    const lensLink = lens.getByRole("link", { name: /Open track guide/i });
+    await expect(lensLink).toBeVisible();
+    const initialLensHref = await lensLink.getAttribute("href");
+
+    await volumeBtns.nth(1).click();
+    await expect(volumeBtns.nth(1)).toHaveAttribute("aria-pressed", "true");
+    await expect(volumeTabs.nth(1)).toHaveAttribute("aria-selected", "true");
+    const nextLensHref = await lensLink.getAttribute("href");
+    expect(nextLensHref).not.toBe(initialLensHref);
+
+    await volumeTabs.nth(1).focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(volumeTabs.nth(2)).toHaveAttribute("aria-selected", "true");
+    await expect(volumeBtns.nth(2)).toHaveAttribute("aria-pressed", "true");
+    await volumeBtns.nth(0).click();
+
+    const docsMainText = await page.locator("main").innerText();
+    expect(docsMainText).not.toMatch(/(plans\/|strategy\/|future-ideas)/i);
+    const docsHrefs = await page
+      .locator("main a[href]")
+      .evaluateAll((els) => els.map((a) => a.getAttribute("href") ?? ""));
+    expect(
+      docsHrefs.some((href) => /(plans\/|strategy\/|future-ideas)/i.test(href)),
+    ).toBe(false);
 
     const searchInput = page.getByLabel("Search all AstraFlow documentation");
     const preview = page.getByLabel("Live document inspector preview");
@@ -332,6 +432,33 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const m06 = tabs.nth(5);
     await expect(m01).toHaveAttribute("aria-selected", "true");
 
+    // Hero milestone quick-jump buttons synchronize with the runway tablist
+    const quickJumpBtns = page
+      .getByRole("group", { name: "Quick jump to learning milestone" })
+      .locator("button");
+    await expect(quickJumpBtns).toHaveCount(6);
+    await quickJumpBtns.nth(2).click();
+    await expect(tabs.nth(2)).toHaveAttribute("aria-selected", "true");
+    await quickJumpBtns.nth(0).click();
+    await expect(m01).toHaveAttribute("aria-selected", "true");
+
+    const checkDesktopPreNoOverflow = async (label: string) => {
+      if ((page.viewportSize()?.width ?? 1440) < 1200) return;
+      const preMetrics = await page
+        .locator("#runway-workbench-panel pre")
+        .first()
+        .evaluate((el) => ({
+          scrollWidth: el.scrollWidth,
+          clientWidth: el.clientWidth,
+        }));
+      expect(
+        preMetrics.scrollWidth,
+        `${label} C# snippet pre overflowed (${preMetrics.scrollWidth} > ${preMetrics.clientWidth})`,
+      ).toBeLessThanOrEqual(preMetrics.clientWidth + 2);
+    };
+
+    await checkDesktopPreNoOverflow("Milestone 01");
+
     // Step through milestones 01 -> 06 via ArrowRight
     await m01.focus();
     for (let i = 1; i < 6; i++) {
@@ -342,6 +469,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     // Verify Milestone 06 shows 2.4.0 preview badge, C# snippet, and CLI verification command
     const runwayWorkbench = page.locator("#runway-workbench-panel");
     await expect(runwayWorkbench).toContainText("2.4.0");
+    await checkDesktopPreNoOverflow("Milestone 06");
     await expect(
       runwayWorkbench.getByRole("button", { name: /Copy snippet/i }),
     ).toBeVisible();
@@ -372,22 +500,37 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const count = await folioTabs.count();
     expect(count).toBeGreaterThanOrEqual(4);
 
-    // Keyboard navigation on Folio Hero tabs
+    // Keyboard navigation on Folio Hero tabs + jump CTA sync
     await folioTabs.first().focus();
     await page.keyboard.press("ArrowRight");
     await expect(folioTabs.nth(1)).toHaveAttribute("aria-selected", "true");
+    await expect(
+      page.getByRole("button", { name: /Jump to v.*notes/i }).first(),
+    ).toBeVisible();
+
+    const releasesSection = page.locator("section#releases");
+
+    // Search filter + reset
+    const releaseSearch = page.getByLabel(/Search \d+ AstraFlow releases/i);
+    await releaseSearch.fill("2.3.0");
+    await expect(
+      releasesSection
+        .locator("ol button")
+        .filter({ has: page.locator("span", { hasText: /^v2\.3\.0$/ }) }),
+    ).toBeVisible();
+    await releaseSearch.fill("");
 
     // Provenance filter pills
-    const nugetPill = page
+    const nugetPill = releasesSection
       .getByRole("button", { name: /Published Confirmed/i })
       .first();
-    const unreleasedPill = page
+    const unreleasedPill = releasesSection
       .getByRole("button", { name: /Unreleased Source/i })
       .first();
-    const breakingPill = page
+    const breakingPill = releasesSection
       .getByRole("button", { name: /Breaking Changes/i })
       .first();
-    const allPill = page.getByRole("button", { name: /^All\b/i }).first();
+    const allPill = releasesSection.getByRole("button", { name: /^All\b/i }).first();
 
     await nugetPill.click();
     await expect(page.locator('article[id="v2.3.0"]')).toBeVisible();
@@ -396,16 +539,36 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await expect(page.locator('article[id="v2.4.0"]')).toBeVisible();
 
     await breakingPill.click();
-    await expect(page.locator("section#releases")).toBeVisible();
+    await expect(releasesSection).toBeVisible();
 
     await allPill.click();
 
-    // Inspect / toggle 2.4.0 and 2.3.0 release notes
-    for (const id of ["v2.4.0", "v2.3.0"]) {
-      const article = page.locator(`article[id="${id}"]`);
+    // Master-Detail Chronological Spine + Edition Stage inspection for v2.4.0 and v2.3.0
+    for (const item of [
+      {
+        id: "v2.4.0",
+        versionText: /^v2\.4\.0$/,
+        provenancePattern: /Not on NuGet|Unreleased/i,
+      },
+      {
+        id: "v2.3.0",
+        versionText: /^v2\.3\.0$/,
+        provenancePattern: /NuGet|2026-11-10/i,
+      },
+    ]) {
+      const spineBtn = releasesSection
+        .locator("ol button")
+        .filter({ has: page.locator("span", { hasText: item.versionText }) })
+        .first();
+      await expect(spineBtn).toBeVisible();
+      await spineBtn.click();
+
+      const article = page.locator(`article[id="${item.id}"]`);
       await expect(article).toBeVisible();
+      await expect(article).toContainText(item.provenancePattern);
+
       const toggleBtn = article
-        .locator('button[aria-expanded]')
+        .locator(`button[aria-controls="${item.id}-detail"]`)
         .first();
       const wasExpanded = await toggleBtn.getAttribute("aria-expanded");
       if (wasExpanded === "true") {
@@ -416,7 +579,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
         await toggleBtn.click();
       }
       await expect(toggleBtn).toHaveAttribute("aria-expanded", "true");
-      await expect(page.locator(`[id="${id}-detail"]`)).toBeVisible();
+      await expect(page.locator(`[id="${item.id}-detail"]`)).toBeVisible();
     }
   });
 
@@ -454,6 +617,42 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await nodes.nth(0).focus();
     await page.keyboard.press("Escape");
     await expect(page.locator("main")).toContainText(/IDLE/i);
+
+    // Section 03 / BUILT TO BE STUDIED interactive study cards + <Relay> SVG
+    const studySection = page.locator(
+      'section[aria-labelledby="community-study-heading"]',
+    );
+    await studySection.scrollIntoViewIfNeeded();
+    await expect(studySection).toContainText("03 / BUILT TO BE STUDIED");
+    await expect(studySection).toContainText("One codebase.");
+    await expect(studySection).toContainText("Many good questions.");
+
+    const studyCards = studySection
+      .getByRole("group", {
+        name: "Architectural study questions across AstraFlow subsystems",
+      })
+      .locator("button[aria-expanded]");
+    await expect(studyCards).toHaveCount(4);
+    await studyCards.nth(1).click();
+    await expect(studyCards.nth(1)).toHaveAttribute("aria-expanded", "true");
+    await expect(
+      studySection
+        .getByRole("link", { name: /Read the documentation/i })
+        .first(),
+    ).toBeVisible();
+
+    await expect(
+      studySection.locator(
+        '[role="img"][aria-label="Interactive four-branch AstraFlow codebase study topology"]',
+      ),
+    ).toBeVisible();
+
+    const branchBtns = studySection
+      .getByRole("group", { name: "Synchronized architecture branch selectors" })
+      .locator("button[aria-pressed]");
+    await expect(branchBtns).toHaveCount(4);
+    await branchBtns.nth(2).click();
+    await expect(branchBtns.nth(2)).toHaveAttribute("aria-pressed", "true");
 
     // Zero fake Discord / Slack / vanity stats
     const fullText = await page.locator("body").innerText();

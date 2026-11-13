@@ -34,7 +34,6 @@ function getDocumentHiddenSnapshot() {
 export function SignalArchitectureHero() {
   const stageRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
-  const [userPaused, setUserPaused] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
 
   const reducedMotion = useSyncExternalStore(
@@ -48,7 +47,7 @@ export function SignalArchitectureHero() {
     () => false,
   );
 
-  const isPaused = reducedMotion || userPaused || !isVisible || documentHidden;
+  const isPaused = reducedMotion || !isVisible || documentHidden;
 
   useEffect(() => {
     const stageEl = stageRef.current;
@@ -127,33 +126,14 @@ export function SignalArchitectureHero() {
           id="v10-signature-stage"
           data-signal-paused={isPaused ? "true" : "false"}
         >
+          <div className="v10-hero-grid" aria-hidden="true" />
+
           <div className="v10-stage-top">
             <span>{UI_COPY.hero.stageTopLabel}</span>
-            <button
-              aria-pressed={userPaused}
-              className="v10-motion-control"
-              id="v10-motion-toggle"
-              type="button"
-              disabled={reducedMotion}
-              title={
-                reducedMotion
-                  ? UI_COPY.hero.reducedMotionTitle
-                  : userPaused
-                    ? UI_COPY.hero.resumeAriaLabel
-                    : UI_COPY.hero.pauseAriaLabel
-              }
-              onClick={() => setUserPaused((prev) => !prev)}
-            >
-              {userPaused ? (
-                <>
-                  {UI_COPY.hero.resumeLabel} <span aria-hidden="true">▶</span>
-                </>
-              ) : (
-                <>
-                  {UI_COPY.hero.pauseLabel} <span aria-hidden="true">Ⅱ</span>
-                </>
-              )}
-            </button>
+            <span className="v10-live-status">
+              <span className="v10-live-dot" aria-hidden="true" />
+              {UI_COPY.hero.liveSignalLabel}
+            </span>
           </div>
 
           <div className="v10-svg-slot">
@@ -236,21 +216,21 @@ export function SignalArchitectureHero() {
               <g
                 className="stage-architecture"
                 fill="none"
-                opacity=".25"
-                stroke="#4e6d5e"
+                opacity="0.22"
+                stroke="#6c8475"
                 strokeWidth="1"
               >
+                <path d="M9 103H816 M9 202H816 M9 308H816 M9 411H816 M9 515H816 M114 32V568 M246 32V568 M382 32V568 M515 32V568 M648 32V568 M762 32V568" />
                 <circle
-                  cx="441"
-                  cy="290"
-                  r="216"
-                  strokeDasharray="3 11"
+                  cx="445"
+                  cy="292"
+                  r="235"
+                  strokeDasharray="3 10"
                 />
-                <circle cx="441" cy="290" r="146" />
-                <path d="M52 98 H788 M52 496 H788 M82 56 V540 M770 56 V540" />
+                <circle cx="445" cy="292" r="176" />
                 <path
-                  d="M78 472 739 82 M104 114 727 491"
-                  opacity=".35"
+                  d="M3 517L808 84 M-18 279L821 479 M0 79L772 580"
+                  opacity="0.5"
                 />
               </g>
 

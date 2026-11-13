@@ -11,6 +11,7 @@ import {
   PackagesStackComposer,
   type StagedStackPayload,
 } from './PackagesStackComposer';
+import composerStyles from './PackagesStackComposer.module.css';
 
 export interface PackagesWorkspaceProps {
   packages: AstraFlowPackage[];
@@ -93,20 +94,27 @@ export function PackagesWorkspace({
         </div>
       </section>
 
-      <section className="editorial-panel" id="composer">
-        <div className="site-wrap">
-          <div className="section-head">
-            <div>
-              <p className="eyebrow">01 / THE ASSEMBLY BENCH</p>
-              <h2>
-                Your stack.
-                <br />
-                <span className="ital signal">Your decision.</span>
+      {/* Full-viewport-width Deep Forest Assembly Bench band */}
+      <section className={composerStyles.fullBand} id="composer">
+        <div className={composerStyles.bandInner}>
+          <div className={composerStyles.bandHeader} data-reveal="up">
+            <div className={composerStyles.bandHeaderCopy}>
+              <p className={composerStyles.bandEyebrow}>
+                <span className={composerStyles.topDot} aria-hidden="true" />
+                01 / THE ASSEMBLY BENCH
+              </p>
+              <h2 className={composerStyles.bandTitle}>
+                Compose only what{' '}
+                <span className={composerStyles.bandItalic}>
+                  your application needs.
+                </span>
               </h2>
             </div>
-            <p className="section-caption">
+            <p className={composerStyles.bandCaption}>
               Backed directly by repository <code>.csproj</code> metadata and
-              published <code>2.3.0</code> NuGet release records.
+              published <code>2.3.0</code> NuGet release records. Unreleased{' '}
+              <code>2.4.0</code> source packages are isolated with an explicit
+              warning and never emitted as NuGet installs.
             </p>
           </div>
 
@@ -121,9 +129,9 @@ export function PackagesWorkspace({
 
       <section className="section" id="directory">
         <div className="site-wrap">
-          <div className="section-head">
+          <div className="section-head" data-reveal="up">
             <div>
-              <p className="eyebrow">02 / THE PACKAGE INDEX</p>
+              <p className="eyebrow">02 / COMPLETE PACKAGE DIRECTORY</p>
               <h2>
                 Specific tools.
                 <br />

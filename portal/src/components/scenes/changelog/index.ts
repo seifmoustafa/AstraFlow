@@ -1,8 +1,11 @@
 export {
-  ChangelogLivingEdition,
-  ChangelogFolioHero,
-  ChangelogChronicle,
-  type ChangelogLivingEditionProps,
-  type ChangelogFolioHeroProps,
-  type ChangelogChronicleProps,
-} from './ChangelogLivingEdition';
+  VersionDeck,
+  CHANGELOG_FOCUS_EVENT,
+  type VersionDeckProps,
+} from './VersionDeck';
+
+export {
+  ReleaseFolio,
+  type ReleaseFolioProps,
+  type ChangelogFilterId,
+} from './ReleaseFolio';
