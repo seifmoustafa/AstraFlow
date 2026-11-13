@@ -316,7 +316,32 @@
   gap: 14px;
   max-height: 575px;
   overflow-y: auto;
-  padding-inline-end: 4px;
+  padding-inline-end: 6px;
+}
+
+.groupList::-webkit-scrollbar-track {
+  background: rgba(5, 30, 25, 0.45);
+  border-radius: 999px;
+}
+
+.groupList::-webkit-scrollbar-thumb {
+  background: rgba(247, 243, 235, 0.22);
+  border-radius: 999px;
+}
+
+.groupList::-webkit-scrollbar-thumb:hover {
+  background: rgba(242, 94, 59, 0.72);
+}
+
+.groupList::-webkit-scrollbar-thumb:active {
+  background: var(--signal);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .groupList {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(247, 243, 235, 0.26) rgba(5, 30, 25, 0.45);
+  }
 }
 
 .layerSection {

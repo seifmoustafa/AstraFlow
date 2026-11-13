@@ -744,6 +744,31 @@
   max-width: 100%;
 }
 
+.codeScroll::-webkit-scrollbar-track {
+  background: rgba(5, 30, 25, 0.45);
+  border-radius: 999px;
+}
+
+.codeScroll::-webkit-scrollbar-thumb {
+  background: rgba(247, 243, 235, 0.22);
+  border-radius: 999px;
+}
+
+.codeScroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(242, 94, 59, 0.72);
+}
+
+.codeScroll::-webkit-scrollbar-thumb:active {
+  background: var(--signal);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .codeScroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(247, 243, 235, 0.26) rgba(5, 30, 25, 0.45);
+  }
+}
+
 .codeLines {
   margin: 0;
   padding: 0;

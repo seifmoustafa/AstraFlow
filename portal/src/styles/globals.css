@@ -3973,6 +3973,114 @@ html.lenis.lenis-smooth {
   }
 }
 
+/* ==========================================================================
+   Warm Forest Scrollbar System (Page + Inner Light & Forest Surfaces)
+   ========================================================================== */
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: var(--paper);
+  border-inline-start: 1px solid var(--border);
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: rgba(10, 52, 43, 0.24);
+  border-radius: 999px;
+  border: 2px solid var(--paper);
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
+  background: rgba(8, 44, 38, 0.48);
+  border: 2px solid var(--paper);
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:active,
+body::-webkit-scrollbar-thumb:active {
+  background: var(--action);
+  border: 2px solid var(--paper);
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-corner,
+body::-webkit-scrollbar-corner {
+  background: var(--paper);
+}
+
+/* Compact hairline scrollbars for inner light panels & horizontal tables */
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(8, 44, 38, 0.045);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(10, 52, 43, 0.24);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(8, 44, 38, 0.46);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: var(--action);
+}
+
+/* Dark Deep Forest code blocks & terminal surfaces */
+pre::-webkit-scrollbar-track,
+.code-block::-webkit-scrollbar-track {
+  background: rgba(5, 30, 25, 0.45);
+  border-radius: 999px;
+}
+
+pre::-webkit-scrollbar-thumb,
+.code-block::-webkit-scrollbar-thumb {
+  background: rgba(247, 243, 235, 0.22);
+  border-radius: 999px;
+}
+
+pre::-webkit-scrollbar-thumb:hover,
+.code-block::-webkit-scrollbar-thumb:hover {
+  background: rgba(242, 94, 59, 0.72);
+}
+
+pre::-webkit-scrollbar-thumb:active,
+.code-block::-webkit-scrollbar-thumb:active {
+  background: var(--signal);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(10, 52, 43, 0.34) var(--paper);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(10, 52, 43, 0.24) transparent;
+  }
+
+  pre,
+  .code-block {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(247, 243, 235, 0.28) rgba(5, 30, 25, 0.45);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto !important;

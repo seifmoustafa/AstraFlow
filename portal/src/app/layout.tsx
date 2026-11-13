@@ -58,7 +58,12 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" data-theme="warm-forest">
+    <html
+      lang="en"
+      dir="ltr"
+      data-theme="warm-forest"
+      data-scroll-behavior="smooth"
+    >
       <body>
         <SmoothScrollProvider>
           <a className="v11-skip" href="#main">

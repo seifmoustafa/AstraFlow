@@ -2,7 +2,7 @@
 
 All notable AstraFlow changes are tracked here.
 
-## 2.4.0 (published 2026-11-13; per maintainer confirmation)
+## 2.4.0 (2026-11-13)
 
 ### Breaking Changes
 
@@ -37,7 +37,7 @@ All notable AstraFlow changes are tracked here.
 
 - Keep assertion failure messages from rendering arbitrary object values, string contents, GUID values, or exception message contents by default.
 
-## 2.3.0 (published 2026-11-10; per maintainer confirmation)
+## 2.3.0 (2026-11-10)
 
 ### Breaking Changes
 
@@ -77,7 +77,7 @@ All notable AstraFlow changes are tracked here.
 
 - None.
 
-## 2.2.0 (published; prior release)
+## 2.2.0
 
 - Enable `CI=true` and verify repeat package hashes and packaged SourceLink metadata before release.
 - Add an SPDX SBOM and GitHub OIDC/Sigstore provenance for release package artifacts.
@@ -86,7 +86,7 @@ All notable AstraFlow changes are tracked here.
 - Verify each published NuGet package's repository signature after Trusted Publishing completes.
 - Document security advisory reporting, recommended branch protection, artifact verification, and maintainer-controlled GitHub settings.
 
-## 2.1.0 (GitHub Release; NuGet unverified)
+## 2.1.0
 
 - v2.1.0 source is merged and a GitHub Release exists. NuGet publication has not been verified, so this version is not listed as published in the compatibility table.
 - Adds opt-in `[AstraGenerateMapping]` partial methods that emit direct typed assignments for a conservative scalar-property subset; unsupported and sensitive-name declarations report `AFM001`.

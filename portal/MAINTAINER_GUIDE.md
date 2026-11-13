@@ -21,7 +21,7 @@
 | Step | File | What to Change |
 | :--- | :--- | :--- |
 | 1 | `../Directory.Build.props` | Set `<Version>2.5.0</Version>` and update `<PackageReleaseNotes>`. |
-| 2 | `../CHANGELOG.md` | Prepend `## 2.5.0 (published YYYY-MM-DD)` with all 7 required headings: `Breaking Changes`, `Added`, `Changed`, `Fixed`, `Deprecated`, `Removed`, `Security`. |
+| 2 | `../CHANGELOG.md` | Prepend `## 2.5.0 (YYYY-MM-DD)` with all 7 required headings: `Breaking Changes`, `Added`, `Changed`, `Fixed`, `Deprecated`, `Removed`, `Security`. |
 | 3 | `../README.md` | Update the release status note and `--version 2.5.0` quick-start snippet. |
 | 4 | `src/lib/site-config.ts` | Update `LATEST_PUBLISHED_VERSION`, `LATEST_PUBLISHED_DATE`, `LATEST_PUBLISHED_PROVENANCE`, and `PREVIOUS_PUBLISHED_VERSION`. |
 | 5 | `src/content/docs/*.md` & `src/lib/guides.ts` | Document any new shipped APIs, CLI commands, or milestones. |
