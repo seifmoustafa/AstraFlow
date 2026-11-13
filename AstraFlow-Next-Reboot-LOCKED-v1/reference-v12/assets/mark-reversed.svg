@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 215" role="img" aria-label="AstraFlow symbol">
-<defs><linearGradient id="p" x2="1" y2="1"><stop stop-color="#fff8ef"/><stop offset="1" stop-color="#c3d8d0"/></linearGradient><linearGradient id="o" x2="1" y2=".6"><stop stop-color="#ffc19e"/><stop offset="1" stop-color="#ff4f2b"/></linearGradient></defs>
-<path d="M129 7 H173 L222 87 H181 L152 40 L98 129 C92 139 87 143 77 143 H44 Z" fill="url(#p)"/>
-<path d="M30 166 H91 C104 166 111 160 119 148 L137 116 C147 102 157 98 169 98 H230 L249 128 H177 C165 128 160 134 154 144 L132 180 C119 196 107 200 89 200 H10 Z" fill="url(#o)"/>
-<path d="M199 145 H237 L259 182 H220 Z" fill="#e3ece4"/>
-</svg>
