@@ -1,0 +1,1 @@
+# Public XML documentation member IDs for Consumer (netstandard2.0).

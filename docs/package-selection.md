@@ -168,13 +168,13 @@ Example:
 dotnet add package AstraFlow.Testing --version 2.3.0
 ```
 
-The package is test-framework-neutral. It does not depend on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework.
+The package is test-framework-neutral. It does not depend on xUnit, NUnit, MSTest, or a mocking framework.
 
 Use this only in test projects unless an application has a deliberate reason to run fake dispatchers.
 
 ## `AstraFlow.Assertions`
 
-Implemented for the unreleased v2.4.0 source. The package is not yet published. Use it in any .NET test project that needs framework-neutral fluent assertions for values, strings, collections, exceptions, and asynchronous operations.
+Implemented for the unreleased v2.4.0 source. The package is not yet published. Use it in any .NET test project that needs framework-neutral assertions for values, strings, collections, exceptions, and asynchronous operations.
 
 ```powershell
 dotnet add package AstraFlow.Assertions --version 2.4.0
@@ -220,7 +220,7 @@ For project files, prefer a private generator reference:
 
 ## `AstraFlow.Cli`
 
-Install this package as a .NET tool when you want command-line inspection and reporting.
+Install this package as a .NET tool when you want command-line inspection, reporting, and migration assistance.
 
 Example:
 
@@ -238,6 +238,8 @@ dotnet tool install --global AstraFlow.Cli --version 2.3.0
 - `astraflow graph`,
 - `astraflow scan`,
 - JSON, Markdown, SARIF, Mermaid, and DOT output paths.
+
+The unreleased 2.4.0 source adds `astraflow assertions analyze [path]`, a read-only syntax report for fluent assertion migration candidates. It marks candidates for manual review, does not resolve project symbols or behavior equivalence, and never edits source. This command is not in the published 2.3.0 tool.
 
 Use this outside application runtime projects. Application code should reference the runtime packages it needs directly.
 

@@ -14,8 +14,8 @@
 
 - Target 2.4.0 on the existing PR branch; preserve the generated-mapping changes.
 - Preserve `netstandard2.0`, `net8.0`, `net9.0` and `net10.0` for the core package, existing public behavior, and the absence of production package or runtime dependencies unless explicitly reviewed.
-- Use original AstraFlow-owned implementation and product identity. Do not place reference names or namespaces in product text or dependencies.
-- Every reference capability needs implementation and evidence or a specific maintainer-approved disposition before the comprehensive release gate.
+- Use original AstraFlow-owned implementation and product identity. Do not place external product names or namespaces in product text or dependencies.
+- Every inventoried capability needs implementation and evidence or a specific maintainer-approved disposition before the comprehensive release gate.
 - Keep values out of failure messages and CLI reports by default; configuration and scopes must be safe for concurrent tests.
 - Preserve current portal design and apply its collaborative design gate before any new UI or UX work.
 
@@ -34,11 +34,11 @@
 - `src/AstraFlow.Testing/` and its tests: AstraFlow-specific helpers only.
 - `src/AstraFlow.Cli/` and `tests/AstraFlow.Cli.Tests/`: command routing, semantic inspection and report contracts.
 - `docs/api-baselines/`, `docs/assertions.md`, `docs/testing.md`, `docs/cli.md`, `samples/`, README, changelog and `portal/`: public contract, examples and synchronized product content.
-- Private inventory and detailed per-family plans must not expose the reference identity in product content.
+- Private inventory and detailed per-family plans must not expose external implementation identities in product content.
 
 ## Task 1: Inventory and compatibility contract
 
-**Files:** Review the local reference source and tests, `src/AstraFlow.Assertions/`, its tests and `docs/api-baselines/AstraFlow.Assertions/`; create a private inventory outside public product content.
+**Files:** Reconcile the approved private capability inventory with `src/AstraFlow.Assertions/`, its tests and `docs/api-baselines/AstraFlow.Assertions/`; keep detailed inventory material outside public product content.
 
 - [ ] Enumerate every assertion entry point, capability, configuration, integration and target-framework condition. Record source area, expected behavior, failure behavior, AstraFlow status and evidence for each row.
 - [ ] Record the current public API and the 24 existing assertion test cases as the baseline. Identify source and behavioral compatibility hazards, including ambiguous extension methods during migration.
@@ -62,6 +62,18 @@
 - [ ] Test duplicate handling, empty/null subjects, order differences, lazy and one-shot enumerables, disposal and failure messages. Include a subject that throws if enumerated a second time.
 - [ ] Implement the approved APIs and update XML documentation, API baselines and examples. Run the Assertions test project in Release and expect a clean pass.
 
+Verified slices in this task (the collections/dictionaries family remains in progress):
+
+- [x] Null-aware sequence count/order/uniqueness/multiset/callback/consecutive assertions with focused one-shot and failure-path tests.
+- [x] Batch sequence membership with one-pass subject enumeration, duplicate expected-item presence semantics, and null/empty behavior.
+- [x] Dictionary and key-value-pair sequence assertions for keys, values, empty state, and count relationships; dictionary subjects use their own key comparer and key-value-pair sequences are enumerated at most once.
+- [x] Exact runtime-type and assignability assertions for sequence items, with generic typed chaining, `Type` overloads, represented-type handling, null/empty coverage, safe failures, and one-shot enumeration/disposal tests; add indexed item selection with a verified `Which` value and one-pass behavior. All 268 Assertions tests pass on net10.0, the package builds on all four targets without warnings, the public API baseline passes for 62 package/target combinations, and local package `2.4.0-c54-local` builds a fresh four-target consumer and passes a net10 runtime smoke check.
+- [x] Add enumerable expected-sequence overloads and negative ordered/consecutive containment assertions with null, empty, duplicate, one-shot, disposal, and safe-failure cases; validate those APIs from the freshly packed c54 consumer.
+- [x] Add ascending and descending key-order assertions with optional comparers, one selector call per item, tie support, safe index-only failures, and fresh-package compile/runtime coverage.
+- [x] Add structural-equivalency containment, negative containment, and all-item checks with per-call graph options, returned matched-item access, one-pass outer enumeration, shared nested snapshots, safe mismatch paths, and empty/null behavior.
+- [x] Add order-independent dictionary `Equal`/`NotEqual` checks for unique expected key-value pairs, with default key/value comparers, one-pass expected enumeration, duplicate-key validation, null handling, and value-safe failures; validate the packed c54 API from compile-time and runtime consumers.
+- [ ] Additional read-only dictionary surface and remaining collection inventory cases. Async negative ordered and consecutive containment are implemented with one-pass expected/subject enumeration, cancellation forwarding, disposal, and privacy-safe failure messages; focused tests cover match/miss, null and empty boundaries.
+
 ## Task 4: Object-graph equivalence
 
 **Files:** Create focused graph comparison and options files in `src/AstraFlow.Assertions/`; add `tests/AstraFlow.Assertions.Tests/EquivalencyTests.cs`.
@@ -69,6 +81,13 @@
 - [ ] Define exact APIs for member selection, ordering, custom comparers, recursion limit and cycle policy; integrate per-assertion options without changing global mutable settings.
 - [ ] Test a nested mismatch path, ignored and selected members, record and polymorphic values, unordered/ordered collections, custom comparers, cycles and depth limits. Verify no sensitive values appear by default.
 - [ ] Implement traversal and deterministic failure paths; run the Assertions test project in Release and review public API baselines.
+
+Verified initial slice (the graph family remains in progress):
+
+- [x] Compare public readable properties across differing DTO types, ordered sequences, and dictionaries with subject comparer lookups.
+- [x] Add value-safe first mismatch paths, cycle-pair tracking, per-call property-name exclusions, and a bounded maximum depth.
+- [x] Add per-call type/path comparers, configurable ordered/unordered sequence matching, and opt-in public instance field comparison; field tests cover inheritance, exclusions, static-field omission, and safe mismatch paths.
+- [x] Add path-based selected-member rules, missing-path failures, and safe focused tests; broader graph edge-case coverage remains open.
 
 ## Task 5: Exceptions, async and scopes
 
@@ -78,6 +97,13 @@
 - [ ] Test expected and unexpected exceptions, inner properties, an operation's own cancellation, caller cancellation, timeout, stream disposal and concurrent scopes with distinct settings.
 - [ ] Implement and run the Assertions test project in Release. Confirm existing exception behavior and privacy regressions still pass.
 
+Verified exception slice (Task 5 remains in progress):
+
+- [x] Add synchronous and asynchronous `ArgumentException` parameter-name checks with ordinal case-insensitive matching, input validation, and failure messages that omit both names. Verify direct chaining after `Throw<TException>()` and `ThrowAsync<TException>()` with positive, negative, mismatch, and invalid-input cases.
+- [x] Add generic task-completion-source assertions on all package targets and non-generic source assertions where the framework provides the type. Cover timed success/failure, result capture, non-completion, source-fault propagation, timeout validation, cancellation ownership, and null subjects.
+- [x] Add typed reference-subject property selection with nested property paths. Reject fields, indexers, static members, and method calls before execution; test single evaluation, null/type mismatch, safe failure output, and original getter exceptions.
+- [x] Add async-sequence full-enumeration `NotThrowAsync` with caller-cancellation propagation, safe failure messages, and enumerator disposal. The complete Assertions test suite now passes 257/257 on net10.0 when VSTest has local loopback IPC access.
+
 ## Task 6: Specialized assertions and extensibility
 
 **Files:** Add capability-specific files under `src/AstraFlow.Assertions/` or reviewed optional packages; add `tests/AstraFlow.Assertions.Tests/SpecializedAssertionTests.cs` and relevant consumer projects.
@@ -86,14 +112,35 @@
 - [ ] Test malformed XML, stream position/disposal, missing metadata, event unsubscription/order, timing boundaries, custom formatter privacy and concurrent configuration. Add consumer tests for each integration.
 - [ ] Implement, document and verify each capability independently; update baselines and package metadata. Record unresolved inventory rows for maintainer decision.
 
+Verified initial XML slice (Task 6 remains in progress):
+
+- [x] Add namespace-aware `XDocument` root/direct-child checks and `XElement` child/attribute/text checks. Failures omit XML values; tests cover namespaces, negative assertions, nulls and invalid names.
+- [x] Add document and element structural equivalency; test null pairs, namespace-prefix and unused-declaration handling, child ordering, attribute order, text/CDATA, comments, processing instructions, document types, and safe failures.
+- [x] Add non-consuming HTTP response status and response/content-header assertions with exact value comparisons; test status boundaries, case-insensitive header names, value redaction, and no body reads.
+- [x] Add explicit standard-event monitoring for generic and non-generic event handlers, `INotifyPropertyChanged` helpers, ordered occurrence capture, exact-count and negative assertions, safe diagnostics, concurrent raises, duplicate registration checks, and disposal with best-effort removal of every handler.
+- [x] Expand stream assertions with read-only/write-only checks, negative length/position checks, and buffered-stream size checks on targets that expose `BufferedStream.BufferSize`; verify no reads, seeks, position changes, or disposal.
+- [x] Add exact stream byte-content equality and inequality using a fixed 4 KiB buffer, restore seekable stream positions on success and failure, document consumption for non-seekable streams, and cover privacy, short reads, trailing content, disposal and I/O propagation. The full Assertions suite now passes 250/250; package `2.4.0-c50-local` compiles across all four targets and passes a net10 runtime smoke check for the current collection APIs.
+- [x] Add one-run synchronous/asynchronous delegate and subject-method execution-time measurement returning `TimeSpan`; test exactly-once invocation, completion, exception identity, null handling, and composition with ordinary duration assertions.
+- [x] Add direct current-state XML reader assertions without advancing, closing or disposing caller-owned readers; whole-reader comparison remains a separate consuming API decision.
+- [x] Add a typed custom-delegate adapter for event monitoring, preserving arbitrary payloads in occurrence snapshots while omitting them from failure messages; verify factory failure releases its event registration.
+- [ ] Continue with broader timing and authoring capabilities.
+
 ## Task 7: CLI migration analysis
 
 **Files:** Modify `src/AstraFlow.Cli/Program.cs`; create focused analysis/report files under `src/AstraFlow.Cli/`; add tests and fixture projects under `tests/AstraFlow.Cli.Tests/`.
 
-- [ ] Define `astraflow assertions analyze <path> --format text|json`; report schema version, file, line, classification and safe suggestion. Define exit codes 0 for successful analysis, 1 for usage or operational failure, and 2 for completed analysis with unsupported or unknown findings.
-- [ ] Add fixture tests for a verified mapping, manual change, unsupported call, unrelated same-name method, unresolved symbol, incomplete project and secret-bearing literal. Verify JSON schema, file/line accuracy, exit codes and absence of literal values.
-- [ ] Implement symbol-based resolution where possible. Unresolved calls are unknown; the command only reads source and does not rewrite it. Keep Roslyn dependencies isolated to the CLI.
-- [ ] Run `dotnet test tests/AstraFlow.Cli.Tests/AstraFlow.Cli.Tests.csproj -c Release`; expect all tests to pass. Verify the packed tool against a clean consumer.
+- [x] Define `astraflow assertions analyze <path> --format text|json`; emit a versioned report with relative source, one-based line/column, classification and safe suggestion. Exit 1 for usage/operational errors and 2 for partial or review-required analysis. A complete-analysis exit 0 remains reserved for a future complete project context.
+- [x] Add fixtures for bound assertion-like calls, unrelated bound `Should()` methods, local assertion variables, unresolved chains, syntax errors, conditional directives and secret-bearing literals. Verify JSON/text shape, source locations, exit codes, and no source edits or literal leakage.
+- [x] Resolve source declarations with Roslyn and host framework metadata; unrelated bound methods are skipped and unresolved calls remain unknown. Project/package references and target symbols are not evaluated; the analyzer never executes MSBuild, restore, targets, generators, scripts, or inspected project code. Keep Roslyn dependencies isolated to the CLI.
+- [ ] Add behavior-backed verified/unsupported mapping rows only after private inventory review and semantic tests; verify the packed tool against a clean consumer.
+
+Initial verified milestone (Task 7 remains in progress):
+
+- [x] Add a read-only Roslyn syntax scan for C# `.Should()` chains, relative locations, same-name candidate hints, parse-error warnings, privacy-safe output, and exit codes 0/1/2. Unit tests prove comments/string literals are ignored and source files are not modified.
+- [x] Pack and install local CLI tool `2.4.0-c23-local`; run it against an XML assertion fixture and confirm it returns exit 2 with three review-required candidates while omitting XML literal values.
+- [x] Pass the CLI test project with 22/22 tests on net10.0.
+- [x] Add a metadata-only Roslyn milestone: bound manual candidates, unrelated-method exclusion, unresolved-unknown classification, syntax/conditional incompleteness, local-variable chains, deterministic safe reports, and explicit text/json formats; CLI tests now pass 26/26 on net10.0.
+- [ ] Add safe interpretation of existing project metadata only if it can be done without evaluating user project code; add private-inventory-backed verified/unsupported mappings, and pack/install consumer verification.
 
 ## Task 8: Integration, documentation and release gate
 

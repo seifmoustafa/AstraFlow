@@ -1,6 +1,8 @@
 # AstraFlow CLI Tool
 
-`AstraFlow.Cli` installs the `astraflow` command-line tool for inspecting handlers, validating contracts, diffing snapshots, generating JSON/Markdown/SARIF reports, and exporting architecture graphs from source trees in local workflows and CI pipelines.
+`AstraFlow.Cli` installs the `astraflow` command-line tool for inspecting handlers, validating contracts, diffing snapshots, generating JSON/Markdown/SARIF reports, exporting architecture graphs, and reviewing assertion migration candidates from source trees in local workflows and CI pipelines.
+
+The planned 2.4.0 release adds read-only, syntax-only assertion migration review through `astraflow assertions analyze`. Results include relative locations, method names, same-name review candidates, and syntax warnings; they do not claim semantic equivalence or modify source files.
 
 ## Installation
 
@@ -31,6 +33,7 @@ astraflow inspect ./src
 | `diff` | `astraflow diff <before.json> <after.json> [-o json\|markdown\|text]` | Compares two saved JSON inspection reports to surface added/removed contracts |
 | `graph` | `astraflow graph [path] [--style relational\|pipeline\|events] [--group-by module\|feature] [-f\|--format mermaid\|dot\|canvas-json] [--direction TB\|LR] [-o graph.json]` | Exports dependency and flow diagrams in Mermaid, Graphviz DOT, or Canvas JSON |
 | `scan` | `astraflow scan [path] [-o json\|markdown\|text]` | Scans repositories for AstraFlow conventions and migration opportunities |
+| `assertions analyze` | `astraflow assertions analyze [path] [-o json\|markdown\|sarif\|text]` | Read-only syntax scan for assertion-call migration review candidates |
 
 ## CI Pipeline & SARIF Integration
 
@@ -49,6 +52,26 @@ astraflow graph ./src --style pipeline --group-by module -f mermaid --direction 
 astraflow report ./src -o json > baseline.json
 astraflow diff baseline.json current.json -o markdown
 ```
+
+## Assertion migration review (syntax only)
+
+Planned for AstraFlow 2.4.0, `astraflow assertions analyze` scans one C# source file, a `.csproj` file, or a directory recursively. If `path` is omitted, it scans the current directory.
+
+```bash
+astraflow assertions analyze
+astraflow assertions analyze ./src/Checkout
+astraflow assertions analyze ./src/Checkout/PaymentTests.cs -o sarif > assertions.sarif
+```
+
+The report contains relative source locations, method names, same-name review candidates, and warnings when C# syntax errors may make the results incomplete. It is read-only and syntax-only: it does not resolve symbols or confirm that a candidate has equivalent behavior, and it never edits source files. Report output omits source expressions and literal values. Review each candidate manually.
+
+| Exit code | Meaning |
+| --- | --- |
+| `0` | No review candidates or syntax warnings were found. |
+| `2` | Review is required because candidates or syntax warnings were found. |
+| `1` | The command, path, output option, or scan encountered a usage or operational error. |
+
+The syntax-analysis dependency is confined to `AstraFlow.Cli`; `AstraFlow.Assertions` remains dependency-free.
 
 ## Output Formats
 

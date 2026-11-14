@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace AstraFlow.Assertions;
@@ -8,6 +9,40 @@ public sealed class ObjectAssertions<T>
     private readonly T _actual;
 
     internal ObjectAssertions(T actual) => _actual = actual;
+
+    internal T SubjectValue => _actual;
+
+    /// <summary>Asserts that the subject has matching values for the expected object's public members.</summary>
+    /// <param name="expected">The expected object graph.</param>
+    /// <param name="configure">Optional settings for member selection, exclusions, custom value comparers, field inclusion, ordering, and maximum graph depth.</param>
+    public ObjectAssertions<T> BeEquivalentTo<TExpected>(TExpected expected, Action<EquivalencyOptions>? configure = null)
+    {
+        var options = CreateEquivalencyOptions(configure);
+        options.ValidateIncludedPaths(expected);
+        var comparer = new ObjectGraphEquivalencyComparer(options);
+        if (!comparer.TryCompare(_actual, expected, out var mismatchPath))
+        {
+            AssertionFailure.Fail($"Expected values to be structurally equivalent at '{mismatchPath}'.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the subject does not match the expected object's public members.</summary>
+    /// <param name="unexpected">The object graph that must differ.</param>
+    /// <param name="configure">Optional settings for member selection, exclusions, custom value comparers, field inclusion, ordering, and maximum graph depth.</param>
+    public ObjectAssertions<T> NotBeEquivalentTo<TExpected>(TExpected unexpected, Action<EquivalencyOptions>? configure = null)
+    {
+        var options = CreateEquivalencyOptions(configure);
+        options.ValidateIncludedPaths(unexpected);
+        var comparer = new ObjectGraphEquivalencyComparer(options);
+        if (comparer.TryCompare(_actual, unexpected, out _))
+        {
+            AssertionFailure.Fail("Expected object graphs not to be structurally equivalent, but they matched.");
+        }
+
+        return this;
+    }
 
     /// <summary>Asserts that the value equals the expected value.</summary>
     public void Be(T expected, string? because = null)
@@ -159,7 +194,7 @@ public sealed class ObjectAssertions<T>
         }
     }
 
-    /// <summary>Asserts that the enum value does not contain any bits in the requested flag.</summary>
+    /// <summary>Asserts that the enum value does not contain every bit in the requested flag.</summary>
     public void NotHaveFlag(Enum flag)
     {
         if (_actual is not Enum enumValue || flag is null || flag.GetType() != enumValue.GetType() || enumValue.HasFlag(flag))
@@ -167,4 +202,40 @@ public sealed class ObjectAssertions<T>
             AssertionFailure.Fail("Expected enum value not to contain the requested flag.");
         }
     }
+
+    /// <summary>Asserts that the subject satisfies the predicate.</summary>
+    public void Match(Func<T, bool> predicate)
+    {
+        if (predicate is null)
+        {
+            throw new ArgumentNullException(nameof(predicate));
+        }
+
+        if (!predicate(_actual))
+        {
+            AssertionFailure.Fail("Expected value to satisfy the predicate.");
+        }
+    }
+
+    /// <summary>Asserts that the subject does not satisfy the predicate.</summary>
+    public void NotMatch(Func<T, bool> predicate)
+    {
+        if (predicate is null)
+        {
+            throw new ArgumentNullException(nameof(predicate));
+        }
+
+        if (predicate(_actual))
+        {
+            AssertionFailure.Fail("Expected value not to satisfy the predicate.");
+        }
+    }
+
+    private static EquivalencyOptions CreateEquivalencyOptions(Action<EquivalencyOptions>? configure)
+    {
+        var options = new EquivalencyOptions();
+        configure?.Invoke(options);
+        return options;
+    }
+
 }

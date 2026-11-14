@@ -211,6 +211,9 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
 
     await testingTab.click();
     await expect(testingTab).toHaveAttribute("aria-selected", "true");
+    await expect(
+      page.getByRole("tabpanel").getByText("Testing 2.3.0 · Assertions planned 2.4.0"),
+    ).toBeVisible();
 
     // Stage active capability into Stack Composer
     const stageBtn = page.getByRole("button", {
@@ -222,8 +225,17 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await expect(composer).toBeVisible();
 
     // Verify AstraFlow.Mediator toggles AstraFlow.Contracts dependency resolution
-    const searchInput = page.getByLabel("Filter 16 AstraFlow packages");
+    const searchInput = page.getByLabel(/Filter \d+ AstraFlow packages/);
     await page.getByRole("button", { name: "Reset" }).click();
+
+    // Capability search uses the localized package profiles, not package IDs alone.
+    await searchInput.fill("BoundedParallel");
+    await expect(
+      composer
+        .locator('button[aria-pressed]')
+        .filter({ hasText: "AstraFlow.Mediator" })
+        .first(),
+    ).toBeVisible();
 
     await searchInput.fill("Mediator");
     const mediatorPkgToggle = composer
@@ -233,9 +245,9 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await mediatorPkgToggle.click();
     await expect(mediatorPkgToggle).toHaveAttribute("aria-pressed", "true");
 
-    const cliTab = composer.getByRole("tab", { name: "dotnet CLI" });
+    const cliTab = composer.getByRole("tab", { name: /(?:\.NET|dotnet) CLI/i });
     const xmlTab = composer.getByRole("tab", { name: "PackageReference XML" });
-    const toolTab = composer.getByRole("tab", { name: ".NET Tool CLI" });
+    const toolTab = composer.getByRole("tab", { name: ".NET Tool" });
 
     await cliTab.click();
     const outputPre = composer.locator("pre").first();
@@ -255,7 +267,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await xmlTab.click();
     await expect(outputPre).toContainText('PrivateAssets="all"');
 
-    // Unified published packages: AstraFlow.Assertions emits clean dotnet add package + test-project boundary info
+    // Planned assertions package remains visible without an install command.
     await searchInput.fill("Assertions");
     const assertionsToggle = composer
       .locator('button[aria-pressed]')
@@ -267,7 +279,21 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await expect(composer).toContainText(/Separate test-project references/i);
 
     await cliTab.click();
-    await expect(outputPre).toContainText("dotnet add package AstraFlow.Assertions");
+    await expect(outputPre).not.toContainText("dotnet add package AstraFlow.Assertions");
+    await expect(composer).toContainText("Planned · 2.4.0");
+    await expect(composer.locator('a[href*="nuget.org/packages/AstraFlow.Assertions"]')).toHaveCount(0);
+
+    const assertionsDirectoryCard = page.locator(
+      'article[id="AstraFlow.Assertions"]',
+    );
+    await expect(assertionsDirectoryCard).toContainText("Planned · 2.4.0");
+
+    const packageDirectorySearch = page.getByRole("searchbox", {
+      name: "Filter package directory",
+    });
+    await packageDirectorySearch.fill("HTTP response status");
+    await expect(assertionsDirectoryCard).toBeVisible();
+    await packageDirectorySearch.fill("");
 
     // AstraFlow.Cli uses `dotnet tool install`
     await searchInput.fill("AstraFlow.Cli");
@@ -428,7 +454,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     );
   });
 
-  test("5. Guides GuidesKineticRunway milestones 01..06 mouse & keyboard + Milestone 06 2.4.0 badge", async ({
+  test("5. Guides GuidesKineticRunway milestones 01..06 mouse & keyboard + published 2.3.0 suite", async ({
     page,
   }) => {
     await page.goto("/guides", { waitUntil: "networkidle" });
@@ -477,11 +503,11 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       await expect(tabs.nth(i)).toHaveAttribute("aria-selected", "true");
     }
 
-    // Verify Milestone 06 shows Testing & Assertions suite details, C# snippet, and CLI verification command
+    // Verify Milestone 06 shows the published Testing & Assertions suite, C# snippet, and CLI verification command
     const runwayWorkbench = page.locator("#runway-workbench-panel");
     await expect(runwayWorkbench).toContainText("AstraFlow.Assertions");
     await expect(runwayWorkbench).toContainText("Should()");
-    await expect(runwayWorkbench).toContainText("AstraFlow 2.4.0 Suite");
+    await expect(runwayWorkbench).toContainText("AstraFlow 2.3.0 Suite");
     await expect(runwayWorkbench).not.toContainText(/unreleased|not on nuget/i);
     await checkDesktopPreNoOverflow("Milestone 06");
     await expect(
@@ -527,6 +553,9 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const folioTabs = folioTablist.getByRole("tab");
     const count = await folioTabs.count();
     expect(count).toBeGreaterThanOrEqual(4);
+    for (let i = 0; i < count; i++) {
+      await expect(folioTabs.nth(i)).toHaveText(/^v2\./);
+    }
 
     // Keyboard navigation on Folio Hero tabs + jump CTA sync
     await folioTabs.first().focus();
@@ -564,22 +593,41 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const breakingPill = releasesSection
       .getByRole("button", { name: /Breaking Changes/i })
       .first();
+    const deprecatedPill = releasesSection
+      .getByRole("button", { name: /^Deprecated\b/i })
+      .first();
     const allPill = releasesSection.getByRole("button", { name: /^All\b/i }).first();
 
     await latestPill.click();
+    const unreleasedRelease = releasesSection.getByRole("button", {
+      name: /^v2\.4\.0 Latest Milestone/,
+    });
+    await expect(unreleasedRelease).toBeVisible();
+    await unreleasedRelease.click();
     await expect(page.locator('article[id="v2.4.0"]')).toBeVisible();
 
     await majorPill.click();
     await expect(page.locator('article[id="v2.0.0"]')).toBeVisible();
 
     await featurePill.click();
-    await expect(page.locator('article[id="v2.3.0"]')).toBeVisible();
+    await expect(page.locator('article[id="v2.2.0"]')).toBeVisible();
 
     await archivePill.click();
     await expect(releasesSection).toBeVisible();
 
     await breakingPill.click();
     await expect(releasesSection).toBeVisible();
+
+    await deprecatedPill.click();
+    const legacyButton = releasesSection.getByRole("button", {
+      name: /^v1\.13\.1 Deprecated · 1\.x/,
+    });
+    await expect(legacyButton).toBeVisible();
+    await legacyButton.click();
+    const legacyArticle = page.locator('article[id="v1.13.1"]');
+    await expect(legacyArticle).toBeVisible();
+    await expect(legacyArticle).toContainText(/Deprecated · 1\.x Archive/i);
+    await expect(legacyArticle).toContainText(/deprecated on NuGet\.org/i);
 
     await allPill.click();
 
@@ -593,7 +641,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       {
         id: "v2.3.0",
         versionText: /^v2\.3\.0$/,
-        provenancePattern: /Feature Release|2026-11-10/i,
+        provenancePattern: /Latest Milestone|2026-11-10/i,
       },
     ]) {
       const spineBtn = releasesSection

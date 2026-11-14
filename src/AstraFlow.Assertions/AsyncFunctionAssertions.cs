@@ -42,4 +42,28 @@ public sealed class AsyncFunctionAssertions<TResult>
 
         return this;
     }
+
+    /// <summary>Asserts that the function completes within the timeout and returns its result.</summary>
+    /// <param name="timeout">The nonnegative, finite timeout to observe.</param>
+    /// <param name="cancellationToken">Cancels only the assertion's wait; it is not passed to the function.</param>
+    public async Task<TResult> CompleteWithinAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
+    {
+        AsyncTimeoutAssertions.ValidateTimeout(timeout);
+        cancellationToken.ThrowIfCancellationRequested();
+        var operation = _action();
+        await AsyncTimeoutAssertions.WaitForCompletionAsync(operation, timeout, cancellationToken).ConfigureAwait(false);
+        return await operation.ConfigureAwait(false);
+    }
+
+    /// <summary>Asserts that the function remains incomplete for the timeout interval.</summary>
+    /// <param name="timeout">The nonnegative, finite interval to observe.</param>
+    /// <param name="cancellationToken">Cancels only the assertion's wait; it is not passed to the function.</param>
+    public async Task<AsyncFunctionAssertions<TResult>> NotCompleteWithinAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
+    {
+        AsyncTimeoutAssertions.ValidateTimeout(timeout);
+        cancellationToken.ThrowIfCancellationRequested();
+        var operation = _action();
+        await AsyncTimeoutAssertions.WaitForNonCompletionAsync(operation, timeout, cancellationToken).ConfigureAwait(false);
+        return this;
+    }
 }

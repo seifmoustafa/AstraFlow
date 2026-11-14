@@ -39,4 +39,26 @@ public sealed class AsyncActionAssertions
             AssertionFailure.Fail($"Expected operation not to throw, but an exception of type '{exception.GetType().FullName}' was thrown.");
         }
     }
+
+    /// <summary>Asserts that the operation completes within the timeout and propagates its exception, if any.</summary>
+    /// <param name="timeout">The nonnegative, finite timeout to observe.</param>
+    /// <param name="cancellationToken">Cancels only the assertion's wait; it is not passed to the operation.</param>
+    public async Task CompleteWithinAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
+    {
+        AsyncTimeoutAssertions.ValidateTimeout(timeout);
+        cancellationToken.ThrowIfCancellationRequested();
+        var operation = _action();
+        await AsyncTimeoutAssertions.WaitForCompletionAsync(operation, timeout, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Asserts that the operation remains incomplete for the timeout interval.</summary>
+    /// <param name="timeout">The nonnegative, finite interval to observe.</param>
+    /// <param name="cancellationToken">Cancels only the assertion's wait; it is not passed to the operation.</param>
+    public async Task NotCompleteWithinAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
+    {
+        AsyncTimeoutAssertions.ValidateTimeout(timeout);
+        cancellationToken.ThrowIfCancellationRequested();
+        var operation = _action();
+        await AsyncTimeoutAssertions.WaitForNonCompletionAsync(operation, timeout, cancellationToken).ConfigureAwait(false);
+    }
 }

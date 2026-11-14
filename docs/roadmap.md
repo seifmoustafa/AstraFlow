@@ -42,7 +42,7 @@
 | Enterprise supply chain | v2.2.0 | Package reported published; repository evidence in this roadmap is stale | Reproducible packages, SourceLink verification, SBOM, provenance, signed tag, dependency review, and security/release governance |
 | **Public API governance** | **v2.3.0** | **Published per maintainer confirmation (2026-11-10); implementation marked complete, consumer evidence retained in release docs** | Reviewed target-specific API baselines, CI diff enforcement, compatibility checks, SemVer and obsolete guidance, release branch and support policy |
 | Generated mediator dispatch | v2.4 | Candidate; only after source/benchmark feasibility | Closed-type generated invoker, DI scope/pipeline equivalence, AOT and comparative numbers |
-| General-purpose assertion package | v2.4 | Implemented and internally migrated; 313 solution tests, clean package consumers, API, upgrade, and reproducibility checks pass; unpublished | Standalone test-consumer package with an original API, no production assertion-package dependency, broad core assertion categories, runner-independent clean consumers, and clear migration guidance |
+| General-purpose assertion package | v2.4 | In progress. Numeric/temporal, string/predicate/enum, exception, sequence, dictionary, and an initial graph slice are implemented; graph options, expanded async, specialized, authoring, CLI, full inventory and final release gates remain. Unpublished. | Runner-independent package with tested assertion families, clear limits, package consumers, and safe migration guidance |
 | Explainable flow manifest | v2.5 | Candidate | Deterministic schema, provenance and CI diff; known gaps labeled |
 | Reliability and independent adoption | v2.6+ | Research | Consumer pilots, measured saved time, compatibility and regression improvements |
 | Optional ecosystem | v3+ | Candidate per independent package | Specific demand, no dependency leakage, owner and security review |
@@ -58,7 +58,7 @@ The v2.3.0 scope and implementation decisions are recorded in the [Public API Go
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current release truth: v2.3.0 is reported published by the maintainer on 2026-11-10. NuGet could not be reached from this session to independently verify publication or every satellite package asset. The 2.4.0 source work remains unreleased although local package, compatibility, consumer, and test gates pass; hosted CI/SourceLink checks and publication remain.
+Current release truth: v2.3.0 is reported published by the maintainer on 2026-11-10. NuGet could not be reached from this session to independently verify publication or every satellite package asset. The 2.4.0 source work remains unreleased. Focused package builds, tests, API baselines, and consumers pass for the reviewed slices; full-solution, all-package, upgrade, final hosted checks, and publication remain.
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -103,7 +103,7 @@ AstraFlow exists to make application flow explicit and reviewable:
 - secure DTO policy,
 - enterprise release governance.
 
-AstraFlow is not a clone or fork of any existing library. Capability parity means developers can solve the same common application problems using AstraFlow's own APIs, implementation, package architecture, documentation, diagnostics, tests, and tooling.
+AstraFlow's assertion package uses AstraFlow-owned public APIs, implementation, package architecture, documentation, diagnostics, tests, and tooling. Release claims are based on those APIs' verified behavior.
 
 The long-term product direction is to be safer, more diagnosable, more auditable, and more enterprise-ready than runtime-only or convention-heavy alternatives. The explicit core remains first-class forever.
 
@@ -442,7 +442,7 @@ Completed scope:
 - Pipeline test harness.
 - Mediator, mapper, projection, diagnostics, exception, mapping-rule, and secure ID assertion helpers.
 - Deterministic `TestSecureIdCodec`.
-- No dependency on a test runner, external assertion library, or mocking framework.
+- No dependency on a test runner or mocking framework.
 - `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets.
 - CI, publish, pack, and clean-install verification updated for the testing package.
 
@@ -2163,15 +2163,15 @@ See [ADR-0002](adr/0002-generated-mediator.md) and [v2.4 candidate plan](plans/v
 
 ## v2.4 General-purpose Assertions and Enterprise Mapping
 
-Status: `Assertions Phase 1 and enterprise generated mapping implemented; 80 generator tests and 313 solution tests pass; all local package, consumer, API, upgrade, changelog, and reproducibility gates pass; local complete-diff review passed; maintainer chose to keep the branch local, so hosted CI/SourceLink and publication checks remain pending`.
+Status: `In progress. The Assertions API and enterprise generated mapping are still being expanded and verified in slices. XML structure/equivalency checks, non-consuming HTTP status/header checks, opt-in public-field graph comparison, and a read-only syntax-based migration CLI are implemented; semantic project analysis, full capability-inventory reconciliation, final portal synchronization, full-solution release gates, and hosted checks remain open. Version 2.4.0 is not published.`
 
-**Goal:** offer a standalone AstraFlow assertion package for general .NET consumer tests, while keeping `AstraFlow.Testing` focused on AstraFlow-specific fakes and harnesses. The library owns its implementation and public API, and does not depend on another assertion package.
+**Goal:** offer a standalone AstraFlow assertion package for general .NET consumer tests, while keeping `AstraFlow.Testing` focused on AstraFlow-specific fakes and harnesses. The library owns its implementation and public API and has no production package dependencies.
 
-**First phase:** establish package identity and support policy; build an original runner-neutral core for equality, identity, nullability, type checks, strings, collections (including predicate membership, ordered subsequences, and key lookup on key-value pairs), synchronous and asynchronous action/function exceptions, and ordinal exception-message patterns; add result access/chaining, positive and negative tests and clean consumers. The shipping project must not depend on or expose another assertion package.
+**First phase:** establish package identity and support policy; build a runner-neutral core for equality, identity, nullability, type checks, strings, collections (including predicate membership, ordered subsequences, and key lookup on key-value pairs), synchronous and asynchronous action/function exceptions, and ordinal exception-message patterns; add result access/chaining, positive and negative tests and clean consumers.
 
 **Acceptance:** every shipped assertion has success and failure-path coverage; clean runner-independent consumers; no package dependencies in the assertion library project; explicit migration docs; package, API and upgrade gates. Full scope, exclusions and stop conditions are in [the v2.4 assertion plan](plans/v2.4-assertions.md). API expansion and differentiators follow only after this foundation is validated.
 
-**Phase 2 — Enterprise generated mapping:** adds safe inherited-property lookup, `Guid`/date and nullable scalar support, positional-record/primary-constructor DTO construction, and public init-only member assignment through object initializers to explicitly declared generated mapper methods. The generator suite passes 80 tests, including negative cases and incremental invalidation. Clean consumer, package, compatibility, upgrade, and reproducibility gates pass locally; hosted release checks remain. See [the v2.4 release work plan](plans/v2.4-release.md) for supported shapes and release evidence gates. Generated mediator dispatch remains a separate candidate, not a committed 2.4.0 feature.
+**Phase 2 — Enterprise generated mapping:** adds inherited-property lookup, `Guid`/date and nullable scalar support, positional-record/primary-constructor DTO construction, and public init-only member assignment through object initializers to explicitly declared generated mapper methods. The implementation is present; its final test, package, compatibility, and upgrade gates must be rerun against the completed 2.4.0 source. See [the v2.4 release work plan](plans/v2.4-release.md) for supported shapes and release evidence gates. Generated mediator dispatch remains a separate candidate, not a committed 2.4.0 feature.
 
 ## v2.5 Explainable Flow Intelligence (Candidate)
 
@@ -2677,7 +2677,6 @@ Do not claim:
 - benchmark leader,
 - fully AOT-ready,
 - fully secure by default,
-- drop-in replacement,
 - exact AutoMapper clone,
 - exact MediatR clone.
 

@@ -26,9 +26,16 @@ astraflow report [path] -o json|markdown|sarif|text
 astraflow diff before.json after.json -o json|markdown|text
 astraflow graph [path] --style relational|pipeline|events --group-by module|feature -f|--format mermaid|dot|canvas-json --direction TB|LR -o graph.json
 astraflow scan [path] -o json|markdown|text
+astraflow assertions analyze [C# file|project|solution|directory] --format text|json
 ```
 
-`path` is optional. It can point at a project, solution, configuration file, or directory. If omitted, the CLI inspects the current directory.
+`assertions analyze` is a read-only migration aid in the unreleased 2.4.0 source. It accepts a `.cs` file, `.csproj`, `.sln`, `.slnx`, or directory and scans C# source without changing it. JSON output has a versioned schema with `schemaVersion`, `status`, `resolutionContext`, `filesAnalyzed`, and `findings`; each finding has a code, relative source path, one-based line and column, method name when known, classification, and safe suggestion. Text output presents the same findings. Neither output includes source expressions, literal values, or an absolute project path.
+
+The analyzer uses Roslyn symbol resolution for source declarations and the CLI host's .NET framework metadata. It does not load project references, package references, target-framework symbols, or conditional-compilation settings. It never invokes MSBuild, restore, project targets, source generators, scripts, or inspected project code. Bound assertion-like calls are classified for manual review; unrelated `Should()` methods are skipped, and calls that cannot be bound remain unknown. No call is marked behaviorally equivalent or automatically rewritten. Conditional branches and syntax errors are reported because they make results incomplete.
+
+The command exits with `2` when analysis is partial or contains unknown/manual findings, and `1` for invalid usage or an operational error. With the current host-only resolution context, reports remain partial even when no assertion-like calls are found. Compile and test the consumer after adapting reported calls.
+
+`path` is optional. If omitted, the CLI inspects the current directory. `-o json` and `-o text` are also accepted for compatibility with the other CLI commands.
 
 Inspection and report commands emit a stable JSON envelope by default:
 

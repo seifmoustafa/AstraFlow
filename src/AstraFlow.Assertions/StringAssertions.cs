@@ -1,5 +1,7 @@
 namespace AstraFlow.Assertions;
 
+using System.Text.RegularExpressions;
+
 /// <summary>Assertions for strings. Comparisons use ordinal semantics.</summary>
 public sealed class StringAssertions
 {
@@ -17,6 +19,196 @@ public sealed class StringAssertions
         {
             AssertionFailure.Fail($"Expected strings to be ordinally equal; actual string length was {_actual?.Length.ToString() ?? "<null>"}.");
         }
+    }
+
+    /// <summary>Asserts that the string is not ordinally equal to the unexpected value.</summary>
+    public void NotBe(string? unexpected)
+    {
+        if (string.Equals(_actual, unexpected, StringComparison.Ordinal))
+        {
+            AssertionFailure.Fail("Expected strings not to be ordinally equal.");
+        }
+    }
+
+    /// <summary>Asserts that the string is not null.</summary>
+    public void NotBeNull()
+    {
+        if (_actual is null)
+        {
+            AssertionFailure.Fail("Expected a non-null string.");
+        }
+    }
+
+    /// <summary>Asserts that the string is neither null nor empty.</summary>
+    public void NotBeEmpty()
+    {
+        if (string.IsNullOrEmpty(_actual))
+        {
+            AssertionFailure.Fail("Expected a non-empty string.");
+        }
+    }
+
+    /// <summary>Asserts that the string has the specified length.</summary>
+    public void HaveLength(int expected)
+    {
+        if (expected < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(expected));
+        }
+
+        if (_actual is null || _actual.Length != expected)
+        {
+            AssertionFailure.Fail($"Expected string length {expected}, but actual length was {_actual?.Length.ToString() ?? "<null>"}.");
+        }
+    }
+
+    /// <summary>Asserts that the string does not start with the specified ordinal value.</summary>
+    public void NotStartWith(string unexpected)
+    {
+        if (unexpected is null)
+        {
+            throw new ArgumentNullException(nameof(unexpected));
+        }
+
+        if (_actual is null || _actual.StartsWith(unexpected, StringComparison.Ordinal))
+        {
+            AssertionFailure.Fail("Expected string not to start with the specified value.");
+        }
+    }
+
+    /// <summary>Asserts that the string does not end with the specified ordinal value.</summary>
+    public void NotEndWith(string unexpected)
+    {
+        if (unexpected is null)
+        {
+            throw new ArgumentNullException(nameof(unexpected));
+        }
+
+        if (_actual is null || _actual.EndsWith(unexpected, StringComparison.Ordinal))
+        {
+            AssertionFailure.Fail("Expected string not to end with the specified value.");
+        }
+    }
+
+    /// <summary>Asserts that the string equals the expected value using the specified comparison.</summary>
+    public void BeEquivalentTo(string? expected, StringComparison comparison)
+    {
+        if (!Enum.IsDefined(typeof(StringComparison), comparison))
+        {
+            throw new ArgumentOutOfRangeException(nameof(comparison));
+        }
+
+        if (!string.Equals(_actual, expected, comparison))
+        {
+            AssertionFailure.Fail("Expected strings to be equal using the selected comparison.");
+        }
+    }
+
+    /// <summary>Asserts that the entire string matches an ordinal wildcard pattern.</summary>
+    public void Match(string pattern)
+    {
+        if (pattern is null)
+        {
+            throw new ArgumentNullException(nameof(pattern));
+        }
+
+        if (pattern.Length == 0)
+        {
+            throw new ArgumentException("A wildcard pattern must not be empty.", nameof(pattern));
+        }
+
+        if (_actual is null || !IsGlobMatch(_actual, pattern))
+        {
+            AssertionFailure.Fail("Expected string to match the wildcard pattern.");
+        }
+    }
+
+    /// <summary>Asserts that the string matches a regular expression within the specified timeout.</summary>
+    public void MatchRegex(string pattern, TimeSpan timeout)
+    {
+        if (timeout <= TimeSpan.Zero || timeout == Regex.InfiniteMatchTimeout)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout));
+        }
+
+        if (pattern is null)
+        {
+            throw new ArgumentNullException(nameof(pattern));
+        }
+
+        if (pattern.Length == 0)
+        {
+            throw new ArgumentException("A regular expression pattern must not be empty.", nameof(pattern));
+        }
+
+        Regex regex;
+        try
+        {
+            regex = new Regex(pattern, RegexOptions.None, timeout);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout));
+        }
+        catch (ArgumentException)
+        {
+            throw new ArgumentException("The regular expression pattern is invalid.", nameof(pattern));
+        }
+
+        try
+        {
+            if (_actual is null || !regex.IsMatch(_actual))
+            {
+                AssertionFailure.Fail("Expected string to match the regular expression.");
+            }
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            AssertionFailure.Fail("Regular expression matching exceeded its timeout.");
+        }
+    }
+
+    private static bool IsGlobMatch(string value, string pattern)
+    {
+        var valueIndex = 0;
+        var patternIndex = 0;
+        var starIndex = -1;
+        var retryValueIndex = -1;
+
+        while (valueIndex < value.Length)
+        {
+            if (patternIndex < pattern.Length && pattern[patternIndex] == '?')
+            {
+                patternIndex++;
+                valueIndex++;
+            }
+            else if (patternIndex < pattern.Length && pattern[patternIndex] == '*')
+            {
+                starIndex = patternIndex++;
+                retryValueIndex = valueIndex;
+            }
+            else if (patternIndex < pattern.Length && pattern[patternIndex] == value[valueIndex])
+            {
+                patternIndex++;
+                valueIndex++;
+            }
+            else if (starIndex >= 0)
+            {
+                patternIndex = starIndex + 1;
+                valueIndex = ++retryValueIndex;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        while (patternIndex < pattern.Length && pattern[patternIndex] == '*')
+        {
+            patternIndex++;
+        }
+
+        return patternIndex == pattern.Length;
     }
 
     /// <summary>Asserts that the string is empty; null is not considered empty.</summary>

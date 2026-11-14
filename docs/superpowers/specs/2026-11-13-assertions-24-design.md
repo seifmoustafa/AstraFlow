@@ -1,12 +1,12 @@
 # AstraFlow 2.4.0 Assertions Expansion Design
 
-**Status:** Design approved for specification review; implementation and verification are pending. The maintainer confirmed that 2.4.0 is not published or merged. The existing assertion foundation and generated-mapping work remain part of the release.
+**Status:** Design approved; implementation is in progress. Numeric/temporal and the initial assertion-family slices are implemented and verified on the package targets. The read-only CLI now binds locally declared symbols using host framework metadata, with explicit partial results when project context is unavailable; project metadata, verified migration mappings and full classification remain open. Remaining capability families, complete inventory reconciliation, final portal synchronization and the full release gate are still open. The maintainer confirmed that 2.4.0 is not published or merged. The existing assertion foundation and generated-mapping work remain part of the release.
 
 ## Goal and release scope
 
-Make `AstraFlow.Assertions` a practical general-purpose assertion package for application test suites. The 2.4.0 objective is comprehensive coverage of the capabilities in the maintainer's local reference checkout, with AstraFlow-owned APIs and implementation. Similar method names alone do not establish equivalent behavior. A capability is complete only when its behavior, failure paths, supported targets, documentation and consumer use have been verified.
+Make `AstraFlow.Assertions` a practical general-purpose assertion package for application test suites. The 2.4.0 objective is comprehensive coverage of the approved capability set, with AstraFlow-owned APIs and implementation. Similar method names alone do not establish equivalent behavior. A capability is complete only when its behavior, failure paths, supported targets, documentation and consumer use have been verified.
 
-Maintain a private capability inventory that maps every reference capability to an AstraFlow API, behavior and evidence. Keep reference product names and namespaces out of AstraFlow product text and dependencies. If a capability cannot reasonably fit package boundaries or the release, present that specific exception to the maintainer for a decision; do not silently defer it or claim complete coverage.
+Maintain a private capability inventory that maps every identified capability to an AstraFlow API, behavior and evidence. Keep external product names and namespaces out of AstraFlow product text and dependencies. If a capability cannot reasonably fit package boundaries or the release, present that specific exception to the maintainer for a decision; do not silently defer it or claim complete coverage.
 
 ## Package boundaries
 
@@ -24,7 +24,7 @@ Maintain a private capability inventory that maps every reference capability to 
 5. **Specialized assertions:** XML, streams, reflection and type metadata, events and execution time, with platform-specific integrations isolated where required.
 6. **Authoring:** assertion scopes, configuration, formatting, source/subject identification and extension points, including concurrent use.
 
-The implementation plan will break these families into independently verifiable slices. The inventory must also identify reference capabilities not listed above, including supported language and framework integrations; each requires implementation and evidence or a maintainer-approved disposition.
+The implementation plan will break these families into independently verifiable slices. The inventory must also identify additional capabilities not listed above, including supported language and framework integrations; each requires implementation and evidence or a maintainer-approved disposition.
 
 ## Semantics and failure behavior
 
@@ -34,13 +34,13 @@ Configuration must support per-assertion and per-scope customization without sha
 
 ## CLI migration analysis
 
-Provide `astraflow assertions analyze` for a solution or test project. It reports assertion patterns with file and line, classifying each as having a verified AstraFlow equivalent, requiring manual changes, unsupported, or unknown. It produces human-readable text and JSON for local use and CI, and provides examples for verified equivalents. Analysis is read-only and uses C# symbols where available; unresolved code is reported as unknown rather than guessed. Define output schema, exit codes, incomplete-project behavior and privacy rules in the implementation plan. Reports must not contain test values or secrets.
+Provide `astraflow assertions analyze` for a solution or test project. The initial implementation parses C# syntax, reports relative source locations and method-name candidates, omits expressions/literal values, flags parse errors and never changes files. It does not yet resolve projects, receiver types or overloads; it marks every candidate for review and makes no equivalence claim. The completed CLI phase must use C# symbols where available, classify verified equivalents/manual/unsupported/unknown cases, report unresolved calls as unknown, and document incomplete-project behavior. Keep output safe for local use and CI. Reports must not contain test values or secrets.
 
 Automatic rewriting is a later slice and requires demonstrated behavior preservation for every supported rewrite; it is not an acceptance condition for the analysis command.
 
 ## Evidence and release gates
 
-- Inventory every reference capability and record API, semantic differences, target frameworks, success and failure tests, and consumer evidence. No unapproved gaps at the comprehensive-release gate.
+- Inventory every identified capability and record API, semantic differences, target frameworks, success and failure tests, and consumer evidence. No unapproved gaps at the comprehensive-release gate.
 - Exercise positive, negative, null, boundary, concurrency, cancellation, cycle, ordering and disposal cases as relevant. Test failure paths and privacy defaults, not just successful calls.
 - Build and test every advertised target; verify public API baselines, compatibility, package assets, dependency boundaries, reproducibility and clean package consumers.
 - Migrate representative existing test projects, including a transition with both assertion APIs present. They must compile and pass; ambiguous calls and behavior differences must have documented resolutions.

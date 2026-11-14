@@ -57,7 +57,7 @@ test.describe("AstraFlow SEO Metadata, Custom 404, and WCAG 2.2 AA Accessibility
       "warm-forest",
     );
     await expect(page.locator("h1")).toBeVisible();
-    await expect(page.getByRole("link", { name: /home/i }).first()).toBeVisible();
+    await expect(page.locator('a[href="/"]').first()).toBeVisible();
   });
 
   for (const route of AUDIT_ROUTES) {

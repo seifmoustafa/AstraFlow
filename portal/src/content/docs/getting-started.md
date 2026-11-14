@@ -109,5 +109,5 @@ In your `.csproj`, keep the analyzer dependency build-time only:
 ## Next Steps
 
 - Learn how to add logging, caching, and validation stages in [Pipeline Behaviors](/docs/pipelines).
-- Compare all 16 packages in the [Package Selection Guide](/docs/package-selection).
+- Compare the package suite in the [Package Selection Guide](/docs/package-selection).
 - Write fast unit tests without a container using [Testing Harnesses](/docs/testing).

@@ -69,5 +69,5 @@ var result = await pipelineHarness.Execute(new CreateOrderCommand("dev@example.c
 
 ## Related Guides
 
-- Pair with general-purpose fluent checks in [Standalone Fluent Assertions](/docs/assertions).
+- Add general-purpose test checks with the `Should()` API in [AstraFlow Assertions](/docs/assertions).
 - Validate EF Core SQL translation in [Entity Framework Core Projections](/docs/entity-framework-core).

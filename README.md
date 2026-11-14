@@ -1,40 +1,73 @@
 # AstraFlow
 
-![AstraFlow — Engineered Clarity](assets/branding/exports/astraflow-readme-hero.jpg)
+![AstraFlow — Engineered Clarity](assets/astraflow-readme.png)
 
-AstraFlow is a set of .NET packages for explicit request dispatch, object mapping, diagnostics, and test workflows. Each capability is a separate package, so applications can depend on the parts they use.
+A modular .NET suite of **16 focused packages** for explicit request dispatch, object mapping, query projections, compile-time analyzers, source generators, diagnostics, observability, and test workflows. Install only the packages your application needs and keep optional integrations isolated.
 
-**Current release:** `2.4.0` (published 2026-11-13; per maintainer confirmation)
+[Getting Started](docs/getting-started.md) · [Package Selection](docs/package-selection.md) · [Version & Upgrade Guide](docs/version-upgrade-guide.md) · [Compatibility](docs/compatibility.md) · [Changelog](CHANGELOG.md) · [Branding](docs/branding.md)
 
-AstraFlow `2.4.0` adds the standalone, framework-neutral `AstraFlow.Assertions` package and expands compile-time generated mapping for inherited entity properties, nullable value flows, and record/primary-constructor DTOs across all 16 modular packages.
+> **Release status & support policy:** AstraFlow **`2.3.0`** is the current published NuGet release. Version **`2.4.0`** is in release preparation under pull request review on this branch (`Directory.Build.props` targets `2.4.0`, adding the standalone `AstraFlow.Assertions` package, expanded compile-time mapping generation, and read-only CLI assertion migration analysis). On NuGet.org, all **`1.x`** packages are **deprecated** — use **`2.x`** (`2.3.0` on NuGet today; `2.4.0` once published).
 
-## What AstraFlow provides
+---
 
-- **Mediator** — route requests to one handler; compose pipelines, processors, streams, and notifications.
-- **Mapper** — map through declared rules and explicit projections; validate registrations before serving traffic.
-- **Optional conventions** — use pair-by-pair convention mapping with visible plans and sensitive-member safeguards.
-- **Diagnostics and tooling** — inspect registrations and mapping metadata through reports, analyzers, generators, and the CLI.
-- **Testing support** — use AstraFlow-specific fakes and harnesses with `AstraFlow.Testing`; the 2.4.0 source adds the general-purpose `AstraFlow.Assertions` package for any .NET test project.
+## Packages (16)
 
-AstraFlow does not choose an application architecture, add background work, or require optional integrations such as ASP.NET Core, EF Core, validation, or OpenTelemetry in the core packages.
+| Category | Package | Targets | Role |
+| --- | --- | --- | --- |
+| **Core** | `AstraFlow` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Convenience umbrella for `AstraFlow.Contracts`, `AstraFlow.Mediator`, and `AstraFlow.Mapper` |
+| **Core** | `AstraFlow.Contracts` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Lightweight mediator abstractions (`IRequest`, `INotification`, streams, pipelines) with zero runtime dependencies |
+| **Core** | `AstraFlow.Mediator` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Request/command/stream dispatch, notifications, pipeline behaviors, processors, scanning, and handler coverage validation |
+| **Core** | `AstraFlow.Mapper` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Explicit object mapping catalogs, startup validation, named projections, and secure ID abstractions |
+| **Core** | `AstraFlow.Mapper.Conventions` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Opt-in convention mapping with deterministic plans, strict validation, and sensitive-field safeguards |
+| **Core** | `AstraFlow.Security` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Shared sensitive-name classification and redaction policy primitives |
+| **Core** | `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Framework-neutral JSON and Markdown registration and validation reports |
+| **Tooling** | `AstraFlow.Analyzers` | `netstandard2.0` *(analyzer)* | Build-time Roslyn diagnostics for mediator, mapper, and projection contracts |
+| **Tooling** | `AstraFlow.Generators` | `netstandard2.0` *(generator)* | Compile-time mediator/mapper metadata plus opt-in typed mapping generation (`[AstraGenerateMapping]`) |
+| **Tooling** | `AstraFlow.Cli` | `net10.0` *(.NET tool)* | CLI inspect, validate, report, diff, Mermaid/Canvas graphs, and read-only assertion migration scan *(expanded in `2.4.0`)* |
+| **Integrations** | `AstraFlow.AspNetCore` | `net10.0` | Minimal APIs, controllers, problem details, diagnostics endpoints, and health summaries |
+| **Integrations** | `AstraFlow.FluentValidation` | `net8.0`, `net9.0`, `net10.0` | Validation pipeline behaviors (fail-fast and aggregate errors), localization hooks, and diagnostics |
+| **Integrations** | `AstraFlow.OpenTelemetry` | `net8.0`, `net9.0`, `net10.0` | Production-safe `ActivitySource` tracing and `Meter` metrics with default redaction |
+| **Integrations** | `AstraFlow.Mapper.EntityFrameworkCore` | `net10.0` | Optional EF Core queryable projection translation validation |
+| **Testing** | `AstraFlow.Testing` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Framework-neutral test fakes, recording harnesses, and flow test helpers |
+| **Testing** | `AstraFlow.Assertions` *(unreleased in `2.4.0`)* | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Standalone, runner-neutral general-purpose assertions with zero production package dependencies |
 
-## Install the current release
+See the [Package Selection Guide](docs/package-selection.md) for boundary rules and dependency isolation guarantees (`AstraFlow.Mapper` never pulls EF Core; `AstraFlow.Mediator` never pulls FluentValidation or OpenTelemetry).
 
-For an application that uses both mediator and explicit mapper:
+---
+
+## Install the published release (`2.3.0`)
+
+Install the umbrella convenience package when a project uses both mediator and explicit mapping:
 
 ```powershell
-dotnet add package AstraFlow --version 2.4.0
+dotnet add package AstraFlow --version 2.3.0
 ```
 
-For focused dependencies, install only the package needed. For example, use `AstraFlow.Mediator` without the mapper, or `AstraFlow.Mapper` without the mediator. The [package selection guide](docs/package-selection.md) lists all package boundaries and target frameworks.
+For cleaner layer boundaries, reference only what each assembly needs:
 
-## Quick start: dispatch a request
+```powershell
+# Shared domain/API contracts library (no runtime dependency)
+dotnet add package AstraFlow.Contracts --version 2.3.0
 
-The convenience package includes mediator and mapper. Register a marker type from the assembly that contains your handlers:
+# Application layer packages
+dotnet add package AstraFlow.Mediator --version 2.3.0
+dotnet add package AstraFlow.Mapper --version 2.3.0
+```
+
+> `AstraFlow.Assertions` targets **`2.4.0`** and is not part of `2.3.0`. Reference it in test projects once `2.4.0` is published on NuGet.org.
+
+---
+
+## Dispatch a request
+
+Register the assembly containing your handlers, resolve `ISender`, and dispatch typed requests with explicit cancellation flow:
 
 ```csharp
-using AstraFlow.Mediator;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using AstraFlow;
+using AstraFlow.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
@@ -42,12 +75,12 @@ services.AddAstraFlow(assemblyMarkerTypes: typeof(CreateOrderHandler));
 
 await using var serviceProvider = services.BuildServiceProvider();
 var sender = serviceProvider.GetRequiredService<ISender>();
-var result = await sender.Send(new CreateOrder("ORD-1042"), cancellationToken);
-```
+using var cancellationTokenSource = new CancellationTokenSource();
 
-Define the request and its handler with ordinary .NET types:
+OrderCreated result = await sender.Send(
+    new CreateOrder("ORD-1042"),
+    cancellationTokenSource.Token);
 
-```csharp
 public sealed record CreateOrder(string Number) : IRequest<OrderCreated>;
 
 public sealed record OrderCreated(Guid Id, string Number);
@@ -63,40 +96,40 @@ public sealed class CreateOrderHandler : IRequestHandler<CreateOrder, OrderCreat
 }
 ```
 
-The mediator resolves the handler from the active dependency-injection scope. Missing or duplicate handlers fail clearly. Use `ISender`, `IPublisher`, or `IStreamSender` when a component needs only that part of the mediator API.
+Use `ISender`, `IPublisher`, or `IStreamSender` when a consumer needs only one slice of the mediator contract. Missing or duplicate request handlers fail explicitly during startup validation.
 
-For full setup, mapping, and notification examples, start with [Getting Started](docs/getting-started.md).
+See [Getting Started](docs/getting-started.md), the [Mediator Guide](docs/mediator.md), and [Mediator Scenarios](docs/mediator-scenarios.md).
 
-## Choose packages by responsibility
+---
 
-| Need | Package |
-| --- | --- |
-| Shared request and notification contracts | `AstraFlow.Contracts` |
-| Request, stream, and notification dispatch | `AstraFlow.Mediator` |
-| Explicit object mapping and projections | `AstraFlow.Mapper` |
-| Opt-in convention mapping | `AstraFlow.Mapper.Conventions` |
-| EF Core projection translation checks | `AstraFlow.Mapper.EntityFrameworkCore` |
-| Registration and validation reports | `AstraFlow.Diagnostics` |
-| Shared sensitive-name and redaction policies | `AstraFlow.Security` |
-| AstraFlow-specific fakes and test harnesses | `AstraFlow.Testing` |
-| General-purpose test assertions | `AstraFlow.Assertions` — 2.4.0 source, not published |
-| Build-time diagnostics and generated source | `AstraFlow.Analyzers`, `AstraFlow.Generators` |
-| Command-line inspection and graph/report exports | `AstraFlow.Cli` |
-| ASP.NET Core integration | `AstraFlow.AspNetCore` |
-| FluentValidation pipeline integration | `AstraFlow.FluentValidation` |
-| OpenTelemetry traces and metrics | `AstraFlow.OpenTelemetry` |
-| Mediator and mapper together | `AstraFlow` convenience package |
+## Mapping, projections, and source generation
 
-Integrations are optional. For example, `AstraFlow.Mapper` does not require EF Core, and the core mediator does not require a validation framework.
+- **Explicit runtime mapping (`AstraFlow.Mapper`):** Declared mapping catalogs, deterministic startup validation, named query projections, and secure ID encoding abstractions.
+- **Opt-in conventions (`AstraFlow.Mapper.Conventions`):** Never active by default; generates inspectable mapping plans with sensitive-member write safeguards backed by `AstraFlow.Security`.
+- **EF Core projection checks (`AstraFlow.Mapper.EntityFrameworkCore`):** Validates queryable projections against the configured EF Core provider.
+- **Compile-time mappings (`AstraFlow.Generators`):** Opt-in `[AstraGenerateMapping]` methods supporting typed scalar, collection, `[AstraValueConverter]`, and `[AstraDerivedMapping]` shapes in `2.3.0`. The `2.4.0` branch expands generation to inherited public source properties, `Guid`/temporal scalars, safe nullable scalar flows (`T -> T?`, `T? -> T?`), positional records, primary-constructor DTOs, and public `init`-only initializers.
 
-## Testing and the 2.4.0 assertion package
+See the [Mapper Guide](docs/mapper.md), [Projection Guide](docs/projections.md), [Convention Mapping Guide](docs/convention-mapping.md), [Generators Guide](docs/generators.md), and [Analyzers Guide](docs/analyzers.md).
 
-`AstraFlow.Testing` helps test applications that use AstraFlow. Its fakes record mediator calls; its harnesses exercise handlers and pipelines; its specialized assertions inspect AstraFlow mapping, projection, and diagnostics behavior.
+---
 
-`AstraFlow.Assertions` has a different job: assert on any application's values and observable behavior. The 2.4.0 source includes equality, nullability, type, string, sequence, dictionary, enum, GUID, range, and synchronous/asynchronous exception assertions. Its shipping project has no package dependencies and does not require a particular test runner.
+## Testing and assertions
+
+`AstraFlow.Testing` ships test fakes and harnesses for mediator pipelines, mapping catalogs, projections, diagnostics, and secure ID codecs on `2.3.0`.
+
+`AstraFlow.Assertions` (targeting `2.4.0`) adds a zero-dependency, test-runner-neutral assertion package covering:
+
+- **Values, nullables, numbers & temporals:** Equality/inequality, reference identity, runtime types, typed nullable assertions, ranges, enums, GUIDs, strict sign/precision/NaN/finite checks, and `DateTime`/`DateTimeOffset`/`TimeSpan`/`DateOnly`/`TimeOnly` comparisons.
+- **Strings, exceptions & async execution:** Ordinal and explicit `StringComparison` checks, `*`/`?` wildcards, timeout-bounded regex, `WithInnerException` chaining, sync/async `ArgumentException` parameter-name checks, finite-timeout async delegate and `TaskCompletionSource` completion/non-completion checks, one-run sync/async and subject-method execution-time measurement, and explicit `AssertionScope` multi-failure aggregation.
+- **Sequences, `IAsyncEnumerable<T>` & dictionaries:** Single-pass enumeration, indexed-item selection, positive and negative ordered/consecutive matching for synchronous and asynchronous sequences, key-selected ascending/descending order, structural-equivalency membership/all-item checks, uniqueness and multiset checks, exact and assignable item-type checks with typed chaining, async stream assertions on `net8.0`/`net9.0`/`net10.0`, and dictionary mapping equality/inequality with comparer-aware key/value checks.
+- **Structural object-graph equivalency:** Cycle-tracked comparison of readable public properties, opt-in public instance fields (`IncludingFields()`), ordered or order-independent collections, path-based member selection, per-call exclusions, custom comparers, and recursion limits.
+- **XML, HTTP & streams:** Namespace-aware `XDocument`/`XElement` structural equivalence, non-consuming `XmlReader` cursor checks, `HttpResponseMessage` status/header assertions plus buffered async text body checks, and stream mode and position/length assertions; buffered-size checks are available on `net8.0` and later without reading or disposing streams.
+- **Assemblies & type reflection:** Assembly reference-boundary and declared-type checks plus metadata-only type, inheritance, interface, constructor, and member assertions without invoking user code.
+- **Runtime event monitoring:** Observe selected standard .NET events, assert raise counts and cross-event order, check `INotifyPropertyChanged` notifications, inspect captured sender/arguments, and automatically unsubscribe when the monitor is disposed.
+- **Type reflection & safe diagnostics:** Metadata-only type, inheritance, interface, constructor, and member assertions without invoking user code; typed property-value selection for reference subjects; failure output omits raw object values, string literals, GUIDs, HTTP header/body text, XML values, and exception messages by default.
 
 ```csharp
-using AstraFlow.Assertions;
+using AstraFlow.Assertions; // Available in 2.4.0
 
 response.StatusCode.Should().Be(201);
 items.Should().ContainSingle(item => item.Id == expectedId);
@@ -105,39 +138,51 @@ Func<Task> save = () => service.SaveAsync();
 await save.Should().NotThrowAsync();
 ```
 
-The `2.4.0` API is under release review and has not been published. This is an original AstraFlow API; it does not promise drop-in source compatibility with another assertion library. See the [Assertions guide](docs/assertions.md) for current behavior, safe failure messages, and known gaps.
+See the [Testing Guide](docs/testing.md) and [Assertions Guide](docs/assertions.md) *(branch preview for `2.4.0`)* for full signatures, target matrix, and caveats.
 
-The 2.4.0 generator phase supports direct mapping from inherited entity properties to positional records and init-only DTOs, including `Guid`, date, and safe nullable scalar flow. It is opt-in per mapping method. Focused generator and clean-package-consumer gates pass locally; see [Generators](docs/generators.md) and the [2.4 release work plan](docs/plans/v2.4-release.md).
+---
 
-## What changes for a 2.3.0 application?
+## Upgrading and `1.x` deprecation policy
 
-The current 2.4.0 plan is additive. A consumer that stays with the existing 2.3.0 packages does not receive new behavior automatically. A consumer that updates existing AstraFlow package references to 2.4.0 should restore, build, and run its tests; the release must pass API and upgrade checks before compatibility is claimed. No application database migration is part of the current scope.
+- **All `1.x` releases are deprecated on NuGet.org.** New projects and existing consumers should move to the **`2.x`** line (`2.3.0` on NuGet today; `2.4.0` once published).
+- Upgrading within `2.x` preserves existing package boundaries and mediator/mapper entry points: update the AstraFlow package versions in your `.csproj` or `Directory.Packages.props`, restore, build, and run tests.
+- Adopting `AstraFlow.Assertions` or `2.4.0` generated mapping expansions is optional per test project or mapping declaration.
 
-To use the new assertion package, add it to the **test project only** after it is published. Existing 2.3.0 mediator, mapper, and integration code does not need to be rewritten just to keep using those packages. Adopting assertions is a separate test-code migration: update the assertion namespace and methods you choose to use, then compile and run that test suite. The initial API does not claim complete compatibility with another library.
+See the [Version and Upgrade Guide](docs/version-upgrade-guide.md), [Migration Cookbook](docs/migration-cookbook.md), and [Changelog](CHANGELOG.md).
 
-The exact 2.3.0-to-2.4.0 feature comparison and migration guidance are in the [Version and Upgrade Guide](docs/version-upgrade-guide.md). The [2.4 roadmap](docs/roadmap.md) records which planned features pass their release gates.
+---
 
-## Compatibility and package targets
+## Target frameworks
 
-Target frameworks vary by package. Core libraries generally support `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; ASP.NET Core and EF Core integrations are target-limited. Check the [compatibility table](docs/compatibility.md) for the exact package before changing a project's target framework.
+- **Core, security, conventions, testing & assertions:** `netstandard2.0`, `net8.0`, `net9.0`, `net10.0`
+- **FluentValidation & OpenTelemetry:** `net8.0`, `net9.0`, `net10.0`
+- **ASP.NET Core & EF Core:** `net10.0`
+- **Analyzers & Generators:** `netstandard2.0` compiler assets (`analyzers/dotnet/cs`, no runtime `lib/` dependency)
+- **CLI tool:** `net10.0` .NET tool
 
-## Documentation
+Check [Compatibility](docs/compatibility.md) before installing integration packages into multi-targeted libraries.
 
-- [Getting Started](docs/getting-started.md) — install, register, send a request, and add a mapping.
-- [Package Selection](docs/package-selection.md) — choose the smallest package set for your project.
-- [Mediator Guide](docs/mediator.md) and [Mediator Scenarios](docs/mediator-scenarios.md) — dispatch and failure behavior.
-- [Mapper Guide](docs/mapper.md), [Projection Guide](docs/projections.md), and [Mapper Scenarios](docs/mapper-scenarios.md) — rules, projections, and validation.
-- [Testing Guide](docs/testing.md) and [Assertions Guide](docs/assertions.md) — AstraFlow test helpers and general assertions.
-- [Version and Upgrade Guide](docs/version-upgrade-guide.md) — release history, compatibility, and migration impact.
-- [API Reference](docs/api-reference.md) — public API by package.
-- [Roadmap](docs/roadmap.md) and [Decision Log](docs/strategy/decision-log.md) — scope, status, and acceptance evidence.
-- [Security](SECURITY.md), [Contributing](CONTRIBUTING.md), and [MIT License](LICENSE).
+---
 
-## Build and test from source
+## Documentation map
+
+| Topic | Guides |
+| --- | --- |
+| **Onboarding & Packages** | [Getting Started](docs/getting-started.md) · [Package Selection](docs/package-selection.md) · [Architecture](docs/architecture.md) · [API Reference](docs/api-reference.md) · [Compatibility](docs/compatibility.md) |
+| **Mediator & Integrations** | [Mediator](docs/mediator.md) · [Mediator Scenarios](docs/mediator-scenarios.md) · [ASP.NET Core](docs/aspnetcore.md) · [FluentValidation](docs/fluentvalidation.md) · [OpenTelemetry](docs/observability.md) |
+| **Mapper, Generators & CLI** | [Mapper](docs/mapper.md) · [Mapper Scenarios](docs/mapper-scenarios.md) · [Projections](docs/projections.md) · [Projection Scenarios](docs/projection-scenarios.md) · [Conventions](docs/convention-mapping.md) · [EF Core](docs/entity-framework-core.md) · [Generators](docs/generators.md) · [Analyzers](docs/analyzers.md) · [CLI](docs/cli.md) |
+| **Diagnostics, Security & Tests** | [Diagnostics](docs/diagnostics.md) · [Endpoint Safety](docs/diagnostics-endpoint-safety.md) · [Security](docs/security.md) · [Testing](docs/testing.md) · [Assertions (`2.4.0`)](docs/assertions.md) · [Benchmarks](docs/benchmarks.md) |
+| **Upgrades & Troubleshooting** | [Version & Upgrade Guide](docs/version-upgrade-guide.md) · [Migration Cookbook](docs/migration-cookbook.md) · [Troubleshooting](docs/troubleshooting.md) · [Branding](docs/branding.md) |
+| **Roadmap & Governance** | [Roadmap](docs/roadmap.md) · [Decision Log](docs/strategy/decision-log.md) · [API Governance](docs/api-governance.md) · [Security & Supply Chain](docs/security-and-supply-chain.md) · [Security Policy](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Support](SUPPORT.md) · [MIT License](LICENSE) |
+
+---
+
+## Build, test, and pack from source
 
 ```powershell
 dotnet build AstraFlow.slnx --configuration Release
 dotnet test AstraFlow.slnx --configuration Release --no-build
+.\scripts\pack.ps1
 ```
 
-For package verification and publishing requirements, see the [release checklist](docs/release-checklist.md) and [publishing guide](docs/publishing.md). Package publishing is a separate release action.
+For release verification, SourceLink, reproducibility, and NuGet publishing rules, see the [Release Checklist](docs/release-checklist.md), [Publishing Guide](docs/publishing.md), and [Community Release Guide](docs/community-release-guide.md). Note that NuGet package READMEs require absolute raw GitHub URLs matching the target release tag/branch before packing for NuGet.org.

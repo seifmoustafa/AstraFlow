@@ -2,7 +2,7 @@
 
 All notable AstraFlow changes are tracked here.
 
-## 2.4.0 (2026-11-13)
+## 2.4.0 (unreleased)
 
 ### Breaking Changes
 
@@ -10,8 +10,58 @@ All notable AstraFlow changes are tracked here.
 
 ### Added
 
+- Add temporal ordering, inclusive precision, kind, offset, and duration-sign assertions, with date-only and time-only support on modern targets.
+
+- Add absolute-tolerance numeric assertions and floating-point NaN and finite checks.
+
+- Add typed nullable-value assertions for presence, equality, comparison, ranges, membership, enum definition and flags, GUID emptiness, nullable numeric precision/sign/classification, and nullable temporal ordering/precision.
+
+- Add stream capability and seekable metadata assertions that inspect state without reading, seeking, changing position, or disposing the stream.
+- Add exact byte-content stream assertions with bounded-memory reads, value-safe failures, and restoration of seekable stream positions.
+- Add collection subset and intersection assertions, inclusive count bounds, and null-item checks with one-pass inputs and value-safe failures.
+- Add exact-runtime-type and assignability checks over collection items, typed chaining for generic all-item checks, and runtime-type overloads with one-pass enumeration.
+- Add indexed sequence-item assertions that return the verified item and avoid re-enumerating lazy inputs.
+- Add enumerable expected-sequence overloads and negative ordered/consecutive-containment checks with one-pass enumeration, duplicate-aware matching, and safe failures.
+- Add ascending and descending sequence-order checks by a selected key, evaluating each key once and accepting an optional comparer.
+- Add structural-equivalency membership, negative membership, and all-item sequence checks with per-call options, matched-item access, one-pass outer enumeration, and shared snapshots for nested one-shot collections.
+
+- Add finite-timeout completion and non-completion checks for async actions and functions, with cancellation limited to the assertion wait and result access for async functions.
+
+- Add typed exception checks for exact and assignable runtime types, immediate inner exception presence/type/message checks, and chainable inspection of nested exceptions.
+- Add synchronous and asynchronous `ArgumentException` parameter-name checks with ordinal case-insensitive matching and value-safe failures.
+- Add bounded completion and non-completion assertions over existing generic and non-generic task completion sources, including generic result capture and assertion-only cancellation.
+- Add compile-checked typed property-value selection for reference subjects, including nested paths and single getter evaluation.
+
+- Add strict positive and negative checks for the eight standard signed and unsigned integer types.
+
+- Add strict positive and negative checks for `float`, `double`, and `decimal`; floating-point NaN satisfies neither sign check.
+
+- Add null-aware sequence checks, count relations, ascending and descending order, unique and multiset matching, per-item actions, and consecutive-item checks with at-most-once subject enumeration.
+
+- Add dictionary and key-value-pair sequence checks for empty state, comparer-aware key batches, value batches, same-count checks, and count thresholds.
+- Add order-independent dictionary mapping equality and inequality checks with default key/value comparers, one-pass expected entries, duplicate-key validation, and value-safe failure messages.
+
+- Add structural object-graph equality and inequality for expected public-property shapes, ordered or optionally order-independent sequences, and dictionaries, with cycle tracking, safe mismatch paths, per-call name and nested-path exclusions, type-wide and path-specific comparers, and a bounded depth option.
+
+- Add ordinal negative string checks, explicit comparison modes, length checks, wildcard and timeout-bounded regex matching, object predicates, and negative enum-definition checks.
+- Add explicit assertion scopes that aggregate checked synchronous and asynchronous assertion failures, with nested-scope forwarding and safe combined messages.
+- Add asynchronous sequence assertions for empty state, count, value/predicate membership, per-item constraints and callbacks, uniqueness and duplicate-aware multiset checks, positive and negative ordered/consecutive matching, single-item capture, ordered equality, and expected producer exceptions on .NET 8 and later targets, with cancellation forwarding and async-enumerator disposal.
+
 - Add the first clean-room `AstraFlow.Assertions` package foundation for value, string, collection, type, and sync/async exception assertions, with no production package dependencies.
 - Add predicate and multiple-item sequence membership, key lookup on key-value-pair sequences, and ordinal wildcard checks for synchronous and asynchronous exception messages.
+- Add safe captured-exception inspection with exact/assignable type checks, generic and runtime-type inner-exception chaining, inner-message matching, and single-invocation positive/negative predicates.
+- Add namespace-aware XML document and element assertions for roots, direct children, attributes, attribute values, text values, and deep equivalency with value-safe failures.
+- Add non-consuming XML reader cursor assertions for current read state, node type, depth, and namespace-aware expanded name.
+- Add non-consuming HTTP response status and response/content-header assertions with exact value checks and value-safe failures.
+- Add opt-in public instance-field comparison to object-graph equivalency, preserving property behavior and per-call exclusions.
+- Add path-based member selection to object-graph equivalency; selected values retain structural comparison, and nonexistent expected paths fail explicitly.
+- Add metadata-only type assertions for inheritance, interfaces, sealed/abstract/static shape, public properties, method overloads, and constructors.
+- Add asynchronous HTTP response text assertions for exact body equality and ordinal substring presence/absence, with safe failures and explicit read/buffer semantics.
+- Add assembly assertions for dependency boundaries and declared types by exact full name or runtime type identity.
+- Add explicit event monitoring for standard and custom event delegates, with raise/count/order and property-change assertions, arbitrary payload capture, thread-safe occurrence snapshots, payload-safe failures, and reverse-order unsubscription on disposal.
+- Add single-run synchronous and asynchronous delegate and subject-method timing that returns `TimeSpan` and propagates operation failures unchanged.
+- Expand stream assertions with read-only/write-only modes, negative length/position checks, and `BufferedStream` size checks while preserving non-consuming behavior.
+- Add a read-only CLI analysis report for fluent assertion migration candidates, with Roslyn symbol checks, relative locations, method names, safe suggestions, and incomplete-context notices; the report does not rewrite source or claim semantic equivalence.
 - Add empty/null string assertions, exact runtime-type checks for sequence objects, and reason text for equality failures.
 - Add ordered subsequence assertions, `And` chaining, and `Which`/`Subject` access for captured items and exceptions.
 - Add sync and async assertion entry points for value-returning functions, and reference-identity checks on sequence and dictionary results.
@@ -19,7 +69,7 @@ All notable AstraFlow changes are tracked here.
 
 ### Changed
 
-- Migrate AstraFlow's test projects to the runner-neutral `AstraFlow.Assertions` package; no external assertion-package reference remains in the test projects.
+- Migrate AstraFlow's test projects to the runner-neutral `AstraFlow.Assertions` package.
 
 ### Fixed
 
@@ -772,7 +822,7 @@ All notable AstraFlow changes are tracked here.
 - Added handler, notification handler, and pipeline test harnesses.
 - Added mediator, mapper, projection, diagnostics, exception, mapping-rule, and secure ID assertion helpers.
 - Added deterministic `TestSecureIdCodec` for test-only secure ID round trips.
-- Kept the testing package free from xUnit, NUnit, MSTest, FluentAssertions, and mocking-framework dependencies.
+- Kept the testing package independent of specific test runners and mocking frameworks.
 - Shipped `AstraFlow.Testing` assets for `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`.
 - Updated CI, publish, pack, and clean-install verification to include `AstraFlow.Testing`.
 

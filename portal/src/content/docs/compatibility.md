@@ -26,6 +26,13 @@ Verify compatibility across your solution projects before referencing host-speci
 | **Modern Runtime Hosts & Tools** | `net10.0` | `AstraFlow.AspNetCore`, `AstraFlow.Mapper.EntityFrameworkCore`, `AstraFlow.Cli` |
 | **Roslyn Build-Time Tooling** | `netstandard2.0` | `AstraFlow.Analyzers`, `AstraFlow.Generators` |
 
+## Version Support & NuGet Lifecycle
+
+| Release Line | Status | NuGet.org Availability | Guidance |
+| --- | --- | --- | --- |
+| **2.x** (`2.0.0` – current) | Active & Supported | Published and maintained | Use for all new and existing `.NET` applications |
+| **1.x** (`1.0.0` – `1.13.1`) | Deprecated Legacy | Marked deprecated on NuGet.org | Upgrade to the `2.x` line using the [Migration & Troubleshooting Guide](/docs/migration-and-troubleshooting) |
+
 ## C# Language & Nullable Support
 
 - **Nullable reference types (`#nullable enable`):** Every public interface, option type, attribute, and extension method carries accurate nullable annotations (`IMapper.Map<TDestination>(object? source)`, `ISecureIdCodec.TryDecrypt(string? encryptedId)`).

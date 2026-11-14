@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getAllDocs } from "@/lib/docs";
-import { SITE_URL } from "@/lib/site-config";
+import { getAllDocs } from "@modules/documentation/index";
+import { SITE_URL } from "@core/config/site-config";
 
 const STATIC_ROUTES = [
   "",
