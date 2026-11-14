@@ -227,7 +227,7 @@ results.Should().ContainInConsecutiveOrder(200, 204); // These values must be ad
 results.Should().NotContainInOrder(304, 200);
 ```
 
-`StartWith` and `EndWith` compare an ordered prefix or suffix against a finite expected sequence. Both accept `params` values or an `IEnumerable<T>`, with an optional equality comparer. The expected input is read at most once; the subject is read at most once and its enumerator is disposed. `StartWith` stops after the expected prefix; `EndWith` reads the complete subject. A null expected sequence throws `ArgumentNullException`. A null subject fails even for an empty expectation, while an empty expectation succeeds for a non-null subject without enumerating it. Failures report mismatch positions or counts without printing compared values.
+`StartWith` and `EndWith` compare an ordered prefix or suffix against a finite expected sequence. Both accept `params` values or an `IEnumerable<T>`, with an optional equality comparer. The expected input is read at most once; the subject is read at most once and its enumerator is disposed. Prefix checks stop after the expected items; suffix checks read the complete subject. A null expected sequence throws `ArgumentNullException`. A null subject fails even for an empty expectation, while an empty expectation succeeds for a non-null subject without enumerating it. Failure messages report only the mismatch index or item counts, not compared values.
 
 ```csharp
 results.Should().StartWith(200, 204);
@@ -421,7 +421,7 @@ var expected = XDocument.Parse(
 document.Should().BeEquivalentTo(expected);
 ```
 
-These equivalence checks compare `XDocument` and `XElement` trees. They do not compare raw serialized XML strings; reader-based helpers remain a separate API concern.
+These equivalence checks compare `XDocument` and `XElement` trees. They do not compare raw serialized XML strings.
 
 ## HTTP response assertions
 
@@ -446,7 +446,7 @@ Status and header checks do not read or serialize response content and do not mu
 
 ## Reviewing migration candidates
 
-The planned 2.4.0 `AstraFlow.Cli` tool adds `astraflow assertions analyze [path] [-o json|markdown|sarif|text]` for a read-only, syntax-only review of assertion calls in a C# file, project, or directory. It reports relative source locations, method names, same-name review candidates, and syntax-error warnings. It does not resolve symbols, verify equivalent behavior, or edit files; report output omits source expressions and literal values. See the [CLI guide](/docs/cli#assertion-migration-review-syntax-only) for exit codes and examples. The analysis dependency belongs to the CLI; `AstraFlow.Assertions` remains dependency-free.
+`AstraFlow.Cli` provides `astraflow assertions analyze [path] --format text|json` for read-only review of fluent assertion calls in C# source. It reports relative locations, method names, classifications, and safe suggestions. When a selected single-target project has existing restore assets, it can read package compile metadata for Roslyn binding. Only a small set of string equality calls currently has a behavior-verified AstraFlow mapping; other bound calls require manual review, while unresolved calls remain unknown. The command never runs MSBuild, restore, project targets, generators, scripts, or inspected project code, and it never edits source files. Results can remain partial when syntax errors, conditional branches, or unevaluated project settings affect analysis. Reports omit source expressions and literal values. See the [CLI guide](/docs/cli#assertion-migration-analysis) for formats, exit codes, and examples. The analysis dependency is confined to `AstraFlow.Cli`; `AstraFlow.Assertions` remains dependency-free.
 
 `CompleteWithinAsync(timeout, cancellationToken)` succeeds only when a returned task finishes inside a nonnegative, finite, supported interval. `Timeout.InfiniteTimeSpan` and values greater than `Task.Delay` supports are rejected before delegate invocation. If the task completes with an exception inside the interval, that exception propagates. When the timeout expires, the underlying operation continues; any later fault is observed.
 

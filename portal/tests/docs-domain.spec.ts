@@ -106,6 +106,10 @@ test('Assertions guide indexes nullable, stream, timeout, and exception APIs', (
     'non-seekable streams are consumed',
     'fixed 4 kib buffer',
     'haveelementat(index, expected)',
+    'haveelementpreceding',
+    'haveelementsucceeding',
+    'first matching pivot',
+    'immediate neighbor',
     'zero-based index',
     'default equality comparer for',
     'returns the verified item through',
@@ -306,7 +310,6 @@ test('Assertions guide indexes nullable, stream, timeout, and exception APIs', (
     'child-node order',
     'cdata and text as the same character data',
     'comments, processing instructions, and document types',
-    'reader-based helpers remain a separate api concern',
     'containequivalentof',
     'notcontainequivalentof',
     'allbeequivalentto',
@@ -416,7 +419,7 @@ test('CLI guide indexes the read-only assertion migration command and its limits
   expect(searchDocs('assertions analyze').map((doc) => doc.slugPath)).toContain(
     'cli',
   );
-  expect(searchDocs('same-name review candidates').map((doc) => doc.slugPath)).toContain(
+  expect(searchDocs('behavior-verified astraflow mapping').map((doc) => doc.slugPath)).toContain(
     'cli',
   );
 });

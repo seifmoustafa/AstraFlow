@@ -94,6 +94,8 @@ M:AstraFlow.Assertions.CollectionAssertions`1.HaveCountGreaterThanOrEqualTo(Syst
 M:AstraFlow.Assertions.CollectionAssertions`1.HaveCountLessThan(System.Int32)
 M:AstraFlow.Assertions.CollectionAssertions`1.HaveCountLessThanOrEqualTo(System.Int32)
 M:AstraFlow.Assertions.CollectionAssertions`1.HaveElementAt(System.Int32,`0)
+M:AstraFlow.Assertions.CollectionAssertions`1.HaveElementPreceding(`0,`0)
+M:AstraFlow.Assertions.CollectionAssertions`1.HaveElementSucceeding(`0,`0)
 M:AstraFlow.Assertions.CollectionAssertions`1.HaveSameCount(System.Collections.Generic.IEnumerable{`0})
 M:AstraFlow.Assertions.CollectionAssertions`1.HaveSameItems(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})
 M:AstraFlow.Assertions.CollectionAssertions`1.IntersectWith(System.Collections.Generic.IEnumerable{`0})

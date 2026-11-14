@@ -2,7 +2,7 @@
 
 > **For agentic workers:** Use the appropriate execution skill to implement and review each independently verifiable slice. Steps use checkboxes for tracking.
 
-**Goal:** Deliver the approved comprehensive, independent assertion and migration-tooling scope in 2.4.0.
+**Goal:** Deliver a bounded, release-ready general-purpose assertions core and conservative migration-analysis tool in 2.4.0, with an exhaustive capability inventory that assigns remaining breadth to explicit later phases.
 
 **Architecture:** Keep general assertions in the standalone package, AstraFlow-specific helpers in `AstraFlow.Testing`, and project analysis in the CLI. Build a private behavior inventory before defining the full set of implementation slices; each slice adds its own tests, documentation and API evidence.
 
@@ -15,7 +15,9 @@
 - Target 2.4.0 on the existing PR branch; preserve the generated-mapping changes.
 - Preserve `netstandard2.0`, `net8.0`, `net9.0` and `net10.0` for the core package, existing public behavior, and the absence of production package or runtime dependencies unless explicitly reviewed.
 - Use original AstraFlow-owned implementation and product identity. Do not place external product names or namespaces in product text or dependencies.
-- Every inventoried capability needs implementation and evidence or a specific maintainer-approved disposition before the comprehensive release gate.
+- Every inventoried capability needs implementation and evidence for 2.4.0, or a specific maintainer-approved deferral/rejection before the release gate. Inventory completeness does not mean full capability parity must ship in 2.4.0.
+- 2.4.0 must be coherent and useful for ordinary .NET test projects: common value, collection/dictionary, object comparison, exception/async, safe diagnostic, authoring, and conservative migration-review workflows. An item belongs to the 2.4.0 ship set only when it is advertised in release documentation and passes its evidence gate.
+- Keep 2.4.x patch releases for compatible fixes and hardening; schedule new backward-compatible public assertion capabilities for a later 2.x minor release, starting at 2.5.0 unless release policy is deliberately revised.
 - Keep values out of failure messages and CLI reports by default; configuration and scopes must be safe for concurrent tests.
 - Preserve current portal design and apply its collaborative design gate before any new UI or UX work.
 
@@ -75,6 +77,7 @@ Verified slices in this task (the collections/dictionaries family remains in pro
 - [x] Add full read-only dictionary assertions through the ordinary `Should()` entry point for key-value-pair sequences; preserve subject key comparers for dictionary lookups, add mapping/count/value chaining and safe failures, and verify a clean packed consumer across all four target frameworks plus a net10 runtime smoke check. The final standard `.Should()` overload passes the 276/276 package suite, four-target Release build, 62 API-baseline combinations, and local c58 compile/runtime consumer checks.
 - [x] Add async negative ordered and consecutive containment with one-pass expected/subject enumeration, cancellation forwarding, enumerator disposal, and privacy-safe failure messages; focused match/miss, null, empty, and cancellation cases pass in the 272/272 suite.
 - [x] Add ordered collection prefix/suffix assertions for `params` and enumerable expectations with optional equality comparers, null/empty semantics, one-pass reads, disposal, and value-safe failures; focused cases include short subjects, mismatch positions, one-shot enumerables, comparer behavior, empty input, and producer exceptions.
+- [x] Add `HaveElementPreceding` and `HaveElementSucceeding` checks for the immediate neighbor of the first matching pivot, using default equality, one-pass early stopping, disposed enumerators, and value-safe failures. Focused tests pass 6/6, the full Assertions suite passes 287/287, the package builds all four targets with zero warnings/errors, API baselines pass 62 combinations, and a packed `2.4.0-c63-local` consumer builds all four targets and passes net10 runtime smoke.
 - [ ] Close the remaining collection inventory cases.
 
 ## Task 4: Object-graph equivalence
@@ -161,4 +164,4 @@ Initial verified milestone (Task 7 remains in progress):
 
 ## Plan self-review and scope boundary
 
-This is a master plan for several independent capability families. Task 1 must produce detailed, executable per-family plans after the full inventory; the current task descriptions are acceptance boundaries, not a claim that all signatures and edge cases have already been discovered. A family cannot start until its detailed plan states those decisions. The five review-focus cases are assigned to Tasks 3, 4, 5, 5 and 7 respectively. Automatic rewrites are outside the approved CLI acceptance gate.
+This is a master plan for several independent capability families. Task 1 must produce an exhaustive inventory and classify each row for 2.4.0 or a follow-on phase; produce detailed, executable API plans for the 2.4.0 ship set. The current task descriptions are acceptance boundaries, not a claim that all signatures and edge cases have already been discovered. A 2.4.0 slice cannot start until its exact contract is specified. The five review-focus cases are assigned to Tasks 3, 4, 5, 5 and 7 respectively. Automatic rewrites are outside the approved CLI acceptance gate.

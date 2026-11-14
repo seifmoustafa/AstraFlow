@@ -26,6 +26,7 @@
       - Adds exact sequence runtime-type checks and optional reason text for equality assertions.
       - Adds exact and assignable runtime-type checks for sequence items, including typed generic chaining and runtime-Type overloads.
       - Adds one-pass indexed sequence-item checks with returned item access and safe failures.
+      - Adds immediate predecessor and successor sequence checks with first-match, one-pass behavior and value-safe failures.
       - Adds lazy expected-sequence overloads and negative ordered/consecutive containment checks.
       - Adds ascending and descending sequence-order checks by key, with one selector call per item and optional comparers.
       - Adds structural-equivalency membership, negative membership, and all-item sequence checks with per-call options and one-pass nested snapshots.
