@@ -259,7 +259,7 @@ export const packagesEn = {
       shortName: 'Assertions',
       categoryLabel: 'Test Support',
       roleSummary:
-        'Framework-neutral assertion API (Should()) for object graphs, structural collection equivalency, XML structure, HTTP response metadata, nullable values, numeric precision, dates and durations, strings, typed collection and runtime-type sequence checks, ordered sequence membership and key ordering, dictionary content and mapping equality, async sequences, enums, GUIDs, sync/async exceptions, and explicit failure scopes.',
+        'Framework-neutral assertion API (Should()) for object graphs, structural collection equivalency, XML structure, HTTP response metadata, nullable values, numeric precision, dates and durations, strings, typed collection and runtime-type sequence checks, ordered sequence membership and key ordering, dictionary content and mapping equality, async sequences with positive and negative ordering assertions, deferred actions and lazy iterator assertions, enums, GUIDs, sync/async exceptions, and explicit failure scopes.',
       capabilities: [
         'Zero AstraFlow runtime or test-runner package dependencies',
         'Value-free predicates, ordinal/wildcard/timeout-bounded regex matching, and safe failure messages',
@@ -268,10 +268,14 @@ export const packagesEn = {
         'Non-consuming Stream.Should() capability and seekable metadata checks on all four targets, with safe null/disposed/unsupported-metadata failures and propagated unexpected I/O errors',
         'Exact HaveContent(byte[]) and NotHaveContent(byte[]) stream comparisons use a fixed 4 KiB buffer; seekable streams restore position after success, mismatch, or read failure, while non-seekable streams are consumed',
         'HaveElementAt(index, expected) checks a zero-based sequence position with EqualityComparer<T>.Default, returns the matched item through Which, and enumerates only as far as the requested index',
+        'HaveElementPreceding/HaveElementSucceeding check the immediate neighbor of the first matching pivot with EqualityComparer<T>.Default, stop after that neighbor, and omit compared values from failures',
         'Ordered sequence checks accept params or IEnumerable expectations: ContainInOrder/NotContainInOrder allow gaps, while ContainInConsecutiveOrder/NotContainInConsecutiveOrder require adjacency; duplicate expected items need distinct positions, default equality compares nulls, expected inputs must be finite, and each input is enumerated at most once',
+        'StartWith and EndWith compare finite ordered prefixes or suffixes from params or IEnumerable inputs with an optional comparer; expected inputs and subjects are read at most once, prefix checks stop early, suffix checks reach the end, and failures omit compared values',
         'BeInAscendingOrderBy/BeInDescendingOrderBy check selected keys with an optional comparer; the selector runs once per item, ties pass, and failures report only the first failing index',
         'ContainEquivalentOf/NotContainEquivalentOf/AllBeEquivalentTo compare items structurally against one expected shape with per-call graph options; positive containment returns the matched item, all-item checks pass empty sequences, nested one-shot collections are snapshotted at most once across candidates, null subjects fail, and failures omit compared values',
         'Order-independent dictionary Equal/NotEqual over finite entry sequences uses default key/value equality and enumerates expected once; null expected sequences throw, null subjects fail, duplicate or null expected keys are rejected, and failures never print keys or values',
+        'Mutable and read-only dictionaries support the full key, value, batch, count, same-count, and mapping assertion chain; lookups honor the dictionary comparer, while entry-sequence checks use default equality and safe failures',
+        'Mutable dictionaries, read-only dictionaries, and IEnumerable<KeyValuePair<TKey,TValue>> use the ordinary Should() entry point; read-only dictionary checks preserve the dictionary comparer and pair-sequence assertions use default key equality with one subject pass',
         'AllBeAssignableTo/AllBeOfType generic and Type overloads distinguish assignability from exact runtime type; generic all-item checks return typed chains, while ContainItemsAssignableTo/NotContainItemsAssignableTo scan at most once',
         'Async action and function completion-timeout assertions that validate before invocation, do not cancel the operation, observe late faults, and return function results or the original wrapper as appropriate',
         'Captured exception assertions for exact or assignable types, immediate inner exception presence/type/message checks, typed chaining, and single-invocation Where/NotWhere predicates',
@@ -282,6 +286,8 @@ export const packagesEn = {
         'Structural equivalency shaped by expected public properties, with per-call type-wide and path-specific comparers, nested-path exclusions, ordered or unordered sequences, dictionary matching, cycle handling, safe mismatch paths, and bounded depth',
         'AssertionScope aggregates failures from explicitly checked synchronous and awaited asynchronous actions, with nested-scope forwarding',
         'IAsyncEnumerable<T> assertions on net8.0, net9.0, and net10.0 for comparer-aware uniqueness and duplicate membership, predicate checks, sequential per-item callbacks, ordered/consecutive subsequences, single-item, ordered equality, and expected producer-exception checks; acquired enumerators are cancellation-aware and disposed',
+        'NotContainInOrderAsync and NotContainInConsecutiveOrderAsync reject gapped or adjacent matches; both require a non-null subject, accept empty expectations, use default equality, consume finite expected inputs at most once, forward cancellation when acquiring the async enumerator, dispose it, and report only the ending index without item values',
+        'FluentActions.Invoking/Awaiting/Enumerating and subject extensions defer operations until asserted; Task helpers are available on all targets, ValueTask subject Awaiting extensions on net8.0+, and lazy iterator factories are fully enumerated and disposed',
       ],
     },
     'AstraFlow.Analyzers': {
@@ -314,7 +320,7 @@ export const packagesEn = {
       capabilities: [
         'Relational request -> handler -> response Mermaid, pipeline, and event views',
         'Structured Canvas JSON, SARIF 2.1.0, Markdown, and JSON report exports',
-        'Planned for 2.4.0: read-only, syntax-only assertion analysis with relative locations, method names, same-name review candidates, syntax-error warnings, and no source edits or semantic-equivalence claims',
+        'Read-only assertion analysis can bind against an explicitly selected single-target project’s existing package compile assets without invoking MSBuild; verified ordinal string Be/NotBe mappings are separated from manual and unknown findings, and reports remain partial without build-condition evaluation',
         'Keeps its Roslyn syntax-analysis dependency in the CLI; AstraFlow.Assertions remains dependency-free',
         'Install as a .NET tool targeting net10.0, never as an app runtime dependency',
       ],

@@ -13,7 +13,18 @@ internal static class AssertionMigrationAnalyzer
 
     public static AssertionMigrationReport Analyze(string target)
     {
+        var fullTarget = Path.GetFullPath(target);
+        var selectedProject = File.Exists(fullTarget)
+            && Path.GetExtension(fullTarget).Equals(".csproj", StringComparison.OrdinalIgnoreCase)
+                ? fullTarget
+                : null;
         var (root, files) = GetSourceFiles(target);
+        var projectMetadata = selectedProject is null
+            ? new AssertionProjectMetadata(
+                Array.Empty<Microsoft.CodeAnalysis.MetadataReference>(),
+                null,
+                "Project metadata was not selected; only the CLI host's framework metadata was used.")
+            : AssertionProjectMetadataReader.Read(selectedProject);
         var trees = new List<SyntaxTree>(files.Count);
 
         foreach (var file in files.OrderBy(path => path, StringComparer.Ordinal))
@@ -28,7 +39,7 @@ internal static class AssertionMigrationAnalyzer
         var compilation = CSharpCompilation.Create(
             assemblyName: "AstraFlow.AssertionsMigration.Analysis",
             syntaxTrees: trees,
-            references: GetFrameworkReferences(),
+            references: GetFrameworkReferences().Concat(projectMetadata.References),
             options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
         var findings = new List<AssertionMigrationFinding>();
@@ -83,13 +94,23 @@ internal static class AssertionMigrationAnalyzer
 
                 var terminalInfo = semanticModel.GetSymbolInfo(invocation);
                 var terminalMethod = terminalInfo.Symbol as IMethodSymbol;
-                var classification = terminalMethod is null
-                    ? "unknown"
-                    : "manual";
-                var code = terminalMethod is null ? "AFCLI2404" : "AFCLI2405";
-                var suggestion = terminalMethod is null
-                    ? "The assertion call could not be bound in the available source context. Review the call and its references manually."
-                    : "Review this assertion's behavior and translate it manually; no equivalent is verified in this analysis catalog.";
+                var mapping = shouldMethod is not null && terminalMethod is not null
+                    ? FindVerifiedStringEqualityMapping(shouldMethod, terminalMethod, invocation)
+                    : null;
+                var classification = mapping is not null
+                    ? "verified"
+                    : terminalMethod is null
+                        ? "unknown"
+                        : "manual";
+                var code = mapping is not null
+                    ? "AFCLI2407"
+                    : terminalMethod is null
+                        ? "AFCLI2404"
+                        : "AFCLI2405";
+                var suggestion = mapping?.Suggestion
+                    ?? (terminalMethod is null
+                        ? "The assertion call could not be bound in the available source context. Review the call and its references manually."
+                        : "Review this assertion's behavior and translate it manually; no equivalent is verified in this analysis catalog.");
 
                 AddFinding(
                     findings,
@@ -139,6 +160,8 @@ internal static class AssertionMigrationAnalyzer
                 "No C# source files were found under the selected input."));
         }
 
+        var contextLimitation = projectMetadata.Limitation
+            ?? "Only a single literal target framework and existing package compile assets were read as metadata. Conditional symbols, project source inclusion rules, project references, and MSBuild evaluation remain unavailable; no inspected project code is built or executed.";
         findings.Add(new AssertionMigrationFinding(
             "AFCLI2403",
             null,
@@ -146,7 +169,7 @@ internal static class AssertionMigrationAnalyzer
             null,
             null,
             "unknown",
-            "Project settings, package references, imports, and target-framework symbols are not evaluated. Only source files and the CLI host's framework metadata are used; unresolved calls remain unknown."));
+            contextLimitation));
 
         var ordered = findings
             .OrderBy(finding => finding.Source ?? string.Empty, StringComparer.Ordinal)
@@ -158,7 +181,7 @@ internal static class AssertionMigrationAnalyzer
         return new AssertionMigrationReport(
             SchemaVersion: 1,
             Status: "partial",
-            ResolutionContext: "host-framework-only",
+            ResolutionContext: projectMetadata.WasApplied ? "project-assets-metadata" : "host-framework-only",
             FilesAnalyzed: files.Count,
             Findings: ordered);
     }
@@ -339,6 +362,50 @@ internal static class AssertionMigrationAnalyzer
             || method.ContainingAssembly.Name.Equals("AstraFlow.Assertions", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static VerifiedAssertionMapping? FindVerifiedStringEqualityMapping(
+        IMethodSymbol shouldMethod,
+        IMethodSymbol assertionMethod,
+        InvocationExpressionSyntax invocation)
+    {
+        var shouldDefinition = shouldMethod.ReducedFrom ?? shouldMethod;
+        if (!IsKnownStringAssertionSource(shouldDefinition, assertionMethod)
+            || !shouldDefinition.IsExtensionMethod
+            || shouldDefinition.Parameters.Length == 0
+            || shouldDefinition.Parameters[0].Type.SpecialType != SpecialType.System_String
+            || shouldDefinition.ReturnType.Name != "StringAssertions"
+            || assertionMethod.ContainingType.Name != "StringAssertions"
+            || assertionMethod.Name is not ("Be" or "NotBe")
+            || assertionMethod.Parameters.Length != 3
+            || assertionMethod.Parameters[0].Type.SpecialType != SpecialType.System_String
+            || assertionMethod.Parameters[1].Type.SpecialType != SpecialType.System_String
+            || !assertionMethod.Parameters[1].IsOptional
+            || assertionMethod.Parameters[2] is not { IsParams: true, Type: IArrayTypeSymbol { ElementType.SpecialType: SpecialType.System_Object } }
+            || invocation.ArgumentList.Arguments.Count != 1)
+        {
+            return null;
+        }
+
+        var targetMethod = assertionMethod.Name;
+        var suggestion = $"AstraFlow StringAssertions.{targetMethod} compares strings ordinally for this single-expected-string overload. Translate to `.Should().{targetMethod}(expected)` and review the surrounding chain; reason arguments are not included in this mapping.";
+        return new VerifiedAssertionMapping(suggestion);
+    }
+
+    private static bool IsKnownStringAssertionSource(IMethodSymbol shouldMethod, IMethodSymbol assertionMethod)
+    {
+        const string sourceAssemblyName = "AwesomeAssertions";
+        return shouldMethod.ContainingAssembly.Name.Equals(sourceAssemblyName, StringComparison.Ordinal)
+            && assertionMethod.ContainingAssembly.Name.Equals(sourceAssemblyName, StringComparison.Ordinal)
+            && shouldMethod.ContainingNamespace.ToDisplayString().Equals("AwesomeAssertions", StringComparison.Ordinal)
+            && shouldMethod.ReturnType is INamedTypeSymbol
+            {
+                Name: "StringAssertions",
+                ContainingNamespace: { } returnNamespace
+            }
+            && returnNamespace.ToDisplayString().Equals("AwesomeAssertions.Primitives", StringComparison.Ordinal)
+            && assertionMethod.ContainingNamespace.ToDisplayString().Equals("AwesomeAssertions.Primitives", StringComparison.Ordinal)
+            && assertionMethod.ContainingType is { Name: "StringAssertions", Arity: 1 };
+    }
+
     private static void AddFinding(
         ICollection<AssertionMigrationFinding> findings,
         string code,
@@ -376,6 +443,8 @@ internal static class AssertionMigrationAnalyzer
 
     private static string GetSimpleName(SimpleNameSyntax simpleName) => simpleName.Identifier.ValueText;
 }
+
+internal sealed record VerifiedAssertionMapping(string Suggestion);
 
 internal sealed record AssertionMigrationReport(
     int SchemaVersion,

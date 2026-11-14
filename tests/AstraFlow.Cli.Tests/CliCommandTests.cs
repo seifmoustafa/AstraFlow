@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Text.Json;
 using AstraFlow.Cli;
 using AstraFlow.Assertions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace AstraFlow.Cli.Tests;
@@ -383,6 +385,172 @@ public sealed class CliCommandTests
     }
 
     [Fact]
+    public void AssertionsAnalyze_UsesExistingSingleTargetCompileMetadataWithoutRunningProjectTargets()
+    {
+        using var temp = new TempDirectory();
+        var projectPath = Path.Combine(temp.Path, "MetadataSample.csproj");
+        var sourcePath = Path.Combine(temp.Path, "Sample.cs");
+        var markerPath = Path.Combine(temp.Path, "must-not-be-created.txt");
+        var packageRoot = Path.Combine(temp.Path, "packages");
+        var packagePath = Path.Combine(packageRoot, "assertion.metadata.fixture", "1.0.0");
+        var assemblyPath = Path.Combine(packagePath, "lib", "net10.0", "AssertionMetadataFixture.dll");
+        var assetsPath = Path.Combine(temp.Path, "obj", "project.assets.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(assemblyPath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(assetsPath)!);
+        File.Copy(typeof(MetadataFixtures.TextAssertions).Assembly.Location, assemblyPath);
+
+        var escapedMarkerPath = System.Security.SecurityElement.Escape(markerPath);
+        File.WriteAllText(projectPath, $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
+              <Target Name="NeverExecute" BeforeTargets="Build">
+                <WriteLinesToFile File="{escapedMarkerPath}" Lines="executed" />
+              </Target>
+            </Project>
+            """);
+        File.WriteAllText(sourcePath, "using AstraFlow.Cli.Tests.MetadataFixtures;\n\"source-secret\".Should().Be(\"expected-secret\");");
+
+        var packageKey = "assertion.metadata.fixture/1.0.0";
+        var assets = new
+        {
+            targets = new Dictionary<string, object>
+            {
+                ["net10.0"] = new Dictionary<string, object>
+                {
+                    [packageKey] = new
+                    {
+                        compile = new Dictionary<string, object>
+                        {
+                            ["lib/net10.0/AssertionMetadataFixture.dll"] = new { }
+                        }
+                    }
+                }
+            },
+            libraries = new Dictionary<string, object>
+            {
+                [packageKey] = new { type = "package", path = packageKey }
+            },
+            packageFolders = new Dictionary<string, object>
+            {
+                [packageRoot + Path.DirectorySeparatorChar] = new { }
+            }
+        };
+        File.WriteAllText(assetsPath, JsonSerializer.Serialize(assets));
+
+        var exitCode = Execute(["assertions", "analyze", projectPath, "--format", "json"], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var report = JsonDocument.Parse(output);
+        report.RootElement.GetProperty("resolutionContext").GetString().Should().Be("project-assets-metadata");
+        report.RootElement.GetProperty("findings").EnumerateArray()
+            .Should()
+            .Contain(finding => finding.GetProperty("code").GetString() == "AFCLI2405"
+                && finding.GetProperty("classification").GetString() == "manual"
+                && finding.GetProperty("method").GetString() == "Be"
+                && finding.GetProperty("source").GetString() == "Sample.cs");
+        output.Should().NotContain("source-secret");
+        output.Should().NotContain("expected-secret");
+        File.Exists(markerPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_EmitsVerifiedMappingForOrdinalStringEqualityCalls()
+    {
+        using var temp = new TempDirectory();
+        var projectPath = Path.Combine(temp.Path, "StringMetadataSample.csproj");
+        var sourcePath = Path.Combine(temp.Path, "Sample.cs");
+        var packageRoot = Path.Combine(temp.Path, "packages");
+        var packagePath = Path.Combine(packageRoot, "assertion.string.fixture", "1.0.0");
+        var assemblyPath = Path.Combine(packagePath, "lib", "net10.0", "AssertionSourceFixture.dll");
+        var assetsPath = Path.Combine(temp.Path, "obj", "project.assets.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(assemblyPath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(assetsPath)!);
+        WriteStringAssertionMetadataFixture(assemblyPath);
+        File.WriteAllText(projectPath, "<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+        File.WriteAllText(sourcePath, "using AwesomeAssertions;\n\"source-secret\".Should().Be(\"expected-secret\");\n\"source-secret\".Should().NotBe(\"unexpected-secret\");");
+
+        var packageKey = "assertion.string.fixture/1.0.0";
+        var assets = new
+        {
+            targets = new Dictionary<string, object>
+            {
+                ["net10.0"] = new Dictionary<string, object>
+                {
+                    [packageKey] = new
+                    {
+                        compile = new Dictionary<string, object>
+                        {
+                            ["lib/net10.0/AssertionSourceFixture.dll"] = new { }
+                        }
+                    }
+                }
+            },
+            libraries = new Dictionary<string, object>
+            {
+                [packageKey] = new { type = "package", path = packageKey }
+            },
+            packageFolders = new Dictionary<string, object>
+            {
+                [packageRoot + Path.DirectorySeparatorChar] = new { }
+            }
+        };
+        File.WriteAllText(assetsPath, JsonSerializer.Serialize(assets));
+
+        var exitCode = Execute(["assertions", "analyze", projectPath, "--format", "json"], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var report = JsonDocument.Parse(output);
+        var findings = report.RootElement.GetProperty("findings").EnumerateArray().ToArray();
+        findings.Count(finding => finding.GetProperty("code").GetString() == "AFCLI2407").Should().Be(2);
+        findings.Where(finding => finding.GetProperty("code").GetString() == "AFCLI2407")
+            .Should()
+            .OnlyContain(finding => finding.GetProperty("classification").GetString() == "verified"
+                && finding.GetProperty("suggestion").GetString()!.Contains("ordinally", StringComparison.Ordinal));
+        new[] { "source-secret", "expected-secret", "unexpected-secret" }
+            .Should()
+            .OnlyContain(secret => !output.Contains(secret, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_DoesNotVerifyLookalikeStringAssertionMethods()
+    {
+        using var temp = new TempDirectory();
+        var sourcePath = Path.Combine(temp.Path, "Lookalike.cs");
+        File.WriteAllText(sourcePath, """
+            namespace Custom.Assertions;
+            public sealed class StringAssertions
+            {
+                public void Be(string expected, string because = "", params object[] becauseArgs) { }
+                public void NotBe(string unexpected, string because = "", params object[] becauseArgs) { }
+            }
+            public static class AssertionExtensions
+            {
+                public static StringAssertions Should(this string actual) => new();
+            }
+            public static class Consumer
+            {
+                public static void Verify()
+                {
+                    "actual-secret".Should().Be("expected-secret");
+                    "actual-secret".Should().NotBe("unexpected-secret");
+                }
+            }
+            """);
+
+        var exitCode = Execute(["assertions", "analyze", sourcePath, "--format", "json"], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        output.Should().NotContain("AFCLI2407");
+        output.Should().Contain("\"classification\":\"manual\"");
+        output.Should().NotContain("actual-secret");
+        output.Should().NotContain("expected-secret");
+        output.Should().NotContain("unexpected-secret");
+    }
+
+    [Fact]
     public void AssertionsAnalyze_RecognizesLocalAssertionVariablesAndReturnsTextReport()
     {
         using var temp = new TempDirectory();
@@ -494,6 +662,42 @@ public sealed class CliCommandTests
         output = outputWriter.ToString().Trim();
         error = errorWriter.ToString().Trim();
         return exitCode;
+    }
+
+    private static void WriteStringAssertionMetadataFixture(string assemblyPath)
+    {
+        const string source = """
+            namespace AwesomeAssertions
+            {
+                public static class AssertionExtensions
+                {
+                    public static AwesomeAssertions.Primitives.StringAssertions Should(this string actual) => new();
+                }
+            }
+            namespace AwesomeAssertions.Primitives
+            {
+                public sealed class StringAssertions : StringAssertions<StringAssertions> { }
+                public class StringAssertions<TAssertions> where TAssertions : StringAssertions<TAssertions>
+                {
+                    public void Be(string expected, string because = "", params object[] becauseArgs) { }
+                    public void NotBe(string unexpected, string because = "", params object[] becauseArgs) { }
+                }
+            }
+            """;
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
+            .Split(Path.PathSeparator)
+            .Select(path => MetadataReference.CreateFromFile(path));
+        var compilation = CSharpCompilation.Create(
+            "AwesomeAssertions",
+            [CSharpSyntaxTree.ParseText(source)],
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        using var output = File.Create(assemblyPath);
+        var result = compilation.Emit(output);
+        if (!result.Success)
+        {
+            throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics));
+        }
     }
 
     private static string ReportJson(string section, string id)

@@ -1,6 +1,6 @@
 # AstraFlow 2.4.0 Assertions Expansion Design
 
-**Status:** Design approved; implementation is in progress. Numeric/temporal and the initial assertion-family slices are implemented and verified on the package targets. The read-only CLI now binds locally declared symbols using host framework metadata, with explicit partial results when project context is unavailable; project metadata, verified migration mappings and full classification remain open. Remaining capability families, complete inventory reconciliation, final portal synchronization and the full release gate are still open. The maintainer confirmed that 2.4.0 is not published or merged. The existing assertion foundation and generated-mapping work remain part of the release.
+**Status:** Design approved; implementation is in progress. Numeric/temporal and the initial assertion-family slices are implemented and verified on the package targets. The read-only CLI binds local symbols and can read safe compile metadata from explicitly selected single-target projects; one ordinal string equality mapping is verified against the exact source identity, and lookalikes remain manual. Broader mapping coverage, remaining capability families, complete inventory reconciliation, final portal synchronization and the full release gate are still open. The maintainer confirmed that 2.4.0 is not published or merged. The existing assertion foundation and generated-mapping work remain part of the release.
 
 ## Goal and release scope
 

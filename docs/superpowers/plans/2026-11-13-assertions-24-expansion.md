@@ -72,7 +72,10 @@ Verified slices in this task (the collections/dictionaries family remains in pro
 - [x] Add ascending and descending key-order assertions with optional comparers, one selector call per item, tie support, safe index-only failures, and fresh-package compile/runtime coverage.
 - [x] Add structural-equivalency containment, negative containment, and all-item checks with per-call graph options, returned matched-item access, one-pass outer enumeration, shared nested snapshots, safe mismatch paths, and empty/null behavior.
 - [x] Add order-independent dictionary `Equal`/`NotEqual` checks for unique expected key-value pairs, with default key/value comparers, one-pass expected enumeration, duplicate-key validation, null handling, and value-safe failures; validate the packed c54 API from compile-time and runtime consumers.
-- [ ] Additional read-only dictionary surface and remaining collection inventory cases. Async negative ordered and consecutive containment are implemented with one-pass expected/subject enumeration, cancellation forwarding, disposal, and privacy-safe failure messages; focused tests cover match/miss, null and empty boundaries.
+- [x] Add full read-only dictionary assertions through the ordinary `Should()` entry point for key-value-pair sequences; preserve subject key comparers for dictionary lookups, add mapping/count/value chaining and safe failures, and verify a clean packed consumer across all four target frameworks plus a net10 runtime smoke check. The final standard `.Should()` overload passes the 276/276 package suite, four-target Release build, 62 API-baseline combinations, and local c58 compile/runtime consumer checks.
+- [x] Add async negative ordered and consecutive containment with one-pass expected/subject enumeration, cancellation forwarding, enumerator disposal, and privacy-safe failure messages; focused match/miss, null, empty, and cancellation cases pass in the 272/272 suite.
+- [x] Add ordered collection prefix/suffix assertions for `params` and enumerable expectations with optional equality comparers, null/empty semantics, one-pass reads, disposal, and value-safe failures; focused cases include short subjects, mismatch positions, one-shot enumerables, comparer behavior, empty input, and producer exceptions.
+- [ ] Close the remaining collection inventory cases.
 
 ## Task 4: Object-graph equivalence
 
@@ -124,6 +127,8 @@ Verified initial XML slice (Task 6 remains in progress):
 - [x] Add direct current-state XML reader assertions without advancing, closing or disposing caller-owned readers; whole-reader comparison remains a separate consuming API decision.
 - [x] Add a typed custom-delegate adapter for event monitoring, preserving arbitrary payloads in occurrence snapshots while omitting them from failure messages; verify factory failure releases its event registration.
 - [ ] Continue with broader timing and authoring capabilities.
+- [x] Add deferred `Invoking`, `Awaiting`, and `Enumerating` helpers for static and subject delegates, `Task`/`ValueTask` operations, and lazy generic/non-generic iterators; verify deferred invocation, exception identity, null validation, and iterator disposal.
+- [x] Keep `ValueTask` subject overloads out of the `netstandard2.0` asset without adding a package dependency; document their `net8.0+` availability and compile a fresh packed consumer across all four target frameworks. Local package `2.4.0-c57-local` also passes a net10 runtime smoke.
 
 ## Task 7: CLI migration analysis
 
@@ -131,8 +136,8 @@ Verified initial XML slice (Task 6 remains in progress):
 
 - [x] Define `astraflow assertions analyze <path> --format text|json`; emit a versioned report with relative source, one-based line/column, classification and safe suggestion. Exit 1 for usage/operational errors and 2 for partial or review-required analysis. A complete-analysis exit 0 remains reserved for a future complete project context.
 - [x] Add fixtures for bound assertion-like calls, unrelated bound `Should()` methods, local assertion variables, unresolved chains, syntax errors, conditional directives and secret-bearing literals. Verify JSON/text shape, source locations, exit codes, and no source edits or literal leakage.
-- [x] Resolve source declarations with Roslyn and host framework metadata; unrelated bound methods are skipped and unresolved calls remain unknown. Project/package references and target symbols are not evaluated; the analyzer never executes MSBuild, restore, targets, generators, scripts, or inspected project code. Keep Roslyn dependencies isolated to the CLI.
-- [ ] Add behavior-backed verified/unsupported mapping rows only after private inventory review and semantic tests; verify the packed tool against a clean consumer.
+- [x] Resolve source declarations with Roslyn and host framework metadata; unrelated bound methods are skipped and unresolved calls remain unknown. For an explicitly selected single-target project, read existing package compile assets only as metadata, without evaluating imports/properties or executing MSBuild, restore, targets, generators, scripts, or inspected project code. Keep Roslyn dependencies isolated to the CLI.
+- [ ] Expand behavior-backed verified/unsupported mapping rows after private inventory review and semantic tests; verify the packed tool against a clean consumer.
 
 Initial verified milestone (Task 7 remains in progress):
 
@@ -140,7 +145,9 @@ Initial verified milestone (Task 7 remains in progress):
 - [x] Pack and install local CLI tool `2.4.0-c23-local`; run it against an XML assertion fixture and confirm it returns exit 2 with three review-required candidates while omitting XML literal values.
 - [x] Pass the CLI test project with 22/22 tests on net10.0.
 - [x] Add a metadata-only Roslyn milestone: bound manual candidates, unrelated-method exclusion, unresolved-unknown classification, syntax/conditional incompleteness, local-variable chains, deterministic safe reports, and explicit text/json formats; CLI tests now pass 26/26 on net10.0.
-- [ ] Add safe interpretation of existing project metadata only if it can be done without evaluating user project code; add private-inventory-backed verified/unsupported mappings, and pack/install consumer verification.
+- [x] Add safe interpretation of a selected single literal target framework and existing package compile assets only from project/restore metadata; verify unrelated `Should` exclusion, declaration binding, a no-target-execution marker, safe report output, and a reviewed one-argument ordinal string `Be`/`NotBe` mapping that requires the exact source assembly and symbol identity. Lookalike methods remain manual; CLI tests pass 29/29 on net10.0.
+- [ ] Expand the mapping catalog from private inventory evidence; keep each unmapped call manual until its source identity and behavior are verified.
+- [x] Pack and install the CLI as `2.4.0-c61-local`; analyze a restored clean consumer project and confirm lookalikes remain manual, literals are redacted, output is partial, and exit code 2 is preserved.
 
 ## Task 8: Integration, documentation and release gate
 

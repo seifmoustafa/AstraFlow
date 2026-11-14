@@ -21,6 +21,8 @@ All notable AstraFlow changes are tracked here.
 - Add collection subset and intersection assertions, inclusive count bounds, and null-item checks with one-pass inputs and value-safe failures.
 - Add exact-runtime-type and assignability checks over collection items, typed chaining for generic all-item checks, and runtime-type overloads with one-pass enumeration.
 - Add indexed sequence-item assertions that return the verified item and avoid re-enumerating lazy inputs.
+- Add immediate predecessor and successor assertions that use default equality, inspect the first matching pivot in one pass, dispose enumerators, and omit compared values from failures.
+- Add ordered collection prefix and suffix assertions with optional equality comparers, one-pass inputs, and value-safe failures.
 - Add enumerable expected-sequence overloads and negative ordered/consecutive-containment checks with one-pass enumeration, duplicate-aware matching, and safe failures.
 - Add ascending and descending sequence-order checks by a selected key, evaluating each key once and accepting an optional comparer.
 - Add structural-equivalency membership, negative membership, and all-item sequence checks with per-call options, matched-item access, one-pass outer enumeration, and shared snapshots for nested one-shot collections.
@@ -30,6 +32,7 @@ All notable AstraFlow changes are tracked here.
 - Add typed exception checks for exact and assignable runtime types, immediate inner exception presence/type/message checks, and chainable inspection of nested exceptions.
 - Add synchronous and asynchronous `ArgumentException` parameter-name checks with ordinal case-insensitive matching and value-safe failures.
 - Add bounded completion and non-completion assertions over existing generic and non-generic task completion sources, including generic result capture and assertion-only cancellation.
+- Add deferred action, function, async `Task`, and lazy-sequence authoring helpers for subject methods and expected-exception assertions, with one-pass iterator disposal; subject `ValueTask` adapters are available on `net8.0` and later.
 - Add compile-checked typed property-value selection for reference subjects, including nested paths and single getter evaluation.
 
 - Add strict positive and negative checks for the eight standard signed and unsigned integer types.
@@ -40,6 +43,7 @@ All notable AstraFlow changes are tracked here.
 
 - Add dictionary and key-value-pair sequence checks for empty state, comparer-aware key batches, value batches, same-count checks, and count thresholds.
 - Add order-independent dictionary mapping equality and inequality checks with default key/value comparers, one-pass expected entries, duplicate-key validation, and value-safe failure messages.
+- Add complete dictionary assertions through ordinary `Should()` calls for read-only dictionary and key-value-pair sequence subjects, including comparer-aware lookups, mapping equality, count checks, and value-safe diagnostics.
 
 - Add structural object-graph equality and inequality for expected public-property shapes, ordered or optionally order-independent sequences, and dictionaries, with cycle tracking, safe mismatch paths, per-call name and nested-path exclusions, type-wide and path-specific comparers, and a bounded depth option.
 
@@ -61,7 +65,7 @@ All notable AstraFlow changes are tracked here.
 - Add explicit event monitoring for standard and custom event delegates, with raise/count/order and property-change assertions, arbitrary payload capture, thread-safe occurrence snapshots, payload-safe failures, and reverse-order unsubscription on disposal.
 - Add single-run synchronous and asynchronous delegate and subject-method timing that returns `TimeSpan` and propagates operation failures unchanged.
 - Expand stream assertions with read-only/write-only modes, negative length/position checks, and `BufferedStream` size checks while preserving non-consuming behavior.
-- Add a read-only CLI analysis report for fluent assertion migration candidates, with Roslyn symbol checks, relative locations, method names, safe suggestions, and incomplete-context notices; the report does not rewrite source or claim semantic equivalence.
+- Add a read-only CLI analysis report for fluent assertion migration candidates, with Roslyn symbol checks, relative locations, method names, safe suggestions, and incomplete-context notices; existing single-target package compile metadata can be read without executing the project, and verified ordinal string equality mappings are separated from manual findings.
 - Add empty/null string assertions, exact runtime-type checks for sequence objects, and reason text for equality failures.
 - Add ordered subsequence assertions, `And` chaining, and `Which`/`Subject` access for captured items and exceptions.
 - Add sync and async assertion entry points for value-returning functions, and reference-identity checks on sequence and dictionary results.

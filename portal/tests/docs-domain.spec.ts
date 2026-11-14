@@ -153,6 +153,12 @@ test('Assertions guide indexes nullable, stream, timeout, and exception APIs', (
     'null keys are rejected',
     'entry count, key set, or values differ',
     'failure messages report only the differing category, never keys or values',
+    'read-only dictionaries support the same assertion chain as mutable dictionaries',
+    'lookups use the dictionary\'s own comparer through',
+    'pair-sequence subjects use the default key equality comparer',
+    'chain includes single and batch key/value checks, counts, mapping equality, structural equivalence, and reference identity',
+    'finite key/value-pair sequence, enumerates it once, and checks only its count',
+    'expected keys do not need to be unique',
     'allbeassignableto',
     'allbeoftype',
     'containitemsassignableto',
@@ -212,6 +218,39 @@ test('Assertions guide indexes nullable, stream, timeout, and exception APIs', (
     'containcontentasync',
     'read and buffer the body as text with ordinal comparison',
     'omit expected and actual body text',
+    'notcontaininorderasync',
+    'notcontaininconsecutiveorderasync',
+    'startwith',
+    'endwith',
+    'ordered prefix or suffix',
+    'prefix checks stop after the expected items',
+    'suffix checks read the complete subject',
+    'null subject fails even for an empty expectation',
+    'failure messages report only the mismatch index or item counts',
+    'ordered subsequence; gaps are allowed',
+    'fails only when the items appear adjacent',
+    'repeated expected values must match distinct subject positions',
+    'null items compare normally',
+    'a null async subject fails both checks',
+    'empty expectation succeeds without acquiring an async enumerator',
+    'successful negative check must reach the end of the subject',
+    'forwards the supplied cancellationtoken',
+    'disposes it on success, assertion failure, or cancellation',
+    'matching pattern fails with only its ending index',
+    'item values are not included',
+    'fluentactions.invoking',
+    'fluentactions.awaiting',
+    'fluentactions.enumerating',
+    'subject .invoking',
+    'subject .awaiting',
+    'task operations on all four package targets',
+    'valuetask operations on net8.0',
+    'valuetask subject overloads are not available on netstandard2.0',
+    'factory for a generic or non-generic ienumerable',
+    'only when the assertion runs',
+    'fully consumes the returned sequence',
+    'enumerator is disposed on normal completion or when enumeration throws',
+    'factory that returns null fails with invalidoperationexception',
   ]) {
     expect(searchableGuide).toContain(term);
   }
@@ -279,6 +318,21 @@ test('Assertions guide indexes nullable, stream, timeout, and exception APIs', (
     'default equality comparers',
     'duplicate expected keys throw argumentexception',
     'never keys or values',
+    'read-only dictionaries support the same assertion chain as mutable dictionaries',
+    'lookups use the dictionary\'s own comparer',
+    'finite key/value-pair sequence',
+    'notcontaininorderasync',
+    'notcontaininconsecutiveorderasync',
+    'a null async subject fails both checks',
+    'forwards the supplied cancellationtoken',
+    'matching pattern fails with only its ending index',
+    'item values are not included',
+    'fluentactions.invoking',
+    'fluentactions.awaiting',
+    'fluentactions.enumerating',
+    'task operations on all four package targets',
+    'valuetask operations on net8.0',
+    'fully consumes the returned sequence',
     'httpresponsemessageassertions',
     'http response assertions',
     'haveresponseheader',
@@ -327,6 +381,15 @@ test('Assertions guide indexes nullable, stream, timeout, and exception APIs', (
   expect(searchDocs('dictionary equal notequal entry order').map((doc) => doc.slugPath)).toContain(
     'assertions',
   );
+  expect(searchDocs('read-only dictionary same count key comparer').map((doc) => doc.slugPath)).toContain(
+    'assertions',
+  );
+  expect(searchDocs('notcontaininorderasync notcontaininconsecutiveorderasync').map((doc) => doc.slugPath)).toContain(
+    'assertions',
+  );
+  expect(searchDocs('fluentactions invoking awaiting enumerating').map((doc) => doc.slugPath)).toContain(
+    'assertions',
+  );
 });
 
 test('CLI guide indexes the read-only assertion migration command and its limits', () => {
@@ -336,11 +399,13 @@ test('CLI guide indexes the read-only assertion migration command and its limits
   const searchableGuide = cliGuide?.searchText ?? '';
   for (const term of [
     'astraflow assertions analyze',
-    'syntax-only',
-    'same-name review candidates',
+    'read-only analysis of fluent assertion calls',
+    'existing restore assets',
+    'behavior-verified astraflow mapping',
+    'other bound calls require manual review',
+    'never runs msbuild',
     'relative locations',
-    'do not claim semantic equivalence',
-    'does not resolve symbols',
+    'current reports remain partial',
     'omits source expressions and literal values',
     'exit code',
     'dependency is confined to astraflow.cli',

@@ -331,6 +331,105 @@ public sealed class CollectionAssertions<T>
         return this;
     }
 
+    /// <summary>Asserts that the sequence starts with the expected items in the specified order.</summary>
+    /// <param name="expected">A finite sequence of expected leading items.</param>
+    public CollectionAssertions<T> StartWith(params T[] expected) => StartWith((IEnumerable<T>)expected);
+
+    /// <summary>Asserts that the sequence starts with the expected items in the specified order.</summary>
+    /// <param name="expected">A finite sequence of expected leading items.</param>
+    /// <param name="comparer">The comparer used to match items. Defaults to <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <remarks>The expected sequence is read at most once. A null subject fails, including for an empty expectation. A non-null subject with an empty expectation succeeds without enumeration.</remarks>
+    public CollectionAssertions<T> StartWith(IEnumerable<T> expected, IEqualityComparer<T>? comparer = null)
+    {
+        if (expected is null)
+        {
+            throw new ArgumentNullException(nameof(expected));
+        }
+
+        if (_actual is null)
+        {
+            AssertionFailure.Fail("Expected a non-null sequence to start with the requested items.");
+        }
+
+        if (ReferenceEquals(_actual, expected))
+        {
+            return this;
+        }
+
+        var expectedItems = GetExpectedItems(expected);
+        if (expectedItems.Count == 0)
+        {
+            return this;
+        }
+
+        comparer ??= EqualityComparer<T>.Default;
+        using var actualEnumerator = _actual!.GetEnumerator();
+        for (var index = 0; index < expectedItems.Count; index++)
+        {
+            if (!actualEnumerator.MoveNext())
+            {
+                AssertionFailure.Fail($"Expected the sequence to start with {expectedItems.Count} items, but it ended at index {index}.");
+            }
+
+            if (!comparer.Equals(actualEnumerator.Current, expectedItems[index]))
+            {
+                AssertionFailure.Fail($"Expected the sequence prefix to match at index {index}.");
+            }
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the sequence ends with the expected items in the specified order.</summary>
+    /// <param name="expected">A finite sequence of expected trailing items.</param>
+    public CollectionAssertions<T> EndWith(params T[] expected) => EndWith((IEnumerable<T>)expected);
+
+    /// <summary>Asserts that the sequence ends with the expected items in the specified order.</summary>
+    /// <param name="expected">A finite sequence of expected trailing items.</param>
+    /// <param name="comparer">The comparer used to match items. Defaults to <see cref="EqualityComparer{T}.Default"/>.</param>
+    /// <remarks>The subject and expected sequence are each read at most once. A null subject fails, including for an empty expectation. A non-null subject with an empty expectation succeeds without subject enumeration.</remarks>
+    public CollectionAssertions<T> EndWith(IEnumerable<T> expected, IEqualityComparer<T>? comparer = null)
+    {
+        if (expected is null)
+        {
+            throw new ArgumentNullException(nameof(expected));
+        }
+
+        if (_actual is null)
+        {
+            AssertionFailure.Fail("Expected a non-null sequence to end with the requested items.");
+        }
+
+        if (ReferenceEquals(_actual, expected))
+        {
+            return this;
+        }
+
+        var expectedItems = GetExpectedItems(expected);
+        if (expectedItems.Count == 0)
+        {
+            return this;
+        }
+
+        var actualItems = Materialize(_actual!);
+        var firstExpectedIndex = actualItems.Count - expectedItems.Count;
+        if (firstExpectedIndex < 0)
+        {
+            AssertionFailure.Fail($"Expected the sequence to end with {expectedItems.Count} items, but it contained only {actualItems.Count}.");
+        }
+
+        comparer ??= EqualityComparer<T>.Default;
+        for (var expectedIndex = 0; expectedIndex < expectedItems.Count; expectedIndex++)
+        {
+            if (!comparer.Equals(actualItems[firstExpectedIndex + expectedIndex], expectedItems[expectedIndex]))
+            {
+                AssertionFailure.Fail($"Expected the sequence suffix to match at index {firstExpectedIndex + expectedIndex}.");
+            }
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the sequence contains exactly one item and returns it.</summary>
     public SingleItemAssertions<T> ContainSingle()
     {
@@ -429,6 +528,90 @@ public sealed class CollectionAssertions<T>
 
         AssertionFailure.Fail($"Expected an item at index {index}, but the sequence ended after {currentIndex} items.");
         return null!;
+    }
+
+    /// <summary>Asserts that <paramref name="expectedPredecessor"/> immediately precedes the first matching <paramref name="successor"/>.</summary>
+    /// <remarks>The subject is read once and stops at the first matching successor. Failure messages omit compared values.</remarks>
+    public CollectionAssertions<T> HaveElementPreceding(T successor, T expectedPredecessor)
+    {
+        if (_actual is null)
+        {
+            AssertionFailure.Fail("Expected a sequence with a matching successor, but found null.");
+        }
+
+        using var enumerator = _actual.GetEnumerator();
+        if (!enumerator.MoveNext())
+        {
+            AssertionFailure.Fail("Expected a sequence with a matching successor, but found an empty sequence.");
+        }
+
+        var comparer = EqualityComparer<T>.Default;
+        var hasPredecessor = false;
+        var previous = default(T)!;
+        do
+        {
+            var current = enumerator.Current;
+            if (comparer.Equals(current, successor))
+            {
+                if (!hasPredecessor)
+                {
+                    AssertionFailure.Fail("Expected the first matching successor to have a preceding item, but it was the first sequence item.");
+                }
+
+                if (!comparer.Equals(previous, expectedPredecessor))
+                {
+                    AssertionFailure.Fail("Expected the item immediately before the first matching successor to match.");
+                }
+
+                return this;
+            }
+
+            previous = current;
+            hasPredecessor = true;
+        }
+        while (enumerator.MoveNext());
+
+        AssertionFailure.Fail("Expected a matching successor in the sequence, but none was found.");
+        return this;
+    }
+
+    /// <summary>Asserts that <paramref name="expectedSuccessor"/> immediately follows the first matching <paramref name="predecessor"/>.</summary>
+    /// <remarks>The subject is read once and stops after the first matching predecessor and its successor. Failure messages omit compared values.</remarks>
+    public CollectionAssertions<T> HaveElementSucceeding(T predecessor, T expectedSuccessor)
+    {
+        if (_actual is null)
+        {
+            AssertionFailure.Fail("Expected a sequence with a matching predecessor, but found null.");
+        }
+
+        using var enumerator = _actual.GetEnumerator();
+        if (!enumerator.MoveNext())
+        {
+            AssertionFailure.Fail("Expected a sequence with a matching predecessor, but found an empty sequence.");
+        }
+
+        var comparer = EqualityComparer<T>.Default;
+        do
+        {
+            if (comparer.Equals(enumerator.Current, predecessor))
+            {
+                if (!enumerator.MoveNext())
+                {
+                    AssertionFailure.Fail("Expected the first matching predecessor to have a succeeding item, but it was the last sequence item.");
+                }
+
+                if (!comparer.Equals(enumerator.Current, expectedSuccessor))
+                {
+                    AssertionFailure.Fail("Expected the item immediately after the first matching predecessor to match.");
+                }
+
+                return this;
+            }
+        }
+        while (enumerator.MoveNext());
+
+        AssertionFailure.Fail("Expected a matching predecessor in the sequence, but none was found.");
+        return this;
     }
 
     /// <summary>Asserts that the expected items occur in the sequence in the given order.</summary>

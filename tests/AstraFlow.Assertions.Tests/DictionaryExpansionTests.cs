@@ -138,6 +138,66 @@ public sealed class DictionaryExpansionTests
     }
 
     [Fact]
+    public void ReadOnlyDictionaryAssertions_CoverMappingsCountsAndComparerAwareLookups()
+    {
+        var backing = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Alpha"] = 7,
+            ["Beta"] = 9
+        };
+        IReadOnlyDictionary<string, int> readOnly = new ReadOnlyOnlyDictionary<string, int>(backing);
+
+        readOnly.Should()
+            .ContainKey("alpha")
+            .NotContainKey("missing")
+            .Contain("BETA", 9)
+            .ContainValue(7)
+            .NotContainValue(11)
+            .ContainKeys("ALPHA", "beta")
+            .NotContainKeys("missing")
+            .ContainValues(7, 9)
+            .NotContainValues(11)
+            .HaveCount(2)
+            .HaveSameCount(new ReadOnlyOnlyDictionary<string, int>(new Dictionary<string, int> { ["one"] = 1, ["two"] = 2 }))
+            .Equal(new[]
+            {
+                new KeyValuePair<string, int>("Beta", 9),
+                new KeyValuePair<string, int>("Alpha", 7)
+            })
+            .NotEqual(new[]
+            {
+                new KeyValuePair<string, int>("Alpha", 8),
+                new KeyValuePair<string, int>("Beta", 9)
+            });
+
+        Assert.Throws<ArgumentException>(() => readOnly.Should().Equal(new[]
+        {
+            new KeyValuePair<string, int>("Alpha", 7),
+            new KeyValuePair<string, int>("Alpha", 8)
+        }));
+
+        var oneShotExpected = new OneShotEnumerable<KeyValuePair<string, int>>(new[]
+        {
+            new KeyValuePair<string, int>("one", 1),
+            new KeyValuePair<string, int>("two", 2)
+        });
+        readOnly.Should().HaveSameCount(oneShotExpected);
+        Assert.Equal(1, oneShotExpected.GetEnumeratorCalls);
+        Assert.Equal(1, oneShotExpected.DisposeCalls);
+
+        var privateMismatch = Assert.Throws<AstraFlowAssertionException>(() => readOnly.Should().Equal(new[]
+        {
+            new KeyValuePair<string, int>("Alpha", 70),
+            new KeyValuePair<string, int>("Beta", 90)
+        }));
+        Assert.DoesNotContain("Alpha", privateMismatch.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("70", privateMismatch.Message, StringComparison.Ordinal);
+
+        IReadOnlyDictionary<string, int>? missing = null;
+        Assert.Throws<AstraFlowAssertionException>(() => missing.Should().BeEmpty());
+    }
+
+    [Fact]
     public void PairSequenceDictionaryAssertions_ApplyNullAndPrivacyRules()
     {
         IEnumerable<KeyValuePair<string, string>>? nullPairs = null;

@@ -206,6 +206,13 @@ var matched = results.Should().HaveElementAt(1, expected).Which;
 matched.Id.Should().Be(expected.Id);
 ```
 
+`HaveElementPreceding(successor, expectedPredecessor)` and `HaveElementSucceeding(predecessor, expectedSuccessor)` check an immediate neighbor of the first matching pivot with `EqualityComparer<T>.Default`. Each reads the subject once and stops after the pivot and its neighbor are known. A null or empty subject, missing pivot, pivot at the relevant boundary, or unequal neighbor fails without printing compared values; enumerator and comparer exceptions propagate unchanged.
+
+```csharp
+results.Should().HaveElementPreceding("completed", "active");
+results.Should().HaveElementSucceeding("active", "completed");
+```
+
 ### Ordered sequence membership
 
 `ContainInOrder` checks that expected items occur in order while allowing other items between them. `ContainInConsecutiveOrder` requires the expected items to be adjacent; `ContainConsecutive` is an alias. `NotContainInOrder` and `NotContainInConsecutiveOrder` assert that the corresponding ordered pattern is absent. Each method accepts either `params` values or an `IEnumerable<T>` expectation, including iterator-backed sequences.
@@ -218,6 +225,13 @@ IEnumerable<int> expectedPath = LoadExpectedPath();
 results.Should().ContainInOrder(expectedPath); // Other results may appear between expected items.
 results.Should().ContainInConsecutiveOrder(200, 204); // These values must be adjacent.
 results.Should().NotContainInOrder(304, 200);
+```
+
+`StartWith` and `EndWith` compare an ordered prefix or suffix against a finite expected sequence. Both accept `params` values or an `IEnumerable<T>`, with an optional equality comparer. The expected input is read at most once; the subject is read at most once and its enumerator is disposed. `StartWith` stops after the expected prefix; `EndWith` reads the complete subject. A null expected sequence throws `ArgumentNullException`. A null subject fails even for an empty expectation, while an empty expectation succeeds for a non-null subject without enumerating it. Failures report mismatch positions or counts without printing compared values.
+
+```csharp
+results.Should().StartWith(200, 204);
+results.Should().EndWith(new[] { 304, 200 }, EqualityComparer<int>.Default);
 ```
 
 ### Ordering by a selected key
@@ -244,6 +258,10 @@ handlers.Should().ContainItemsAssignableTo(typeof(IAsyncRequestHandler));
 ```
 
 Dictionary assertions include `BeEmpty`, `NotBeEmpty`, single-key and key/value checks, batch key and value checks, entry counts, same-count checks, reference identity, and order-independent mapping comparisons.
+
+Read-only dictionaries support the same assertion chain as mutable dictionaries. Key and key/value lookups use the dictionary's own comparer through `ContainsKey` and `TryGetValue`; pair-sequence subjects use the default key equality comparer (`EqualityComparer<TKey>.Default`). The chain includes single and batch key/value checks, counts, mapping equality, structural equivalence, and reference identity. `HaveSameCount(expectedEntries)` accepts a finite entry sequence, reads it once, and compares only the number of entries.
+
+Mutable dictionaries, read-only dictionaries, and `IEnumerable<KeyValuePair<TKey, TValue>>` sequences start dictionary checks with the ordinary `.Should()` entry point. The read-only dictionary and pair-sequence overloads return the same dictionary assertion API; pair sequences use default key equality and each assertion enumerates its subject at most once.
 
 `Equal(expectedEntries)` and `NotEqual(unexpectedEntries)` compare dictionary mappings regardless of entry order. Their expected input is a finite sequence of entries with unique, non-null keys, and the expected sequence is enumerated once. Keys and values use their default equality comparers (`EqualityComparer<TKey>.Default` and `EqualityComparer<TValue>.Default`), so null values compare normally. A null expected sequence throws `ArgumentNullException`; null subjects fail both checks; duplicate expected keys throw `ArgumentException`, and null keys are rejected. `Equal` fails when the entry count, key set, or values differ. `NotEqual` succeeds when any part of the mapping differs and fails when the mappings are equal. Failure messages report only the differing category, never keys or values.
 
@@ -276,7 +294,7 @@ Key/value checks (`ContainKey`, `NotContainKey`, `ContainValue`, `NotContainValu
 
 `ContainValues(values...)` and `NotContainValues(values...)` use `EqualityComparer<TValue>.Default`. Repeated expected values are also presence checks; they do not require distinct entries. Empty key or value batches succeed even when the dictionary subject is `null`. Non-empty batches, single-key or value checks, key/value-pair checks, and dictionary content or count checks fail when the subject is `null`.
 
-`HaveSameCount(other)`, `HaveCountGreaterThan(count)`, and `HaveCountLessThan(count)` compare entry counts. Negative expected counts are rejected with `ArgumentOutOfRangeException`. A null `other` argument to `HaveSameCount` is rejected with `ArgumentNullException`.
+`HaveSameCount(other)`, `HaveCountGreaterThan(count)`, and `HaveCountLessThan(count)` compare entry counts. `HaveSameCount` accepts a finite key/value-pair sequence, enumerates it once, and checks only its count; expected keys do not need to be unique. Negative expected counts are rejected with `ArgumentOutOfRangeException`. A null `other` argument to `HaveSameCount` is rejected with `ArgumentNullException`.
 
 Dictionary assertion failures do not print keys or dictionary values. Count failures may include entry counts.
 
@@ -297,7 +315,7 @@ settings.Should()
 
 ### Asynchronous sequence checks
 
-`IAsyncEnumerable<T>.Should()` and its async sequence assertions are available on the `net8.0`, `net9.0`, and `net10.0` package assets. The methods are `BeEmptyAsync`, `NotBeEmptyAsync`, `HaveCountAsync`, `ContainAsync`, `NotContainAsync`, `OnlyContainAsync`, `OnlyHaveUniqueItemsAsync`, `ContainEquivalentItemsAsync`, `HaveSameItemsAsync`, `ContainSingleAsync`, `ContainInOrderAsync`, `ContainConsecutiveAsync`, `AllSatisfyAsync`, `SatisfyRespectivelyAsync`, `EqualAsync`, and `ThrowAsync<TException>`. `ContainAsync` and `NotContainAsync` each support expected-value and predicate overloads. Await each assertion. `ContainSingleAsync` returns the only item through `.Which`.
+`IAsyncEnumerable<T>.Should()` and its async sequence assertions are available on the `net8.0`, `net9.0`, and `net10.0` package assets. The methods are `BeEmptyAsync`, `NotBeEmptyAsync`, `HaveCountAsync`, `ContainAsync`, `NotContainAsync`, `OnlyContainAsync`, `OnlyHaveUniqueItemsAsync`, `ContainEquivalentItemsAsync`, `HaveSameItemsAsync`, `ContainSingleAsync`, `ContainInOrderAsync`, `ContainConsecutiveAsync`, `NotContainInOrderAsync`, `NotContainInConsecutiveOrderAsync`, `AllSatisfyAsync`, `SatisfyRespectivelyAsync`, `EqualAsync`, and `ThrowAsync<TException>`. `ContainAsync` and `NotContainAsync` each support expected-value and predicate overloads. Await each assertion. `ContainSingleAsync` returns the only item through `.Which`.
 
 Each assertion call acquires at most one asynchronous enumerator, disposes it on success or failure, and forwards its `CancellationToken` when acquiring it. A later assertion call acquires a new enumerator, so a sequence must support another enumeration when multiple checks are made against it. For ordinary sequence checks, cancellation, exceptions raised by the sequence producer, and exceptions from a supplied predicate or equality comparer propagate to the caller.
 
@@ -306,6 +324,10 @@ Each assertion call acquires at most one asynchronous enumerator, disposes it on
 The expected-value overloads of `ContainAsync` and `NotContainAsync` accept an optional `IEqualityComparer<T>` and use `EqualityComparer<T>.Default` when none is supplied. Their predicate overloads accept `Func<T, bool>`. `OnlyContainAsync` checks that every item satisfies its predicate. `OnlyHaveUniqueItemsAsync`, `ContainEquivalentItemsAsync`, and `HaveSameItemsAsync` accept an optional comparer and default to `EqualityComparer<T>.Default`; they check uniqueness, requested duplicate-aware containment, and exact duplicate-aware membership without requiring order, respectively. `ContainEquivalentItemsAsync` can stop once every requested item occurrence has matched.
 
 `ContainInOrderAsync(expected)` allows gaps between expected items; `ContainConsecutiveAsync(expected)` requires adjacent items. Both use `EqualityComparer<T>.Default`, consume the expected `IEnumerable<T>` once, and dispose its enumerator. `EqualAsync` also compares the expected enumerable once in order using `EqualityComparer<T>.Default`.
+
+`NotContainInOrderAsync(expected, cancellationToken)` fails when the expected items appear as an ordered subsequence; gaps are allowed. `NotContainInConsecutiveOrderAsync` fails only when the items appear adjacent. Both use `EqualityComparer<T>.Default`, so repeated expected values must match distinct subject positions and null items compare normally. The expected enumerable must be finite and is consumed once. A null expected enumerable throws `ArgumentNullException`; a null async subject fails both checks. For a non-null subject, an empty expectation succeeds without acquiring an async enumerator. A successful negative check must reach the end of the subject, so the subject must be finite for success.
+
+When a subject enumerator is acquired, each check acquires at most one, forwards the supplied `CancellationToken`, and disposes it on success, assertion failure, or cancellation. A matching pattern fails with only its ending index in the message; item values are not included.
 
 `AllSatisfyAsync` awaits one callback for each item in sequence order. `SatisfyRespectivelyAsync` awaits one callback per item in order and requires the sequence item count to match the callback count. Callbacks run sequentially; a callback exception propagates and stops the operation without being aggregated.
 
@@ -327,6 +349,25 @@ var capturedException = producerException.Which;
 ```
 
 ## Exceptions and function results
+
+### Deferred actions and lazy sequences
+
+`FluentActions.Invoking`, `FluentActions.Awaiting`, and `FluentActions.Enumerating`, along with the subject `.Invoking`, `.Awaiting`, and `.Enumerating` extensions, create delegates for fluent assertions without running the operation when the wrapper is created. The operation runs when the returned delegate is passed to an assertion such as `Throw`, `NotThrow`, `ThrowAsync`, or `NotThrowAsync`.
+
+`FluentActions.Awaiting` and the subject `.Awaiting` extensions support `Task` operations on all four package targets. The subject extensions also support `ValueTask` operations on `net8.0`, `net9.0`, and `net10.0`; they adapt the result to `Task` for async assertions. `ValueTask` subject overloads are not available on `netstandard2.0`.
+
+`Enumerating` accepts a factory for a generic or non-generic `IEnumerable`. It invokes the factory and fully consumes the returned sequence only when the assertion runs, so deferred iterator bodies execute at that point. The iterator's enumerator is disposed on normal completion or when enumeration throws. A null factory is rejected when the wrapper is created; a factory that returns null fails with `InvalidOperationException` when the assertion executes.
+
+```csharp
+var run = FluentActions.Invoking(() => service.Run());
+run.Should().Throw<InvalidOperationException>();
+
+var save = service.Awaiting(value => value.SaveAsync());
+await save.Should().NotThrowAsync();
+
+var enumerate = FluentActions.Enumerating(() => order.ReadEvents());
+enumerate.Should().NotThrow();
+```
 
 Synchronous and asynchronous actions and functions support `Throw<TException>` or `ThrowAsync<TException>` and their corresponding `NotThrow` or `NotThrowAsync` checks. Successful no-throw function assertions retain the function result. Expected-exception assertions expose the exception through `.Which` or `.Subject`.
 

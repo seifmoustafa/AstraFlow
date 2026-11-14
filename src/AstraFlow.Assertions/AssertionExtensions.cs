@@ -78,6 +78,10 @@ public static class AssertionExtensions
     public static DictionaryAssertions<TKey, TValue> Should<TKey, TValue>(this IDictionary<TKey, TValue>? actual)
         where TKey : notnull => new(actual);
 
+    /// <summary>Starts dictionary assertions for a sequence of key-value pairs.</summary>
+    public static DictionaryAssertions<TKey, TValue> Should<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>>? actual)
+        where TKey : notnull => new(actual);
+
     /// <summary>Starts assertions for a synchronous action.</summary>
     public static ActionAssertions Should(this Action action) => new(action);
 
