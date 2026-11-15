@@ -1,5 +1,5 @@
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://astraflow.dev'
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://astraflow.org'
 ).replace(/\/+$/, '');
 
 export const SITE_NAME = 'AstraFlow';
