@@ -6,7 +6,7 @@ A modular .NET suite of **16 focused packages** for explicit request dispatch, o
 
 [Getting Started](docs/getting-started.md) · [Package Selection](docs/package-selection.md) · [Version & Upgrade Guide](docs/version-upgrade-guide.md) · [Compatibility](docs/compatibility.md) · [Changelog](CHANGELOG.md) · [Branding](docs/branding.md)
 
-> **Release status & support policy:** AstraFlow **`2.3.0`** is the current published NuGet release. Version **`2.4.0`** is in release preparation under pull request review on this branch (`Directory.Build.props` targets `2.4.0`, adding the standalone `AstraFlow.Assertions` package, expanded compile-time mapping generation, and read-only CLI assertion migration analysis). On NuGet.org, all **`1.x`** packages are **deprecated** — use **`2.x`** (`2.3.0` on NuGet today; `2.4.0` once published).
+> **Release status & support policy:** AstraFlow **`2.4.0`** is the latest tagged release (2026-11-15). It adds the standalone `AstraFlow.Assertions` package, expanded compile-time mapping generation, and read-only CLI assertion migration analysis. Check NuGet.org for the exact package ID and version before installing; package availability can lag the GitHub release. All **`1.x`** packages are **deprecated** — use the **`2.x`** line.
 
 ---
 
@@ -29,32 +29,32 @@ A modular .NET suite of **16 focused packages** for explicit request dispatch, o
 | **Integrations** | `AstraFlow.OpenTelemetry` | `net8.0`, `net9.0`, `net10.0` | Production-safe `ActivitySource` tracing and `Meter` metrics with default redaction |
 | **Integrations** | `AstraFlow.Mapper.EntityFrameworkCore` | `net10.0` | Optional EF Core queryable projection translation validation |
 | **Testing** | `AstraFlow.Testing` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Framework-neutral test fakes, recording harnesses, and flow test helpers |
-| **Testing** | `AstraFlow.Assertions` *(unreleased in `2.4.0`)* | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Standalone, runner-neutral general-purpose assertions with zero production package dependencies |
+| **Testing** | `AstraFlow.Assertions` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Standalone, runner-neutral general-purpose assertions with zero production package dependencies |
 
 See the [Package Selection Guide](docs/package-selection.md) for boundary rules and dependency isolation guarantees (`AstraFlow.Mapper` never pulls EF Core; `AstraFlow.Mediator` never pulls FluentValidation or OpenTelemetry).
 
 ---
 
-## Install the published release (`2.3.0`)
+## Install AstraFlow `2.4.0`
 
 Install the umbrella convenience package when a project uses both mediator and explicit mapping:
 
 ```powershell
-dotnet add package AstraFlow --version 2.3.0
+dotnet add package AstraFlow --version 2.4.0
 ```
 
 For cleaner layer boundaries, reference only what each assembly needs:
 
 ```powershell
 # Shared domain/API contracts library (no runtime dependency)
-dotnet add package AstraFlow.Contracts --version 2.3.0
+dotnet add package AstraFlow.Contracts --version 2.4.0
 
 # Application layer packages
-dotnet add package AstraFlow.Mediator --version 2.3.0
-dotnet add package AstraFlow.Mapper --version 2.3.0
+dotnet add package AstraFlow.Mediator --version 2.4.0
+dotnet add package AstraFlow.Mapper --version 2.4.0
 ```
 
-> `AstraFlow.Assertions` targets **`2.4.0`** and is not part of `2.3.0`. Reference it in test projects once `2.4.0` is published on NuGet.org.
+> `AstraFlow.Assertions` ships as a standalone package in **`2.4.0`**. Add it to test projects that need general-purpose assertions; it is not included by the `AstraFlow` convenience package.
 
 ---
 
@@ -107,7 +107,7 @@ See [Getting Started](docs/getting-started.md), the [Mediator Guide](docs/mediat
 - **Explicit runtime mapping (`AstraFlow.Mapper`):** Declared mapping catalogs, deterministic startup validation, named query projections, and secure ID encoding abstractions.
 - **Opt-in conventions (`AstraFlow.Mapper.Conventions`):** Never active by default; generates inspectable mapping plans with sensitive-member write safeguards backed by `AstraFlow.Security`.
 - **EF Core projection checks (`AstraFlow.Mapper.EntityFrameworkCore`):** Validates queryable projections against the configured EF Core provider.
-- **Compile-time mappings (`AstraFlow.Generators`):** Opt-in `[AstraGenerateMapping]` methods supporting typed scalar, collection, `[AstraValueConverter]`, and `[AstraDerivedMapping]` shapes in `2.3.0`. The `2.4.0` branch expands generation to inherited public source properties, `Guid`/temporal scalars, safe nullable scalar flows (`T -> T?`, `T? -> T?`), positional records, primary-constructor DTOs, and public `init`-only initializers.
+- **Compile-time mappings (`AstraFlow.Generators`):** Opt-in `[AstraGenerateMapping]` methods supporting typed scalar, collection, `[AstraValueConverter]`, and `[AstraDerivedMapping]` shapes in `2.3.0`. Version `2.4.0` expands generation to inherited public source properties, `Guid`/temporal scalars, safe nullable scalar flows (`T -> T?`, `T? -> T?`), positional records, primary-constructor DTOs, and public `init`-only initializers.
 
 See the [Mapper Guide](docs/mapper.md), [Projection Guide](docs/projections.md), [Convention Mapping Guide](docs/convention-mapping.md), [Generators Guide](docs/generators.md), and [Analyzers Guide](docs/analyzers.md).
 
@@ -138,13 +138,13 @@ Func<Task> save = () => service.SaveAsync();
 await save.Should().NotThrowAsync();
 ```
 
-See the [Testing Guide](docs/testing.md) and [Assertions Guide](docs/assertions.md) *(branch preview for `2.4.0`)* for full signatures, target matrix, and caveats.
+See the [Testing Guide](docs/testing.md) and [Assertions Guide](docs/assertions.md) for full signatures, target matrix, and caveats.
 
 ---
 
 ## Upgrading and `1.x` deprecation policy
 
-- **All `1.x` releases are deprecated on NuGet.org.** New projects and existing consumers should move to the **`2.x`** line (`2.3.0` on NuGet today; `2.4.0` once published).
+- **All `1.x` releases are deprecated on NuGet.org.** New projects and existing consumers should use the **`2.x`** line. Check NuGet.org for availability of the exact package version before upgrading.
 - Upgrading within `2.x` preserves existing package boundaries and mediator/mapper entry points: update the AstraFlow package versions in your `.csproj` or `Directory.Packages.props`, restore, build, and run tests.
 - Adopting `AstraFlow.Assertions` or `2.4.0` generated mapping expansions is optional per test project or mapping declaration.
 

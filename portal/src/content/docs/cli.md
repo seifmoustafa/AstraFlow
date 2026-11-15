@@ -2,7 +2,7 @@
 
 `AstraFlow.Cli` installs the `astraflow` command-line tool for inspecting handlers, validating contracts, diffing snapshots, generating JSON/Markdown/SARIF reports, exporting architecture graphs, and reviewing assertion migration candidates from source trees in local workflows and CI pipelines.
 
-The 2.4.0 preview adds read-only assertion migration review through `astraflow assertions analyze`. Results include relative locations, method names, behavior-verified mappings where available, review candidates, and syntax warnings; the command never modifies source files.
+The 2.4.0 release adds read-only assertion migration review through `astraflow assertions analyze`. Results include relative locations, method names, behavior-verified mappings where available, review candidates, and syntax warnings; the command never modifies source files.
 
 ## Installation
 
@@ -55,7 +55,7 @@ astraflow diff baseline.json current.json -o markdown
 
 ## Assertion migration analysis
 
-The 2.4.0 preview adds `astraflow assertions analyze`, a read-only analysis of fluent assertion calls in C# source. It scans one C# file, a `.csproj`, `.sln`, `.slnx`, or a directory recursively. If `path` is omitted, it scans the current directory.
+The 2.4.0 release adds `astraflow assertions analyze`, a read-only analysis of fluent assertion calls in C# source. It scans one C# file, a `.csproj`, `.sln`, `.slnx`, or a directory recursively. If `path` is omitted, it scans the current directory.
 
 ```bash
 astraflow assertions analyze

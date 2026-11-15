@@ -348,6 +348,12 @@ export function ReleaseFolio({
         : t('spineDeprecatedMajor', { major: release.version.split('.')[0] ?? t('legacyMajor') });
     }
     if (release.status === 'latest') {
+      const isLatestNuGet = release.statusLabel === 'Latest NuGet';
+      if (isLatestNuGet) {
+        return date
+          ? t('spineLatestNuGetDate', { date })
+          : t('spineLatestNuGet');
+      }
       return date ? t('spineLatestDate', { date }) : t('spineLatest');
     }
     if (release.status === 'major') {
@@ -361,6 +367,7 @@ export function ReleaseFolio({
 
   const localizedStatusLabel = (release: ChangelogRelease): string => {
     if (release.isUnreleased) return t('upcomingStatus');
+    if (release.status === 'latest') return release.statusLabel;
     if (release.isDeprecated && release.status === 'historical') {
       return t('legacyArchiveStatus', {
         major: release.version.split('.')[0] ?? t('legacyMajor'),

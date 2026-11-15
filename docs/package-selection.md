@@ -174,7 +174,7 @@ Use this only in test projects unless an application has a deliberate reason to 
 
 ## `AstraFlow.Assertions`
 
-Implemented for the unreleased v2.4.0 source. The package is not yet published. Use it in any .NET test project that needs framework-neutral assertions for values, strings, collections, exceptions, and asynchronous operations.
+Included in the `2.4.0` release. Use it in any .NET test project that needs framework-neutral assertions for values, strings, collections, exceptions, and asynchronous operations.
 
 ```powershell
 dotnet add package AstraFlow.Assertions --version 2.4.0
@@ -239,7 +239,7 @@ dotnet tool install --global AstraFlow.Cli --version 2.3.0
 - `astraflow scan`,
 - JSON, Markdown, SARIF, Mermaid, and DOT output paths.
 
-The unreleased 2.4.0 source adds `astraflow assertions analyze [path]`, a read-only syntax report for fluent assertion migration candidates. It marks candidates for manual review, does not resolve project symbols or behavior equivalence, and never edits source. This command is not in the published 2.3.0 tool.
+The `2.4.0` release adds `astraflow assertions analyze [path]`, a read-only syntax report for fluent assertion migration candidates. It marks candidates for manual review, does not resolve project symbols or behavior equivalence, and never edits source. This command is not in the `2.3.0` tool.
 
 Use this outside application runtime projects. Application code should reference the runtime packages it needs directly.
 
