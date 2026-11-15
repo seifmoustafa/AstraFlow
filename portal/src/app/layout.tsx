@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
+import { Analytics } from '@vercel/analytics/next';
 import { DEFAULT_LOCALE, getDirection } from '@core/i18n/config';
 import { SITE_NAME, SITE_URL } from '@core/config/site-config';
 import '@core/design/globals.css';
@@ -59,6 +60,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <NextIntlClientProvider locale={DEFAULT_LOCALE} messages={messages}>
           {children}
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );
