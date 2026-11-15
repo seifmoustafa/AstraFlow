@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -43,7 +43,7 @@ jobs:
           "SOURCE_DATE_EPOCH=$sourceDateEpoch" >> $env:GITHUB_ENV
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: |
             8.0.x
@@ -58,6 +58,18 @@ jobs:
 
       - name: Test
         run: dotnet test AstraFlow.slnx -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
+      - name: Test public API baseline verifier
+        shell: pwsh
+        run: ./scripts/tests/verify-public-api-baselines.Tests.ps1
+
+      - name: Verify public API baselines
+        shell: pwsh
+        run: ./scripts/verify-public-api-baselines.ps1 -Configuration Release
+
+      - name: Verify obsolete API replacement guidance
+        shell: pwsh
+        run: ./scripts/verify-obsolete-guidance.ps1
 
       - name: Verify changelog entry
         shell: pwsh
@@ -96,6 +108,9 @@ jobs:
       - name: Pack testing
         run: dotnet pack src/AstraFlow.Testing/AstraFlow.Testing.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
+      - name: Pack assertions
+        run: dotnet pack src/AstraFlow.Assertions/AstraFlow.Assertions.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
+
       - name: Pack analyzers
         run: dotnet pack src/AstraFlow.Analyzers/AstraFlow.Analyzers.csproj -c Release --no-build --no-restore /m:1 /p:UseSharedCompilation=false
 
@@ -125,6 +140,7 @@ jobs:
             "src/AstraFlow.Mapper.Conventions/bin/Release/AstraFlow.Mapper.Conventions.$version.nupkg",
             "src/AstraFlow.Diagnostics/bin/Release/AstraFlow.Diagnostics.$version.nupkg",
             "src/AstraFlow.Testing/bin/Release/AstraFlow.Testing.$version.nupkg",
+            "src/AstraFlow.Assertions/bin/Release/AstraFlow.Assertions.$version.nupkg",
             "src/AstraFlow/bin/Release/AstraFlow.$version.nupkg"
           )
           foreach ($package in $corePackages) {
@@ -198,6 +214,14 @@ jobs:
           $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
           ./scripts/verify-package-install.ps1 -Version $version
 
+      - name: Verify previous-version compatibility and upgrade smoke
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content Directory.Build.props -Raw
+          $version = (($props.Project.PropertyGroup | Where-Object { $_.Version } | Select-Object -First 1).Version).Trim()
+          ./scripts/verify-api-compatibility.ps1 -PreviousVersion 2.0.0 -CurrentVersion $version -AllowMissingPreviousPackages
+          ./scripts/verify-upgrade-smoke.ps1 -PreviousVersion 2.0.0 -CurrentVersion $version -AllowMissingPreviousPackages
+
       - name: Verify repeat package output
         shell: pwsh
         run: ./scripts/verify-package-reproducibility.ps1 -Configuration Release
@@ -227,17 +251,17 @@ jobs:
       artifact-metadata: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
       - name: Download verified package artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: astraflow-packages
           path: release-artifacts
@@ -301,9 +325,9 @@ jobs:
 
       - name: Install gitsign
         if: steps.release_exists.outputs.exists == 'false'
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
-          go-version: '1.25.x'
+          go-version: '1.26.x'
 
       - name: Sign and verify release tag
         if: steps.release_exists.outputs.exists == 'false'
@@ -317,8 +341,10 @@ jobs:
           tag='${{ steps.version.outputs.tag }}'
           if git ls-remote --tags origin "refs/tags/$tag" | grep -q .; then
             git fetch --no-tags origin "refs/tags/$tag:refs/tags/$tag"
-            if [ "$(git rev-list -n 1 "$tag")" != "$(git rev-parse HEAD)" ]; then
-              echo "Release tag $tag already points at a different commit; refusing to replace it."
+            tag_commit="$(git rev-parse "$tag^{commit}")"
+            if [ "$tag_commit" != "$(git rev-parse HEAD)" ] &&
+              ! git diff --quiet "$tag_commit" HEAD -- . ':(exclude).github/workflows/ci.yml'; then
+              echo "Release tag $tag already exists and source files differ; refusing to replace it."
               exit 1
             fi
           else
@@ -329,7 +355,7 @@ jobs:
             git tag -s "$tag" -m "AstraFlow ${{ steps.version.outputs.version }}"
             git push origin "$tag"
           fi
-          gitsign verify --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/ci.yml@refs/heads/${GITHUB_REF_NAME}" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" "$tag"
+          gitsign verify-tag --certificate-identity="https://github.com/${{ github.repository }}/.github/workflows/ci.yml@refs/heads/${GITHUB_REF_NAME}" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" "$tag"
 
       - name: Create GitHub release with generated notes and evidence
         if: steps.release_exists.outputs.exists == 'false'

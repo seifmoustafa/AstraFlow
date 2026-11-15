@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.OpenTelemetry --version 2.0.0
+dotnet add package AstraFlow.OpenTelemetry --version 2.3.0
 ```
 
 Register it after mediator registration:

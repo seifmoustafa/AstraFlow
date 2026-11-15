@@ -1,5 +1,5 @@
 using AstraFlow.Mediator;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Xunit;
 
 namespace AstraFlow.Testing.Tests;

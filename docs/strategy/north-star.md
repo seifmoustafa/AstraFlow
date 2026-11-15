@@ -54,6 +54,7 @@ None of those should require a hosted service, product license key, proprietary 
 | Existing v2.2–v2.3 | Supply chain and API governance | Enterprise-grade trust *evidence*, not an unproven marketing label |
 | Candidate v2.4 | Generated mediator invocation | Faster, inspectable dispatch without breaking DI/pipelines |
 | Candidate v2.5 | Explainable flow manifest | Reviewable application-flow changes with confidence labels |
+| Candidate v2.5 | Assertions capability expansion | Assertion additions selected from adopter evidence and shipped only after independent gates; see the [v2.5 Assertions candidate plan](../plans/v2.5-assertions.md) |
 | v2.6+ research | Adoption and reliability | Independent pilots proving time saved and maintainable migration |
 | v3+ candidates | Optional integrations | Idempotency/caching/authz/EF/resilience where they cut boilerplate |
 | v4+ research | Visual workflow/tooling | Only after a stable metadata schema and user demand |

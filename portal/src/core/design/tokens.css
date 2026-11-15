@@ -1,0 +1,63 @@
+:root,
+:root[data-theme="warm-forest"] {
+  color-scheme: light;
+
+  /* Surfaces */
+  --paper: #f7f3eb;
+  --paper-raised: #fffdf7;
+  --paper2: #fffdf7;
+  --sand: #ece5d9;
+  --sand-warm: #e9e3d7;
+  --border: #d8d0c2;
+  --line: #d8d0c2;
+  --hairline: #d6d3c8;
+
+  /* Ink & Forest */
+  --ink: #082c26;
+  --ink-secondary: #2f5b4e;
+  --ink2: #2f5b4e;
+  --ink-body: #465f53;
+  --forest: #0a342b;
+  --forest-deep: #051e19;
+  --forest0: #051e19;
+  --forest-surface: #05221c;
+  --muted: #617267;
+
+  /* Signal & Action (Warm Terracotta / Signal Orange ONLY — NO cyan) */
+  --signal: #f25e3b;
+  --signal-bright: #ef6843;
+  --action: #b73921;
+  --peach: #ffd2bd;
+  --peach-soft: #ffc4aa;
+
+  /* Elevation & Motion */
+  --shadow: 0 24px 70px rgba(22, 47, 38, 0.08);
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-polish: cubic-bezier(0.22, 0.75, 0.19, 1);
+
+  /* Layout Metrics */
+  --max: 1376px;
+  --gutter: clamp(20px, 4.6vw, 78px);
+  --header-height: 84px;
+
+  /* Typography */
+  --font-sans: "Inter", "Arial", "Liberation Sans", sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-mono: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-synthesis: none;
+}
+
+@media (max-width: 770px) {
+  :root,
+  :root[data-theme="warm-forest"] {
+    --gutter: 22px;
+    --header-height: 74px;
+  }
+}
+
+@media (max-width: 450px) {
+  :root,
+  :root[data-theme="warm-forest"] {
+    --gutter: 18px;
+  }
+}

@@ -56,13 +56,13 @@ The publish workflow remains manually dispatched and requires the exact `PUBLISH
 Verify a GitHub Release's artifacts and provenance:
 
 ```powershell
-gh attestation verify .\AstraFlow.2.2.0.nupkg --repo seifmoustafa/AstraFlow
+gh attestation verify .\AstraFlow.<verified-version>.nupkg --repo seifmoustafa/AstraFlow
 ```
 
 Inspect the included SPDX document and compare the NuGet package signature:
 
 ```powershell
-dotnet nuget verify --all .\AstraFlow.2.2.0.nupkg
+dotnet nuget verify --all .\AstraFlow.<verified-version>.nupkg
 ```
 
 The repository stores release SBOMs and attestations as GitHub Release assets and GitHub's attestation service. Consumers should verify the artifact digest they downloaded, not rely on a filename alone.

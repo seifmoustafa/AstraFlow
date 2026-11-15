@@ -5,7 +5,7 @@
 Install:
 
 ```powershell
-dotnet add package AstraFlow.Security --version 2.0.0
+dotnet add package AstraFlow.Security --version 2.3.0
 ```
 
 ## What It Owns

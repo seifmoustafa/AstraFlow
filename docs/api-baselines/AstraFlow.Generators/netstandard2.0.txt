@@ -1,0 +1,13 @@
+# Public XML documentation member IDs for AstraFlow.Generators (netstandard2.0).
+M:AstraFlow.Generators.AstraFlowExecutableMapperGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext)
+M:AstraFlow.Generators.AstraFlowMapperMetadataGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext)
+M:AstraFlow.Generators.AstraFlowMediatorRegistrationGenerator.Initialize(Microsoft.CodeAnalysis.IncrementalGeneratorInitializationContext)
+M:AstraFlow.Security.AstraFlowSensitiveDataPolicy.#ctor(System.Collections.Generic.IEnumerable{System.String})
+M:AstraFlow.Security.AstraFlowSensitiveDataPolicy.IsSensitiveName(System.String)
+M:AstraFlow.Security.AstraFlowSensitiveDataPolicy.NormalizeName(System.String)
+P:AstraFlow.Security.AstraFlowSensitiveDataPolicy.DefaultSensitiveNameFragments
+P:AstraFlow.Security.AstraFlowSensitiveDataPolicy.SensitiveNameFragments
+T:AstraFlow.Generators.AstraFlowExecutableMapperGenerator
+T:AstraFlow.Generators.AstraFlowMapperMetadataGenerator
+T:AstraFlow.Generators.AstraFlowMediatorRegistrationGenerator
+T:AstraFlow.Security.AstraFlowSensitiveDataPolicy

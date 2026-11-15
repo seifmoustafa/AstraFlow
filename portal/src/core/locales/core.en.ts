@@ -1,0 +1,73 @@
+export const coreEn = {
+    brand: {
+      name: 'AstraFlow',
+      tagline: 'ENGINEERED CLARITY',
+      homeAriaLabel: 'AstraFlow ENGINEERED CLARITY — home',
+      skipToMain: 'Skip to main content',
+    },
+    header: {
+      navAriaLabel: 'Primary',
+      mobileMenuLabel: 'Menu ☰',
+      mobileMenuAriaLabelOpen: 'Close navigation menu',
+      mobileMenuAriaLabelClosed: 'Open navigation menu',
+      githubAriaLabel: 'AstraFlow GitHub repository',
+      githubTitle: 'View AstraFlow on GitHub',
+      githubDrawerLabel: 'GitHub Repository ↗',
+      ctaLabel: 'Get started ↗',
+      navigation: {
+        home: 'Home',
+        packages: 'Packages',
+        docs: 'Docs',
+        guides: 'Guides',
+        changelog: 'Changelog',
+        community: 'Community',
+      },
+    },
+    footer: {
+      headlineTop: 'Complexity is optional.',
+      headlineAccent: "Clarity isn't.",
+      description: 'Focused .NET packages. One deliberate engineering language.',
+      bottomLeft: 'ASTRAFLOW / THE COMPONENTS OF CLARITY',
+      bottomRight: 'MIT LICENSED • MODULAR .NET ARCHITECTURE',
+      columns: {
+        explore: 'Explore',
+        project: 'Project',
+        build: 'Build',
+      },
+      links: {
+        packages: 'Packages',
+        documentation: 'Documentation',
+        guides: 'Guides',
+        changelog: 'Changelog',
+        community: 'Community',
+        github: 'GitHub',
+        gettingStarted: 'Getting started',
+        packageSelection: 'Package selection',
+        releaseHistory: 'Release history',
+      },
+    },
+    errors: {
+      notFoundEyebrow: '404 / ROUTE NOT FOUND',
+      notFoundTitle: 'Nothing at',
+      notFoundAccent: 'this address.',
+      notFoundBody:
+        'The requested page or documentation guide could not be found in the AstraFlow documentation hub.',
+      errorEyebrow: 'UNEXPECTED FAULT',
+      errorTitle: 'Something',
+      errorAccent: 'interrupted the page.',
+      errorBody:
+        'An unexpected rendering error occurred while loading this page. You can retry the route or return to the verified portal index.',
+      errorDigestLabel: 'REFERENCE DIGEST',
+      retryLabel: 'Try again',
+      homeLabel: 'Return home',
+      docsLabel: 'Browse docs',
+      packagesLabel: 'Browse packages',
+    },
+    seo: {
+      title: 'AstraFlow — Engineered Clarity for .NET',
+      titleTemplate: '%s — AstraFlow',
+      description:
+        'A modular .NET framework for mediator, mapping, diagnostics, and testing.',
+      appleTitle: 'AstraFlow',
+    },
+} as const;

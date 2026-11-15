@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>2.2.0</Version>
-    <AssemblyVersion>2.2.0.0</AssemblyVersion>
-    <FileVersion>2.2.0.0</FileVersion>
+    <Version>2.4.0</Version>
+    <AssemblyVersion>2.4.0.0</AssemblyVersion>
+    <FileVersion>2.4.0.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,11 +18,36 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 2.2.0:
-      - Adds deterministic package and SourceLink verification to release validation.
-      - Adds SPDX SBOMs, GitHub artifact attestations, and signed release tag verification.
-      - Adds dependency review and post-publish NuGet repository signature verification.
-      - Documents security reporting, release verification, and recommended repository controls.
+    <PackageReleaseNotes>AstraFlow 2.4.0:
+      - Adds the standalone AstraFlow.Assertions package for framework-neutral consumer tests.
+      - Keeps the assertion package independent from AstraFlow runtime and test-runner packages.
+      - Adds equality, nullability, string, collection, type, enum, GUID, range, and sync/async exception assertions.
+      - Adds predicate and multiple-item sequence membership, key lookup on key-value-pair sequences, and ordinal exception message pattern checks.
+      - Adds exact sequence runtime-type checks and optional reason text for equality assertions.
+      - Adds exact and assignable runtime-type checks for sequence items, including typed generic chaining and runtime-Type overloads.
+      - Adds one-pass indexed sequence-item checks with returned item access and safe failures.
+      - Adds immediate predecessor and successor sequence checks with first-match, one-pass behavior and value-safe failures.
+      - Adds lazy expected-sequence overloads and negative ordered/consecutive containment checks.
+      - Adds ascending and descending sequence-order checks by key, with one selector call per item and optional comparers.
+      - Adds structural-equivalency membership, negative membership, and all-item sequence checks with per-call options and one-pass nested snapshots.
+      - Adds ordered subsequence assertions, subject access for captured results, and reference-identity checks.
+      - Adds safe exception-chain inspection, runtime type overloads, and single-invocation exception predicates.
+      - Adds synchronous and asynchronous ArgumentException parameter-name assertions with value-safe failures.
+      - Adds bounded completion and non-completion checks for existing task completion sources, with generic result capture and assertion-only cancellation.
+      - Adds compile-checked typed property-value selection for reference subjects, including nested paths and single getter evaluation.
+      - Adds namespace-aware XML structure and deep equivalency checks for document roots, direct children, attributes, and text.
+      - Adds non-consuming HTTP response status and response/content-header checks with exact value matching.
+      - Adds opt-in public instance-field comparison to structural object-graph equivalency.
+      - Adds path-based object-graph member selection with explicit missing-path failures.
+      - Adds metadata-only type assertions for inheritance, interfaces, public properties, method overloads, and constructors.
+      - Adds exact runtime-Type equality and negative dictionary entry checks for key/value pairs and single-pass predicates.
+      - Adds exact byte-content stream assertions with bounded-memory reads, value-safe failures, and seekable-position restoration.
+      - Adds set-based collection subset/intersection checks, inclusive count bounds, and null-item checks.
+      - Adds order-independent dictionary mapping equality and inequality with default key/value equality and value-safe failures.
+      - Adds read-only syntax-based CLI analysis for assertion migration candidates, with review classifications and privacy-safe locations.
+      - Adds synchronous and asynchronous function assertion entry points for value-returning delegates.
+      - Uses safe failure messages that avoid rendering arbitrary object values and string contents by default.
+      - Adds generated mapping support for inherited entity properties, nullable scalar values, and record/primary-constructor DTOs.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -33,7 +58,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageIcon>assets/branding/astraflow-icon.png</PackageIcon>
+    <PackageIcon>assets/astraflow-icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="" />
@@ -41,9 +66,9 @@
     <None Include="$(MSBuildThisFileDirectory)CODE_OF_CONDUCT.md" Pack="true" PackagePath="" />
     <None Include="$(MSBuildThisFileDirectory)SUPPORT.md" Pack="true" PackagePath="" />
     <None
-      Include="$(MSBuildThisFileDirectory)assets\branding\astraflow-icon.png"
+      Include="$(MSBuildThisFileDirectory)assets\astraflow-icon.png"
       Pack="true"
-      PackagePath="assets\branding\"
+      PackagePath="assets\"
     />
     <None Include="$(MSBuildThisFileDirectory)docs\*.md" Pack="true" PackagePath="docs\" />
     <Compile

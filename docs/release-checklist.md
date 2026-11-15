@@ -3,6 +3,9 @@
 ## Source
 
 - Public APIs have XML documentation.
+- `scripts/verify-public-api-baselines.ps1` passes for every library target and the API baseline diff is reviewed in the pull request.
+- `scripts/verify-obsolete-guidance.ps1` passes; each obsolete declaration names its replacement.
+- The current changelog classifies breaking changes, additions, changes, fixes, deprecations, removals, and security work.
 - Package projects build with warnings as errors.
 - Samples compile.
 - Tests pass in Release configuration.
@@ -76,6 +79,7 @@
 - A clean sample project can install `AstraFlow.Diagnostics`.
 - A clean sample project can install `AstraFlow.Security`.
 - A clean sample project can install `AstraFlow.Testing`.
+- A clean test consumer can install `AstraFlow.Assertions` and compile its general-purpose assertion examples.
 - A clean sample project can install `AstraFlow.Mapper.EntityFrameworkCore`.
 - A clean sample project can install `AstraFlow.AspNetCore`.
 - A clean sample project can install `AstraFlow.FluentValidation`.

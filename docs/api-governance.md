@@ -1,111 +1,67 @@
-# API Governance
+# Public API Governance
 
-This guide documents the AstraFlow public API review rules introduced in `1.13.0` and tightened for `1.13.1`.
+AstraFlow treats package public APIs, analyzer diagnostics, generator contracts, CLI commands, and package identities as compatibility-sensitive. Every public API change must be visible in the pull request, have a SemVer classification, and have a migration path when consumers need one.
 
-## Goal
+## CI gates
 
-`1.13.1` treats API compatibility as a release gate. The package family should not accidentally remove public types, members, XML-documented APIs, target assets, or package identities during a minor or patch release.
+`scripts/verify-public-api-baselines.ps1` compares the XML documentation member IDs emitted by each library target against the checked-in files under `docs/api-baselines/<project>/<tfm>.txt`. CI runs it after the Release build. The baseline is target-specific, so a symbol disappearing from one target is reported even if it remains on another target.
 
-## Release Gate
+To update the baseline for an intentional API change:
 
-Before publishing, run:
+1. Build the Release solution so the XML documentation reflects the source being reviewed.
+2. Run `./scripts/update-public-api-baselines.ps1`.
+3. Review every added and removed member ID against the source diff and the SemVer rules below.
+4. Include the baseline diff in the same pull request as the code and changelog entry.
 
-```powershell
-.\scripts\verify-api-compatibility.ps1 -PreviousVersion 1.13.0 -CurrentVersion 1.13.1
-```
+Do not run the update script to make CI pass without reviewing the API change. An unreviewed source change fails the baseline gate. The update script is an explicit author action; CI never rewrites baselines.
 
-The script compares XML documentation member IDs from the previous published NuGet packages with the currently packed packages. Missing member IDs are treated as potential breaking changes.
+The baseline covers documented member IDs. It catches changes to member identity and most parameter or generic type signature changes represented in XML IDs. It does **not** encode nullability annotations, parameter names, every CLR metadata detail, behavior, or undocumented members. Keep XML documentation complete, review source and package diffs, and run `scripts/verify-api-compatibility.ps1` against a verified prior published package when available. The package comparison is a second release check, not a replacement for the checked-in source baseline.
 
-The publish workflow runs the same check after packing and before publishing.
+The CLI is a .NET tool and does not generate XML library API documentation. Its commands and machine-readable output are governed by CLI contract tests and documentation instead of a library XML-ID baseline.
 
-## What The Check Catches
+## Pull request API review
 
-- Removed public types.
-- Removed public methods, properties, fields, events, and constructors.
-- Renamed public APIs.
-- Signature changes that produce a different XML documentation member ID.
-- Missing XML documentation assets in packed packages.
+Every pull request that changes `docs/api-baselines/`, public declarations, analyzer IDs or severities, generator contracts, CLI output, target frameworks, or package IDs must:
 
-## What Still Needs Human Review
+- identify the affected packages and consumer scenarios,
+- classify the change as breaking, added, changed, fixed, deprecated, removed, or security-related in `CHANGELOG.md` (use `None.` for empty categories),
+- explain source, binary, behavioral, and target-framework compatibility,
+- include migration guidance for any consumer action,
+- review XML documentation, nullable annotations, and optional package dependency boundaries,
+- have a maintainer approve the API and baseline diff before merge.
 
-The script is a compatibility guard, not a complete design review. Maintainers must still review:
+CI enforces that all release changelog categories exist, all library target baselines exist, and no baseline drift remains. A baseline edit records author intent; the pull request review remains the approval.
 
-- changed behavior behind the same API,
-- changed default option values,
-- changed exception behavior,
-- changed target frameworks,
-- changed package dependencies,
-- changed analyzer severities,
-- obsolete APIs and replacement guidance,
-- package dependency flow between optional integrations and core packages.
+## SemVer classification
 
-## SemVer Rules
+- **Patch:** compatible bug fixes, security fixes, documentation corrections, and implementation changes that do not alter public contracts.
+- **Minor:** additive APIs, packages, supported targets, diagnostics, and opt-in capabilities. Existing supported consumer code remains source and binary compatible.
+- **Major:** removed or incompatible public APIs, package identity changes, dropped supported targets, or intentional incompatible behavior/default changes.
 
-Patch releases may fix bugs and documentation without broad new public surface.
+If a change appears breaking, preserve the old API where practical and release the replacement additively. Otherwise move it to a major version, document the consumer impact and migration, and keep the old API available as obsolete for a transition period when safe.
 
-Minor releases may add packages, APIs, diagnostics, tests, and release gates without breaking existing consumers.
+## Obsolete API policy
 
-Major releases are required for intentional breaking API removals, incompatible behavior changes, target framework removals, or package identity changes.
+Every `[Obsolete]` attribute must state an actionable replacement by name, for example `[Obsolete("Use MapGenerated instead.")]`. Vague messages such as “deprecated” or “no longer supported” are insufficient. The CI check `scripts/verify-obsolete-guidance.ps1` rejects obsolete attributes without a `Use <replacement> instead` message. Include a migration example and a `Deprecated` changelog entry. Do not obsolete security-sensitive APIs without a reviewed replacement and documented behavior.
 
-## Reviewing Intentional Breaks
+Remove an obsolete API only in a major release, except when legal or security obligations require earlier removal. Document the removal and migration in the changelog and release notes.
 
-If a breaking change is unavoidable:
+Package deprecation requires a published replacement package, a migration path, and an explicit consumer action. Keep the old package installable during its support window.
 
-- move the release to the next major version,
-- document the old API and replacement API,
-- add a migration example,
-- add a changelog entry under breaking changes,
-- update the version support policy,
-- keep old APIs obsolete with replacement guidance when practical.
+## Release branches
 
-## Package Deprecation Process
+- `main` is the integration branch. Feature work lands through reviewed pull requests.
+- Cut `release/<major>.<minor>` from `main` after scope freeze when a release needs stabilization. Only release-blocking fixes, release metadata, and documentation corrections go there.
+- Make release-branch fixes through pull requests, then merge or cherry-pick the reviewed fix back to `main` so the branches do not diverge.
+- Do not develop the next minor on a release branch. Delete the branch after the release is complete and its support window closes.
+- Create version tags only for reviewed release commits after the repository release gates pass. A branch name alone does not imply that the branch or packages are released.
 
-Package deprecation is allowed only when a package has a documented replacement, the replacement is already published, and the changelog explains the consumer action required.
+## Support window
 
-Before marking a package deprecated:
+AstraFlow actively validates and documents the latest stable minor line. When a new minor line becomes stable, the previous minor receives security and critical-fix consideration for 90 days; after that, fixes are released on the latest line. A major line remains supported only while it contains the latest stable minor. Backports are discretionary when the change is risky or the affected dependencies are no longer maintained.
 
-- document the package being deprecated and the replacement package or migration path,
-- add migration cookbook examples when code changes are required,
-- keep the package installable while the supported minor line remains active,
-- add `ObsoleteAttribute` guidance to public APIs when API-level deprecation is more precise than package-level deprecation,
-- avoid removing package identities before a major version.
+The support statement is about maintainer validation and fixes. Old packages may remain downloadable from NuGet after support ends. Record verified package publication and tag status independently; source version metadata does not prove a release was published.
 
-Deprecation entries should use changelog sections named `Deprecated`, `Changed`, and `Migration Notes` where applicable.
+## Historical compatibility check
 
-## Versioned Documentation Strategy
-
-The `main` branch documentation describes the current release candidate or latest stable line. Release tags preserve the exact documentation shipped with each package version.
-
-For each release:
-
-- tag the repository with `v<version>` after the package metadata and docs match the release,
-- keep package install snippets aligned with `Directory.Build.props`,
-- keep historical release facts in `CHANGELOG.md` instead of rewriting old entries,
-- link NuGet and GitHub release notes back to the matching tag,
-- use patch releases for documentation corrections that affect current consumers.
-
-If a hosted docs site is added later, it should publish versioned docs from tags and keep `/latest` pointed at the newest stable release.
-
-## Baseline Policy
-
-`1.13.1` uses the previously published `1.13.0` packages as the compatibility baseline.
-
-Future releases should compare against the latest stable published version unless a release owner explicitly chooses a different baseline and records the reason in the release notes.
-
-
-## Future generated execution API policy (proposed)
-
-Compiled generators can create public methods and service registration surfaces that consumers depend on. A new generator must therefore pass **both** source-level and *generated-public-surface* compatibility reviews.
-
-1. **Declaration shape:** one minimal explicit mapping declaration approved through [ADR-0001](adr/0001-generated-mapper.md); do not ship several mutually competing configuration DSLs.
-2. **Generated naming:** deterministic, collision-safe and non-breaking when unrelated source files are added.
-3. **Diagnostic codes:** stable IDs, severities and documented actionable fixes. Reclassifying a warning as build-breaking needs a release note and migration path.
-4. **Package asset contract:** analyzer references remain private to consumers where appropriate; runtime packages must not gain Roslyn dependencies.
-5. **Semantics:** generated vs runtime behavior documented and differential-tested in shared supported cases; no silent fallback.
-6. **Migration:** any newly obsolete declaration must include its replacement and compatible transition window; no unexpected generated method removal in a patch.
-7. **Policy ownership:** security-sensitive exceptions and suppression behavior require explicit review; a name heuristic is not a full data-leak proof.
-8. **AOT and build cost:** verify published sample execution and compilation costs before advertising guarantees.
-
-For breaking public changes, follow SemVer review and versioned migration docs. Internal code generation does not exempt a public symbol from normal API governance.
-
-See [validation matrix](strategy/validation-matrix.md) and [evidence gates](strategy/evidence-and-gates.md).
+`scripts/verify-api-compatibility.ps1` compares XML member IDs from a prior NuGet package with locally packed output. It is useful when that package is verified as a stable baseline. Do not use `-AllowMissingPreviousPackages` as evidence that a comparison passed; a skipped package is unverified. The checked-in target-specific baselines remain the required pull request gate.

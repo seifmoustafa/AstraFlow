@@ -1,10 +1,10 @@
 # Compatibility
 
-This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion.
+This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion. Version `2.4.0` is the latest tagged release. Verify NuGet availability for the exact package ID and version before upgrading.
 
 ## Current Support
 
-AstraFlow `2.0.0` currently targets:
+The source package projects currently target the frameworks below. This table describes checked-in source assets; it does not prove that a particular package version is available on NuGet. Verify exact publication status independently before using a version as a consumer baseline.
 
 | Package | Current targets |
 | --- | --- |
@@ -16,6 +16,7 @@ AstraFlow `2.0.0` currently targets:
 | `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Security` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Testing` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
+| `AstraFlow.Assertions` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` |
 | `AstraFlow.Mapper.EntityFrameworkCore` | `net10.0` |
 | `AstraFlow.AspNetCore` | `net10.0` |
 | `AstraFlow.FluentValidation` | `net8.0`, `net9.0`, `net10.0` |
@@ -23,7 +24,7 @@ AstraFlow `2.0.0` currently targets:
 | `AstraFlow.Analyzers` | Roslyn analyzer assets under `analyzers/dotnet/cs` |
 | `AstraFlow.Generators` | Roslyn source generator assets under `analyzers/dotnet/cs` |
 
-This means applications, shared libraries, contracts projects, security policy projects, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the contracts package, core packages, `AstraFlow.Mapper.Conventions`, `AstraFlow.Security`, and `AstraFlow.Testing`. EF Core projection translation validation and ASP.NET Core helpers require a `net10.0` project. FluentValidation and OpenTelemetry integration packages support `net8.0`, `net9.0`, and `net10.0`. Analyzer and generator assets are consumed by the compiler rather than referenced as runtime libraries.
+This means applications, shared libraries, contracts projects, security policy projects, and test projects on `net8.0`, `net9.0`, `net10.0`, and compatible `netstandard2.0` consumers can reference the contracts package, core packages, `AstraFlow.Mapper.Conventions`, `AstraFlow.Security`, and `AstraFlow.Testing`. The `AstraFlow.Assertions` source in the v2.4 branch targets the same four frameworks, but it is not yet a published package. EF Core projection translation validation and ASP.NET Core helpers require a `net10.0` project. FluentValidation and OpenTelemetry integration packages support `net8.0`, `net9.0`, and `net10.0`. Analyzer and generator assets are consumed by the compiler rather than referenced as runtime libraries.
 
 ### v2.1.0 generated mapping
 
@@ -39,7 +40,7 @@ Current target policy:
 
 | Package | Policy | Notes |
 | --- | --- | --- |
-| Contracts, core, conventions, security, and testing packages | Keep `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` while tests and dependencies remain healthy. | Core means mediator, mapper, conventions, diagnostics, security, testing, and meta package. |
+| Contracts, core, conventions, security, and testing packages | Keep `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` while tests and dependencies remain healthy. | Core means mediator, mapper, conventions, diagnostics, security, testing, assertions, and meta package. |
 | EF Core package | Keep target support aligned with the referenced EF Core major version. | Do not broaden EF support by silently pinning consumers to an incompatible EF Core line. |
 | ASP.NET Core package | Keep target support aligned with the referenced ASP.NET Core major version. | Do not broaden ASP.NET Core support by silently pinning consumers to an incompatible framework line. |
 | FluentValidation and OpenTelemetry packages | Keep `net8.0`, `net9.0`, and `net10.0` while dependencies remain healthy. | Integration dependencies stay out of core packages. |
@@ -55,7 +56,7 @@ Direct .NET Framework targets such as `net462` or `net471` are candidates only a
 - `scripts/verify-upgrade-smoke.ps1` creates a clean consumer, builds it against the previous package version, upgrades it to the current locally packed version, and runs the same smoke flow again.
 - `scripts/verify-sample-builds.ps1` builds every sample project, including host compatibility and migration cookbook samples.
 
-These checks are intentionally conservative. They do not replace human review, but they make accidental public API removals and basic upgrade failures visible before publishing.
+These checks are intentionally conservative. `scripts/verify-public-api-baselines.ps1` is the per-target pull request gate. The NuGet comparison and upgrade smoke are release checks and require a verified prior package. The baselines cover XML documentation member IDs and do not prove binary compatibility, nullable compatibility, behavior, or undocumented member stability.
 
 ## Host Compatibility Samples
 
@@ -79,7 +80,9 @@ AstraFlow supports the latest published minor version for normal package adoptio
 
 Patch releases should be applied within the same minor line when they are available. Minor releases should preserve source compatibility unless a breaking change is explicitly documented and moved to a major version.
 
-Older minor versions remain installable from NuGet, but active validation, upgrade smoke testing, and API compatibility comparison focus on the last verified NuGet baseline (`2.0.0`) and the current source version. The v2.1.0 NuGet publication status must be resolved before using it as an upgrade baseline.
+The latest stable minor receives active validation. When a successor minor becomes stable, the previous minor receives security and critical-fix consideration for 90 days; after that, fixes target the latest line. This is a maintainer support window, not a promise that old packages are removed from NuGet. The exact policy is in [API governance](api-governance.md).
+
+The [version and upgrade guide](version-upgrade-guide.md) explains the changes from `2.3.0` to `2.4.0`. NuGet package availability and target-framework assets are tracked per package ID; check the package page before upgrading.
 
 Security fixes should be released on the latest stable line first. Backporting to older minor lines is discretionary and depends on severity, compatibility risk, and maintainer capacity.
 
@@ -111,7 +114,7 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Use AstraFlow `2.0.0` packages from `net8.0`, `net9.0`, `net10.0`, or compatible `netstandard2.0` consumers.
+Version `2.4.0` is the latest tagged release. NuGet package publication is a separate step, so verify the exact package ID and assets in the feed your project uses. Use the target framework matrix above to select compatible packages, then build and test the consuming solution.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
@@ -157,5 +160,3 @@ Then run:
 ```
 
 Use `-AllowMissingPreviousPackages` for the first public package-family publish, when earlier AstraFlow package versions may not exist on NuGet. After a public baseline exists, omit the flag to make previous-version API and upgrade checks strict.
-
-

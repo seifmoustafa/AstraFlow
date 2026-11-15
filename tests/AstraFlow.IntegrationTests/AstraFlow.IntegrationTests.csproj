@@ -12,10 +12,12 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
-    <PackageReference Include="FluentAssertions" Version="7.*" />
-  </ItemGroup>
+</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\AstraFlow\AstraFlow.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AstraFlow.Assertions\AstraFlow.Assertions.csproj" SetTargetFramework="TargetFramework=net10.0" />
   </ItemGroup>
 </Project>

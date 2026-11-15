@@ -1,0 +1,14 @@
+# Public XML documentation member IDs for AstraFlow.Security (net9.0).
+F:AstraFlow.Security.AstraFlowRedactionPolicy.DefaultRedactedValue
+M:AstraFlow.Security.AstraFlowRedactionPolicy.#ctor
+M:AstraFlow.Security.AstraFlowRedactionPolicy.#ctor(AstraFlow.Security.AstraFlowSensitiveDataPolicy,System.String)
+M:AstraFlow.Security.AstraFlowRedactionPolicy.RedactValue(System.String,System.String)
+M:AstraFlow.Security.AstraFlowSensitiveDataPolicy.#ctor(System.Collections.Generic.IEnumerable{System.String})
+M:AstraFlow.Security.AstraFlowSensitiveDataPolicy.IsSensitiveName(System.String)
+M:AstraFlow.Security.AstraFlowSensitiveDataPolicy.NormalizeName(System.String)
+P:AstraFlow.Security.AstraFlowRedactionPolicy.RedactedValue
+P:AstraFlow.Security.AstraFlowRedactionPolicy.SensitiveDataPolicy
+P:AstraFlow.Security.AstraFlowSensitiveDataPolicy.DefaultSensitiveNameFragments
+P:AstraFlow.Security.AstraFlowSensitiveDataPolicy.SensitiveNameFragments
+T:AstraFlow.Security.AstraFlowRedactionPolicy
+T:AstraFlow.Security.AstraFlowSensitiveDataPolicy

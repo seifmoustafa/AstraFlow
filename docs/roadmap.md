@@ -31,7 +31,7 @@
 - [North Star](strategy/north-star.md), [Decision Log](strategy/decision-log.md), [Validation Matrix](strategy/validation-matrix.md), [Research Ledger](strategy/research-ledger.md), [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
 
 
-**Status: The strategic direction remains proposed. v2.1.0 source is merged and a GitHub release exists; NuGet publication has not been verified.** This index complements rather than replaces the completed release history below. Preserve the existing v2.2 enterprise supply-chain and v2.3 public-API governance commitments; do not silently repurpose their release numbers.
+**Status: The strategic direction remains proposed. The bounded 2.4.0 scope was merged to `main`; hosted CI passed and the signed GitHub release was created on 2026-11-15. NuGet package publication is a separate step, so exact package availability must be checked per ID.** This index complements rather than replaces the release history below. The generated mediator-dispatch proposal remains a separate candidate until its implementation and release gates pass.
 
 **North star:** Become a leading, independently adoptable .NET application-flow ecosystem through verifiably productive mapping and dispatch, deterministic compile-time diagnostics, safe runtime extensibility, and trustworthy compatibility. Optimizing for feature count or promises of being “the greatest” is not a product acceptance criterion.
 
@@ -39,23 +39,27 @@
 | --- | --- | --- | --- |
 | Shared sensitive-name and redaction foundation | v2.0.0 | Source implementation described below; independently verify publication | Security regression tests and package checks |
 | **Generated mapping execution** | **v2.1.0** | **Merged; GitHub release exists; NuGet publication unverified** | Real typed generated conversion; source diagnostics; clean consumer; AOT publish/run; manual/runtime/peer benchmark methodology |
-| Enterprise supply chain | v2.2.0 | Approved for implementation in this release branch | Reproducible packages, SourceLink verification, SBOM, provenance, signed tag, dependency review, and security/release governance |
-| Public API governance | v2.3 | Existing planned commitment | API baseline enforcement and upgrade smoke |
+| Enterprise supply chain | v2.2.0 | Package reported published; repository evidence in this roadmap is stale | Reproducible packages, SourceLink verification, SBOM, provenance, signed tag, dependency review, and security/release governance |
+| **Public API governance** | **v2.3.0** | **Published per maintainer confirmation (2026-11-10); implementation marked complete, consumer evidence retained in release docs** | Reviewed target-specific API baselines, CI diff enforcement, compatibility checks, SemVer and obsolete guidance, release branch and support policy |
 | Generated mediator dispatch | v2.4 | Candidate; only after source/benchmark feasibility | Closed-type generated invoker, DI scope/pipeline equivalence, AOT and comparative numbers |
-| Explainable flow manifest | v2.5 | Candidate | Deterministic schema, provenance and CI diff; known gaps labeled |
+| General-purpose assertion package and enterprise mapping | v2.4.0 | Merged; hosted CI passed; signed GitHub release created. NuGet package publication is per-package and must be verified on the feed. | Runner-independent assertion package, verified generator support for inherited/nullable/record shapes, clean consumers, migration limits, and release evidence; see [v2.4 release plan](plans/v2.4-release.md) |
+| Assertions capability expansion | v2.5.0 candidate | Candidate; not committed. New APIs stay out of 2.4.x. Prioritize async-stream semantics and individually verified CLI mappings only when user evidence supports them. Read-only dictionary key, value, count, and mapping checks are already in the 2.4.0 candidate. | A bounded additive wave with explicit behavior, API/compatibility gates, packed consumers, documentation, and stop conditions; see [v2.5 Assertions plan](plans/v2.5-assertions.md) |
+| Explainable flow manifest | v2.5.0 candidate | Candidate; independent of Assertions expansion | Deterministic schema, provenance and CI diff; known gaps labeled; see [v2.5 Flow Intelligence plan](plans/v2.5-flow-intelligence.md) |
 | Reliability and independent adoption | v2.6+ | Research | Consumer pilots, measured saved time, compatibility and regression improvements |
 | Optional ecosystem | v3+ | Candidate per independent package | Specific demand, no dependency leakage, owner and security review |
 | Visual products | v4+ | Research | Validated manifest usefulness and actual adopter request |
 | Better Auth-inspired .NET identity | Separate project only | Research | Independent threat model, standards-compliant .NET component study and maintainer |
 
-**Read before implementation:** [Engineering North Star](strategy/north-star.md), [Generated Mapper ADR](adr/0001-generated-mapper.md), [v2.1 plan](plans/v2.1-generated-mapping.md), [v2.2 supply-chain plan](plans/v2.2-enterprise-supply-chain.md), [Generated Mediator ADR](adr/0002-generated-mediator.md), [Flow Manifest ADR](adr/0003-flow-manifest.md), [Evidence and Release Gates](strategy/evidence-and-gates.md), [Decision Log](strategy/decision-log.md), and [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
+**Read before implementation:** [Engineering North Star](strategy/north-star.md), [Generated Mapper ADR](adr/0001-generated-mapper.md), [v2.1 plan](plans/v2.1-generated-mapping.md), [v2.2 supply-chain plan](plans/v2.2-enterprise-supply-chain.md), [Generated Mediator ADR](adr/0002-generated-mediator.md), [Flow Manifest ADR](adr/0003-flow-manifest.md), [v2.5 Assertions candidate plan](plans/v2.5-assertions.md), [Evidence and Release Gates](strategy/evidence-and-gates.md), [Decision Log](strategy/decision-log.md), and [Ecosystem Portfolio](strategy/ecosystem-portfolio.md).
+
+The v2.3.0 scope and implementation decisions are recorded in the [Public API Governance plan](plans/v2.3-public-api-governance.md). The v2.4 assertion-package goal and clean-room implementation boundary are recorded in the [General-purpose Assertions plan](plans/v2.4-assertions.md); the proposed next assertion wave is tracked separately in the [v2.5 Assertions plan](plans/v2.5-assertions.md).
 
 **Non-negotiable:** One release goal at a time; opt-in convention mapping remains separate, existing API and published consumers stay compatible, generated-only modes do not silently fall back, no DTO payload logs, no performance superiority without repeatable results. Review actual code and current release state before changing APIs. All unshipped entries are proposals, not functionality claims.
 
 
 AstraFlow is a MIT-licensed standalone .NET package family for explicit, inspectable, secure, diagnosable, and enterprise-ready application flow.
 
-Current release truth: v2.1.0 source is merged and a GitHub release exists, but successful NuGet publication has not been verified; therefore do not describe v2.1.0 as available from NuGet. The prior verified NuGet baseline is v2.0.0. The first v2 slice adds `AstraFlow.Security` for shared sensitive-name taxonomy and redaction policy; future planned work includes compile-time governance, analyzer/generator maturity, and additional generated fast paths.
+Current release truth: the signed 2.4.0 GitHub release was created on 2026-11-15 after the merge and successful hosted CI. NuGet's AstraFlow version index still showed 2.3.0 when checked; package publication and consumer install checks remain separate. See [current v2.4 evidence](plans/v2.4-release.md).
 
 The `v1.0.0` through `v1.4.0` releases are the fixed baseline. They are completed historical/current scope and must not be removed, downgraded, reordered, or moved into later versions. Follow-up work against that baseline belongs in patch-safe `v1.4.x` stabilization releases only.
 
@@ -100,7 +104,7 @@ AstraFlow exists to make application flow explicit and reviewable:
 - secure DTO policy,
 - enterprise release governance.
 
-AstraFlow is not a clone or fork of any existing library. Capability parity means developers can solve the same common application problems using AstraFlow's own APIs, implementation, package architecture, documentation, diagnostics, tests, and tooling.
+AstraFlow's assertion package uses AstraFlow-owned public APIs, implementation, package architecture, documentation, diagnostics, tests, and tooling. Release claims are based on those APIs' verified behavior.
 
 The long-term product direction is to be safer, more diagnosable, more auditable, and more enterprise-ready than runtime-only or convention-heavy alternatives. The explicit core remains first-class forever.
 
@@ -439,7 +443,7 @@ Completed scope:
 - Pipeline test harness.
 - Mediator, mapper, projection, diagnostics, exception, mapping-rule, and secure ID assertion helpers.
 - Deterministic `TestSecureIdCodec`.
-- No dependency on xUnit, NUnit, MSTest, FluentAssertions, or mocking frameworks.
+- No dependency on a test runner or mocking framework.
 - `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets.
 - CI, publish, pack, and clean-install verification updated for the testing package.
 
@@ -2007,7 +2011,7 @@ Generated mediator dispatch; deep polymorphic graph conversion; magical runtime 
 
 ## v2.2 Enterprise Supply Chain
 
-Status: `Approved for implementation on feat/v2.2.0-enterprise-supply-chain`; no v2.2.0 package, tag, or release has been created.
+Status: source merged on `main`; no v2.2.0 tag or release is recorded, and NuGet publication is unverified.
 
 Goal:
 
@@ -2082,7 +2086,7 @@ What must NOT be included:
 
 ## v2.3 Public API Governance
 
-Status: `Planned`.
+Status: `v2.3.0 reported published by maintainer; implementation complete. See release evidence and limits in the upgrade guide.`
 
 Goal:
 
@@ -2090,11 +2094,11 @@ Protect consumers from accidental breaking changes.
 
 Why this version exists:
 
-The package surface grows after parity. Public API governance must become enforceable before the ecosystem expands further.
+The repository already has a conservative historical NuGet/XML-ID comparison from v1.13. v2.3 makes API intent durable and reviewable in source control, catches per-target drift on every pull request, and documents what the baseline does not prove. This governance step should land before generated mediator and other package surfaces expand.
 
 Packages affected:
 
-- all packages
+- all XML-documented library packages; CLI command/output contracts stay covered by CLI tests
 - CI
 - docs
 
@@ -2125,8 +2129,9 @@ Acceptance gates:
 
 Test requirements:
 
-- API baseline tests.
-- Compatibility tests.
+- Baseline verifier tests for additions, removals, missing target files, and intentional updates.
+- Existing published-package compatibility and upgrade-smoke checks, when a prior package is independently verified.
+- Clean package and sample checks for the release version.
 
 Documentation requirements:
 
@@ -2157,6 +2162,18 @@ Status: `Candidate; not committed or implemented`.
 
 See [ADR-0002](adr/0002-generated-mediator.md) and [v2.4 candidate plan](plans/v2.4-generated-mediator.md).
 
+## v2.4 General-purpose Assertions and Enterprise Mapping
+
+Status: `Bounded ship set merged as 2.4.0. Hosted CI passed and the signed GitHub release was created. NuGet publication is a separate release action; verify each package ID on the feed.`
+
+**Goal:** offer a standalone AstraFlow assertion package for general .NET consumer tests, while keeping `AstraFlow.Testing` focused on AstraFlow-specific fakes and harnesses. The library owns its implementation and public API and has no production package dependencies.
+
+**First phase:** establish package identity and support policy; build a runner-neutral core for equality, identity, nullability, type checks, strings, collections (including predicate membership, ordered subsequences, and key lookup on key-value pairs), synchronous and asynchronous action/function exceptions, and ordinal exception-message patterns; add result access/chaining, positive and negative tests and clean consumers.
+
+**Acceptance:** every shipped assertion has success and failure-path coverage; clean runner-independent consumers; no package dependencies in the assertion library project; explicit migration docs; package, API and upgrade gates. Full scope, exclusions and stop conditions are in [the v2.4 assertion plan](plans/v2.4-assertions.md). API expansion and differentiators follow only after this foundation is validated.
+
+**Phase 2 — Enterprise generated mapping:** adds inherited-property lookup, `Guid`/date and nullable scalar support, positional-record/primary-constructor DTO construction, and public init-only member assignment through object initializers to explicitly declared generated mapper methods. The implementation and local test, package, compatibility, and upgrade gates are complete at `91206dd`; see [the v2.4 release work plan](plans/v2.4-release.md). Generated mediator dispatch remains a separate candidate, not a committed 2.4.0 feature.
+
 ## v2.5 Explainable Flow Intelligence (Candidate)
 
 Status: `Candidate; not implemented`.
@@ -2166,6 +2183,16 @@ Status: `Candidate; not implemented`.
 **Acceptance:** repeatable JSON schema, safe partial/incomplete result, useful changed-registration or mapping-plan review, redaction tests, schema evolution and clean sample consumer. **Out of scope:** whole-program execution certainty, hosted dashboard, IDE extension or capturing application payloads.
 
 See [ADR-0003](adr/0003-flow-manifest.md) and [v2.5 candidate plan](plans/v2.5-flow-intelligence.md).
+
+## v2.5 Assertions Capability Expansion (Candidate)
+
+Status: `Candidate; no public API additions approved yet.`
+
+**Goal:** expand the 2.4.0 general-purpose Assertions package from actual user needs while preserving its dependency-free, runner-neutral design. Keep the 2.5 Assertions and Flow Intelligence tracks independent; a delayed candidate does not silently expand or block the other.
+
+**Priority candidates:** define bounded async-enumerable completion/failure/timeout semantics and add CLI migration mappings only for exact symbol identities with behavior tests. Read-only dictionary key, value, count, and mapping checks are already in the 2.4.0 release, so they are not new 2.5 work. Each new slice requires maintainer approval before implementation. More specialized assertion families, including path-based file checks, remain a 2.6+ review queue.
+
+**Version rule:** reserve 2.4.x for compatible fixes and hardening. New public assertion APIs go into a later minor release only after usage evidence, contract review, API/target tests, package consumers, migration notes, and portal synchronization pass. See [the v2.5 Assertions candidate plan](plans/v2.5-assertions.md) for sequences and stop conditions.
 
 ## v2.6+ Reliability and Adoption Proof (Research)
 
@@ -2661,7 +2688,6 @@ Do not claim:
 - benchmark leader,
 - fully AOT-ready,
 - fully secure by default,
-- drop-in replacement,
 - exact AutoMapper clone,
 - exact MediatR clone.
 
@@ -2716,7 +2742,7 @@ Before claiming enterprise-ready:
 
 ## 30-60 Day Execution Plan
 
-Status: `Planned`.
+Status: `Superseded for current work by the v2.4 release and v2.5 candidate plans; retained as historical v1.x planning context.`
 
 1. Baseline verification.
    - Restore, build, test, pack, and run package install verification.

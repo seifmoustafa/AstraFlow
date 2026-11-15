@@ -4,19 +4,19 @@
 
 ## Verification dimensions
 
-| Concern | Mapper generator v2.1 | Mediator candidate v2.4 | Flow manifest candidate v2.5 | Optional integrations v3+ |
-| --- | --- | --- | --- | --- |
-| Deterministic output | Rebuild snapshots + incremental edits | Invoker order/IDs snapshots | Canonical sort and versioned schema | Configuration/documentation snapshots |
-| Correct behavior | Same semantics as supported explicit maps | Equal pipeline/exception behavior | Accurate known vs unknown edges | Clear state/consistency semantics |
-| Negative cases | Required/null/constructor/unsafe/sensitive | Missing/duplicate/scopes/cancel/dispose | Partial scans/unknown refs/secret exclusion | Concurrency/crash/tenant isolation |
-| Public API | Source-level proposal + API baseline | Minimal additive invoker selection | Schema version and compatibility | Provider abstraction ownership |
-| Packaging | Analyzer assets + clean consumer | Clean request consumer | CLI/report clean consumer | Package-specific clean consumer |
-| AOT | Publish **and run** supported sample | Publish **and run** generated route | No AOT claim unless separately tested | Only when advertised |
-| Performance | Runtime + build + binary benchmarks | Direct/runtime/generated parity | Export/diff overhead with large manifests | End-to-end material overhead |
-| Diagnostics | Source locations/stable IDs | Dispatch provenance/order | Edge evidence/confidence | Failures without payload values |
-| Security | Sensitive writes, no secret logs | No request payload logs | Secret-free manifest; type name exposure documented | Threat model per integration |
-| Upgrade | Existing mapping unchanged | Existing mediator unchanged | Schema migrations | Non-leaking optional refs |
-| Documentation | Working consumer + limits | Typed vs object dispatch contract | Human interpretation guide | Install/enable/disable examples |
+| Concern | Mapper generator v2.1 | Mediator candidate v2.4 | Flow manifest candidate v2.5 | Assertions candidate v2.5 | Optional integrations v3+ |
+| --- | --- | --- | --- | --- | --- |
+| Deterministic output | Rebuild snapshots + incremental edits | Invoker order/IDs snapshots | Canonical sort and versioned schema | Stable assertion outcomes and versioned CLI report shape | Configuration/documentation snapshots |
+| Correct behavior | Same semantics as supported explicit maps | Equal pipeline/exception behavior | Accurate known vs unknown edges | Explicit async completion/failure/timeout semantics; exact CLI mapping behavior | Clear state/consistency semantics |
+| Negative cases | Required/null/constructor/unsafe/sensitive | Missing/duplicate/scopes/cancel/dispose | Partial scans/unknown refs/secret exclusion | Cancellation races, never-completing streams, mapping lookalikes and unresolved symbols | Concurrency/crash/tenant isolation |
+| Public API | Source-level proposal + API baseline | Minimal additive invoker selection | Schema version and compatibility | Target-specific API baseline for any promoted assertion members | Provider abstraction ownership |
+| Packaging | Analyzer assets + clean consumer | Clean request consumer | CLI/report clean consumer | Packed assertion consumer on all supported targets; CLI package smoke | Package-specific clean consumer |
+| AOT | Publish **and run** supported sample | Publish **and run** generated route | No AOT claim unless separately tested | No AOT claim unless separately tested | Only when advertised |
+| Performance | Runtime + build + binary benchmarks | Direct/runtime/generated parity | Export/diff overhead with large manifests | No speed claim; bound traversal, cancellation, and report work | End-to-end material overhead |
+| Diagnostics | Source locations/stable IDs | Dispatch provenance/order | Edge evidence/confidence | Value-safe assertion failures and secret-free migration findings | Failures without payload values |
+| Security | Sensitive writes, no secret logs | No request payload logs | Secret-free manifest; type name exposure documented | No source expressions/literals; no execution of inspected projects | Threat model per integration |
+| Upgrade | Existing mapping unchanged | Existing mediator unchanged | Schema migrations | 2.4 APIs remain compatible; migration mappings are advisory and read-only | Non-leaking optional refs |
+| Documentation | Working consumer + limits | Typed vs object dispatch contract | Human interpretation guide | Explicit async semantics and mapping limitations | Install/enable/disable examples |
 
 ## TFM and host coverage
 
@@ -41,4 +41,4 @@ Reviewer / sign-off:
 
 **Gate states:** Not started → In progress → Pass → Blocked → Explicitly waived with owner/expiry (only for non-critical items). A failing sensitive-write or hidden fallback test cannot be waived for a release making secure-generated claims.
 
-See [evidence policy](evidence-and-gates.md) and [v2.1 plan](../plans/v2.1-generated-mapping.md).
+See [evidence policy](evidence-and-gates.md), [v2.1 plan](../plans/v2.1-generated-mapping.md), and the [v2.5 Assertions candidate plan](../plans/v2.5-assertions.md).

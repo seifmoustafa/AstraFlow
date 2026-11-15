@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "AstraFlow Request Dispatch & Redaction Pipeline",
+    "subtitle": "End-to-end request dispatch via IMediator, pipeline behaviors, diagnostic activity tracing, and security-safe redaction.",
+    "output": "portal/public/archify/execution-pipeline.html",
+    "viewBox": [880, 960],
+    "animation": "trace",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    { "id": "client", "type": "external", "label": "API Edge", "sublabel": "Minimal API" },
+    { "id": "mediator", "type": "backend", "label": "Mediator", "sublabel": "Core Dispatch" },
+    { "id": "pipeline", "type": "backend", "label": "Pipeline", "sublabel": "Behaviors" },
+    { "id": "diagnostics", "type": "backend", "label": "Tracing", "sublabel": "ActivitySource" },
+    { "id": "handler", "type": "backend", "label": "Handler", "sublabel": "IRequestHandler" },
+    { "id": "mapper", "type": "backend", "label": "Mapper", "sublabel": "IObjectMapper" },
+    { "id": "redaction", "type": "security", "label": "Redactor", "sublabel": "Safety Gate" }
+  ],
+  "segments": [
+    { "from": 140, "to": 310, "label": "Dispatch & Diagnostic Start" },
+    { "from": 320, "to": 620, "label": "Execution & Mapping" },
+    { "from": 630, "to": 840, "label": "Redacted Telemetry & Response" }
+  ],
+  "messages": [
+    { "from": "client", "to": "mediator", "y": 170, "label": "SendAsync(CreateOrderCommand, ct)", "variant": "emphasis" },
+    { "from": "mediator", "to": "diagnostics", "y": 210, "label": "StartActivity(\"AstraFlow.Mediator.Send\")", "variant": "default" },
+    { "from": "mediator", "to": "pipeline", "y": 250, "label": "Invoke Pipeline PipelineDelegate", "variant": "emphasis" },
+    { "from": "pipeline", "to": "handler", "y": 290, "label": "HandleAsync(command, ct)", "variant": "emphasis" },
+    { "from": "handler", "to": "mapper", "y": 360, "label": "Map<OrderEntity, OrderDto>(entity)", "variant": "default" },
+    { "from": "mapper", "to": "handler", "y": 410, "label": "Generated compiled projection / DTO", "variant": "return" },
+    { "from": "handler", "to": "pipeline", "y": 470, "label": "OrderResult<OrderDto>", "variant": "return" },
+    { "from": "pipeline", "to": "mediator", "y": 520, "label": "Completed OrderResult", "variant": "return" },
+    { "from": "mediator", "to": "redaction", "y": 580, "label": "SanitizeTelemetry(tags, payload)", "variant": "emphasis" },
+    { "from": "redaction", "to": "diagnostics", "y": 640, "label": "RecordTags(redactedSafeTags)", "variant": "default" },
+    { "from": "diagnostics", "to": "mediator", "y": 700, "label": "Activity stopped (duration, status)", "variant": "return" },
+    { "from": "mediator", "to": "client", "y": 760, "label": "200 OK (Clean DTO, zero leak)", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "mediator", "from": 165, "to": 770, "type": "backend" },
+    { "participant": "diagnostics", "from": 205, "to": 710, "type": "backend" },
+    { "participant": "pipeline", "from": 245, "to": 525, "type": "backend" },
+    { "participant": "handler", "from": 285, "to": 475, "type": "backend" },
+    { "participant": "mapper", "from": 355, "to": 415, "type": "backend" },
+    { "participant": "redaction", "from": 575, "to": 645, "type": "security" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Deterministic Dispatch",
+      "items": [
+        "Lightweight IMediator interface with zero forced application abstractions",
+        "Configurable async pipeline behaviors with explicit short-circuiting",
+        "Respects cancellation tokens throughout the entire call stack"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Compile-Time Execution",
+      "items": [
+        "AstraFlow.Mapper supports generator-based execution without reflection overhead",
+        "Clean object projection and EF Core expression trees via IProjectionProvider",
+        "Zero hidden allocations during hot-path dispatch"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "Security Redaction Gate",
+      "items": [
+        "Never exposes payload values, secrets, or sensitive IDs in telemetry tags",
+        "AstraFlow.Security applies defense-in-depth masking before OpenTelemetry export",
+        "Fully verifiable OpenTelemetry ActivitySource traces"
+      ]
+    }
+  ]
+}

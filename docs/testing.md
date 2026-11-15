@@ -1,13 +1,42 @@
 # Testing
 
+## General-purpose assertions
+
+See the [AstraFlow Assertions guide](assertions.md) for the current method list, semantics, and package boundary.
+
+`AstraFlow.Assertions` is the general-purpose assertion library for tests of any .NET application. It provides fluent checks for values, numeric and temporal comparisons, strings, sequences, dictionaries, GUIDs, enums, and synchronous or asynchronous operations without requiring a particular test runner.
+
+Use it to verify the result or observable effects of the application under test. It is not a runtime input-validation library and does not execute or mock the application for you. An assertion failure throws `AstraFlowAssertionException`, which ordinary test runners report as a failed test.
+
+```powershell
+dotnet add package AstraFlow.Assertions --version 2.4.0
+```
+
+Check NuGet for the exact package ID and version before installing.
+
+```csharp
+using AstraFlow.Assertions;
+
+response.StatusCode.Should().Be(200);
+await response.Should().ContainContentAsync("created");
+items.Should().HaveCount(2);
+await ((Func<Task>)(() => service.SaveAsync())).Should().NotThrowAsync();
+```
+
+This package is separate from `AstraFlow.Testing`; a project can install either or both according to whether it needs only assertions, AstraFlow-specific fakes/harnesses, or both.
+
+Failure messages avoid rendering arbitrary objects or string contents by default, which helps keep secrets out of CI output. The package covers the operations listed in its guide; the remaining planned capabilities are tracked in the roadmap.
+
+## AstraFlow-specific test helpers
+
 `AstraFlow.Testing` is an optional test-helper package for projects that use AstraFlow mediator, mapper, projections, diagnostics, or secure ID flows.
 
-It has no dependency on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework. Helpers throw `AstraFlowAssertionException`, so they can be used with any test runner.
+The shipping assembly has no dependency on a test runner or mocking framework. Helpers throw `AstraFlowAssertionException`, so they can be used with any test runner.
 
 Install:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 1.13.1
+dotnet add package AstraFlow.Testing --version 2.3.0
 ```
 
 ## Fake Mediator
