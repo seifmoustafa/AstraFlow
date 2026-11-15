@@ -2,9 +2,9 @@
 
 ## General-purpose assertions
 
-See the [AstraFlow Assertions guide](assertions.md) for the current method list, semantics, package boundary, and unreleased 2.4.0 status.
+See the [AstraFlow Assertions guide](assertions.md) for the current method list, semantics, and package boundary.
 
-`AstraFlow.Assertions` is the in-development general-purpose assertion library for tests of any .NET application. Its current source provides fluent checks for values, numeric and temporal comparisons, strings, sequences, dictionaries, GUIDs, enums, and synchronous or asynchronous operations without requiring a particular test runner. It is not published yet.
+`AstraFlow.Assertions` is the general-purpose assertion library for tests of any .NET application. It provides fluent checks for values, numeric and temporal comparisons, strings, sequences, dictionaries, GUIDs, enums, and synchronous or asynchronous operations without requiring a particular test runner.
 
 Use it to verify the result or observable effects of the application under test. It is not a runtime input-validation library and does not execute or mock the application for you. An assertion failure throws `AstraFlowAssertionException`, which ordinary test runners report as a failed test.
 
@@ -12,7 +12,7 @@ Use it to verify the result or observable effects of the application under test.
 dotnet add package AstraFlow.Assertions --version 2.4.0
 ```
 
-Run this install command after the 2.4.0 package is published; it cannot install the current source candidate from NuGet yet.
+Check NuGet for the exact package ID and version before installing.
 
 ```csharp
 using AstraFlow.Assertions;

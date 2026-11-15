@@ -1,6 +1,6 @@
 # API Reference
 
-This reference describes the published AstraFlow `2.3.0` API plus current, unreleased `2.4.0` source candidates. It is intentionally written from the consumer point of view: what to call, when to call it, what happens, and what fails. Package availability is tracked separately in [compatibility](compatibility.md).
+This reference describes the AstraFlow `2.4.0` release API and retains relevant `2.3.0` history. It is written from the consumer point of view: what to call, when to call it, what happens, and what fails. Check exact package availability separately in [compatibility](compatibility.md).
 
 ## Package Map
 
@@ -13,11 +13,11 @@ This reference describes the published AstraFlow `2.3.0` API plus current, unrel
 | `AstraFlow.Diagnostics` | `AstraFlow.Diagnostics` | Framework-neutral diagnostics reporting for AstraFlow registrations and validation findings. |
 | `AstraFlow.Security` | `AstraFlow.Security` | Shared sensitive-name classification and redaction policy primitives for secure DTO governance. |
 | `AstraFlow.Testing` | `AstraFlow.Testing` | Framework-neutral fake dispatchers, harnesses, assertions, and test secure ID helpers. |
-| `AstraFlow.Assertions` | `AstraFlow.Assertions` | Unreleased 2.4.0 source candidate: framework-neutral assertions for nullable and non-nullable values, XML structure/equivalency and reader cursor state, HTTP response metadata and text bodies, assembly metadata, type structure, standard event monitoring, strings, streams, sync/async sequences, dictionaries, exceptions, and async operations. |
+| `AstraFlow.Assertions` | `AstraFlow.Assertions` | Framework-neutral assertions for nullable and non-nullable values, XML structure/equivalency and reader cursor state, HTTP response metadata and text bodies, assembly metadata, type structure, standard event monitoring, strings, streams, sync/async sequences, dictionaries, exceptions, and async operations. |
 
-## Assertions API (v2.4 source candidate)
+## Assertions API (`2.4.0`)
 
-`AstraFlow.Assertions` is intended for tests of any application. It is independent of AstraFlow runtime packages and test runners. The source implementation is available in this checkout, but 2.4.0 has not been published and the API remains subject to release review.
+`AstraFlow.Assertions` is for tests of any application. It is independent of AstraFlow runtime packages and test runners. The package is part of the `2.4.0` release; check NuGet for its current package availability.
 
 | Type | Public methods | Semantics |
 | --- | --- | --- |
@@ -94,7 +94,7 @@ public static partial class CustomerMaps
 }
 ```
 
-The unreleased 2.4.0 source extends direct typed mappings to inherited source properties, safe nullable scalar flow, `Guid`/date values, positional records, primary constructors, and public init-only destination properties. Existing collection projection remains limited to documented shallow shapes. Unsupported or ambiguous declarations produce `AFM001` and no generated mapping; they do not fall back to `IMapper` or convention mapping. Sensitive-name matches remain blocked. These expansions are opt-in per mapping method. Generator, clean-consumer, API, and upgrade checks pass locally; hosted CI and remote SourceLink verification remain. The generated method does not register or replace runtime mapper rules. See [Generators](generators.md) for constraints and security limitations.
+The `2.4.0` release extends direct typed mappings to inherited source properties, safe nullable scalar flow, `Guid`/date values, positional records, primary constructors, and public init-only destination properties. Existing collection projection remains limited to documented shallow shapes. Unsupported or ambiguous declarations produce `AFM001` and no generated mapping; they do not fall back to `IMapper` or convention mapping. Sensitive-name matches remain blocked. These expansions are opt-in per mapping method. The generated method does not register or replace runtime mapper rules. See [Generators](generators.md) for constraints and security limitations.
 
 ## Security Types
 

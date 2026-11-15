@@ -106,16 +106,21 @@ export function classifyReleaseProvenance(
     };
   }
 
-  if (isNewestActive || version === policy.latestPublishedVersion) {
+  const isLatestNuGetVersion = version === policy.latestPublishedVersion;
+  const isLatestTaggedRelease = isNewestActive && !isLatestNuGetVersion;
+
+  if (isNewestActive || isLatestNuGetVersion) {
     const releaseDate =
       extractedDate ??
-      (version === policy.latestPublishedVersion
+      (isLatestNuGetVersion
         ? policy.latestPublishedDate
         : null);
     return {
       status: 'latest',
-      statusLabel: 'Latest Milestone',
-      provenanceNote: `Latest published NuGet suite release${releaseDate ? ` (${releaseDate})` : ''} across runtime, integration, analyzer, and generator packages.`,
+      statusLabel: isLatestTaggedRelease ? 'Latest Release' : 'Latest NuGet',
+      provenanceNote: isLatestTaggedRelease
+        ? `Latest tagged AstraFlow release${releaseDate ? ` (${releaseDate})` : ''} across runtime, integration, analyzer, and generator packages.`
+        : `Latest published NuGet suite release${releaseDate ? ` (${releaseDate})` : ''} across runtime, integration, analyzer, and generator packages.`,
       releaseDate,
       isPublished: true,
       isUnreleased: false,

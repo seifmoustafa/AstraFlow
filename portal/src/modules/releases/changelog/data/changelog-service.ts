@@ -355,13 +355,16 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
   let hasSeenNewestActive = false;
 
   for (const block of rawBlocks) {
-    const headingMatch = block.rawHeading.match(/^(\d+\.\d+\.\d+)(?:\s*\(([^)]+)\))?/);
+    const headingMatch = block.rawHeading.match(
+      /^\[?(\d+\.\d+\.\d+)\]?(?:\s+-\s+(\d{4}-\d{2}-\d{2}))?(?:\s*\(([^)]+)\))?/,
+    );
     if (!headingMatch) {
       continue;
     }
 
     const version = headingMatch[1];
-    const rawQualifier = headingMatch[2]?.trim() ?? null;
+    const rawQualifier =
+      [headingMatch[2], headingMatch[3]].filter(Boolean).join(' ') || null;
     const isNewestActive =
       !hasSeenNewestActive &&
       !isDeprecatedQualifier(rawQualifier) &&

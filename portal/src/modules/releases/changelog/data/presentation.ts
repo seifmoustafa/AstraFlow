@@ -18,9 +18,11 @@ export function getShortSpineTag(release: ChangelogRelease): string {
       : `Deprecated · ${legacyLine}`;
   }
   if (release.status === 'latest') {
+    const label =
+      release.statusLabel === 'Latest NuGet' ? 'Latest NuGet' : 'Latest Release';
     return release.releaseDate
-      ? `Latest · ${release.releaseDate}`
-      : 'Latest Milestone';
+      ? `${label} · ${release.releaseDate}`
+      : label;
   }
   if (release.status === 'major') {
     return release.releaseDate

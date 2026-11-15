@@ -42,7 +42,7 @@ export const changelogEn = {
   folio: {
     filterLabels: {
       all: 'All',
-      latest: 'Latest Milestone',
+      latest: 'Latest Releases',
       major: 'Major Release',
       feature: 'Feature Release',
       historical: 'Archive Release',
@@ -80,8 +80,10 @@ export const changelogEn = {
     spineDeprecatedDate: 'Deprecated · {date}',
     spineDeprecatedMajor: 'Deprecated · {major}.x',
     spineDeprecated: 'Deprecated',
-    spineLatestDate: 'Latest · {date}',
-    spineLatest: 'Latest Milestone',
+    spineLatestDate: 'Latest Release · {date}',
+    spineLatest: 'Latest Release',
+    spineLatestNuGetDate: 'Latest NuGet · {date}',
+    spineLatestNuGet: 'Latest NuGet',
     spineMajorDate: 'Major · {date}',
     spineMajor: 'Major Release',
     spineFeatureDate: 'Feature · {date}',

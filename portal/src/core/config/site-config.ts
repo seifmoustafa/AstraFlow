@@ -10,7 +10,7 @@ export const SITE_DESCRIPTION =
 export const LATEST_PUBLISHED_VERSION = '2.3.0';
 export const LATEST_PUBLISHED_DATE = '2026-11-10';
 export const LATEST_PUBLISHED_PROVENANCE =
-  'Latest stable release (2026-11-10)';
+  'Latest published NuGet release (2026-11-10)';
 export const PREVIOUS_PUBLISHED_VERSION = '2.2.0';
 export const SUPPORTED_MIN_MAJOR = 2;
 

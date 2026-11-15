@@ -1,6 +1,6 @@
 # Compatibility
 
-This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion. The maintainer reports `2.3.0` as published; `2.4.0` is unreleased source work.
+This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion. Version `2.4.0` is the latest tagged release. Verify NuGet availability for the exact package ID and version before upgrading.
 
 ## Current Support
 
@@ -82,7 +82,7 @@ Patch releases should be applied within the same minor line when they are availa
 
 The latest stable minor receives active validation. When a successor minor becomes stable, the previous minor receives security and critical-fix consideration for 90 days; after that, fixes target the latest line. This is a maintainer support window, not a promise that old packages are removed from NuGet. The exact policy is in [API governance](api-governance.md).
 
-The maintainer reports that the top-level `AstraFlow` packages `2.2.0` and `2.3.0` are published; see the [version and upgrade guide](version-upgrade-guide.md). NuGet could not be queried from this environment, so the live publication timestamp and every satellite package's assets were not independently audited here. `2.4.0` remains unreleased. Check the exact package ID and target-framework assets before upgrading.
+The [version and upgrade guide](version-upgrade-guide.md) explains the changes from `2.3.0` to `2.4.0`. NuGet package availability and target-framework assets are tracked per package ID; check the package page before upgrading.
 
 Security fixes should be released on the latest stable line first. Backporting to older minor lines is discretionary and depends on severity, compatibility risk, and maintainer capacity.
 
@@ -114,7 +114,7 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-The package maintainer reports `2.3.0` as the latest published AstraFlow version. This environment could not independently query NuGet, so verify the exact package ID and assets in the feed your project uses. Use the target framework matrix above to select compatible packages, then build and test the consuming solution. The v2.4 source candidate is not an installable NuGet release.
+Version `2.4.0` is the latest tagged release. NuGet package publication is a separate step, so verify the exact package ID and assets in the feed your project uses. Use the target framework matrix above to select compatible packages, then build and test the consuming solution.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
