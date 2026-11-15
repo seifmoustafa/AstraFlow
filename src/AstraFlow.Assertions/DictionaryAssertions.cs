@@ -124,6 +124,44 @@ public sealed class DictionaryAssertions<TKey, TValue>
         return this;
     }
 
+    /// <summary>Asserts that the dictionary does not contain the specified key/value pair.</summary>
+    /// <remarks>The dictionary's key comparer is used for key lookup; values use their default equality comparer.</remarks>
+    public DictionaryAssertions<TKey, TValue> NotContain(TKey key, TValue value)
+    {
+        if (_actual is null ||
+            (TryGetValue(key, out var actualValue) && EqualityComparer<TValue>.Default.Equals(actualValue, value)))
+        {
+            AssertionFailure.Fail("Expected dictionary not to contain the requested key/value pair.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that no dictionary entry satisfies the predicate.</summary>
+    /// <param name="predicate">A predicate evaluated once per entry during one enumeration.</param>
+    public DictionaryAssertions<TKey, TValue> NotContain(Func<KeyValuePair<TKey, TValue>, bool> predicate)
+    {
+        if (predicate is null)
+        {
+            throw new ArgumentNullException(nameof(predicate));
+        }
+
+        if (_actual is null)
+        {
+            AssertionFailure.Fail("Expected a dictionary without a matching entry, but found null.");
+        }
+
+        foreach (var pair in _actual)
+        {
+            if (predicate(pair))
+            {
+                AssertionFailure.Fail("Expected dictionary not to contain an entry satisfying the predicate.");
+            }
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the dictionary has the same keys and values as the expected entries, regardless of entry order.</summary>
     /// <param name="expected">A finite sequence of entries with unique keys.</param>
     /// <remarks>Keys and values use their default equality comparers. Failure messages omit keys and values.</remarks>

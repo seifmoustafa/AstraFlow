@@ -44,6 +44,7 @@ All notable AstraFlow changes are tracked here.
 - Add dictionary and key-value-pair sequence checks for empty state, comparer-aware key batches, value batches, same-count checks, and count thresholds.
 - Add order-independent dictionary mapping equality and inequality checks with default key/value comparers, one-pass expected entries, duplicate-key validation, and value-safe failure messages.
 - Add complete dictionary assertions through ordinary `Should()` calls for read-only dictionary and key-value-pair sequence subjects, including comparer-aware lookups, mapping equality, count checks, and value-safe diagnostics.
+- Add exact runtime `Type` equality and negative dictionary entry checks by key/value pair or single-pass predicate, with value-safe failures.
 
 - Add structural object-graph equality and inequality for expected public-property shapes, ordered or optionally order-independent sequences, and dictionaries, with cycle tracking, safe mismatch paths, per-call name and nested-path exclusions, type-wide and path-specific comparers, and a bounded depth option.
 

@@ -55,6 +55,8 @@ Object assertions include equality and inequality (`Be`, `NotBe`), null checks (
 
 Booleans provide `BeTrue` and `BeFalse`. Enum assertions include `BeDefined`, `NotBeDefined`, `HaveFlag`, and `NotHaveFlag`. `Guid` assertions provide `Be`, `BeEmpty`, and `NotBeEmpty`.
 
+Type metadata assertions start with `typeof(MyService).Should()`. `Be(expectedType)` and `NotBe(unexpectedType)` compare exact runtime type identity, while the same chain can check sealed, abstract, and static shape; inheritance and interfaces; public properties and exact property types; method overloads by exact parameter types; and public constructors. These checks inspect metadata only and never invoke user code. Failure messages do not print the compared type names.
+
 `NotBeDefined` succeeds only when the enum value is not a declared member. For flags enums, a bit combination with no explicitly declared enum member is undefined, even when its bits are composed of declared flags.
 
 ### Nullable value checks
@@ -258,6 +260,8 @@ handlers.Should().ContainItemsAssignableTo(typeof(IAsyncRequestHandler));
 ```
 
 Dictionary assertions include `BeEmpty`, `NotBeEmpty`, single-key and key/value checks, batch key and value checks, entry counts, same-count checks, reference identity, and order-independent mapping comparisons.
+
+`NotContain(key, value)` rejects one matching pair using the dictionary's key comparer and default value equality. Predicate-based `NotContain` scans entries once, evaluates each visited entry once, and stops at the first match. Predicate exceptions propagate unchanged, and failure messages omit entry keys and values. A null predicate throws `ArgumentNullException`; a null subject fails the assertion.
 
 Read-only dictionaries support the same assertion chain as mutable dictionaries. Key and key/value lookups use the dictionary's own comparer through `ContainsKey` and `TryGetValue`; pair-sequence subjects use the default key equality comparer (`EqualityComparer<TKey>.Default`). The chain includes single and batch key/value checks, counts, mapping equality, structural equivalence, and reference identity. `HaveSameCount(expectedEntries)` accepts a finite entry sequence, reads it once, and compares only the number of entries.
 

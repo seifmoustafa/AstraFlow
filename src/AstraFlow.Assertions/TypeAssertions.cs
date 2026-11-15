@@ -19,6 +19,30 @@ public sealed class TypeAssertions
     /// <summary>Gets the type being asserted.</summary>
     public Type? Subject => _actual;
 
+    /// <summary>Asserts that the subject is the specified runtime type.</summary>
+    /// <param name="expected">The expected runtime type, or null.</param>
+    public TypeAssertions Be(Type? expected)
+    {
+        if (_actual != expected)
+        {
+            AssertionFailure.Fail("Expected the subject type to equal the specified type.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the subject is not the specified runtime type.</summary>
+    /// <param name="unexpected">The runtime type the subject must not equal, or null.</param>
+    public TypeAssertions NotBe(Type? unexpected)
+    {
+        if (_actual == unexpected)
+        {
+            AssertionFailure.Fail("Expected the subject type not to equal the specified type.");
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the type subject is null.</summary>
     public TypeAssertions BeNull()
     {

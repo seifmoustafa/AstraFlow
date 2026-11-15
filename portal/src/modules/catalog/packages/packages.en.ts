@@ -259,7 +259,7 @@ export const packagesEn = {
       shortName: 'Assertions',
       categoryLabel: 'Test Support',
       roleSummary:
-        'Framework-neutral assertion API (Should()) for object graphs, structural collection equivalency, XML structure, HTTP response metadata, nullable values, numeric precision, dates and durations, strings, typed collection and runtime-type sequence checks, ordered sequence membership and key ordering, dictionary content and mapping equality, async sequences with positive and negative ordering assertions, deferred actions and lazy iterator assertions, enums, GUIDs, sync/async exceptions, and explicit failure scopes.',
+        'Framework-neutral assertion API (Should()) for object graphs, structural collection equivalency, XML structure, HTTP response metadata, nullable values, numeric precision, dates and durations, strings, typed collection and runtime-type sequence checks, ordered sequence membership and key ordering, dictionary content and mapping equality, exact runtime Type identity, async sequences with positive and negative ordering assertions, deferred actions and lazy iterator assertions, enums, GUIDs, sync/async exceptions, and explicit failure scopes.',
       capabilities: [
         'Zero AstraFlow runtime or test-runner package dependencies',
         'Value-free predicates, ordinal/wildcard/timeout-bounded regex matching, and safe failure messages',
@@ -275,6 +275,7 @@ export const packagesEn = {
         'ContainEquivalentOf/NotContainEquivalentOf/AllBeEquivalentTo compare items structurally against one expected shape with per-call graph options; positive containment returns the matched item, all-item checks pass empty sequences, nested one-shot collections are snapshotted at most once across candidates, null subjects fail, and failures omit compared values',
         'Order-independent dictionary Equal/NotEqual over finite entry sequences uses default key/value equality and enumerates expected once; null expected sequences throw, null subjects fail, duplicate or null expected keys are rejected, and failures never print keys or values',
         'Mutable and read-only dictionaries support the full key, value, batch, count, same-count, and mapping assertion chain; lookups honor the dictionary comparer, while entry-sequence checks use default equality and safe failures',
+        'Negative dictionary entry checks support exact key/value pairs and single-pass predicates; predicate failures omit compared keys and values',
         'Mutable dictionaries, read-only dictionaries, and IEnumerable<KeyValuePair<TKey,TValue>> use the ordinary Should() entry point; read-only dictionary checks preserve the dictionary comparer and pair-sequence assertions use default key equality with one subject pass',
         'AllBeAssignableTo/AllBeOfType generic and Type overloads distinguish assignability from exact runtime type; generic all-item checks return typed chains, while ContainItemsAssignableTo/NotContainItemsAssignableTo scan at most once',
         'Async action and function completion-timeout assertions that validate before invocation, do not cancel the operation, observe late faults, and return function results or the original wrapper as appropriate',

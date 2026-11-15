@@ -27,6 +27,29 @@ public sealed class TypeReflectionAssertionTests
     }
 
     [Fact]
+    public void Should_TypeAssertionsCompareExactRuntimeTypeIdentity()
+    {
+        typeof(string).Should().Be(typeof(string)).And.NotBe(typeof(int));
+        typeof(int).Should().NotBe(null);
+
+        Type? missing = null;
+        missing.Should().Be(null).And.NotBe(typeof(string));
+
+        Assert.Throws<AstraFlowAssertionException>(() => typeof(string).Should().Be(typeof(int)));
+        Assert.Throws<AstraFlowAssertionException>(() => typeof(string).Should().NotBe(typeof(string)));
+    }
+
+    [Fact]
+    public void Should_TypeIdentityFailureDoesNotPrintRuntimeTypes()
+    {
+        var failure = Assert.Throws<AstraFlowAssertionException>(
+            () => typeof(ReflectionDerived).Should().Be(typeof(ReflectionBase)));
+
+        Assert.DoesNotContain(nameof(ReflectionDerived), failure.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain(nameof(ReflectionBase), failure.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Should_TypeAssertionsRecognizeAbstractAndStaticTypes()
     {
         typeof(ReflectionBase).Should().BeAbstract().NotBeSealed().NotBeStatic();

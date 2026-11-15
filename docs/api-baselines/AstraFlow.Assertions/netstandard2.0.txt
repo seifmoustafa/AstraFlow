@@ -138,6 +138,8 @@ M:AstraFlow.Assertions.DictionaryAssertions`2.HaveSameCount(System.Collections.G
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeEmpty
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeEquivalentTo``1(``0,System.Action{AstraFlow.Assertions.EquivalencyOptions})
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeSameAs(System.Object)
+M:AstraFlow.Assertions.DictionaryAssertions`2.NotContain(System.Func{System.Collections.Generic.KeyValuePair{`0,`1},System.Boolean})
+M:AstraFlow.Assertions.DictionaryAssertions`2.NotContain(`0,`1)
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContainKey(`0)
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContainKeys(`0[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContainValue(`1)
@@ -390,6 +392,7 @@ M:AstraFlow.Assertions.TemporalAssertionExtensions.BeNegative(AstraFlow.Assertio
 M:AstraFlow.Assertions.TemporalAssertionExtensions.BePositive(AstraFlow.Assertions.ObjectAssertions{System.TimeSpan})
 M:AstraFlow.Assertions.TemporalAssertionExtensions.HaveKind(AstraFlow.Assertions.ObjectAssertions{System.DateTime},System.DateTimeKind)
 M:AstraFlow.Assertions.TemporalAssertionExtensions.HaveOffset(AstraFlow.Assertions.ObjectAssertions{System.DateTimeOffset},System.TimeSpan)
+M:AstraFlow.Assertions.TypeAssertions.Be(System.Type)
 M:AstraFlow.Assertions.TypeAssertions.BeAbstract
 M:AstraFlow.Assertions.TypeAssertions.BeDerivedFrom(System.Type)
 M:AstraFlow.Assertions.TypeAssertions.BeDerivedFrom``1
@@ -402,6 +405,7 @@ M:AstraFlow.Assertions.TypeAssertions.HaveProperty(System.String)
 M:AstraFlow.Assertions.TypeAssertions.HaveProperty(System.String,System.Type)
 M:AstraFlow.Assertions.TypeAssertions.Implement(System.Type)
 M:AstraFlow.Assertions.TypeAssertions.Implement``1
+M:AstraFlow.Assertions.TypeAssertions.NotBe(System.Type)
 M:AstraFlow.Assertions.TypeAssertions.NotBeAbstract
 M:AstraFlow.Assertions.TypeAssertions.NotBeDerivedFrom(System.Type)
 M:AstraFlow.Assertions.TypeAssertions.NotBeDerivedFrom``1

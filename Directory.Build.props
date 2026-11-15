@@ -40,6 +40,7 @@
       - Adds opt-in public instance-field comparison to structural object-graph equivalency.
       - Adds path-based object-graph member selection with explicit missing-path failures.
       - Adds metadata-only type assertions for inheritance, interfaces, public properties, method overloads, and constructors.
+      - Adds exact runtime-Type equality and negative dictionary entry checks for key/value pairs and single-pass predicates.
       - Adds exact byte-content stream assertions with bounded-memory reads, value-safe failures, and seekable-position restoration.
       - Adds set-based collection subset/intersection checks, inclusive count bounds, and null-item checks.
       - Adds order-independent dictionary mapping equality and inequality with default key/value equality and value-safe failures.

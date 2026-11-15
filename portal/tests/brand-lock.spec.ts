@@ -288,6 +288,12 @@ test.describe("AstraFlow Brand Lock Verification", () => {
 
     // Allow the one-shot 640ms HeroStageEntrance / HeroTextReveal mount choreography to settle,
     // then verify Hero A mark and h1 remain continuously stationary across 1200ms.
+    // Wait for responsive web fonts before taking the baseline; the stacked mobile layout can
+    // otherwise move the SVG stage after the network becomes idle.
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    });
     await page.waitForTimeout(800);
 
     const boxAStart = await signatureA.boundingBox();

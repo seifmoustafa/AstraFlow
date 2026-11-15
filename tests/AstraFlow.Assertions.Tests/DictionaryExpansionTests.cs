@@ -51,6 +51,55 @@ public sealed class DictionaryExpansionTests
     }
 
     [Fact]
+    public void NegativeEntryAssertions_SupportPairsAndSinglePassPredicates()
+    {
+        var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Alpha"] = "safe",
+            ["Beta"] = "private-value"
+        };
+
+        dictionary.Should().NotContain("alpha", "different");
+        Assert.Throws<AstraFlowAssertionException>(() => dictionary.Should().NotContain("ALPHA", "safe"));
+
+        var oneShot = new OneShotEnumerable<KeyValuePair<string, string>>(dictionary);
+        var predicateCalls = 0;
+        oneShot.Should().NotContain(pair =>
+        {
+            predicateCalls++;
+            return pair.Value == "not-present";
+        });
+
+        Assert.Equal(2, predicateCalls);
+        Assert.Equal(1, oneShot.GetEnumeratorCalls);
+        Assert.Equal(1, oneShot.DisposeCalls);
+    }
+
+    [Fact]
+    public void NegativeEntryPredicate_FailsWithoutPrintingEntryValuesAndPropagatesPredicateExceptions()
+    {
+        const string secret = "dictionary-secret-value";
+        var entries = new[]
+        {
+            new KeyValuePair<string, string>("private-key", secret),
+            new KeyValuePair<string, string>("later", "safe")
+        };
+
+        var failure = Assert.Throws<AstraFlowAssertionException>(
+            () => entries.Should().NotContain(pair => pair.Value == secret));
+
+        Assert.DoesNotContain(secret, failure.Message, StringComparison.Ordinal);
+        Assert.DoesNotContain("private-key", failure.Message, StringComparison.Ordinal);
+
+        var expected = new InvalidOperationException("predicate failed");
+        var actual = Assert.Throws<InvalidOperationException>(
+            () => entries.Should().NotContain(_ => throw expected));
+        Assert.Same(expected, actual);
+        Assert.Throws<ArgumentNullException>(
+            () => entries.Should().NotContain((Func<KeyValuePair<string, string>, bool>)null!));
+    }
+
+    [Fact]
     public void CountAssertions_CompareDictionaryCountsAndRejectNegativeExpectations()
     {
         IDictionary<string, int> values = new Dictionary<string, int>
