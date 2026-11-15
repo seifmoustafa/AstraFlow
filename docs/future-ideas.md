@@ -223,6 +223,7 @@ Use this section when deciding where an idea belongs before promoting it to `roa
 | Diagnostics assertions | Done | Shipped in `1.3.0`; report error and finding assertions. |
 | Diagnostics snapshot helper | Candidate | Golden report tests. |
 | Upgrade smoke-test harness | Planned | Restore previous packages, upgrade, then build/test representative consumers. |
+| Assertions capability expansion | Candidate for v2.5.0 scope review; see [v2.5 Assertions plan](plans/v2.5-assertions.md) | Consider async-enumerable completion/failure/timeout semantics and additional exact behavior-tested CLI mappings. Read-only dictionary key, value, count, and mapping checks are already in the 2.4.0 candidate. Choose new slices from adopter evidence; do not add APIs to 2.4.x patches. |
 | Public API approval tests | In progress in v2.3.0 | `scripts/verify-public-api-baselines.ps1` gates target-specific API ID drift in CI. |
 | Analyzer/generator snapshot helpers | Planned | Required once compile-time packages exist. |
 | Test fixture builders | Candidate | Useful if minimal and optional. |

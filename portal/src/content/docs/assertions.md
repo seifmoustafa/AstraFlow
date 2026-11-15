@@ -4,9 +4,9 @@
 
 ## Availability
 
-`AstraFlow.Assertions` is planned for AstraFlow 2.4.0. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only.
+The AstraFlow 2.4.0 release candidate includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only.
 
-The package has no runtime dependencies. Add it to a test project when it becomes available:
+The package has no runtime dependencies. Install it in a test project with:
 
 ```shell
 dotnet add package AstraFlow.Assertions --version 2.4.0

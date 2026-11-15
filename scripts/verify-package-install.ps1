@@ -365,7 +365,7 @@ function Test-CoreConsumer {
     Add-AstraFlowPackage -Project $project -PackageId "AstraFlow"
 
     Invoke-DotNetStep "Restore $Framework core consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
-    Invoke-DotNetStep "Build $Framework core consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Build $Framework core consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false", "/p:RestorePackagesPath=$restorePackages")
 }
 
 function Test-AllConsumer {
@@ -391,7 +391,7 @@ function Test-AllConsumer {
     Set-MediatorSmokeProgram -Project $project
 
     Invoke-DotNetStep "Restore net10.0 all-package consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
-    Invoke-DotNetStep "Build net10.0 all-package consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Build net10.0 all-package consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false", "/p:RestorePackagesPath=$restorePackages")
     Invoke-DotNetStep "Run net10.0 all-package consumer" @("run", "--project", $project, "--no-build")
 }
 
@@ -415,7 +415,7 @@ Console.WriteLine("AstraFlow.Assertions standalone package smoke passed.");
     Set-Content -LiteralPath $programPath -Value $program -Encoding UTF8
 
     Invoke-DotNetStep "Restore standalone AstraFlow.Assertions consumer" @("restore", $project, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
-    Invoke-DotNetStep "Build standalone AstraFlow.Assertions consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Build standalone AstraFlow.Assertions consumer" @("build", $project, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false", "/p:RestorePackagesPath=$restorePackages")
     Invoke-DotNetStep "Run standalone AstraFlow.Assertions consumer" @("run", "--project", $project, "--no-build")
 }
 

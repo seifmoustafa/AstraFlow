@@ -252,7 +252,7 @@ foreach ($packageId in $packages) {
 
 try {
     Invoke-DotNetStep "Restore previous-version consumer" @("restore", $project.FullName, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
-    Invoke-DotNetStep "Build previous-version consumer" @("build", $project.FullName, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
+    Invoke-DotNetStep "Build previous-version consumer" @("build", $project.FullName, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false", "/p:RestorePackagesPath=$restorePackages")
     Invoke-DotNetStep "Run previous-version consumer" @("run", "--project", $project.FullName, "--no-build")
 }
 catch {
@@ -273,7 +273,7 @@ foreach ($packageId in $newInCurrentVersionPackages) {
 }
 
 Invoke-DotNetStep "Restore upgraded consumer" @("restore", $project.FullName, "--configfile", $config, "--disable-parallel", "-v:minimal", "/p:RestorePackagesPath=$restorePackages")
-Invoke-DotNetStep "Build upgraded consumer" @("build", $project.FullName, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false")
+Invoke-DotNetStep "Build upgraded consumer" @("build", $project.FullName, "--no-restore", "-v:minimal", "/m:1", "/p:UseSharedCompilation=false", "/p:RestorePackagesPath=$restorePackages")
 Invoke-DotNetStep "Run upgraded consumer" @("run", "--project", $project.FullName, "--no-build")
 
 Write-Host "AstraFlow upgrade smoke passed from $PreviousVersion to $CurrentVersion."

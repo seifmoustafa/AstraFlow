@@ -1,10 +1,10 @@
 # AstraFlow 2.4.0 Assertions Expansion Design
 
-**Status:** Design approved; implementation is in progress. Numeric/temporal and the initial assertion-family slices are implemented and verified on the package targets. The read-only CLI binds local symbols and can read safe compile metadata from explicitly selected single-target projects; one ordinal string equality mapping is verified against the exact source identity, and lookalikes remain manual. Broader mapping coverage, remaining capability families, complete inventory reconciliation, final portal synchronization and the full release gate are still open. The maintainer confirmed that 2.4.0 is not published or merged. The existing assertion foundation and generated-mapping work remain part of the release.
+**Status:** The approved bounded 2.4.0 ship set is implemented and locally release-verified at `91206dd`; it remains unmerged and unpublished, and hosted checks for that head have not run. The CLI safely binds symbols for explicitly selected restored single-target projects; only exact, behavior-tested mappings are verified, while other matches remain manual or unknown. Deferred inventory rows are not 2.4.0 blockers or promises. Future assertion additions are separately tracked as candidates in the [v2.5 Assertions plan](../../plans/v2.5-assertions.md). The generated-mapping work remains part of the 2.4.0 release.
 
 ## Goal and release scope
 
-Make `AstraFlow.Assertions` a practical general-purpose assertion package for application test suites. The 2.4.0 objective is comprehensive coverage of the approved capability set, with AstraFlow-owned APIs and implementation. Similar method names alone do not establish equivalent behavior. A capability is complete only when its behavior, failure paths, supported targets, documentation and consumer use have been verified.
+Make `AstraFlow.Assertions` a practical, independently usable assertion package for application test suites. The 2.4.0 objective is the specifically approved and behavior-verified ship set, with AstraFlow-owned APIs and implementation—not comprehensive ecosystem parity. Similar method names alone do not establish equivalent behavior. A capability is complete only when its behavior, failure paths, supported targets, documentation and consumer use have been verified.
 
 Maintain a private capability inventory that maps every identified capability to an AstraFlow API, behavior and evidence. Keep external product names and namespaces out of AstraFlow product text and dependencies. If a capability cannot reasonably fit package boundaries or the release, present that specific exception to the maintainer for a decision; do not silently defer it or claim complete coverage.
 
@@ -24,29 +24,29 @@ Maintain a private capability inventory that maps every identified capability to
 5. **Specialized assertions:** XML, streams, reflection and type metadata, events and execution time, with platform-specific integrations isolated where required.
 6. **Authoring:** assertion scopes, configuration, formatting, source/subject identification and extension points, including concurrent use.
 
-The implementation plan will break these families into independently verifiable slices. The inventory must also identify additional capabilities not listed above, including supported language and framework integrations; each requires implementation and evidence or a maintainer-approved disposition.
+These families are a discovery taxonomy, not a promise that every item belongs in 2.4.0 or any later release. The 2.4.0 release boundary and verified surface are maintained in the [v2.4 Assertions plan](../../plans/v2.4-assertions.md). Unselected inventory items need an explicit disposition; any later implementation requires evidence, a bounded design and maintainer approval.
 
 ## Semantics and failure behavior
 
-Use exact equality by default and require explicit options for alternate comparisons. Structural comparisons report the failing member path and expose clear options for selection, ordering, cycles and custom rules. Failure messages identify the assertion, failure and relevant path; sensitive values are omitted by default, with explicit formatting options for teams that choose to expose detail. Define formatting, exception and null behavior consistently across supported targets.
+Use exact equality by default and require explicit options for alternate comparisons. Structural comparisons report the failing member path and expose only the selection, ordering, cycle and comparer options implemented in the approved ship set. Failure messages identify the assertion, failure and relevant path; sensitive values are omitted by default. Any future formatting or broader configuration API needs its own bounded design and must avoid shared mutable state. Define exception and null behavior consistently across supported targets.
 
-Configuration must support per-assertion and per-scope customization without shared mutable state causing interference between concurrent tests. Preserve current public behavior unless an incompatibility is reviewed and documented. Migration documentation must explain semantic differences and resolution of ambiguous extension methods when both assertion APIs are present during a transition.
+Preserve current public behavior unless an incompatibility is reviewed and documented. If a future release adds per-assertion or per-scope configuration, it must not let shared mutable state interfere between concurrent tests. Migration documentation must explain semantic differences and resolution of ambiguous extension methods when both assertion APIs are present during a transition.
 
 ## CLI migration analysis
 
-Provide `astraflow assertions analyze` for a solution or test project. The initial implementation parses C# syntax, reports relative source locations and method-name candidates, omits expressions/literal values, flags parse errors and never changes files. It does not yet resolve projects, receiver types or overloads; it marks every candidate for review and makes no equivalence claim. The completed CLI phase must use C# symbols where available, classify verified equivalents/manual/unsupported/unknown cases, report unresolved calls as unknown, and document incomplete-project behavior. Keep output safe for local use and CI. Reports must not contain test values or secrets.
+Provide `astraflow assertions analyze` as a read-only migration aid. It parses C# syntax and, for an explicitly selected restored single-target project, can bind symbols using safe compile metadata without evaluating project code. It reports relative source locations, omits expressions and literal values, flags incomplete analysis, and never changes files. Only exact symbol identities with behavior-backed tests receive a verified mapping; other bound matches remain manual and unresolved calls remain unknown. Keep output safe for local use and CI; reports must not contain test values or secrets.
 
 Automatic rewriting is a later slice and requires demonstrated behavior preservation for every supported rewrite; it is not an acceptance condition for the analysis command.
 
 ## Evidence and release gates
 
-- Inventory every identified capability and record API, semantic differences, target frameworks, success and failure tests, and consumer evidence. No unapproved gaps at the comprehensive-release gate.
+- For the bounded 2.4.0 ship set, record API behavior, semantic differences, target frameworks, success and failure tests, and consumer evidence. Every unselected inventory item must have a disposition; none is counted as supported based on a name match.
 - Exercise positive, negative, null, boundary, concurrency, cancellation, cycle, ordering and disposal cases as relevant. Test failure paths and privacy defaults, not just successful calls.
 - Build and test every advertised target; verify public API baselines, compatibility, package assets, dependency boundaries, reproducibility and clean package consumers.
-- Migrate representative existing test projects, including a transition with both assertion APIs present. They must compile and pass; ambiguous calls and behavior differences must have documented resolutions.
-- Verify CLI analysis on representative, incomplete and unbuildable projects, including unresolved symbols, reports, exit codes and privacy.
+- Migrate representative existing test projects. They must compile and pass; ambiguous calls and behavior differences must have documented resolutions.
+- Verify CLI analysis on representative and incomplete projects, including unresolved symbols, reports, exit codes and privacy.
 - Synchronize README, API guides, package selection, samples, changelog and portal product content with verified behavior. Preserve the portal's approved design and follow its brainstorming gate for new UI or UX changes. Run the repository's required portal checks after the final portal edits.
-- Update the 2.4.0 changelog as work is implemented and verified. Re-run the release and hosted PR gates on the final commit. Publishing and merging require their own authorization.
+- Update the 2.4.0 changelog for implemented and verified ship-set behavior. Re-run the release and hosted PR gates on the final commit. Publishing and merging require their own authorization.
 
 ## Claim boundaries
 

@@ -10,6 +10,14 @@
 
 **Spec:** [2026-11-13-assertions-24-design.md](../specs/2026-11-13-assertions-24-design.md)
 
+## 2.4.0 bounded-scope closeout — 2026-11-15
+
+The agreed 2.4.0 ship set is complete and locally verified at branch head `91206dd`. The Release solution builds with 0 warnings/errors; all 591 tests pass; all 16 package artifacts pack and reproduce; clean consumers install the all-package set; the 2.3.0 upgrade smoke and 15 sample builds pass; and portal checks pass. SourceLink metadata for all 16 symbol packages is pinned to this commit. Detailed commands and evidence are recorded in [the release work plan](../../plans/v2.4-release.md) and [the assertions plan](../../plans/v2.4-assertions.md).
+
+The unchecked capability rows below are intentionally outside the 2.4.0 boundary. The private declaration ledger assigns every unselected row to a later capability review; that is a review backlog, not a promise to implement every item. Keep 2.4.x for compatible fixes and hardening. Stop assertion API expansion for this goal, do not push or publish this branch, and treat new assertion capabilities as future-version work. The current proposal is organized in the [v2.5 Assertions candidate plan](../../plans/v2.5-assertions.md); it still requires adopter evidence and explicit scope approval.
+
+**Checklist interpretation:** unchecked boxes in the original phase breakdown below are not outstanding 2.4.0 work. They record the broader parity-first exploration that was narrowed to the approved ship set; evaluate any later work under the candidate plan above. Reopen 2.4.0 only for a proven release blocker.
+
 ## Global constraints
 
 - Target 2.4.0 on the existing PR branch; preserve the generated-mapping changes.
