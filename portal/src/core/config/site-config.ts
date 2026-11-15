@@ -7,11 +7,11 @@ export const SITE_TAGLINE = 'ENGINEERED CLARITY';
 export const SITE_DESCRIPTION =
   'Explicit .NET packages for mediator dispatch, object mapping, query projections, compile-time analyzers, source generators, diagnostics, and test workflows.';
 
-export const LATEST_PUBLISHED_VERSION = '2.4.0';
-export const LATEST_PUBLISHED_DATE = '2026-11-15';
+export const LATEST_PUBLISHED_VERSION = '2.4.1';
+export const LATEST_PUBLISHED_DATE = '2026-11-16';
 export const LATEST_PUBLISHED_PROVENANCE =
-  'Latest published NuGet release (2026-11-15)';
-export const PREVIOUS_PUBLISHED_VERSION = '2.3.0';
+  'Latest published NuGet release (2026-11-16)';
+export const PREVIOUS_PUBLISHED_VERSION = '2.4.0';
 export const SUPPORTED_MIN_MAJOR = 2;
 
 export const KNOWN_RELEASE_DATES: Readonly<Record<string, string>> = {

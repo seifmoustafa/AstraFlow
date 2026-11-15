@@ -12,7 +12,7 @@ dotnet add package AstraFlow.Analyzers
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="AstraFlow.Analyzers" Version="2.4.0" PrivateAssets="all" />
+  <PackageReference Include="AstraFlow.Analyzers" Version="2.4.1" PrivateAssets="all" />
 </ItemGroup>
 ```
 

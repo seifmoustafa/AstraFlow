@@ -9,7 +9,7 @@ The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets
 The package has no runtime dependencies. Install it in a test project with:
 
 ```shell
-dotnet add package AstraFlow.Assertions --version 2.4.0
+dotnet add package AstraFlow.Assertions --version 2.4.1
 ```
 
 ## Start with `Should()`

@@ -43,8 +43,8 @@ Compiler packages run during build and should not flow transitively into downstr
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="AstraFlow.Analyzers" Version="2.4.0" PrivateAssets="all" />
-  <PackageReference Include="AstraFlow.Generators" Version="2.4.0" PrivateAssets="all" />
+  <PackageReference Include="AstraFlow.Analyzers" Version="2.4.1" PrivateAssets="all" />
+  <PackageReference Include="AstraFlow.Generators" Version="2.4.1" PrivateAssets="all" />
 </ItemGroup>
 ```
 
