@@ -5,8 +5,8 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 1.13.1
-dotnet add package AstraFlow.Mapper.Conventions --version 1.13.1
+dotnet add package AstraFlow.Mapper --version 2.3.0
+dotnet add package AstraFlow.Mapper.Conventions --version 2.3.0
 ```
 
 ## Register

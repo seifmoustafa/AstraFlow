@@ -1,5 +1,5 @@
 using AstraFlow.Security;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Xunit;
 
 namespace AstraFlow.Security.Tests;

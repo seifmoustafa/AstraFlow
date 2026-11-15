@@ -1,502 +1,188 @@
 # AstraFlow
 
-![AstraFlow package icon](https://raw.githubusercontent.com/seifmoustafa/AstraFlow/main/assets/branding/astraflow-icon.png)
+![AstraFlow — Engineered Clarity](assets/astraflow-readme.png)
 
-AstraFlow is a MIT-licensed .NET package family for explicit CQRS dispatch and source-auditable object mapping.
+A modular .NET suite of **16 focused packages** for explicit request dispatch, object mapping, query projections, compile-time analyzers, source generators, diagnostics, observability, and test workflows. Install only the packages your application needs and keep optional integrations isolated.
 
-It was built to keep production applications free from runtime license checks, hidden mapping behavior, and framework lock-in. The explicit core design is deliberately focused: secure defaults, clear errors, explicit extension points, and package-quality diagnostics before optional convention layers are added.
+[Getting Started](docs/getting-started.md) · [Package Selection](docs/package-selection.md) · [Version & Upgrade Guide](docs/version-upgrade-guide.md) · [Compatibility](docs/compatibility.md) · [Changelog](CHANGELOG.md) · [Branding](docs/branding.md)
 
-## The vision: make .NET application flow extraordinarily clear
+> **Release status & support policy:** AstraFlow **`2.3.0`** is the current published NuGet release. Version **`2.4.0`** is in release preparation under pull request review on this branch (`Directory.Build.props` targets `2.4.0`, adding the standalone `AstraFlow.Assertions` package, expanded compile-time mapping generation, and read-only CLI assertion migration analysis). On NuGet.org, all **`1.x`** packages are **deprecated** — use **`2.x`** (`2.3.0` on NuGet today; `2.4.0` once published).
 
-AstraFlow aims to be a **leading open-source .NET application-flow toolkit**: explicit where correctness matters, source-generated where the compiler can prove a supported mapping or dispatch shape, rich in actionable diagnostics, and flexible without hidden runtime behavior. The promise is **less boilerplate, fewer surprises and more inspectable execution**—supported by clean consumer tests and measurable engineering, not unverified "fastest" or "complete replacement" claims.
+---
 
-### Current capabilities and future directions
+## Packages (16)
 
-| Area | Current foundation | Future direction |
-| --- | --- | --- |
-| Mediator | Requests/streams/notifications, pipelines, generated DI registrations | **Executable generated dispatch** with DI/pipeline equivalence (candidate v2.4) |
-| Mapper | Explicit rules, opted-in conventions, projections, mapping plans, generated metadata, and **opt-in typed mapping execution** (v2.1.0) | Broader generated-mapping scenarios beyond the supported v2.1.0 subset |
-| Diagnostics | Reports, analyzers, CLI inspection/diff/graph | Explainable versioned **flow manifest** (candidate v2.5) |
-| Security | Shared redaction and sensitive-name policies | Better compile-time governance with explicit limitations and threat tests |
-| Ecosystem | Separately installable core and current integrations | Demand-gated idempotency, caching, authz, EF and resilience adapters (v3+ research) |
-
-> **Generated mapping:** v2.1.0 adds explicitly declared, statically typed mapping methods implemented by `AstraFlow.Generators`. This is a separate execution path from `IMapper`, convention mapping, and projections. Generated mediator registration wires dependency injection; it does not generate mediator dispatch.
-
-### Strategy and implementation library
-
-- **[Canonical version roadmap](docs/roadmap.md)** — historical milestones, proposed upcoming milestones, acceptance gates and explicit exclusions.
-- **[Engineering blueprint](docs/engineering-blueprint.md)** — full technical vision, architecture, product trade-offs and failure pre-mortem.
-- **[Developer-experience North Star](docs/strategy/north-star.md)** — what remarkable onboarding, mapping, dispatch and maintenance should feel like.
-- **[v2.1 generated mapping release plan](docs/plans/v2.1-generated-mapping.md)** — exact first implementation scope, tests and measurable proof.
-- **[Architecture decisions](docs/adr/0001-generated-mapper.md)** — mapper, [mediator](docs/adr/0002-generated-mediator.md) and [flow intelligence](docs/adr/0003-flow-manifest.md).
-- **[Engineering evidence gates](docs/strategy/evidence-and-gates.md)** and **[validation matrix](docs/strategy/validation-matrix.md)** — compatibility, security, benchmarks, AOT and release proof.
-- **[v2.2 enterprise supply-chain plan](docs/plans/v2.2-enterprise-supply-chain.md)** — reproducible package, SourceLink, SBOM, provenance, signing and dependency review gates.
-- **[Security and supply-chain guidance](docs/security-and-supply-chain.md)** — vulnerability reporting, artifact verification and repository settings.
-- **[Ecosystem portfolio](docs/strategy/ecosystem-portfolio.md)** and **[research ledger](docs/strategy/research-ledger.md)** — future integrations, competing alternatives and reasons to defer.
-- **[Decision log](docs/strategy/decision-log.md)** — assumptions to test and conditions that change direction.
-
-**Product rule:** each release has one primary outcome and demonstrates value. A larger roadmap is not a substitute for a stable public API or independent developer adoption.
-
-## Release And Repository Links
-
-NuGet shows package history under the **Release Notes** tab. GitHub shows only selected community files as repository tabs, so the README is the main public hub for everything else.
-
-| Link | What It Shows |
-| --- | --- |
-| [Release Notes / Changelog](https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md) | Full release-by-release package history. |
-| [GitHub Releases](https://github.com/seifmoustafa/AstraFlow/releases) | Tagged releases and downloadable source archives. |
-| [Security Policy](https://github.com/seifmoustafa/AstraFlow/blob/main/SECURITY.md) | Supported versions and vulnerability reporting. |
-| [Contributing](https://github.com/seifmoustafa/AstraFlow/blob/main/CONTRIBUTING.md) | Local development, tests, and contribution rules. |
-| [Code of Conduct](https://github.com/seifmoustafa/AstraFlow/blob/main/CODE_OF_CONDUCT.md) | Expected community behavior. |
-| [Support](https://github.com/seifmoustafa/AstraFlow/blob/main/SUPPORT.md) | Where to ask usage questions or report package issues. |
-| [Buy Me a Coffee](https://buymeacoffee.com/seifmoustafa) | Optional support for ongoing maintenance. |
-| [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | Planned mediator, mapper, testing, analyzer, generator, and ecosystem work. |
-| [Publishing Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/publishing.md) | Release and NuGet publishing process. |
-| [MIT License](https://github.com/seifmoustafa/AstraFlow/blob/main/LICENSE) | Package license. |
-
-## Packages
-
-| Package | Purpose |
-| --- | --- |
-| `AstraFlow.Contracts` | Shared mediator contracts for requests, notifications, streams, senders, publishers, processors, and exception flow. |
-| `AstraFlow.Mediator` | Request/response dispatch, void commands, stream requests, notification publishing, pipeline behaviors, processors, exception flow, handler scanning, duplicate handler detection, and optional handler coverage validation. |
-| `AstraFlow.Mapper` | Explicit object mapping rules, declared mapping catalogs, startup validation, collection mapping, named and parameterized projection registries, projection plan export, projection validation, secure ID mapping abstractions, and the opt-in generated mapping declaration attribute. |
-| `AstraFlow.Mapper.Conventions` | Optional convention mapping with exact pair registration, profiles, strict mapping plans, flattening, explicit reverse mapping, inheritance, polymorphic dispatch, custom paths, resolvers, value transformers, hooks, and sensitive-field safeguards. |
-| `AstraFlow.Mapper.EntityFrameworkCore` | Optional EF Core projection translation validation helpers for registered AstraFlow projections. |
-| `AstraFlow.Diagnostics` | Framework-neutral diagnostics reports for AstraFlow registrations, findings, JSON output, Markdown output, and health-check-ready summaries. |
-| `AstraFlow.Security` | Shared sensitive-name taxonomy and redaction policy primitives for secure DTO governance across diagnostics, CLI, observability, analyzers, and integrations. |
-| `AstraFlow.Testing` | Framework-neutral test helpers for fake mediator flows, handler harnesses, mapper/projection assertions, diagnostics assertions, and test secure IDs. |
-| `AstraFlow.Analyzers` | Roslyn analyzer package with stable AstraFlow rule IDs, severity metadata, suppression guidance, and mediator build-time diagnostics. |
-| `AstraFlow.Generators` | Source generator package for deterministic mediator registration, mapper/projection metadata, and opt-in executable typed mapping. |
-| `AstraFlow.Cli` | Command-line inspection, validation, reporting, diffing, graph output, and migration scanning. |
-| `AstraFlow.AspNetCore` | ASP.NET Core helpers for minimal APIs, controllers, endpoint filters, problem details, redacted diagnostics endpoints, and health summaries. |
-| `AstraFlow.FluentValidation` | FluentValidation pipeline behaviors for AstraFlow requests with aggregate errors, fail-fast validation, localization hooks, and diagnostics. |
-| `AstraFlow.OpenTelemetry` | ActivitySource and Meter instrumentation for request, notification, validation, mapping, projection, and redacted operational telemetry. |
-| `AstraFlow` | Convenience package referencing both mediator and mapper with one registration method. |
-
-## Documentation Map
-
-| Document | Read When |
-| --- | --- |
-| [Getting Started](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/getting-started.md) | You want the shortest path from install to working mediator and mapper usage. |
-| [Package Selection](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/package-selection.md) | You want to choose the smallest package set for an app, library, test project, or EF Core project. |
-| [Compatibility](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/compatibility.md) | You want current target framework support and target-expansion rules. |
-| [Migration Cookbook](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/migration-cookbook.md) | You want upgrade smoke-test guidance and before/after package migration checks. |
-| [Version and Upgrade Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/version-upgrade-guide.md) | You want a clear `1.13.0` → `2.2.0` → `2.3.0` comparison, migration impact, and code-change estimates. |
-| [API Governance](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/api-governance.md) | You want public API compatibility rules and release-review expectations. |
-| [API Reference](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/api-reference.md) | You need every public type, method, option, and expected behavior in one table-driven reference. |
-| [Architecture](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/architecture.md) | You want to understand the package design, runtime flow, dependency boundaries, and non-goals. |
-| [Mediator Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator.md) | You are using requests, handlers, notifications, or pipeline behaviors. |
-| [Mediator Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mediator-scenarios.md) | You want expected behavior for success cases, missing handlers, duplicate handlers, ambiguous requests, pipeline order, and notification failures. |
-| [Mapper Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mapper.md) | You are writing mapping rules, projections, validation, or secure ID mapping. |
-| [Convention Mapping](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/convention-mapping.md) | You want opt-in convention mapping with visible mapping plans and sensitive-field safeguards. |
-| [Mapper Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/mapper-scenarios.md) | You want expected behavior for object mapping, nulls, collections, validation failures, projections, and secure IDs. |
-| [Projection Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/projections.md) | You are registering, naming, validating, or resolving explicit projections. |
-| [Projection Scenarios](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/projection-scenarios.md) | You want expected behavior for duplicate, missing, named, risky, and strict projection cases. |
-| [EF Core Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/entity-framework-core.md) | You want optional EF Core projection translation checks. |
-| [Diagnostics Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/diagnostics.md) | You want JSON or Markdown reports of handlers, behaviors, mappings, projections, and diagnostics findings. |
-| [Security Governance](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/security.md) | You want shared sensitive-name classification and redaction policy guidance for v2 secure DTO governance. |
-| [Testing Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/testing.md) | You want fake sender/publisher/mediator helpers, handler harnesses, and assertion helpers for tests. |
-| [Analyzer Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/analyzers.md) | You want the analyzer package scope, stable rule IDs, severity policy, suppression guidance, and rule documentation pattern. |
-| [Generator Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/generators.md) | You want generated mediator DI registrations or mapper/projection metadata with runtime scanning kept as the fallback. |
-| [CLI Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/cli.md) | You want `astraflow` inspect, validate, report, diff, graph, scan, and output-format guidance. |
-| [ASP.NET Core Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/aspnetcore.md) | You want minimal API helpers, controller helpers, diagnostics endpoints, health summaries, and problem details. |
-| [FluentValidation Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/fluentvalidation.md) | You want request validation pipeline behavior, fail-fast mode, localization hooks, and validation diagnostics. |
-| [Observability Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/observability.md) | You want ActivitySource tracing, metrics, OpenTelemetry setup, redaction, and payload-safety guidance. |
-| [Diagnostics Endpoint Safety](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/diagnostics-endpoint-safety.md) | You want the safety rules for HTTP diagnostics endpoints and production opt-in. |
-| [Benchmark Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/benchmarks.md) | You want benchmark commands, methodology, environment capture, and the performance claim policy. |
-| [Troubleshooting](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/troubleshooting.md) | You hit an exception and want the likely cause and fix. |
-| [Community Release Guide](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/community-release-guide.md) | You are preparing the repo push, tag, package verification, and community-facing release notes. |
-| [Roadmap](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/roadmap.md) | You want the completed v1.2 projection safety scope and the future testing, mediator-parity, mapping-parity, analyzer, generator, and ecosystem roadmap. |
-| [Future Ideas Bank](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/future-ideas.md) | You want the broader candidate backlog for future features, integrations, platform tooling, and research ideas. |
-| [Changelog](https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md) | You want the release-by-release history shown in GitHub and linked from the NuGet README. |
-| [Publishing](https://github.com/seifmoustafa/AstraFlow/blob/main/docs/publishing.md) | You are preparing or verifying a NuGet release. |
-
-## Target Framework
-
-Since `2.0.0`, `AstraFlow.Security` ships `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0` assets. Since `1.4.0`, `AstraFlow.Contracts`, `AstraFlow`, `AstraFlow.Mediator`, `AstraFlow.Mapper`, `AstraFlow.Diagnostics`, and `AstraFlow.Testing` ship the same targets. Since `1.5.0`, `AstraFlow.Mapper.Conventions` ships the same non-EF targets. `AstraFlow.Mapper.EntityFrameworkCore` remains `net10.0` because it follows the EF Core 10 package line. `AstraFlow.Analyzers` and `AstraFlow.Generators` ship compiler assets under `analyzers/dotnet/cs` instead of runtime `lib/` assets. `AstraFlow.Cli` and `AstraFlow.AspNetCore` target `net10.0`. `AstraFlow.FluentValidation` and `AstraFlow.OpenTelemetry` target `net8.0`, `net9.0`, and `net10.0`.
-
-## Public API At A Glance
-
-### Registration
-
-| API | Package | Use It For | Expected Result |
+| Category | Package | Targets | Role |
 | --- | --- | --- | --- |
-| `services.AddAstraFlowMediator(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and scan marker assemblies without request coverage validation. | `IMediator`, `ISender`, `IPublisher`, request handlers, and notification handlers are available from DI. |
-| `services.AddAstraFlowMediator(bool validateRequestCoverage, params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and optionally fail startup when scanned requests have no handler or ambiguous contracts. | Same registration as above, with extra validation when enabled. |
-| `services.AddAstraFlowMediator(builder => ..., params Type[] assemblyMarkerTypes)` | `AstraFlow.Mediator` | Register mediator services and add explicit behaviors, processors, stream behaviors, and exception-flow components. | Core handlers are scanned and cross-cutting components are registered in a readable place. |
-| `services.AddAstraFlowGeneratedMediatorRegistrations()` | `AstraFlow.Generators` | Add generated mediator component registrations discovered at compile time. | Closed handlers, notifications, streams, processors, and exception-flow components are registered without runtime component scanning. |
-| `services.AddAstraFlowMapper(params Type[] assemblyMarkerTypes)` | `AstraFlow.Mapper` | Register mapper services and scan marker assemblies for mapping rules and projections. | `IMapper`, `IObjectMappingValidator`, `IProjectionRegistry`, `IProjectionValidator`, `SecureIdMapper`, and startup validation are registered. |
-| `services.AddAstraFlowMapper(IEnumerable<Type>, Action<MappingOptions>?)` | `AstraFlow.Mapper` | Register mapper services with explicit mapper/projection validation options. | Mapping and projection validation behavior is configured without adding new overloads for every option. |
-| `services.AddAstraFlowGeneratedMapperMetadata()` | `AstraFlow.Generators` | Add generated mapper metadata discovered at compile time. | `IGeneratedMapperMetadataProvider` exposes mapping rule and projection metadata for diagnostics, CLI, AOT, and future optimization. |
-| `services.AddAstraFlowConventionMapping(...)` | `AstraFlow.Mapper.Conventions` | Register exact opt-in convention mapping pairs, profiles, and strict mapping-plan validation. | Convention mapping rules and `IMappingPlanProvider` are registered without changing explicit mapper defaults. |
-| `services.AddAstraFlowDiagnostics(Action<AstraFlowDiagnosticsOptions>?)` | `AstraFlow.Diagnostics` | Register diagnostics after mediator/mapper services so it can snapshot registrations. | `IAstraFlowDiagnosticsReporter` can create in-memory, JSON, and Markdown reports. |
-| `services.AddAstraFlowAspNetCore(...)` | `AstraFlow.AspNetCore` | Add ASP.NET Core integration options and validation problem endpoint filter services. | Minimal API helpers, diagnostics endpoints, and health summaries can be mapped at the app boundary. |
-| `services.AddAstraFlowFluentValidation(...)` | `AstraFlow.FluentValidation` | Add validation pipeline behaviors for response and void requests. | Registered `IValidator<TRequest>` instances run before handlers. |
-| `services.AddAstraFlowOpenTelemetry(...)` | `AstraFlow.OpenTelemetry` | Add ActivitySource and Meter instrumentation for mediator and notification flows. | Request/notification spans and metrics are emitted without payload values by default. |
-| `services.AddAstraFlow(bool validateRequestCoverage = false, params Type[] assemblyMarkerTypes)` | `AstraFlow` | Register mediator and mapper together. | Combined setup for applications that intentionally use both packages. |
+| **Core** | `AstraFlow` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Convenience umbrella for `AstraFlow.Contracts`, `AstraFlow.Mediator`, and `AstraFlow.Mapper` |
+| **Core** | `AstraFlow.Contracts` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Lightweight mediator abstractions (`IRequest`, `INotification`, streams, pipelines) with zero runtime dependencies |
+| **Core** | `AstraFlow.Mediator` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Request/command/stream dispatch, notifications, pipeline behaviors, processors, scanning, and handler coverage validation |
+| **Core** | `AstraFlow.Mapper` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Explicit object mapping catalogs, startup validation, named projections, and secure ID abstractions |
+| **Core** | `AstraFlow.Mapper.Conventions` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Opt-in convention mapping with deterministic plans, strict validation, and sensitive-field safeguards |
+| **Core** | `AstraFlow.Security` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Shared sensitive-name classification and redaction policy primitives |
+| **Core** | `AstraFlow.Diagnostics` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Framework-neutral JSON and Markdown registration and validation reports |
+| **Tooling** | `AstraFlow.Analyzers` | `netstandard2.0` *(analyzer)* | Build-time Roslyn diagnostics for mediator, mapper, and projection contracts |
+| **Tooling** | `AstraFlow.Generators` | `netstandard2.0` *(generator)* | Compile-time mediator/mapper metadata plus opt-in typed mapping generation (`[AstraGenerateMapping]`) |
+| **Tooling** | `AstraFlow.Cli` | `net10.0` *(.NET tool)* | CLI inspect, validate, report, diff, Mermaid/Canvas graphs, and read-only assertion migration scan *(expanded in `2.4.0`)* |
+| **Integrations** | `AstraFlow.AspNetCore` | `net10.0` | Minimal APIs, controllers, problem details, diagnostics endpoints, and health summaries |
+| **Integrations** | `AstraFlow.FluentValidation` | `net8.0`, `net9.0`, `net10.0` | Validation pipeline behaviors (fail-fast and aggregate errors), localization hooks, and diagnostics |
+| **Integrations** | `AstraFlow.OpenTelemetry` | `net8.0`, `net9.0`, `net10.0` | Production-safe `ActivitySource` tracing and `Meter` metrics with default redaction |
+| **Integrations** | `AstraFlow.Mapper.EntityFrameworkCore` | `net10.0` | Optional EF Core queryable projection translation validation |
+| **Testing** | `AstraFlow.Testing` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Framework-neutral test fakes, recording harnesses, and flow test helpers |
+| **Testing** | `AstraFlow.Assertions` *(unreleased in `2.4.0`)* | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | Standalone, runner-neutral general-purpose assertions with zero production package dependencies |
 
-### Mediator
+See the [Package Selection Guide](docs/package-selection.md) for boundary rules and dependency isolation guarantees (`AstraFlow.Mapper` never pulls EF Core; `AstraFlow.Mediator` never pulls FluentValidation or OpenTelemetry).
 
-| API | Use It For | Expected Result |
-| --- | --- | --- |
-| `IRequest` | Mark a command/request that completes without a response value. | The request can be sent through `ISender.Send(IRequest)` or runtime `Send(object)` if exactly one void handler exists. |
-| `IRequest<TResponse>` | Mark a request/command/query and declare its response type. | The request can be sent through `ISender` if exactly one matching handler exists. |
-| `IRequestHandler<TRequest>.Handle(...)` | Implement void request handling. | The handler completes without returning an application value. |
-| `IRequestHandler<TRequest, TResponse>.Handle(...)` | Implement request handling. | The handler produces the response for one request type. |
-| `ISender.Send(IRequest, CancellationToken)` | Send a strongly typed void request. | Void pipeline behaviors run, then the single void handler runs. |
-| `ISender.Send<TResponse>(IRequest<TResponse>, CancellationToken)` | Send a strongly typed request. | Pipeline behaviors run, then the single handler runs, then the response is returned. |
-| `ISender.Send(object, CancellationToken)` | Send when the request type is known only at runtime. | Same behavior as typed send after AstraFlow verifies the object implements exactly one void or response request contract. |
-| `IPipelineBehavior<TRequest, TResponse>.Handle(...)` | Wrap request handling with validation, logging, authorization, caching, or feature gates. | Behaviors run in DI registration order and may short-circuit. |
-| `IRequestPipelineBehavior<TRequest>.Handle(...)` | Wrap void request handling. | Behaviors run in DI registration order and may short-circuit completion. |
-| `IRequestPreProcessor<TRequest>.Process(...)` | Run logic before a request pipeline. | Pre-processors run before the handler pipeline. |
-| `IRequestPostProcessor<TRequest, TResponse>.Process(...)` | Run logic after a response request succeeds. | Post-processors see the request and response after successful handling. |
-| `IRequestExceptionAction<...>.Execute(...)` | Observe request exceptions for logging/metrics. | Actions run side effects and the original exception is rethrown. |
-| `IRequestExceptionHandler<...>.Handle(...)` | Convert selected request exceptions into handled results. | Handlers must explicitly call `SetHandled(...)` to suppress the exception. |
-| `IStreamRequest<TResponse>` | Mark a request that returns `IAsyncEnumerable<TResponse>`. | The request can be dispatched through `IStreamSender`. |
-| `IStreamRequestHandler<TRequest, TResponse>.Handle(...)` | Implement stream handling. | The handler returns an async stream without buffering the whole result. |
-| `IStreamSender.CreateStream(...)` | Dispatch a stream request. | Stream behaviors run, then the single stream handler returns the stream. |
-| `IStreamPipelineBehavior<TRequest, TResponse>.Handle(...)` | Wrap stream request handling. | Behaviors can shape or observe the async stream. |
-| `INotification` | Mark an in-process event. | The notification can be published to zero or more handlers. |
-| `INotificationHandler<TNotification>.Handle(...)` | React to a notification. | All handlers for the notification type are invoked sequentially. |
-| `IPublisher.Publish<TNotification>(...)` | Publish a strongly typed notification. | Handlers run according to `NotificationFailurePolicy`. |
-| `IPublisher.Publish(object, CancellationToken)` | Publish when the notification type is known only at runtime. | AstraFlow verifies the object implements `INotification`, then publishes it. |
+---
 
-### Mapper
+## Install the published release (`2.3.0`)
 
-| API | Use It For | Expected Result |
-| --- | --- | --- |
-| `IMapper.Map<TDestination>(object? source)` | Map a source object to a destination type. | Returns the mapped value, default for null source, or throws when no single rule owns the pair. |
-| `IMapper.Map(object? source, Type destinationType)` | Map when the destination type is known only at runtime. | Same rule lookup behavior as generic mapping. |
-| `IObjectMappingRule.CanMap(Type, Type)` | Declare whether a rule owns a source/destination pair. | Exactly one rule should return `true` for any active pair. |
-| `IObjectMappingRule.Map(object?, Type, IMapper)` | Implement the mapping code. | Returns the destination object and may use `mapper` for nested explicit mappings. |
-| `IDeclaredObjectMappingRule.DeclaredMappings` | Make mapping ownership machine-checkable. | Startup validation can catch duplicates, undeclared rules, and declaration drift. |
-| `ObjectMappingPair.Create<TSource, TDestination>()` | Declare an owned mapping pair without repeating `typeof(...)`. | Produces a pair used by validation and diagnostics. |
-| `IObjectMappingValidator.Validate(MappingOptions)` | Validate registered mapping rules manually. | Throws clear errors for invalid mapping catalogs. |
-| `IProjection<TSource, TDestination>.Expression` | Define provider-translatable query projection. | Used by `ProjectWith` to keep query DTO shape explicit. |
-| `INamedProjection<TSource, TDestination>.Name` | Give a projection an explicit name. | Multiple projections can safely share the same source/destination pair. |
-| `IProjectionRegistry.Get<TSource, TDestination>()` | Resolve the only unnamed projection for a pair. | Returns the projection or throws clearly for missing/ambiguous registrations. |
-| `IProjectionRegistry.Get<TSource, TDestination>(string name)` | Resolve a named projection. | Returns the named projection or throws clearly for missing/duplicate names. |
-| `IProjectionValidator.Validate(MappingOptions)` | Validate registered projections manually. | Returns stable `AFP...` findings for duplicates and high-risk expressions. |
-| `query.ProjectWith(...)` | Apply an explicit LINQ projection directly or through the registry. | Returns `IQueryable<TDestination>` using the supplied/resolved expression. |
-| `ISecureIdCodec` | Plug in application-owned ID encryption/decryption. | AstraFlow stays decoupled from secrets and algorithms. |
-| `SecureIdMapper` | Use secure ID conversion inside mapping rules. | Converts required or optional `Guid` values to encrypted strings and attempts decryption. |
+Install the umbrella convenience package when a project uses both mediator and explicit mapping:
 
-### Diagnostics
+```powershell
+dotnet add package AstraFlow --version 2.3.0
+```
 
-| API | Use It For | Expected Result |
-| --- | --- | --- |
-| `AddAstraFlowDiagnostics(...)` | Add diagnostics reporting after core AstraFlow registration. | Captures service descriptors and registers the diagnostics reporter. |
-| `IAstraFlowDiagnosticsReporter.CreateReport()` | Create an in-memory report. | Returns registrations, findings, and a health-check-ready summary object. |
-| `IAstraFlowDiagnosticsReporter.CreateJsonReport()` | Export diagnostics for tools or CI. | Returns deterministic camelCase JSON. |
-| `IAstraFlowDiagnosticsReporter.CreateMarkdownReport()` | Export human-readable diagnostics. | Returns a Markdown report with summary, findings, and registration tables. |
-| `DiagnosticSeverity` | Classify findings. | Uses `Info`, `Warning`, `Error`, and `Fatal`. |
+For cleaner layer boundaries, reference only what each assembly needs:
 
-### Testing
+```powershell
+# Shared domain/API contracts library (no runtime dependency)
+dotnet add package AstraFlow.Contracts --version 2.3.0
 
-| API | Use It For | Expected Result |
-| --- | --- | --- |
-| `FakeSender` | Record sent requests and return configured responses without a DI container. | Tests can assert request dispatch through `RecordedRequest` entries. |
-| `FakePublisher` | Record published notifications and optionally run fake handlers. | Tests can assert notification fan-out without a real mediator. |
-| `FakeMediator` | Combine fake sender and publisher behavior. | Units depending on `IMediator`, `ISender`, or `IPublisher` can be tested without mocking frameworks. |
-| `HandlerTestHarness<TRequest, TResponse>` | Execute one request handler directly. | Handler tests stay small and do not require a host. |
-| `PipelineTestHarness<TRequest, TResponse>` | Execute pipeline behaviors around a terminal delegate. | Tests can verify order, short-circuiting, and exception flow. |
-| `NotificationHandlerTestHarness<TNotification>` | Execute one notification handler directly. | Notification handler tests stay focused. |
-| `TestSecureIdCodec` | Deterministic test-only secure ID codec. | Secure ID mapping tests can round-trip IDs without real keys. |
+# Application layer packages
+dotnet add package AstraFlow.Mediator --version 2.3.0
+dotnet add package AstraFlow.Mapper --version 2.3.0
+```
 
-### Entity Framework Core
+> `AstraFlow.Assertions` targets **`2.4.0`** and is not part of `2.3.0`. Reference it in test projects once `2.4.0` is published on NuGet.org.
 
-| API | Use It For | Expected Result |
-| --- | --- | --- |
-| `dbContext.ValidateProjectionTranslation(projection)` | Validate one projection against EF Core's relational translator. | Returns generated SQL or throws the EF Core translation/model error. |
-| `dbContext.ValidateProjectionTranslations(registry)` | Validate registered projections against an EF Core `DbContext`. | Returns `AFPEF...` findings without executing the query. |
+---
 
-## Design Principles
+## Dispatch a request
 
-- Explicit by default: mapping rules must be code you can review.
-- Security first: sensitive fields are not mapped by naming convention unless a future optional package is explicitly enabled.
-- Clear failure modes: missing handlers, duplicate handlers, missing mappings, duplicate mappings, and undeclared mappings fail with actionable messages.
-- No application lock-in: AstraFlow does not depend on any private product, `Result`, ASP.NET Core MVC, FluentValidation, tenants, permissions, or a specific ID encryption implementation.
-- Extension-ready: pipelines, notification failure policies, projections, and secure ID codecs are designed as narrow public contracts.
-
-## Quick Start: Mediator
+Register the assembly containing your handlers, resolve `ISender`, and dispatch typed requests with explicit cancellation flow:
 
 ```csharp
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using AstraFlow;
 using AstraFlow.Mediator;
 using Microsoft.Extensions.DependencyInjection;
 
 var services = new ServiceCollection();
-services.AddAstraFlowMediator(typeof(CreateInvoiceCommand));
+services.AddAstraFlow(assemblyMarkerTypes: typeof(CreateOrderHandler));
 
-using var provider = services.BuildServiceProvider();
-var sender = provider.GetRequiredService<ISender>();
+await using var serviceProvider = services.BuildServiceProvider();
+var sender = serviceProvider.GetRequiredService<ISender>();
+using var cancellationTokenSource = new CancellationTokenSource();
 
-var id = await sender.Send(new CreateInvoiceCommand("INV-1001"));
+OrderCreated result = await sender.Send(
+    new CreateOrder("ORD-1042"),
+    cancellationTokenSource.Token);
 
-public sealed record CreateInvoiceCommand(string Number) : IRequest<Guid>;
+public sealed record CreateOrder(string Number) : IRequest<OrderCreated>;
 
-public sealed class CreateInvoiceCommandHandler
-    : IRequestHandler<CreateInvoiceCommand, Guid>
+public sealed record OrderCreated(Guid Id, string Number);
+
+public sealed class CreateOrderHandler : IRequestHandler<CreateOrder, OrderCreated>
 {
-    public Task<Guid> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
+    public Task<OrderCreated> Handle(
+        CreateOrder request,
+        CancellationToken cancellationToken)
     {
-        return Task.FromResult(Guid.NewGuid());
+        return Task.FromResult(new OrderCreated(Guid.NewGuid(), request.Number));
     }
 }
 ```
 
-## Quick Start: Pipeline Behavior
+Use `ISender`, `IPublisher`, or `IStreamSender` when a consumer needs only one slice of the mediator contract. Missing or duplicate request handlers fail explicitly during startup validation.
 
-Pipeline behaviors run in registration order and may short-circuit by not calling `next`.
+See [Getting Started](docs/getting-started.md), the [Mediator Guide](docs/mediator.md), and [Mediator Scenarios](docs/mediator-scenarios.md).
 
-```csharp
-services.AddScoped(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-services.AddScoped(typeof(IPipelineBehavior<,>), typeof(FeatureGateBehavior<,>));
-```
+---
 
-## Quick Start: Mapper
+## Mapping, projections, and source generation
 
-```csharp
-using AstraFlow.Mapper;
-using Microsoft.Extensions.DependencyInjection;
+- **Explicit runtime mapping (`AstraFlow.Mapper`):** Declared mapping catalogs, deterministic startup validation, named query projections, and secure ID encoding abstractions.
+- **Opt-in conventions (`AstraFlow.Mapper.Conventions`):** Never active by default; generates inspectable mapping plans with sensitive-member write safeguards backed by `AstraFlow.Security`.
+- **EF Core projection checks (`AstraFlow.Mapper.EntityFrameworkCore`):** Validates queryable projections against the configured EF Core provider.
+- **Compile-time mappings (`AstraFlow.Generators`):** Opt-in `[AstraGenerateMapping]` methods supporting typed scalar, collection, `[AstraValueConverter]`, and `[AstraDerivedMapping]` shapes in `2.3.0`. The `2.4.0` branch expands generation to inherited public source properties, `Guid`/temporal scalars, safe nullable scalar flows (`T -> T?`, `T? -> T?`), positional records, primary-constructor DTOs, and public `init`-only initializers.
 
-var services = new ServiceCollection();
-services.AddAstraFlowMapper(typeof(UserMappingRule));
+See the [Mapper Guide](docs/mapper.md), [Projection Guide](docs/projections.md), [Convention Mapping Guide](docs/convention-mapping.md), [Generators Guide](docs/generators.md), and [Analyzers Guide](docs/analyzers.md).
 
-using var provider = services.BuildServiceProvider();
-var mapper = provider.GetRequiredService<IMapper>();
+---
 
-var dto = mapper.Map<UserResponse>(new User(Guid.NewGuid(), "admin"));
+## Testing and assertions
 
-public sealed record User(Guid Id, string UserName);
-public sealed record UserResponse(Guid Id, string UserName);
+`AstraFlow.Testing` ships test fakes and harnesses for mediator pipelines, mapping catalogs, projections, diagnostics, and secure ID codecs on `2.3.0`.
 
-public sealed class UserMappingRule : IDeclaredObjectMappingRule
-{
-    public IReadOnlyCollection<ObjectMappingPair> DeclaredMappings { get; } =
-    [
-        ObjectMappingPair.Create<User, UserResponse>()
-    ];
+`AstraFlow.Assertions` (targeting `2.4.0`) adds a zero-dependency, test-runner-neutral assertion package covering:
 
-    public bool CanMap(Type sourceType, Type destinationType)
-    {
-        return sourceType == typeof(User) && destinationType == typeof(UserResponse);
-    }
-
-    public object? Map(object? source, Type destinationType, IMapper mapper)
-    {
-        var user = (User)source!;
-        return new UserResponse(user.Id, user.UserName);
-    }
-}
-```
-
-## Quick Start: Projections
-
-Register projections with the mapper marker assembly, then resolve them through the registry:
+- **Values, nullables, numbers & temporals:** Equality/inequality, reference identity, runtime types, typed nullable assertions, ranges, enums, GUIDs, strict sign/precision/NaN/finite checks, and `DateTime`/`DateTimeOffset`/`TimeSpan`/`DateOnly`/`TimeOnly` comparisons.
+- **Strings, exceptions & async execution:** Ordinal and explicit `StringComparison` checks, `*`/`?` wildcards, timeout-bounded regex, `WithInnerException` chaining, sync/async `ArgumentException` parameter-name checks, deferred `Invoking`/`Awaiting`/`Enumerating` helpers, finite-timeout async delegate and `TaskCompletionSource` completion/non-completion checks, one-run sync/async and subject-method execution-time measurement, and explicit `AssertionScope` multi-failure aggregation.
+- **Sequences, `IAsyncEnumerable<T>` & dictionaries:** Single-pass enumeration, indexed-item and immediate-neighbor checks, ordered prefix/suffix checks, positive and negative ordered/consecutive matching for synchronous and asynchronous sequences, key-selected ascending/descending order, structural-equivalency membership/all-item checks, uniqueness and multiset checks, exact and assignable item-type checks with typed chaining, async stream assertions on `net8.0`/`net9.0`/`net10.0`, and comparer-aware dictionary entry checks, including negative pair and predicate checks.
+- **Structural object-graph equivalency:** Cycle-tracked comparison of readable public properties, opt-in public instance fields (`IncludingFields()`), ordered or order-independent collections, path-based member selection, per-call exclusions, custom comparers, and recursion limits.
+- **XML, HTTP & streams:** Namespace-aware `XDocument`/`XElement` structural equivalence, non-consuming `XmlReader` cursor checks, `HttpResponseMessage` status/header assertions plus buffered async text body checks, and stream mode and position/length assertions; buffered-size checks are available on `net8.0` and later without reading or disposing streams.
+- **Assemblies & type reflection:** Assembly reference-boundary and declared-type checks plus exact runtime type equality and metadata-only type, inheritance, interface, constructor, and member assertions without invoking user code.
+- **Runtime event monitoring:** Observe selected standard .NET events, assert raise counts and cross-event order, check `INotifyPropertyChanged` notifications, inspect captured sender/arguments, and automatically unsubscribe when the monitor is disposed.
+- **Type reflection & safe diagnostics:** Metadata-only type, inheritance, interface, constructor, and member assertions without invoking user code; typed property-value selection for reference subjects; failure output omits raw object values, string literals, GUIDs, HTTP header/body text, XML values, and exception messages by default.
 
 ```csharp
-public sealed class UserListProjection : INamedProjection<User, UserListItem>
-{
-    public string Name => "list";
+using AstraFlow.Assertions; // Available in 2.4.0
 
-    public Expression<Func<User, UserListItem>> Expression =>
-        user => new UserListItem(user.Id, user.UserName);
-}
+response.StatusCode.Should().Be(201);
+items.Should().ContainSingle(item => item.Id == expectedId);
 
-services.AddAstraFlowMapper(
-    [typeof(UserListProjection)],
-    options =>
-    {
-        options.ValidateProjectionCatalogOnStartup = true;
-        options.ProjectionValidationMode = ProjectionValidationMode.Warning;
-    });
-
-var registry = provider.GetRequiredService<IProjectionRegistry>();
-var query = db.Users.ProjectWith<User, UserListItem>(registry, "list");
+Func<Task> save = () => service.SaveAsync();
+await save.Should().NotThrowAsync();
 ```
 
-Projection validation reports warnings by default. Set `ProjectionValidationMode.Error` in CI or strict startup validation when projection findings should fail the build or application startup.
+See the [Testing Guide](docs/testing.md) and [Assertions Guide](docs/assertions.md) *(branch preview for `2.4.0`)* for full signatures, target matrix, and caveats.
 
-## Quick Start: Convention Mapping
+---
 
-Install the optional conventions package only where convention mapping is deliberate:
+## Upgrading and `1.x` deprecation policy
+
+- **All `1.x` releases are deprecated on NuGet.org.** New projects and existing consumers should move to the **`2.x`** line (`2.3.0` on NuGet today; `2.4.0` once published).
+- Upgrading within `2.x` preserves existing package boundaries and mediator/mapper entry points: update the AstraFlow package versions in your `.csproj` or `Directory.Packages.props`, restore, build, and run tests.
+- Adopting `AstraFlow.Assertions` or `2.4.0` generated mapping expansions is optional per test project or mapping declaration.
+
+See the [Version and Upgrade Guide](docs/version-upgrade-guide.md), [Migration Cookbook](docs/migration-cookbook.md), and [Changelog](CHANGELOG.md).
+
+---
+
+## Target frameworks
+
+- **Core, security, conventions, testing & assertions:** `netstandard2.0`, `net8.0`, `net9.0`, `net10.0`
+- **FluentValidation & OpenTelemetry:** `net8.0`, `net9.0`, `net10.0`
+- **ASP.NET Core & EF Core:** `net10.0`
+- **Analyzers & Generators:** `netstandard2.0` compiler assets (`analyzers/dotnet/cs`, no runtime `lib/` dependency)
+- **CLI tool:** `net10.0` .NET tool
+
+Check [Compatibility](docs/compatibility.md) before installing integration packages into multi-targeted libraries.
+
+---
+
+## Documentation map
+
+| Topic | Guides |
+| --- | --- |
+| **Onboarding & Packages** | [Getting Started](docs/getting-started.md) · [Package Selection](docs/package-selection.md) · [Architecture](docs/architecture.md) · [API Reference](docs/api-reference.md) · [Compatibility](docs/compatibility.md) |
+| **Mediator & Integrations** | [Mediator](docs/mediator.md) · [Mediator Scenarios](docs/mediator-scenarios.md) · [ASP.NET Core](docs/aspnetcore.md) · [FluentValidation](docs/fluentvalidation.md) · [OpenTelemetry](docs/observability.md) |
+| **Mapper, Generators & CLI** | [Mapper](docs/mapper.md) · [Mapper Scenarios](docs/mapper-scenarios.md) · [Projections](docs/projections.md) · [Projection Scenarios](docs/projection-scenarios.md) · [Conventions](docs/convention-mapping.md) · [EF Core](docs/entity-framework-core.md) · [Generators](docs/generators.md) · [Analyzers](docs/analyzers.md) · [CLI](docs/cli.md) |
+| **Diagnostics, Security & Tests** | [Diagnostics](docs/diagnostics.md) · [Endpoint Safety](docs/diagnostics-endpoint-safety.md) · [Security](docs/security.md) · [Testing](docs/testing.md) · [Assertions (`2.4.0`)](docs/assertions.md) · [Benchmarks](docs/benchmarks.md) |
+| **Upgrades & Troubleshooting** | [Version & Upgrade Guide](docs/version-upgrade-guide.md) · [Migration Cookbook](docs/migration-cookbook.md) · [Troubleshooting](docs/troubleshooting.md) · [Branding](docs/branding.md) |
+| **Roadmap & Governance** | [Roadmap](docs/roadmap.md) · [Decision Log](docs/strategy/decision-log.md) · [API Governance](docs/api-governance.md) · [Security & Supply Chain](docs/security-and-supply-chain.md) · [Security Policy](SECURITY.md) · [Contributing](CONTRIBUTING.md) · [Support](SUPPORT.md) · [MIT License](LICENSE) |
+
+---
+
+## Build, test, and pack from source
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 2.0.0
+dotnet build AstraFlow.slnx --configuration Release
+dotnet test AstraFlow.slnx --configuration Release --no-build
+.\scripts\pack.ps1
 ```
 
-Register exact pairs through a profile:
-
-```csharp
-services.AddAstraFlowMapper(typeof(UserProfile));
-services.AddAstraFlowConventionMapping(catalog => catalog.AddProfile<UserProfile>());
-
-public sealed class UserProfile : ConventionMappingProfile
-{
-    public UserProfile()
-    {
-        CreateMap<User, UserResponse>()
-            .ForMember(destination => destination.DisplayName, member => member
-                .MapFrom(source => source.Name)
-                .Required())
-            .ForMember(destination => destination.Score, member => member.NullSubstitute(0))
-            .Ignore(nameof(UserResponse.InternalNote));
-    }
-}
-```
-
-Convention mapping stays disabled for every pair that is not registered. Member rules, converters, conditions, null substitution, enum decisions, and constructor-bound record members are included in mapping plans so every convention-created member can be reviewed before publishing.
-
-Existing-destination updates are separate from read DTO mapping:
-
-```csharp
-CreateMap<UserPatch, User>()
-    .EnableUpdateMapping()
-    .ForMember(destination => destination.Email, member => member.Condition(source => source.HasEmail));
-
-provider.GetRequiredService<IConventionMapper>().MapInto(patch, user);
-```
-
-Sensitive destination writes remain blocked unless explicitly allowed.
-
-## Quick Start: EF Core Projection Checks
-
-Install the optional package only in projects that need EF Core validation:
-
-```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 2.0.0
-```
-
-Then ask EF Core to translate registered projections without executing the query:
-
-```csharp
-using AstraFlow.Mapper.EntityFrameworkCore;
-
-var efReport = dbContext.ValidateProjectionTranslations(registry);
-```
-
-Static projection validation catches high-risk expression patterns such as custom method calls. EF Core validation proves the source entity is mapped and the provider can generate SQL for the projection shape.
-
-## Secure ID Mapping
-
-`AstraFlow.Mapper` provides the abstraction, not the cryptography. Applications own the encryption implementation.
-
-```csharp
-services.AddScoped<ISecureIdCodec, MySecureIdCodec>();
-services.AddScoped<SecureIdMapper>();
-```
-
-Mapping rules can then depend on `SecureIdMapper` and emit encrypted string IDs without coupling the package to application secrets.
-
-## Notification Failure Policies
-
-Notifications are sequential by default. Configure how failures are handled:
-
-```csharp
-services.Configure<NotificationPublishOptions>(options =>
-{
-    options.FailurePolicy = NotificationFailurePolicy.Aggregate;
-    options.PublishStrategy = NotificationPublishStrategy.BoundedParallel;
-    options.MaxDegreeOfParallelism = 4;
-});
-```
-
-Policies:
-
-- `FailFast`: stop at the first failing handler.
-- `Continue`: log failures and run remaining handlers.
-- `Aggregate`: run all handlers, then throw one `AggregateException`.
-
-Publish strategies:
-
-- `Sequential`: default and safest for ordered handlers or shared scoped state.
-- `Parallel`: run all handlers concurrently.
-- `BoundedParallel`: run handlers concurrently with a maximum degree of parallelism.
-
-## Quick Start: Diagnostics
-
-Register diagnostics after mediator and mapper services:
-
-```csharp
-using AstraFlow.Diagnostics;
-
-services.AddAstraFlowMediator(typeof(CreateInvoiceCommand));
-services.AddAstraFlowMapper(typeof(UserMappingRule));
-services.AddAstraFlowDiagnostics(options =>
-{
-    options.AssemblyMarkerTypes.Add(typeof(CreateInvoiceCommand));
-    options.AssemblyMarkerTypes.Add(typeof(UserMappingRule));
-});
-```
-
-Create reports:
-
-```csharp
-var reporter = provider.GetRequiredService<IAstraFlowDiagnosticsReporter>();
-
-var report = reporter.CreateReport();
-var json = reporter.CreateJsonReport();
-var markdown = reporter.CreateMarkdownReport();
-```
-
-Diagnostics are framework-neutral and do not expose request payloads, DTO payloads, secrets, tokens, or connection strings.
-
-## Quick Start: Testing
-
-Install the optional testing package in test projects:
-
-```powershell
-dotnet add package AstraFlow.Testing --version 2.0.0
-```
-
-Use the fake mediator to record requests and notifications:
-
-```csharp
-var mediator = new FakeMediator()
-    .RespondWith<CreateInvoiceCommand, Guid>(Guid.NewGuid());
-
-var id = await mediator.Send(new CreateInvoiceCommand("INV-1001"));
-
-mediator.Requests.SingleSent<CreateInvoiceCommand>();
-```
-
-The testing package is framework-neutral and does not depend on xUnit, NUnit, MSTest, FluentAssertions, or a mocking framework.
-It includes fake mediator helpers, mapper/projection assertions, projection plan assertions, diagnostics assertions, and a deterministic test secure ID codec.
-
-## v1 Non-Goals
-
-AstraFlow v1 intentionally keeps convention mapping, advanced mapping behavior, source generators, analyzers, framework integrations, and ecosystem helpers opt-in. The explicit mediator and mapper core remains the default path.
-
-## Roadmap
-
-The long-term plan is to continue improving mediator ergonomics, optional convention mapping, advanced mapping parity, analyzers, source generators, OpenTelemetry hooks, benchmark projects, ASP.NET Core helpers, validation integration, CLI/templates, broader EF Core provider checks, and transition tooling. These will remain opt-in so the secure explicit core stays predictable.
-
-## Branding
-
-The package icon is stored at `assets/branding/astraflow-icon.png` and is included in every NuGet package through `PackageIcon`.
-
-Generator prompt:
-
-```text
-Create a square app/package icon for a .NET library named AstraFlow. Use an abstract orbital star and flowing path motif that suggests explicit application flow, mediator dispatch, and auditable mapping. Keep it as a clean vector-friendly modern tech logo with crisp edges, centered symbol only, no text, strong silhouette readable at 64x64, generous padding, deep navy background with cyan, teal, white, and a small warm amber star accent. Avoid words, letters, code snippets, watermarks, photorealism, and complex gradients.
-```
-
-## Repository Readiness
-
-The package folder includes CI, a gated publish workflow, security policy, contributing guide, changelog, samples, and release checklist. Publishing should happen only after:
-
-- package tests pass,
-- representative consumer applications build against the package projects or packed packages successfully,
-- package artifacts build with XML docs and symbols,
-- the API surface is reviewed for v1 stability,
-- NuGet Trusted Publishing is configured for the GitHub Actions publishing workflow.
-
-For new releases from this established repository, follow the current publishing and verification workflow in `docs/publishing.md`; do not treat initial repository setup instructions as a current release prerequisite.
-
-## License
-
-MIT.
-
-
+For release verification, SourceLink, reproducibility, and NuGet publishing rules, see the [Release Checklist](docs/release-checklist.md), [Publishing Guide](docs/publishing.md), and [Community Release Guide](docs/community-release-guide.md). Note that NuGet package READMEs require absolute raw GitHub URLs matching the target release tag/branch before packing for NuGet.org.

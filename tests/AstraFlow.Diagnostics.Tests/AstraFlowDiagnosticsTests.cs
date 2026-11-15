@@ -2,7 +2,7 @@ using System.Linq.Expressions;
 using AstraFlow.Diagnostics;
 using AstraFlow.Mapper;
 using AstraFlow.Mediator;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 

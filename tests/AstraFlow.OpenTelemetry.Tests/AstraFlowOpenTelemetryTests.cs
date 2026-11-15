@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using AstraFlow.Mediator;
 using AstraFlow.OpenTelemetry;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;

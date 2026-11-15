@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "44d02cab-a89d-43a5-a2f6-b53739dfdcce",
+  "status": "current",
+  "command": "deliver",
+  "type": "explainer",
+  "input": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\candidate.archify.md",
+  "output": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-astraflow-portal-rebuild-20261112\\astraflow-portal-rebuild.html",
+  "specification": {
+    "sha256": "5031278a61f6c2a45762d33089a4c40b1cd22abae89264885b96601a7339e933",
+    "bytes": 5444
+  },
+  "artifact": {
+    "sha256": "bcb66e20b5ad662334398f0bb2e2c760a49848be17e3b0f197e725754a7a0e38",
+    "bytes": 573748
+  },
+  "explainer": {
+    "preparedSha256": "b41449751562ce7a2db559e61280fbf19e82a97a653a1c6917c856005f2e9c88",
+    "dependencies": [
+      {
+        "kind": "diagram-spec",
+        "id": "portal-arch",
+        "inline": true,
+        "sha256": "0b3bd8f69b8a916db418f6fc7edcf6fd2681c59cfc35f89762543b196effff59",
+        "bytes": 1709
+      }
+    ]
+  }
+}

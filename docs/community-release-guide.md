@@ -132,7 +132,7 @@ Each `.nupkg` should include:
 - `README.md`,
 - `CHANGELOG.md`,
 - `LICENSE`,
-- `assets/branding/astraflow-icon.png`,
+- `assets/astraflow-icon.png`,
 - `.nuspec`,
 - `.dll` and `.xml` files under the expected framework folders.
 
@@ -167,7 +167,7 @@ Core packages should include:
 - `analyzers/dotnet/cs/AstraFlow.Generators.dll`,
 - no runtime `lib/` assets.
 
-The NuGet README should use absolute GitHub URLs for images and documentation links. NuGet displays `PackageIcon` separately, but README images do not render from packaged relative paths such as `assets/branding/astraflow-icon.png`. Publish after the README target branch contains the referenced docs, or change those links to the final release tag before packing.
+The NuGet README should use absolute GitHub URLs for images and documentation links. NuGet displays `PackageIcon` separately, but README images such as `assets/astraflow-readme.png` do not render from packaged relative paths inside NuGet feeds. Publish after the README target branch contains the referenced docs and assets, or update those links to the final release tag before packing.
 
 Each `.snupkg` should include:
 

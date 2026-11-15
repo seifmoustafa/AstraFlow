@@ -27,7 +27,12 @@ function Get-OrdinalUniqueLines {
     return $result
 }
 
-foreach ($projectFile in Get-ChildItem -LiteralPath (Join-Path $repoRoot "src") -Filter "*.csproj" -Recurse | Sort-Object FullName) {
+# Ignore generated build trees: package verification may place temporary Consumer projects under obj.
+$projectFiles = Get-ChildItem -LiteralPath (Join-Path $repoRoot "src") -Filter "*.csproj" -Recurse |
+    Where-Object { $_.FullName -notmatch '[\\/](?:bin|obj)[\\/]' } |
+    Sort-Object FullName
+
+foreach ($projectFile in $projectFiles) {
     [xml]$project = Get-Content -LiteralPath $projectFile.FullName -Raw
     $generatesDocumentation = $project.Project.PropertyGroup.GenerateDocumentationFile |
         Where-Object { $null -ne $_ } |

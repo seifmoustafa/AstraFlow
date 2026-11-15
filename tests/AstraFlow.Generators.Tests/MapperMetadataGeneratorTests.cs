@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using AstraFlow.Generators;
 using AstraFlow.Mapper;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.DependencyInjection;

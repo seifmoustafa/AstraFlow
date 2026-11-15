@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "ea132a47-4285-4cd6-a6e7-f43711c82637",
+  "status": "current",
+  "command": "deliver",
+  "type": "explainer",
+  "input": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-v240-next-phase-20261111-004219\\candidate.archify.md",
+  "output": "D:\\02_PACKAGES\\asp.net_packages\\AstraFlow\\.archify\\explainer-v240-next-phase-20261111-004219\\v240-next-phase-v2.html",
+  "specification": {
+    "sha256": "9f7403939d24d855761615f16e1d1a5d6568a9dabb4f5759897e8e3988039e5e",
+    "bytes": 4234
+  },
+  "artifact": {
+    "sha256": "2d5476f2eb12adfb50c8476650042504abe310ec5d4e3474e4d334be1ddaafa6",
+    "bytes": 539381
+  },
+  "explainer": {
+    "preparedSha256": "6b012396869bba46270d309baa8bec6945ff1e981a50cb2da922753a17fd9a15",
+    "dependencies": [
+      {
+        "kind": "diagram-spec",
+        "id": "release-phases",
+        "inline": true,
+        "sha256": "757328fc3247a2f664dbac75b159823d2887adae12adad40f5d621566b1ec1f6",
+        "bytes": 1212
+      }
+    ]
+  }
+}

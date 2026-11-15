@@ -139,8 +139,8 @@ Use local packing only to verify artifacts before release:
 .\scripts\pack.ps1
 .\scripts\verify-public-api-baselines.ps1 -Configuration Release
 .\scripts\verify-obsolete-guidance.ps1
-.\scripts\verify-api-compatibility.ps1 -PreviousVersion 2.0.0 -CurrentVersion 2.3.0 -AllowMissingPreviousPackages
-.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 2.0.0 -CurrentVersion 2.3.0 -AllowMissingPreviousPackages
+.\scripts\verify-api-compatibility.ps1 -PreviousVersion 2.3.0 -CurrentVersion 2.4.0 -AllowMissingPreviousPackages -AllowMissingPreviousPackages
+.\scripts\verify-upgrade-smoke.ps1 -PreviousVersion 2.3.0 -CurrentVersion 2.4.0 -AllowMissingPreviousPackages -AllowMissingPreviousPackages
 .\scripts\verify-sample-builds.ps1 -Configuration Release
 .\scripts\verify-package-reproducibility.ps1 -Configuration Release
 .\scripts\verify-package-sourcelink.ps1 -Configuration Release
@@ -231,7 +231,7 @@ Use `AstraFlow.Generators` as a private generator reference:
 Install and smoke-test the CLI package:
 
 ```powershell
-dotnet tool install --global AstraFlow.Cli --version 2.0.0
+dotnet tool install --global AstraFlow.Cli --version 2.3.0
 astraflow inspect .
 ```
 

@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json;
 using AstraFlow.Cli;
-using FluentAssertions;
+using AstraFlow.Assertions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace AstraFlow.Cli.Tests;
@@ -255,6 +257,363 @@ public sealed class CliCommandTests
     }
 
     [Fact]
+    public void AssertionsAnalyze_ReportsUnknownCandidatesWithoutSourceTextOrEdits()
+    {
+        using var temp = new TempDirectory();
+        var sourcePath = Path.Combine(temp.Path, "Sample.cs");
+        const string source = """
+            // ignored.Should().Be("comment-secret");
+            var note = "ignored.Should().Be(\"string-secret\")";
+            value.Should().Be("value-secret").And.NotBeNull();
+            handler.Should().Throw<ArgumentException>().WithMessage("message-secret");
+            value.Should().UnsupportedAssertion();
+            """;
+        File.WriteAllText(sourcePath, source);
+
+        var exitCode = Execute(["assertions", "analyze", temp.Path, "--format", "json"], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var document = JsonDocument.Parse(output);
+        var root = document.RootElement;
+        root.GetProperty("schemaVersion").GetInt32().Should().Be(1);
+        root.GetProperty("status").GetString().Should().Be("partial");
+        root.GetProperty("resolutionContext").GetString().Should().Be("host-framework-only");
+        root.GetProperty("filesAnalyzed").GetInt32().Should().Be(1);
+        var findings = root.GetProperty("findings").EnumerateArray().ToArray();
+        findings.Count(item => item.GetProperty("code").GetString() == "AFCLI2404").Should().Be(5);
+        findings.Where(item => item.GetProperty("code").GetString() == "AFCLI2404")
+            .Should()
+            .OnlyContain(item => item.GetProperty("classification").GetString() == "unknown");
+        findings.Where(item => item.GetProperty("source").ValueKind != JsonValueKind.Null)
+            .Should()
+            .OnlyContain(item => item.GetProperty("source").GetString() == "Sample.cs");
+        new[] { "comment-secret", "string-secret", "value-secret", "message-secret" }
+            .Should()
+            .OnlyContain(secret => !output.Contains(secret, StringComparison.Ordinal));
+        File.ReadAllText(sourcePath).Should().Be(source);
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_ReportsSyntaxErrorsAsIncompleteReview()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "Broken.cs"), "value.Should().Be(");
+
+        var exitCode = Execute(["assertions", "analyze", temp.Path], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var document = JsonDocument.Parse(output);
+        document.RootElement.GetProperty("status").GetString().Should().Be("partial");
+        document.RootElement.GetProperty("findings").EnumerateArray()
+            .Should()
+            .Contain(finding => finding.GetProperty("code").GetString() == "AFCLI2401");
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_ReportsPartialContextWhenThereAreNoCandidates()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "Plain.cs"), "internal sealed class Plain { }");
+
+        var exitCode = Execute(["assertions", "analyze", temp.Path], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var document = JsonDocument.Parse(output);
+        document.RootElement.GetProperty("status").GetString().Should().Be("partial");
+        document.RootElement.GetProperty("findings").EnumerateArray()
+            .Should()
+            .ContainSingle(finding => finding.GetProperty("code").GetString() == "AFCLI2403");
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_RecognizesXmlAssertionNamesAsReviewCandidates()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "XmlSample.cs"), "document.Should().HaveRoot(\"root\").HaveElement(\"item\").HaveAttributeWithValue(\"id\", \"safe\");");
+
+        var exitCode = Execute(["assertions", "analyze", temp.Path], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var report = JsonDocument.Parse(output);
+        var findings = report.RootElement.GetProperty("findings").EnumerateArray().ToArray();
+        findings.Count(finding => finding.GetProperty("code").GetString() == "AFCLI2404").Should().Be(3);
+        findings.Where(finding => finding.GetProperty("code").GetString() == "AFCLI2404")
+            .Should()
+            .OnlyContain(finding => finding.GetProperty("classification").GetString() == "unknown");
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_UsesBoundSymbolsAndIgnoresUnrelatedShouldMethods()
+    {
+        using var temp = new TempDirectory();
+        const string secret = "secret-value";
+        File.WriteAllText(Path.Combine(temp.Path, "Bound.cs"), $$"""
+            namespace Sample;
+            public sealed class TextAssertions { public TextAssertions Be(string expected) => this; }
+            public static class AssertionExtensions { public static TextAssertions Should(this string value) => new(); }
+            public sealed class PlainResult { public bool Be(string expected) => true; }
+            public sealed class PlainValue { public PlainResult Should() => new(); }
+            public sealed class SampleCode
+            {
+                public void Run()
+                {
+                    "{{secret}}".Should().Be("{{secret}}");
+                    new PlainValue().Should().Be("unrelated");
+                }
+            }
+            """);
+
+        var exitCode = Execute(["assertions", "analyze", temp.Path], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var document = JsonDocument.Parse(output);
+        var findings = document.RootElement.GetProperty("findings").EnumerateArray().ToArray();
+        findings.Should().Contain(finding => finding.GetProperty("code").GetString() == "AFCLI2405"
+            && finding.GetProperty("classification").GetString() == "manual"
+            && finding.GetProperty("method").GetString() == "Be"
+            && finding.GetProperty("source").GetString() == "Bound.cs"
+            && finding.GetProperty("line").GetInt32() == 10
+            && finding.GetProperty("column").GetInt32() > 0);
+        findings.Count(finding => finding.GetProperty("code").GetString() == "AFCLI2404").Should().Be(0);
+        output.Should().NotContain("secret-value");
+        output.Should().NotContain("unrelated");
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_UsesExistingSingleTargetCompileMetadataWithoutRunningProjectTargets()
+    {
+        using var temp = new TempDirectory();
+        var projectPath = Path.Combine(temp.Path, "MetadataSample.csproj");
+        var sourcePath = Path.Combine(temp.Path, "Sample.cs");
+        var markerPath = Path.Combine(temp.Path, "must-not-be-created.txt");
+        var packageRoot = Path.Combine(temp.Path, "packages");
+        var packagePath = Path.Combine(packageRoot, "assertion.metadata.fixture", "1.0.0");
+        var assemblyPath = Path.Combine(packagePath, "lib", "net10.0", "AssertionMetadataFixture.dll");
+        var assetsPath = Path.Combine(temp.Path, "obj", "project.assets.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(assemblyPath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(assetsPath)!);
+        File.Copy(typeof(MetadataFixtures.TextAssertions).Assembly.Location, assemblyPath);
+
+        var escapedMarkerPath = System.Security.SecurityElement.Escape(markerPath);
+        File.WriteAllText(projectPath, $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
+              <Target Name="NeverExecute" BeforeTargets="Build">
+                <WriteLinesToFile File="{escapedMarkerPath}" Lines="executed" />
+              </Target>
+            </Project>
+            """);
+        File.WriteAllText(sourcePath, "using AstraFlow.Cli.Tests.MetadataFixtures;\n\"source-secret\".Should().Be(\"expected-secret\");");
+
+        var packageKey = "assertion.metadata.fixture/1.0.0";
+        var assets = new
+        {
+            targets = new Dictionary<string, object>
+            {
+                ["net10.0"] = new Dictionary<string, object>
+                {
+                    [packageKey] = new
+                    {
+                        compile = new Dictionary<string, object>
+                        {
+                            ["lib/net10.0/AssertionMetadataFixture.dll"] = new { }
+                        }
+                    }
+                }
+            },
+            libraries = new Dictionary<string, object>
+            {
+                [packageKey] = new { type = "package", path = packageKey }
+            },
+            packageFolders = new Dictionary<string, object>
+            {
+                [packageRoot + Path.DirectorySeparatorChar] = new { }
+            }
+        };
+        File.WriteAllText(assetsPath, JsonSerializer.Serialize(assets));
+
+        var exitCode = Execute(["assertions", "analyze", projectPath, "--format", "json"], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var report = JsonDocument.Parse(output);
+        report.RootElement.GetProperty("resolutionContext").GetString().Should().Be("project-assets-metadata");
+        report.RootElement.GetProperty("findings").EnumerateArray()
+            .Should()
+            .Contain(finding => finding.GetProperty("code").GetString() == "AFCLI2405"
+                && finding.GetProperty("classification").GetString() == "manual"
+                && finding.GetProperty("method").GetString() == "Be"
+                && finding.GetProperty("source").GetString() == "Sample.cs");
+        output.Should().NotContain("source-secret");
+        output.Should().NotContain("expected-secret");
+        File.Exists(markerPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_EmitsVerifiedMappingForOrdinalStringEqualityCalls()
+    {
+        using var temp = new TempDirectory();
+        var projectPath = Path.Combine(temp.Path, "StringMetadataSample.csproj");
+        var sourcePath = Path.Combine(temp.Path, "Sample.cs");
+        var packageRoot = Path.Combine(temp.Path, "packages");
+        var packagePath = Path.Combine(packageRoot, "assertion.string.fixture", "1.0.0");
+        var assemblyPath = Path.Combine(packagePath, "lib", "net10.0", "AssertionSourceFixture.dll");
+        var assetsPath = Path.Combine(temp.Path, "obj", "project.assets.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(assemblyPath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(assetsPath)!);
+        WriteStringAssertionMetadataFixture(assemblyPath);
+        File.WriteAllText(projectPath, "<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+        File.WriteAllText(sourcePath, "using AwesomeAssertions;\n\"source-secret\".Should().Be(\"expected-secret\");\n\"source-secret\".Should().NotBe(\"unexpected-secret\");");
+
+        var packageKey = "assertion.string.fixture/1.0.0";
+        var assets = new
+        {
+            targets = new Dictionary<string, object>
+            {
+                ["net10.0"] = new Dictionary<string, object>
+                {
+                    [packageKey] = new
+                    {
+                        compile = new Dictionary<string, object>
+                        {
+                            ["lib/net10.0/AssertionSourceFixture.dll"] = new { }
+                        }
+                    }
+                }
+            },
+            libraries = new Dictionary<string, object>
+            {
+                [packageKey] = new { type = "package", path = packageKey }
+            },
+            packageFolders = new Dictionary<string, object>
+            {
+                [packageRoot + Path.DirectorySeparatorChar] = new { }
+            }
+        };
+        File.WriteAllText(assetsPath, JsonSerializer.Serialize(assets));
+
+        var exitCode = Execute(["assertions", "analyze", projectPath, "--format", "json"], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var report = JsonDocument.Parse(output);
+        var findings = report.RootElement.GetProperty("findings").EnumerateArray().ToArray();
+        findings.Count(finding => finding.GetProperty("code").GetString() == "AFCLI2407").Should().Be(2);
+        findings.Where(finding => finding.GetProperty("code").GetString() == "AFCLI2407")
+            .Should()
+            .OnlyContain(finding => finding.GetProperty("classification").GetString() == "verified"
+                && finding.GetProperty("suggestion").GetString()!.Contains("ordinally", StringComparison.Ordinal));
+        new[] { "source-secret", "expected-secret", "unexpected-secret" }
+            .Should()
+            .OnlyContain(secret => !output.Contains(secret, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_DoesNotVerifyLookalikeStringAssertionMethods()
+    {
+        using var temp = new TempDirectory();
+        var sourcePath = Path.Combine(temp.Path, "Lookalike.cs");
+        File.WriteAllText(sourcePath, """
+            namespace Custom.Assertions;
+            public sealed class StringAssertions
+            {
+                public void Be(string expected, string because = "", params object[] becauseArgs) { }
+                public void NotBe(string unexpected, string because = "", params object[] becauseArgs) { }
+            }
+            public static class AssertionExtensions
+            {
+                public static StringAssertions Should(this string actual) => new();
+            }
+            public static class Consumer
+            {
+                public static void Verify()
+                {
+                    "actual-secret".Should().Be("expected-secret");
+                    "actual-secret".Should().NotBe("unexpected-secret");
+                }
+            }
+            """);
+
+        var exitCode = Execute(["assertions", "analyze", sourcePath, "--format", "json"], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        output.Should().NotContain("AFCLI2407");
+        output.Should().Contain("\"classification\":\"manual\"");
+        output.Should().NotContain("actual-secret");
+        output.Should().NotContain("expected-secret");
+        output.Should().NotContain("unexpected-secret");
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_RecognizesLocalAssertionVariablesAndReturnsTextReport()
+    {
+        using var temp = new TempDirectory();
+        const string secret = "private-text";
+        File.WriteAllText(Path.Combine(temp.Path, "Local.cs"), $$"""
+            namespace Sample;
+            public sealed class TextAssertions { public void Be(string expected) { } }
+            public static class AssertionExtensions { public static TextAssertions Should(this string value) => new(); }
+            public sealed class SampleCode
+            {
+                public void Run()
+                {
+                    var assertion = "{{secret}}".Should();
+                    assertion.Be("{{secret}}");
+                }
+            }
+            """);
+
+        var exitCode = Execute(["assertions", "analyze", temp.Path, "--format", "text"], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        output.Should().Contain("Schema version: 1");
+        output.Should().Contain("AFCLI2405 manual Be: Local.cs:9:");
+        output.Should().NotContain("private-text");
+        output.Should().NotContain(temp.Path);
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_RejectsUnsupportedFormatWithoutThrowing()
+    {
+        using var temp = new TempDirectory();
+
+        var exitCode = Execute(["assertions", "analyze", temp.Path, "--format", "sarif"], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(1);
+        output.Should().BeEmpty();
+        error.Should().Contain("must be text or json");
+    }
+
+    [Fact]
+    public void AssertionsAnalyze_ReportsConditionalCompilationAsIncomplete()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "Conditional.cs"), """
+            #if DEBUG
+            internal sealed class DebugOnly { }
+            #endif
+            internal sealed class AlwaysIncluded { }
+            """);
+
+        var exitCode = Execute(["assertions", "analyze", temp.Path], out var output, out var error, FixedTimestamp);
+
+        exitCode.Should().Be(2);
+        error.Should().BeEmpty();
+        using var document = JsonDocument.Parse(output);
+        document.RootElement.GetProperty("findings").EnumerateArray()
+            .Should()
+            .Contain(finding => finding.GetProperty("code").GetString() == "AFCLI2402"
+                && finding.GetProperty("source").GetString() == "Conditional.cs");
+    }
+
+    [Fact]
     public async Task InspectCommand_ExitsZeroAndPrintsJson()
     {
         var projectPath = FindRepoFile("src", "AstraFlow.Cli", "AstraFlow.Cli.csproj");
@@ -303,6 +662,42 @@ public sealed class CliCommandTests
         output = outputWriter.ToString().Trim();
         error = errorWriter.ToString().Trim();
         return exitCode;
+    }
+
+    private static void WriteStringAssertionMetadataFixture(string assemblyPath)
+    {
+        const string source = """
+            namespace AwesomeAssertions
+            {
+                public static class AssertionExtensions
+                {
+                    public static AwesomeAssertions.Primitives.StringAssertions Should(this string actual) => new();
+                }
+            }
+            namespace AwesomeAssertions.Primitives
+            {
+                public sealed class StringAssertions : StringAssertions<StringAssertions> { }
+                public class StringAssertions<TAssertions> where TAssertions : StringAssertions<TAssertions>
+                {
+                    public void Be(string expected, string because = "", params object[] becauseArgs) { }
+                    public void NotBe(string unexpected, string because = "", params object[] becauseArgs) { }
+                }
+            }
+            """;
+        var references = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
+            .Split(Path.PathSeparator)
+            .Select(path => MetadataReference.CreateFromFile(path));
+        var compilation = CSharpCompilation.Create(
+            "AwesomeAssertions",
+            [CSharpSyntaxTree.ParseText(source)],
+            references,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        using var output = File.Create(assemblyPath);
+        var result = compilation.Emit(output);
+        if (!result.Success)
+        {
+            throw new InvalidOperationException(string.Join(Environment.NewLine, result.Diagnostics));
+        }
     }
 
     private static string ReportJson(string section, string id)

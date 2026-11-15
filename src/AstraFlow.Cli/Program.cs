@@ -26,17 +26,17 @@ public static class Program
             return 0;
         }
 
-        var command = args[0].ToLowerInvariant();
-        var arguments = CliArguments.Parse(args.Skip(1), command);
-
-        if (arguments.Help)
-        {
-            output.WriteLine(CliHelp.For(command));
-            return 0;
-        }
-
         try
         {
+            var command = args[0].ToLowerInvariant();
+            var arguments = CliArguments.Parse(args.Skip(1), command);
+
+            if (arguments.Help)
+            {
+                output.WriteLine(CliHelp.For(command));
+                return 0;
+            }
+
             var result = command switch
             {
                 "inspect" => RunInspect(arguments, timestamp),
@@ -45,6 +45,7 @@ public static class Program
                 "diff" => RunDiff(arguments, timestamp),
                 "graph" => RunGraph(arguments, timestamp),
                 "scan" => RunScan(arguments, timestamp),
+                "assertions" => RunAssertions(arguments),
                 _ => CliResult.Fail($"Unknown command '{args[0]}'.")
             };
 
@@ -57,7 +58,13 @@ public static class Program
             output.WriteLine(result.Output);
             return result.ExitCode;
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
+        catch (Exception exception) when (exception is IOException
+            or UnauthorizedAccessException
+            or JsonException
+            or InvalidOperationException
+            or ArgumentException
+            or NotSupportedException
+            or System.Security.SecurityException)
         {
             error.WriteLine(exception.Message);
             return 1;
@@ -247,6 +254,54 @@ public static class Program
         return CliResult.Success(FormatReport(report, arguments.Output));
     }
 
+    private static CliResult RunAssertions(CliArguments arguments)
+    {
+        if (arguments.Positionals.Count == 0 || !arguments.Positionals[0].Equals("analyze", StringComparison.OrdinalIgnoreCase))
+        {
+            return CliResult.Fail("The assertions command requires the 'analyze' subcommand.");
+        }
+
+        if (arguments.Positionals.Count > 2)
+        {
+            return CliResult.Fail("The assertions analyze command accepts one optional C# file, project, solution, or directory path.");
+        }
+
+        var target = ResolveReportPath(arguments.Positionals.Count == 2 ? arguments.Positionals[1] : null);
+        var analysis = AssertionMigrationAnalyzer.Analyze(target);
+        return CliResult.Success(FormatAssertionMigrationReport(analysis, arguments.Output), analysis.Status == "ok" ? 0 : 2);
+    }
+
+    private static string FormatAssertionMigrationReport(AssertionMigrationReport report, OutputFormat format)
+    {
+        if (format == OutputFormat.Json)
+        {
+            return JsonSerializer.Serialize(report, JsonOptions);
+        }
+
+        if (format != OutputFormat.Text)
+        {
+            throw new InvalidOperationException("Assertion analysis supports only text or json output.");
+        }
+
+        var builder = new StringBuilder();
+        builder.AppendLine("AstraFlow assertion migration analysis");
+        builder.AppendLine($"Schema version: {report.SchemaVersion}");
+        builder.AppendLine($"Status: {report.Status}");
+        builder.AppendLine($"Resolution context: {report.ResolutionContext}");
+        builder.AppendLine($"Files analyzed: {report.FilesAnalyzed}");
+
+        foreach (var finding in report.Findings)
+        {
+            var location = finding.Source is null
+                ? string.Empty
+                : $" {finding.Source}{(finding.Line is null ? string.Empty : $":{finding.Line}:{finding.Column}")}";
+            var method = finding.Method is null ? string.Empty : $" {finding.Method}";
+            builder.AppendLine($"{finding.Code} {finding.Classification}{method}:{location} {finding.Suggestion}");
+        }
+
+        return builder.ToString().TrimEnd();
+    }
+
     private static bool IsInspectCategory(string? value)
     {
         return value is "handlers" or "notifications" or "mappings" or "projections";
@@ -378,7 +433,15 @@ internal sealed class CliArguments
                     break;
                 case "-f":
                 case "--format":
-                    arguments.GraphFormat = ParseGraphFormat(NextValue(values, ref index, value));
+                    var formatValue = NextValue(values, ref index, value);
+                    if (command == "assertions")
+                    {
+                        arguments.Output = ParseAssertionOutput(formatValue);
+                    }
+                    else
+                    {
+                        arguments.GraphFormat = ParseGraphFormat(formatValue);
+                    }
                     break;
                 case "--style":
                     arguments.GraphStyle = ParseGraphStyle(NextValue(values, ref index, value));
@@ -422,6 +485,16 @@ internal sealed class CliArguments
     }
 
     private static bool IsOutputFormat(string value) => value.ToLowerInvariant() is "text" or "json" or "markdown" or "md" or "sarif";
+
+    private static OutputFormat ParseAssertionOutput(string value)
+    {
+        return value.ToLowerInvariant() switch
+        {
+            "text" => OutputFormat.Text,
+            "json" => OutputFormat.Json,
+            _ => throw new InvalidOperationException("The assertions analyze format must be text or json.")
+        };
+    }
 
     private static GraphFormat ParseGraphFormat(string value)
     {
@@ -1159,6 +1232,7 @@ internal static class CliHelp
           astraflow diff <before.json> <after.json> [-o json|markdown|text]
           astraflow graph [path] [--style relational|pipeline|events] [--group-by module|feature] [-f|--format mermaid|dot|canvas-json] [--direction TB|LR] [-o graph.json]
           astraflow scan [path] [-o json|markdown|text]
+          astraflow assertions analyze [path] [--format text|json]
         """;
 
     public static string For(string command)
@@ -1171,6 +1245,7 @@ internal static class CliHelp
             "diff" => "Usage: astraflow diff <before.json> <after.json> [-o json|markdown|text]",
             "graph" => "Usage: astraflow graph [path] [--style relational|pipeline|events] [--group-by module|feature] [-f|--format mermaid|dot|canvas-json] [--direction TB|LR] [-o graph.json]",
             "scan" => "Usage: astraflow scan [path] [-o json|markdown|text]",
+            "assertions" => "Usage: astraflow assertions analyze [C# file|project|solution|directory] [--format text|json]",
             _ => Text
         };
     }

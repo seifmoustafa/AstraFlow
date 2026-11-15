@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using AstraFlow.Mapper.EntityFrameworkCore;
-using FluentAssertions;
+using AstraFlow.Assertions;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

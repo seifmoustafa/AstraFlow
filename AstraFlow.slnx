@@ -4,6 +4,7 @@
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/AspNetCoreSample/AspNetCoreSample.csproj" />
+    <Project Path="samples/AssertionsSample/AssertionsSample.csproj" />
     <Project Path="samples/BasicMediatorSample/BasicMediatorSample.csproj" />
     <Project Path="samples/ClassLibraryCompatibilitySample/ClassLibraryCompatibilitySample.csproj" />
     <Project Path="samples/ConsoleHostCompatibilitySample/ConsoleHostCompatibilitySample.csproj" />
@@ -20,6 +21,7 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/AstraFlow.Analyzers/AstraFlow.Analyzers.csproj" />
+    <Project Path="src/AstraFlow.Assertions/AstraFlow.Assertions.csproj" />
     <Project Path="src/AstraFlow.AspNetCore/AstraFlow.AspNetCore.csproj" />
     <Project Path="src/AstraFlow.Cli/AstraFlow.Cli.csproj" />
     <Project Path="src/AstraFlow.Contracts/AstraFlow.Contracts.csproj" />
@@ -37,6 +39,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AstraFlow.Analyzers.Tests/AstraFlow.Analyzers.Tests.csproj" />
+    <Project Path="tests/AstraFlow.Assertions.Tests/AstraFlow.Assertions.Tests.csproj" />
     <Project Path="tests/AstraFlow.AspNetCore.Tests/AstraFlow.AspNetCore.Tests.csproj" />
     <Project Path="tests/AstraFlow.Cli.Tests/AstraFlow.Cli.Tests.csproj" />
     <Project Path="tests/AstraFlow.Diagnostics.Tests/AstraFlow.Diagnostics.Tests.csproj" />

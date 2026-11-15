@@ -2,7 +2,7 @@
 
 This cookbook documents consumer-confidence checks introduced in `1.13.0` and expanded in `1.13.1`.
 
-For a release-by-release comparison and practical guidance for applications upgrading from `1.13.0` or `2.2.0`, see the [Version and Upgrade Guide](version-upgrade-guide.md). It distinguishes source version, published NuGet versions, and PR-only work.
+For a release-by-release comparison and practical guidance for applications upgrading from `1.13.0` or `2.2.0` to the maintainer-reported published `2.3.0`, see the [Version and Upgrade Guide](version-upgrade-guide.md). It distinguishes package publication from consumer verification and optional feature adoption.
 
 ## Goal
 
