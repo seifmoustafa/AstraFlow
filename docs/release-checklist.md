@@ -20,6 +20,7 @@
 - `PackageId`, title, description, tags, license, repository URL, symbols, and README metadata are present.
 - `.nupkg` and `.snupkg` files are produced for every package.
 - Package contents include `README.md`, `CHANGELOG.md`, `LICENSE`, package icon, repository docs, `.nuspec`, library DLL, PDB, and XML docs.
+- The packaged README renders in NuGet's preview; image URLs use absolute HTTPS URLs from NuGet's allowed image hosts, such as `raw.githubusercontent.com`.
 - Package contents include `docs/compatibility.md`, `docs/package-selection.md`, and `docs/future-ideas.md`.
 - Package dependency groups match the supported target frameworks.
 - Analyzer packages include analyzer assets under `analyzers/dotnet/cs` and do not include unintended runtime `lib/` assets.
@@ -69,7 +70,8 @@
 - An active NuGet Trusted Publishing policy matches the repository owner, repository, workflow filename (`publish-nuget.yml`), and GitHub environment (`nuget`).
 - Trusted Publishing is scoped to the AstraFlow package family (`AstraFlow*`) and push of new packages and package versions only.
 - Publish workflow is run manually by a release owner.
-- Packages are verified on NuGet after publishing.
+- Packages are verified on NuGet after publishing. NuGet validation and indexing can take up to one hour; the signature verifier polls during that window.
+- If package pushes succeed but signature verification times out, confirm package status on NuGet and rerun verification after indexing. A verification timeout does not undo a successful push.
 - `scripts/verify-nuget-signatures.ps1 -Version <version>` passes against each exact version on NuGet.org.
 - Any exposed key is revoked immediately.
 

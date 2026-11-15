@@ -29,7 +29,9 @@ try {
         $download = Join-Path $verificationDirectory $package.Name
         $downloaded = $false
         $lastDownloadError = $null
-        for ($attempt = 1; $attempt -le 30; $attempt++) {
+        $maxAttempts = 120
+        $retryDelaySeconds = 30
+        for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
             Remove-Item -LiteralPath $download -Force -ErrorAction SilentlyContinue
             $retryable = $true
             try {
@@ -66,14 +68,14 @@ try {
                 $lastDownloadError = $_.Exception.Message
             }
 
-            if ($attempt -lt 30) {
-                Write-Host "Package $($package.Name) is not available for signature verification yet (attempt $attempt/30): $lastDownloadError Retrying in 30 seconds."
-                Start-Sleep -Seconds 30
+            if ($attempt -lt $maxAttempts) {
+                Write-Host "Package $($package.Name) is not available for signature verification yet (attempt $attempt/$maxAttempts): $lastDownloadError Retrying in $retryDelaySeconds seconds."
+                Start-Sleep -Seconds $retryDelaySeconds
             }
         }
 
         if (-not $downloaded) {
-            throw "NuGet package '$($package.Name)' did not become available for signature verification after 30 attempts. Last error: $lastDownloadError"
+            throw "NuGet package '$($package.Name)' did not become available for signature verification after $maxAttempts attempts (up to one hour). Last error: $lastDownloadError"
         }
 
         & dotnet nuget verify --all $download
