@@ -161,7 +161,7 @@ export default function OpenGraphImage() {
         >
           <span>MIT LICENSED · MODULAR PACKAGES · DOCUMENTED APIS</span>
           <span style={{ color: "#b73921", fontWeight: 700 }}>
-            ASTRAFLOW.DEV
+            ASTRAFLOW.ORG
           </span>
         </div>
       </div>
