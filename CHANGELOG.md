@@ -2,7 +2,9 @@
 
 All notable AstraFlow changes are tracked here.
 
-## 2.4.0 (published 2026-11-15)
+## [Unreleased]
+
+## [2.4.0] - 2026-11-15
 
 ### Breaking Changes
 
@@ -92,7 +94,7 @@ All notable AstraFlow changes are tracked here.
 
 - Keep assertion failure messages from rendering arbitrary object values, string contents, GUID values, or exception message contents by default.
 
-## 2.3.0 (2026-11-10)
+## [2.3.0] - 2026-11-10
 
 ### Breaking Changes
 
@@ -887,3 +889,7 @@ All notable AstraFlow changes are tracked here.
 - Added `AstraFlow.Mapper` with explicit mapping rules, declared mapping validation, collection mapping, explicit query projection helpers, and secure ID abstractions.
 - Added `AstraFlow` convenience registration package.
 - Added package tests, integration tests, samples, NuGet metadata, XML documentation, symbols, SourceLink-ready metadata, and MIT license.
+
+[Unreleased]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/seifmoustafa/AstraFlow/compare/v2.3.0...v2.4.0
+[2.3.0]: https://github.com/seifmoustafa/AstraFlow/compare/v2.2.0...v2.3.0

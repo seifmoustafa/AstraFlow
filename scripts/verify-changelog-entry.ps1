@@ -13,7 +13,10 @@ if ([string]::IsNullOrWhiteSpace($version)) {
 $changelogPath = Join-Path $repositoryRoot "CHANGELOG.md"
 $changelog = Get-Content -LiteralPath $changelogPath -Raw
 $escapedVersion = [regex]::Escape($version)
-$match = [regex]::Match($changelog, "(?ms)^##\s+$escapedVersion(?:\s|\().*?(?=^##\s|\z)")
+$sectionPattern = "(?ms)^##\s+(?:\[$escapedVersion\]|$escapedVersion)"
+$sectionPattern += "(?:\s+-\s+\d{4}-\d{2}-\d{2})?(?:\s+\([^)]*\))?[ \t]*\r?\n"
+$sectionPattern += ".*?(?=^##\s|\z)"
+$match = [regex]::Match($changelog, $sectionPattern)
 if (-not $match.Success) {
     throw "CHANGELOG.md must have a top-level section for package version $version."
 }
