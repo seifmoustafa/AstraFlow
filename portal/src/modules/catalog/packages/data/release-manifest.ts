@@ -10,22 +10,22 @@ export interface PackageReleaseEntry {
  * intentionally separate: source may be preparing a release that is not live.
  */
 export const PACKAGE_RELEASES: readonly PackageReleaseEntry[] = [
-  { packageId: 'AstraFlow', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Contracts', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Mediator', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Mapper', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Mapper.Conventions', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Mapper.EntityFrameworkCore', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Diagnostics', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Security', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Testing', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Assertions', release: { availability: 'planned', targetVersion: '2.4.0' } },
-  { packageId: 'AstraFlow.Analyzers', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Generators', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.Cli', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.AspNetCore', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.FluentValidation', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
-  { packageId: 'AstraFlow.OpenTelemetry', release: { availability: 'published', version: '2.3.0', publishedAt: '2026-11-10' } },
+  { packageId: 'AstraFlow', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Contracts', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Mediator', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Mapper', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Mapper.Conventions', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Mapper.EntityFrameworkCore', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Diagnostics', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Security', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Testing', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Assertions', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Analyzers', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Generators', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.Cli', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.AspNetCore', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.FluentValidation', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
+  { packageId: 'AstraFlow.OpenTelemetry', release: { availability: 'published', version: '2.4.0', publishedAt: '2026-11-15' } },
 ];
 
 const VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;

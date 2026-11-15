@@ -4,6 +4,36 @@ All notable AstraFlow changes are tracked here.
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-11-15
+
+### Breaking Changes
+
+- None.
+
+### Added
+
+- None.
+
+### Changed
+
+- None.
+
+### Fixed
+
+- Use an absolute raw GitHub image URL so the package README banner renders on NuGet.org.
+
+### Deprecated
+
+- None.
+
+### Removed
+
+- None.
+
+### Security
+
+- None.
+
 ## [2.4.0] - 2026-11-15
 
 ### Breaking Changes
@@ -890,6 +920,7 @@ All notable AstraFlow changes are tracked here.
 - Added `AstraFlow` convenience registration package.
 - Added package tests, integration tests, samples, NuGet metadata, XML documentation, symbols, SourceLink-ready metadata, and MIT license.
 
-[Unreleased]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.1...HEAD
+[2.4.1]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/seifmoustafa/AstraFlow/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/seifmoustafa/AstraFlow/compare/v2.2.0...v2.3.0
