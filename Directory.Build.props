@@ -14,7 +14,7 @@
     <Product>AstraFlow</Product>
     <Copyright>Copyright (c) AstraFlow Contributors</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/seifmoustafa/AstraFlow</PackageProjectUrl>
+    <PackageProjectUrl>https://astraflow.org</PackageProjectUrl>
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
