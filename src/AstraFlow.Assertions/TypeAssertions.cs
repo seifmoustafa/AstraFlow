@@ -21,11 +21,17 @@ public sealed class TypeAssertions
 
     /// <summary>Asserts that the subject is the specified runtime type.</summary>
     /// <param name="expected">The expected runtime type, or null.</param>
-    public TypeAssertions Be(Type? expected)
+    public TypeAssertions Be(Type? expected) => Be(expected, null);
+
+    /// <summary>Asserts that the subject is the specified runtime type and adds formatted context to a failure message.</summary>
+    /// <param name="expected">The expected runtime type, or null.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public TypeAssertions Be(Type? expected, string? because, params object?[] becauseArgs)
     {
         if (_actual != expected)
         {
-            AssertionFailure.Fail("Expected the subject type to equal the specified type.");
+            AssertionFailure.FailWithBecause("Expected the subject type to equal the specified type.", because, becauseArgs);
         }
 
         return this;

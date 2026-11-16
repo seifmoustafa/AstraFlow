@@ -12,6 +12,13 @@ internal static class AssertionFailure
     public static void FailWithBecause(string message, string? because, params object?[] becauseArgs)
         => Fail(AddBecause(message, because, becauseArgs));
 
+    public static string? ValidateBecause(object? because) => because switch
+    {
+        null => null,
+        string reason => reason,
+        _ => throw new ArgumentException("Assertion failure context must be a string.", nameof(because)),
+    };
+
     public static string AddBecause(string message, string? because, params object?[] becauseArgs)
     {
         var reason = because ?? string.Empty;

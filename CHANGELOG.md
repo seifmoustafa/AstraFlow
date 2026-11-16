@@ -10,7 +10,7 @@ All notable AstraFlow changes are tracked here.
 
 ### Added
 
-- None.
+- Add formatted failure-context overloads for type identity, numeric comparisons, collection and dictionary count/containment/prefix/single-item checks, dictionary key exclusion, predicate matching, and synchronous/asynchronous exception assertions; add case-insensitive string `NotContainEquivalentOf`.
 
 ### Changed
 
@@ -40,7 +40,7 @@ All notable AstraFlow changes are tracked here.
 
 ### Added
 
-- Add `BooleanAssertions.Be(bool)` and formatted failure-context overloads for null/presence, non-whitespace, negative containment, and dictionary-key assertions.
+- Add `BooleanAssertions.Be(bool)` and formatted failure-context overloads for null/presence, non-whitespace, negative string/sequence containment, and positive dictionary-key assertions.
 
 ### Changed
 

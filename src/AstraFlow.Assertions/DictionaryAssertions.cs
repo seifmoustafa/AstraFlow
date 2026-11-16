@@ -166,11 +166,17 @@ public sealed class DictionaryAssertions<TKey, TValue>
     }
 
     /// <summary>Asserts that the dictionary does not contain the specified key.</summary>
-    public DictionaryAssertions<TKey, TValue> NotContainKey(TKey key)
+    public DictionaryAssertions<TKey, TValue> NotContainKey(TKey key) => NotContainKey(key, null);
+
+    /// <summary>Asserts that the dictionary does not contain the specified key and adds formatted failure context.</summary>
+    /// <param name="key">The key that must not be present.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public DictionaryAssertions<TKey, TValue> NotContainKey(TKey key, string? because, params object?[] becauseArgs)
     {
         if (_actual is null || ContainsKey(key))
         {
-            AssertionFailure.Fail("Expected dictionary not to contain the requested key.");
+            AssertionFailure.FailWithBecause("Expected dictionary not to contain the requested key.", because, becauseArgs);
         }
 
         return this;
@@ -303,7 +309,13 @@ public sealed class DictionaryAssertions<TKey, TValue>
     }
 
     /// <summary>Asserts that the dictionary has the expected number of entries.</summary>
-    public DictionaryAssertions<TKey, TValue> HaveCount(int expected)
+    public DictionaryAssertions<TKey, TValue> HaveCount(int expected) => HaveCount(expected, null);
+
+    /// <summary>Asserts that the dictionary has the expected number of entries and adds formatted failure context.</summary>
+    /// <param name="expected">The required number of entries.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public DictionaryAssertions<TKey, TValue> HaveCount(int expected, string? because, params object?[] becauseArgs)
     {
         if (expected < 0)
         {
@@ -312,7 +324,7 @@ public sealed class DictionaryAssertions<TKey, TValue>
 
         if (_actual is null || GetCount() != expected)
         {
-            AssertionFailure.Fail($"Expected dictionary entry count {expected}, but found {(_actual is null ? "<null>" : GetCount().ToString())}.");
+            AssertionFailure.FailWithBecause($"Expected dictionary entry count {expected}, but found {(_actual is null ? "<null>" : GetCount().ToString())}.", because, becauseArgs);
         }
 
         return this;

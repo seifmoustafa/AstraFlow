@@ -203,7 +203,13 @@ public sealed class CollectionAssertions<T>
     }
 
     /// <summary>Asserts that the sequence contains the expected number of items.</summary>
-    public CollectionAssertions<T> HaveCount(int expected)
+    public CollectionAssertions<T> HaveCount(int expected) => HaveCount(expected, null);
+
+    /// <summary>Asserts that the sequence contains the expected number of items and adds formatted failure context.</summary>
+    /// <param name="expected">The required number of items.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public CollectionAssertions<T> HaveCount(int expected, string? because, params object?[] becauseArgs)
     {
         if (expected < 0)
         {
@@ -212,7 +218,7 @@ public sealed class CollectionAssertions<T>
 
         if (_actual is null)
         {
-            AssertionFailure.Fail("Expected a sequence with a count, but found null.");
+            AssertionFailure.FailWithBecause("Expected a sequence with a count, but found null.", because, becauseArgs);
         }
 
         var count = 0;
@@ -223,14 +229,20 @@ public sealed class CollectionAssertions<T>
 
         if (count != expected)
         {
-            AssertionFailure.Fail($"Expected sequence count {expected}, but found {count}.");
+            AssertionFailure.FailWithBecause($"Expected sequence count {expected}, but found {count}.", because, becauseArgs);
         }
 
         return this;
     }
 
     /// <summary>Asserts that the sequence contains an equal item.</summary>
-    public CollectionAssertions<T> Contain(T expected)
+    public CollectionAssertions<T> Contain(T expected) => Contain(expected, null);
+
+    /// <summary>Asserts that the sequence contains an equal item and adds formatted failure context.</summary>
+    /// <param name="expected">The item that must be present.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public CollectionAssertions<T> Contain(T expected, string? because, params object?[] becauseArgs)
     {
         if (_actual is not null)
         {
@@ -244,7 +256,7 @@ public sealed class CollectionAssertions<T>
             }
         }
 
-        AssertionFailure.Fail($"Expected sequence to contain an item equal to {AssertionFailure.Describe(expected)}.");
+        AssertionFailure.FailWithBecause($"Expected sequence to contain an item equal to {AssertionFailure.Describe(expected)}.", because, becauseArgs);
         return this;
     }
 
@@ -497,13 +509,23 @@ public sealed class CollectionAssertions<T>
 
     /// <summary>Asserts that the sequence starts with the expected items in the specified order.</summary>
     /// <param name="expected">A finite sequence of expected leading items.</param>
-    public CollectionAssertions<T> StartWith(params T[] expected) => StartWith((IEnumerable<T>)expected);
+    public CollectionAssertions<T> StartWith(params T[] expected) => StartWith((IEnumerable<T>)expected, (IEqualityComparer<T>?)null);
 
     /// <summary>Asserts that the sequence starts with the expected items in the specified order.</summary>
     /// <param name="expected">A finite sequence of expected leading items.</param>
     /// <param name="comparer">The comparer used to match items. Defaults to <see cref="EqualityComparer{T}.Default"/>.</param>
     /// <remarks>The expected sequence is read at most once. A null subject fails, including for an empty expectation. A non-null subject with an empty expectation succeeds without enumeration.</remarks>
     public CollectionAssertions<T> StartWith(IEnumerable<T> expected, IEqualityComparer<T>? comparer = null)
+        => StartWithCore(expected, comparer, null, Array.Empty<object?>());
+
+    /// <summary>Asserts that the sequence starts with the expected items and adds formatted failure context.</summary>
+    /// <param name="expected">A finite sequence of expected leading items.</param>
+    /// <param name="because">A reason string explaining why the assertion is expected to pass. Composite format items are supported. This parameter accepts an object to keep explicit null comparer calls unambiguous.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public CollectionAssertions<T> StartWith(IEnumerable<T> expected, object? because, params object?[] becauseArgs)
+        => StartWithCore(expected, null, AssertionFailure.ValidateBecause(because), becauseArgs);
+
+    private CollectionAssertions<T> StartWithCore(IEnumerable<T> expected, IEqualityComparer<T>? comparer, string? because, object?[] becauseArgs)
     {
         if (expected is null)
         {
@@ -512,7 +534,7 @@ public sealed class CollectionAssertions<T>
 
         if (_actual is null)
         {
-            AssertionFailure.Fail("Expected a non-null sequence to start with the requested items.");
+            AssertionFailure.FailWithBecause("Expected a non-null sequence to start with the requested items.", because, becauseArgs);
         }
 
         if (ReferenceEquals(_actual, expected))
@@ -532,12 +554,12 @@ public sealed class CollectionAssertions<T>
         {
             if (!actualEnumerator.MoveNext())
             {
-                AssertionFailure.Fail($"Expected the sequence to start with {expectedItems.Count} items, but it ended at index {index}.");
+                AssertionFailure.FailWithBecause($"Expected the sequence to start with {expectedItems.Count} items, but it ended at index {index}.", because, becauseArgs);
             }
 
             if (!comparer.Equals(actualEnumerator.Current, expectedItems[index]))
             {
-                AssertionFailure.Fail($"Expected the sequence prefix to match at index {index}.");
+                AssertionFailure.FailWithBecause($"Expected the sequence prefix to match at index {index}.", because, becauseArgs);
             }
         }
 
@@ -595,39 +617,53 @@ public sealed class CollectionAssertions<T>
     }
 
     /// <summary>Asserts that the sequence contains exactly one item and returns it.</summary>
-    public SingleItemAssertions<T> ContainSingle()
+    public SingleItemAssertions<T> ContainSingle() => ContainSingle((string?)null);
+
+    /// <summary>Asserts that the sequence contains exactly one item, adds formatted failure context, and returns it.</summary>
+    /// <param name="because">A reason string explaining why the assertion is expected to pass. Composite format items are supported. This parameter accepts an object to keep null predicate validation unambiguous.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public SingleItemAssertions<T> ContainSingle(object? because, params object?[] becauseArgs)
     {
+        var reason = AssertionFailure.ValidateBecause(because);
         if (_actual is null)
         {
-            AssertionFailure.Fail("Expected a sequence containing one item, but found null.");
+            AssertionFailure.FailWithBecause("Expected a sequence containing one item, but found null.", reason, becauseArgs);
         }
 
         using var enumerator = _actual.GetEnumerator();
         if (!enumerator.MoveNext())
         {
-            AssertionFailure.Fail("Expected a sequence containing one item, but it was empty.");
+            AssertionFailure.FailWithBecause("Expected a sequence containing one item, but it was empty.", reason, becauseArgs);
         }
 
         var item = enumerator.Current;
         if (enumerator.MoveNext())
         {
-            AssertionFailure.Fail("Expected exactly one sequence item, but found additional items.");
+            AssertionFailure.FailWithBecause("Expected exactly one sequence item, but found additional items.", reason, becauseArgs);
         }
 
         return new SingleItemAssertions<T>(item);
     }
 
     /// <summary>Asserts that the sequence contains exactly one item matching the predicate and returns it.</summary>
-    public SingleItemAssertions<T> ContainSingle(Func<T, bool> predicate)
+    public SingleItemAssertions<T> ContainSingle(Func<T, bool> predicate) => ContainSingle(predicate, (object?)null);
+
+    /// <summary>Asserts that the sequence contains exactly one item matching the predicate, adds formatted failure context, and returns it.</summary>
+    /// <param name="predicate">The predicate evaluated against each item.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public SingleItemAssertions<T> ContainSingle(Func<T, bool> predicate, object? because, params object?[] becauseArgs)
     {
         if (predicate is null)
         {
             throw new ArgumentNullException(nameof(predicate));
         }
 
+        var reason = AssertionFailure.ValidateBecause(because);
+
         if (_actual is null)
         {
-            AssertionFailure.Fail("Expected a sequence containing one matching item, but found null.");
+            AssertionFailure.FailWithBecause("Expected a sequence containing one matching item, but found null.", reason, becauseArgs);
         }
 
         var found = false;
@@ -641,7 +677,7 @@ public sealed class CollectionAssertions<T>
 
             if (found)
             {
-                AssertionFailure.Fail("Expected exactly one matching sequence item, but found more than one.");
+                AssertionFailure.FailWithBecause("Expected exactly one matching sequence item, but found more than one.", reason, becauseArgs);
             }
 
             found = true;
@@ -650,7 +686,7 @@ public sealed class CollectionAssertions<T>
 
         if (!found)
         {
-            AssertionFailure.Fail("Expected one matching sequence item, but found none.");
+            AssertionFailure.FailWithBecause("Expected one matching sequence item, but found none.", reason, becauseArgs);
         }
 
         return new SingleItemAssertions<T>(match);

@@ -364,6 +364,22 @@ public sealed class StringAssertions
         }
     }
 
+    /// <summary>Asserts that the string does not contain the specified substring, ignoring ordinal case differences.</summary>
+    /// <param name="unexpected">The substring that must not be present.</param>
+    public void NotContainEquivalentOf(string unexpected) => NotContainEquivalentOf(unexpected, null);
+
+    /// <summary>Asserts that the string does not contain the specified substring, ignoring ordinal case differences, and adds formatted failure context.</summary>
+    /// <param name="unexpected">The substring that must not be present.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void NotContainEquivalentOf(string unexpected, string? because, params object?[] becauseArgs)
+    {
+        if (_actual is not null && unexpected is not null && _actual.IndexOf(unexpected, StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            AssertionFailure.FailWithBecause($"Expected string not to contain an equivalent substring of length {unexpected.Length}, but it did.", because, becauseArgs);
+        }
+    }
+
     /// <summary>Asserts that the string starts with the specified value.</summary>
     public void StartWith(string expected)
     {

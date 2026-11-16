@@ -150,11 +150,17 @@ public sealed class ObjectAssertions<T>
     }
 
     /// <summary>Asserts that the value compares greater than the expected value.</summary>
-    public void BeGreaterThan(T expected)
+    public void BeGreaterThan(T expected) => BeGreaterThan(expected, null);
+
+    /// <summary>Asserts that the value compares greater than the expected value and adds formatted failure context.</summary>
+    /// <param name="expected">The value the subject must exceed.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void BeGreaterThan(T expected, string? because, params object?[] becauseArgs)
     {
         if (Comparer<T>.Default.Compare(_actual, expected) <= 0)
         {
-            AssertionFailure.Fail($"Expected a value greater than {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.");
+            AssertionFailure.FailWithBecause($"Expected a value greater than {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.", because, becauseArgs);
         }
     }
 
@@ -168,11 +174,17 @@ public sealed class ObjectAssertions<T>
     }
 
     /// <summary>Asserts that the value compares less than the expected value.</summary>
-    public void BeLessThan(T expected)
+    public void BeLessThan(T expected) => BeLessThan(expected, null);
+
+    /// <summary>Asserts that the value compares less than the expected value and adds formatted failure context.</summary>
+    /// <param name="expected">The value the subject must be below.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void BeLessThan(T expected, string? because, params object?[] becauseArgs)
     {
         if (Comparer<T>.Default.Compare(_actual, expected) >= 0)
         {
-            AssertionFailure.Fail($"Expected a value less than {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.");
+            AssertionFailure.FailWithBecause($"Expected a value less than {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.", because, becauseArgs);
         }
     }
 
@@ -328,7 +340,13 @@ public sealed class ObjectAssertions<T>
     }
 
     /// <summary>Asserts that the subject satisfies the predicate.</summary>
-    public void Match(Func<T, bool> predicate)
+    public void Match(Func<T, bool> predicate) => Match(predicate, null);
+
+    /// <summary>Asserts that the subject satisfies the predicate and adds formatted failure context.</summary>
+    /// <param name="predicate">The predicate evaluated against the subject.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void Match(Func<T, bool> predicate, string? because, params object?[] becauseArgs)
     {
         if (predicate is null)
         {
@@ -337,7 +355,7 @@ public sealed class ObjectAssertions<T>
 
         if (!predicate(_actual))
         {
-            AssertionFailure.Fail("Expected value to satisfy the predicate.");
+            AssertionFailure.FailWithBecause("Expected value to satisfy the predicate.", because, becauseArgs);
         }
     }
 
