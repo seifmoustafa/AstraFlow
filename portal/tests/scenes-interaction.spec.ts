@@ -628,9 +628,11 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       : undefined;
 
     await latestPill.click();
-    const latestRelease = releasesSection.getByRole("button", {
-      name: new RegExp(`^v${latestMeta.version.replace(/\./g, "\\.")} ${latestMeta.statusLabel}`),
-    });
+    const latestRelease = releasesSection
+      .locator("ol button")
+      .filter({ has: page.locator("span").and(page.getByText(`v${latestMeta.version}`, { exact: true })) })
+      .filter({ hasText: latestMeta.statusLabel })
+      .first();
     await expect(latestRelease).toBeVisible();
     await latestRelease.click();
     await expect(page.locator(`article[id="${latestMeta.anchorId}"]`)).toBeVisible();
@@ -672,10 +674,9 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     expect(spineTargets.some((entry) => entry.version === PREVIOUS_PUBLISHED_VERSION)).toBe(true);
 
     for (const rel of spineTargets) {
-      const versionRegex = new RegExp(`^v${rel.version.replace(/\./g, "\\.")}$`);
       const spineBtn = releasesSection
         .locator("ol button")
-        .filter({ has: page.locator("span", { hasText: versionRegex }) })
+        .filter({ has: page.locator("span").and(page.getByText(`v${rel.version}`, { exact: true })) })
         .first();
       await expect(spineBtn).toBeVisible();
       await spineBtn.click();
