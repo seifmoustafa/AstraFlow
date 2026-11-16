@@ -10,7 +10,7 @@ All notable AstraFlow changes are tracked here.
 
 ### Added
 
-- Add BooleanAssertions.Be(bool) and formatted failure-context overloads for null/presence, non-whitespace, negative containment, and dictionary-key assertions.
+- None.
 
 ### Changed
 
@@ -19,6 +19,36 @@ All notable AstraFlow changes are tracked here.
 ### Fixed
 
 - None.
+
+### Deprecated
+
+- None.
+
+### Removed
+
+- None.
+
+### Security
+
+- None.
+
+## [2.4.3] - 2026-11-16
+
+### Breaking Changes
+
+- None.
+
+### Added
+
+- Add `BooleanAssertions.Be(bool)` and formatted failure-context overloads for null/presence, non-whitespace, negative containment, and dictionary-key assertions.
+
+### Changed
+
+- None.
+
+### Fixed
+
+- Fix nullable-flow analysis in assertion reason formatting for `netstandard2.0`, preventing CS8602 build errors.
 
 ### Deprecated
 
@@ -981,7 +1011,9 @@ All notable AstraFlow changes are tracked here.
 - Added `AstraFlow` convenience registration package.
 - Added package tests, integration tests, samples, NuGet metadata, XML documentation, symbols, SourceLink-ready metadata, and MIT license.
 
-[Unreleased]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.3...HEAD
+[2.4.3]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.2...v2.4.3
+[2.4.2]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.1...v2.4.2
 [2.4.1]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/seifmoustafa/AstraFlow/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/seifmoustafa/AstraFlow/compare/v2.2.0...v2.3.0
