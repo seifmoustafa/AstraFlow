@@ -14,14 +14,15 @@ internal static class AssertionFailure
 
     public static string AddBecause(string message, string? because, params object?[] becauseArgs)
     {
-        if (string.IsNullOrWhiteSpace(because))
+        var reason = because ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(reason))
         {
             return message;
         }
 
         var formattedBecause = (becauseArgs is not { Length: > 0 }
-            ? because
-            : string.Format(CultureInfo.InvariantCulture, because, becauseArgs)).Trim();
+            ? reason
+            : string.Format(CultureInfo.InvariantCulture, reason, becauseArgs)).Trim();
         if (formattedBecause.Length == 0)
         {
             return message;
