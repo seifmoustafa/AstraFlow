@@ -263,7 +263,7 @@ export const packagesEn = {
       capabilities: [
         'Zero AstraFlow runtime or test-runner package dependencies',
         'Value-free predicates, ordinal/wildcard/timeout-bounded regex matching, and safe failure messages',
-        'The upcoming 2.4.4 hotfix adds formatted reasons for type identity, comparisons, collection and dictionary checks, predicates, and sync/async exceptions, plus case-insensitive string NotContainEquivalentOf',
+        'AstraFlow 2.4.4 adds formatted reasons for type identity, comparisons, collection and dictionary checks, predicates, and sync/async exceptions, plus case-insensitive string NotContainEquivalentOf',
         'Strict positive/negative assertions for integral, floating-point, and decimal values, with defined zero, NaN, and infinity behavior',
         'Nullable scalar, enum, numeric, temporal, and GUID assertions on all four targets; nullable DateOnly and TimeOnly checks are available on net8.0, net9.0, and net10.0',
         'Non-consuming Stream.Should() capability and seekable metadata checks on all four targets, with safe null/disposed/unsupported-metadata failures and propagated unexpected I/O errors',

@@ -6,9 +6,9 @@
 dotnet add package AstraFlow.Assertions
 ```
 
-The 2.4.2 and 2.4.3 patches add the migration compatibility APIs described in [the migration guide](assertion-migration.md). Consumers who pin versions should use the exact version available on NuGet.org.
+The 2.4.2, 2.4.3, and 2.4.4 patches add the migration compatibility APIs described in [the migration guide](assertion-migration.md). Consumers who pin versions should use the exact version available on NuGet.org.
 
-The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, whitespace checks, negative containment, and positive dictionary-key checks. The upcoming 2.4.4 hotfix adds reason overloads for type identity, numeric comparisons, collection and dictionary count/containment/prefix/single-item checks, dictionary key exclusion, predicate matching, and sync/async exception assertions. It also adds case-insensitive string `NotContainEquivalentOf`.
+The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, whitespace checks, negative containment, and positive dictionary-key checks. The 2.4.4 release adds reason overloads for type identity, numeric comparisons, collection and dictionary count/containment/prefix/single-item checks, dictionary key exclusion, predicate matching, and sync/async exception assertions. It also adds case-insensitive string `NotContainEquivalentOf`.
 
 The shipping project has no `PackageReference` dependencies. Test-runner packages stay in the consumer's test project.
 

@@ -2,6 +2,7 @@
 M:AstraFlow.Assertions.ActionAssertions.NotThrow
 M:AstraFlow.Assertions.ActionAssertions.NotThrow(System.String,System.Object[])
 M:AstraFlow.Assertions.ActionAssertions.Throw``1
+M:AstraFlow.Assertions.ActionAssertions.Throw``1(System.String,System.Object[])
 M:AstraFlow.Assertions.ArgumentExceptionAssertionExtensions.NotHaveParameterName``1(AstraFlow.Assertions.ExceptionAssertions{``0},System.String)
 M:AstraFlow.Assertions.ArgumentExceptionAssertionExtensions.NotHaveParameterName``1(System.Threading.Tasks.Task{AstraFlow.Assertions.ExceptionAssertions{``0}},System.String)
 M:AstraFlow.Assertions.ArgumentExceptionAssertionExtensions.WithParameterName``1(AstraFlow.Assertions.ExceptionAssertions{``0},System.String)
@@ -51,11 +52,13 @@ M:AstraFlow.Assertions.AsyncActionAssertions.NotCompleteWithinAsync(System.TimeS
 M:AstraFlow.Assertions.AsyncActionAssertions.NotThrowAsync
 M:AstraFlow.Assertions.AsyncActionAssertions.NotThrowAsync(System.String,System.Object[])
 M:AstraFlow.Assertions.AsyncActionAssertions.ThrowAsync``1
+M:AstraFlow.Assertions.AsyncActionAssertions.ThrowAsync``1(System.String,System.Object[])
 M:AstraFlow.Assertions.AsyncFunctionAssertions`1.CompleteWithinAsync(System.TimeSpan,System.Threading.CancellationToken)
 M:AstraFlow.Assertions.AsyncFunctionAssertions`1.NotCompleteWithinAsync(System.TimeSpan,System.Threading.CancellationToken)
 M:AstraFlow.Assertions.AsyncFunctionAssertions`1.NotThrowAsync
 M:AstraFlow.Assertions.AsyncFunctionAssertions`1.NotThrowAsync(System.String,System.Object[])
 M:AstraFlow.Assertions.AsyncFunctionAssertions`1.ThrowAsync``1
+M:AstraFlow.Assertions.AsyncFunctionAssertions`1.ThrowAsync``1(System.String,System.Object[])
 M:AstraFlow.Assertions.BooleanAssertions.Be(System.Boolean,System.String,System.Object[])
 M:AstraFlow.Assertions.BooleanAssertions.BeFalse
 M:AstraFlow.Assertions.BooleanAssertions.BeFalse(System.String,System.Object[])
@@ -85,6 +88,7 @@ M:AstraFlow.Assertions.CollectionAssertions`1.BeSameAs(System.Object)
 M:AstraFlow.Assertions.CollectionAssertions`1.BeSubsetOf(System.Collections.Generic.IEnumerable{`0})
 M:AstraFlow.Assertions.CollectionAssertions`1.Contain(System.Func{`0,System.Boolean})
 M:AstraFlow.Assertions.CollectionAssertions`1.Contain(`0)
+M:AstraFlow.Assertions.CollectionAssertions`1.Contain(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.CollectionAssertions`1.Contain(`0[])
 M:AstraFlow.Assertions.CollectionAssertions`1.ContainConsecutive(`0[])
 M:AstraFlow.Assertions.CollectionAssertions`1.ContainEquivalentItems(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})
@@ -97,10 +101,13 @@ M:AstraFlow.Assertions.CollectionAssertions`1.ContainItemsAssignableTo(System.Ty
 M:AstraFlow.Assertions.CollectionAssertions`1.ContainItemsAssignableTo``1
 M:AstraFlow.Assertions.CollectionAssertions`1.ContainSingle
 M:AstraFlow.Assertions.CollectionAssertions`1.ContainSingle(System.Func{`0,System.Boolean})
+M:AstraFlow.Assertions.CollectionAssertions`1.ContainSingle(System.Func{`0,System.Boolean},System.Object,System.Object[])
+M:AstraFlow.Assertions.CollectionAssertions`1.ContainSingle(System.Object,System.Object[])
 M:AstraFlow.Assertions.CollectionAssertions`1.EndWith(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})
 M:AstraFlow.Assertions.CollectionAssertions`1.EndWith(`0[])
 M:AstraFlow.Assertions.CollectionAssertions`1.Equal(`0[])
 M:AstraFlow.Assertions.CollectionAssertions`1.HaveCount(System.Int32)
+M:AstraFlow.Assertions.CollectionAssertions`1.HaveCount(System.Int32,System.String,System.Object[])
 M:AstraFlow.Assertions.CollectionAssertions`1.HaveCountGreaterThan(System.Int32)
 M:AstraFlow.Assertions.CollectionAssertions`1.HaveCountGreaterThanOrEqualTo(System.Int32)
 M:AstraFlow.Assertions.CollectionAssertions`1.HaveCountLessThan(System.Int32)
@@ -141,6 +148,7 @@ M:AstraFlow.Assertions.CollectionAssertions`1.OnlyContain(System.Func{`0,System.
 M:AstraFlow.Assertions.CollectionAssertions`1.OnlyHaveUniqueItems(System.Collections.Generic.IEqualityComparer{`0})
 M:AstraFlow.Assertions.CollectionAssertions`1.SatisfyRespectively(System.Action{`0}[])
 M:AstraFlow.Assertions.CollectionAssertions`1.StartWith(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})
+M:AstraFlow.Assertions.CollectionAssertions`1.StartWith(System.Collections.Generic.IEnumerable{`0},System.Object,System.Object[])
 M:AstraFlow.Assertions.CollectionAssertions`1.StartWith(`0[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.BeEmpty
 M:AstraFlow.Assertions.DictionaryAssertions`2.BeEmpty(System.String,System.Object[])
@@ -155,6 +163,7 @@ M:AstraFlow.Assertions.DictionaryAssertions`2.ContainValue(`1)
 M:AstraFlow.Assertions.DictionaryAssertions`2.ContainValues(`1[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.Equal(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{`0,`1}})
 M:AstraFlow.Assertions.DictionaryAssertions`2.HaveCount(System.Int32)
+M:AstraFlow.Assertions.DictionaryAssertions`2.HaveCount(System.Int32,System.String,System.Object[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.HaveCountGreaterThan(System.Int32)
 M:AstraFlow.Assertions.DictionaryAssertions`2.HaveCountLessThan(System.Int32)
 M:AstraFlow.Assertions.DictionaryAssertions`2.HaveSameCount(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{`0,`1}})
@@ -166,6 +175,7 @@ M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeSameAs(System.Object)
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContain(System.Func{System.Collections.Generic.KeyValuePair{`0,`1},System.Boolean})
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContain(`0,`1)
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContainKey(`0)
+M:AstraFlow.Assertions.DictionaryAssertions`2.NotContainKey(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContainKeys(`0[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContainValue(`1)
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContainValues(`1[])
@@ -175,6 +185,7 @@ M:AstraFlow.Assertions.DictionarySequenceAssertionExtensions.ContainValue``2(Ast
 M:AstraFlow.Assertions.DictionarySequenceAssertionExtensions.ContainValues``2(AstraFlow.Assertions.CollectionAssertions{System.Collections.Generic.KeyValuePair{``0,``1}},``1[])
 M:AstraFlow.Assertions.DictionarySequenceAssertionExtensions.Contain``2(AstraFlow.Assertions.CollectionAssertions{System.Collections.Generic.KeyValuePair{``0,``1}},``0,``1)
 M:AstraFlow.Assertions.DictionarySequenceAssertionExtensions.NotContainKey``2(AstraFlow.Assertions.CollectionAssertions{System.Collections.Generic.KeyValuePair{``0,``1}},``0)
+M:AstraFlow.Assertions.DictionarySequenceAssertionExtensions.NotContainKey``2(AstraFlow.Assertions.CollectionAssertions{System.Collections.Generic.KeyValuePair{``0,``1}},``0,System.String,System.Object[])
 M:AstraFlow.Assertions.DictionarySequenceAssertionExtensions.NotContainKeys``2(AstraFlow.Assertions.CollectionAssertions{System.Collections.Generic.KeyValuePair{``0,``1}},``0[])
 M:AstraFlow.Assertions.DictionarySequenceAssertionExtensions.NotContainValue``2(AstraFlow.Assertions.CollectionAssertions{System.Collections.Generic.KeyValuePair{``0,``1}},``1)
 M:AstraFlow.Assertions.DictionarySequenceAssertionExtensions.NotContainValues``2(AstraFlow.Assertions.CollectionAssertions{System.Collections.Generic.KeyValuePair{``0,``1}},``1[])
@@ -234,6 +245,7 @@ M:AstraFlow.Assertions.FluentActions.Invoking``1(System.Func{``0})
 M:AstraFlow.Assertions.FunctionAssertions`1.NotThrow
 M:AstraFlow.Assertions.FunctionAssertions`1.NotThrow(System.String,System.Object[])
 M:AstraFlow.Assertions.FunctionAssertions`1.Throw``1
+M:AstraFlow.Assertions.FunctionAssertions`1.Throw``1(System.String,System.Object[])
 M:AstraFlow.Assertions.GuidAssertions.Be(System.Guid)
 M:AstraFlow.Assertions.GuidAssertions.Be(System.Guid,System.String,System.Object[])
 M:AstraFlow.Assertions.GuidAssertions.BeEmpty
@@ -308,9 +320,11 @@ M:AstraFlow.Assertions.NullableTemporalAssertionExtensions.HaveOffset(AstraFlow.
 M:AstraFlow.Assertions.NullableValueAssertions`1.Be(`0)
 M:AstraFlow.Assertions.NullableValueAssertions`1.Be(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.NullableValueAssertions`1.BeGreaterThan(`0)
+M:AstraFlow.Assertions.NullableValueAssertions`1.BeGreaterThan(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.NullableValueAssertions`1.BeGreaterThanOrEqualTo(`0)
 M:AstraFlow.Assertions.NullableValueAssertions`1.BeInRange(`0,`0)
 M:AstraFlow.Assertions.NullableValueAssertions`1.BeLessThan(`0)
+M:AstraFlow.Assertions.NullableValueAssertions`1.BeLessThan(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.NullableValueAssertions`1.BeLessThanOrEqualTo(`0)
 M:AstraFlow.Assertions.NullableValueAssertions`1.BeNull
 M:AstraFlow.Assertions.NullableValueAssertions`1.BeNull(System.String,System.Object[])
@@ -364,9 +378,11 @@ M:AstraFlow.Assertions.ObjectAssertions`1.BeDefined
 M:AstraFlow.Assertions.ObjectAssertions`1.BeEquivalentTo``1(``0,System.Action{AstraFlow.Assertions.EquivalencyOptions})
 M:AstraFlow.Assertions.ObjectAssertions`1.BeEquivalentTo``1(``0,System.String,System.Object[])
 M:AstraFlow.Assertions.ObjectAssertions`1.BeGreaterThan(`0)
+M:AstraFlow.Assertions.ObjectAssertions`1.BeGreaterThan(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.ObjectAssertions`1.BeGreaterThanOrEqualTo(`0)
 M:AstraFlow.Assertions.ObjectAssertions`1.BeInRange(`0,`0)
 M:AstraFlow.Assertions.ObjectAssertions`1.BeLessThan(`0)
+M:AstraFlow.Assertions.ObjectAssertions`1.BeLessThan(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.ObjectAssertions`1.BeLessThanOrEqualTo(`0)
 M:AstraFlow.Assertions.ObjectAssertions`1.BeNull
 M:AstraFlow.Assertions.ObjectAssertions`1.BeNull(System.String,System.Object[])
@@ -376,6 +392,7 @@ M:AstraFlow.Assertions.ObjectAssertions`1.BeOneOf(`0[])
 M:AstraFlow.Assertions.ObjectAssertions`1.BeSameAs(System.Object)
 M:AstraFlow.Assertions.ObjectAssertions`1.HaveFlag(System.Enum)
 M:AstraFlow.Assertions.ObjectAssertions`1.Match(System.Func{`0,System.Boolean})
+M:AstraFlow.Assertions.ObjectAssertions`1.Match(System.Func{`0,System.Boolean},System.String,System.Object[])
 M:AstraFlow.Assertions.ObjectAssertions`1.NotBe(`0)
 M:AstraFlow.Assertions.ObjectAssertions`1.NotBe(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.ObjectAssertions`1.NotBeAssignableTo``1
@@ -436,6 +453,8 @@ M:AstraFlow.Assertions.StringAssertions.NotBeNullOrWhiteSpace
 M:AstraFlow.Assertions.StringAssertions.NotBeNullOrWhiteSpace(System.String,System.Object[])
 M:AstraFlow.Assertions.StringAssertions.NotContain(System.String)
 M:AstraFlow.Assertions.StringAssertions.NotContain(System.String,System.String,System.Object[])
+M:AstraFlow.Assertions.StringAssertions.NotContainEquivalentOf(System.String)
+M:AstraFlow.Assertions.StringAssertions.NotContainEquivalentOf(System.String,System.String,System.Object[])
 M:AstraFlow.Assertions.StringAssertions.NotEndWith(System.String)
 M:AstraFlow.Assertions.StringAssertions.NotStartWith(System.String)
 M:AstraFlow.Assertions.StringAssertions.StartWith(System.String)
@@ -453,6 +472,7 @@ M:AstraFlow.Assertions.TemporalAssertionExtensions.BePositive(AstraFlow.Assertio
 M:AstraFlow.Assertions.TemporalAssertionExtensions.HaveKind(AstraFlow.Assertions.ObjectAssertions{System.DateTime},System.DateTimeKind)
 M:AstraFlow.Assertions.TemporalAssertionExtensions.HaveOffset(AstraFlow.Assertions.ObjectAssertions{System.DateTimeOffset},System.TimeSpan)
 M:AstraFlow.Assertions.TypeAssertions.Be(System.Type)
+M:AstraFlow.Assertions.TypeAssertions.Be(System.Type,System.String,System.Object[])
 M:AstraFlow.Assertions.TypeAssertions.BeAbstract
 M:AstraFlow.Assertions.TypeAssertions.BeDerivedFrom(System.Type)
 M:AstraFlow.Assertions.TypeAssertions.BeDerivedFrom``1
