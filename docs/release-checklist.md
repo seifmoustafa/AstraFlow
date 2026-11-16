@@ -65,7 +65,7 @@
 
 - Version is final.
 - Before packing, move this version's release notes from `[Unreleased]` into a dated `## [<version>] - YYYY-MM-DD` section; keep `[Unreleased]` for future work.
-- `scripts/verify-changelog-entry.ps1` passes before CI release notes, local packing, and publishing, confirming the exact package version has a complete dated entry and cannot ship under `[Unreleased]`.
+- `scripts/verify-changelog-entry.ps1` passes before CI release notes, local packing, and publishing, confirming the exact package version has a complete dated entry and cannot ship under `[Unreleased]`; reused packages must contain the checked-out `CHANGELOG.md`.
 - Git tag exists.
 - An active NuGet Trusted Publishing policy matches the repository owner, repository, workflow filename (`publish-nuget.yml`), and GitHub environment (`nuget`).
 - Trusted Publishing is scoped to the AstraFlow package family (`AstraFlow*`) and push of new packages and package versions only.
