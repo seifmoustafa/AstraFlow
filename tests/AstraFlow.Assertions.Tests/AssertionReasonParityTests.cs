@@ -40,6 +40,9 @@ public sealed class AssertionReasonParityTests
     [Fact]
     public void CollectionAssertions_AppendFormattedFailureContext()
     {
+        _ = new[] { 1 }.Should().StartWith(new[] { 1 }, null);
+        Assert.Throws<ArgumentNullException>(() => new[] { 1 }.Should().ContainSingle(null!));
+
         var values = new[] { 1, 2 };
         var countFailure = Assert.Throws<AstraFlowAssertionException>(
             () => values.Should().HaveCount(3, "expected {0} values", "three"));
@@ -115,6 +118,10 @@ public sealed class AssertionReasonParityTests
     [Fact]
     public async Task AsyncThrowAssertions_AppendFormattedFailureContext()
     {
+        var defaultTokenFailure = await Assert.ThrowsAsync<AstraFlowAssertionException>(
+            () => EmptyAsyncSequence().Should().ThrowAsync<InvalidOperationException>(default));
+        Assert.DoesNotContain("Because", defaultTokenFailure.Message);
+
         Func<Task> action = () => Task.CompletedTask;
         var actionFailure = await Assert.ThrowsAsync<AstraFlowAssertionException>(
             () => action.Should().ThrowAsync<InvalidOperationException>("the {0} should throw", "operation"));

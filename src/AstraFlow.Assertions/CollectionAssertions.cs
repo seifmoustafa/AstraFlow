@@ -520,10 +520,10 @@ public sealed class CollectionAssertions<T>
 
     /// <summary>Asserts that the sequence starts with the expected items and adds formatted failure context.</summary>
     /// <param name="expected">A finite sequence of expected leading items.</param>
-    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="because">A reason string explaining why the assertion is expected to pass. Composite format items are supported. This parameter accepts an object to keep explicit null comparer calls unambiguous.</param>
     /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
-    public CollectionAssertions<T> StartWith(IEnumerable<T> expected, string? because, params object?[] becauseArgs)
-        => StartWithCore(expected, null, because, becauseArgs);
+    public CollectionAssertions<T> StartWith(IEnumerable<T> expected, object? because, params object?[] becauseArgs)
+        => StartWithCore(expected, null, AssertionFailure.ValidateBecause(because), becauseArgs);
 
     private CollectionAssertions<T> StartWithCore(IEnumerable<T> expected, IEqualityComparer<T>? comparer, string? because, object?[] becauseArgs)
     {
@@ -620,47 +620,50 @@ public sealed class CollectionAssertions<T>
     public SingleItemAssertions<T> ContainSingle() => ContainSingle((string?)null);
 
     /// <summary>Asserts that the sequence contains exactly one item, adds formatted failure context, and returns it.</summary>
-    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="because">A reason string explaining why the assertion is expected to pass. Composite format items are supported. This parameter accepts an object to keep null predicate validation unambiguous.</param>
     /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
-    public SingleItemAssertions<T> ContainSingle(string? because, params object?[] becauseArgs)
+    public SingleItemAssertions<T> ContainSingle(object? because, params object?[] becauseArgs)
     {
+        var reason = AssertionFailure.ValidateBecause(because);
         if (_actual is null)
         {
-            AssertionFailure.FailWithBecause("Expected a sequence containing one item, but found null.", because, becauseArgs);
+            AssertionFailure.FailWithBecause("Expected a sequence containing one item, but found null.", reason, becauseArgs);
         }
 
         using var enumerator = _actual.GetEnumerator();
         if (!enumerator.MoveNext())
         {
-            AssertionFailure.FailWithBecause("Expected a sequence containing one item, but it was empty.", because, becauseArgs);
+            AssertionFailure.FailWithBecause("Expected a sequence containing one item, but it was empty.", reason, becauseArgs);
         }
 
         var item = enumerator.Current;
         if (enumerator.MoveNext())
         {
-            AssertionFailure.FailWithBecause("Expected exactly one sequence item, but found additional items.", because, becauseArgs);
+            AssertionFailure.FailWithBecause("Expected exactly one sequence item, but found additional items.", reason, becauseArgs);
         }
 
         return new SingleItemAssertions<T>(item);
     }
 
     /// <summary>Asserts that the sequence contains exactly one item matching the predicate and returns it.</summary>
-    public SingleItemAssertions<T> ContainSingle(Func<T, bool> predicate) => ContainSingle(predicate, null);
+    public SingleItemAssertions<T> ContainSingle(Func<T, bool> predicate) => ContainSingle(predicate, (object?)null);
 
     /// <summary>Asserts that the sequence contains exactly one item matching the predicate, adds formatted failure context, and returns it.</summary>
     /// <param name="predicate">The predicate evaluated against each item.</param>
     /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
     /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
-    public SingleItemAssertions<T> ContainSingle(Func<T, bool> predicate, string? because, params object?[] becauseArgs)
+    public SingleItemAssertions<T> ContainSingle(Func<T, bool> predicate, object? because, params object?[] becauseArgs)
     {
         if (predicate is null)
         {
             throw new ArgumentNullException(nameof(predicate));
         }
 
+        var reason = AssertionFailure.ValidateBecause(because);
+
         if (_actual is null)
         {
-            AssertionFailure.FailWithBecause("Expected a sequence containing one matching item, but found null.", because, becauseArgs);
+            AssertionFailure.FailWithBecause("Expected a sequence containing one matching item, but found null.", reason, becauseArgs);
         }
 
         var found = false;
@@ -674,7 +677,7 @@ public sealed class CollectionAssertions<T>
 
             if (found)
             {
-                AssertionFailure.FailWithBecause("Expected exactly one matching sequence item, but found more than one.", because, becauseArgs);
+                AssertionFailure.FailWithBecause("Expected exactly one matching sequence item, but found more than one.", reason, becauseArgs);
             }
 
             found = true;
@@ -683,7 +686,7 @@ public sealed class CollectionAssertions<T>
 
         if (!found)
         {
-            AssertionFailure.FailWithBecause("Expected one matching sequence item, but found none.", because, becauseArgs);
+            AssertionFailure.FailWithBecause("Expected one matching sequence item, but found none.", reason, becauseArgs);
         }
 
         return new SingleItemAssertions<T>(match);

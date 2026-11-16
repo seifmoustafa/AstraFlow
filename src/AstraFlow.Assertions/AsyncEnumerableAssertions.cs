@@ -602,9 +602,9 @@ public sealed class AsyncEnumerableAssertions<T>
     /// <summary>Asserts that enumerating the asynchronous sequence throws the requested exception type or a derived type and adds formatted failure context.</summary>
     /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
     /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
-    public Task<ExceptionAssertions<TException>> ThrowAsync<TException>(string? because, params object?[] becauseArgs)
+    public Task<ExceptionAssertions<TException>> ThrowAsync<TException>(object? because, params object?[] becauseArgs)
         where TException : Exception
-        => ThrowAsyncCore<TException>(default, because, becauseArgs);
+        => ThrowAsyncCore<TException>(default, AssertionFailure.ValidateBecause(because), becauseArgs);
 
     private async Task<ExceptionAssertions<TException>> ThrowAsyncCore<TException>(CancellationToken cancellationToken, string? because, object?[] becauseArgs)
         where TException : Exception
