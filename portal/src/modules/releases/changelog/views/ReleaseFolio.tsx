@@ -454,7 +454,6 @@ export function ReleaseFolio({
           <ol
             className={styles.folioList}
             tabIndex={0}
-            data-lenis-prevent
             aria-label={t('entriesAriaLabel')}
           >
             {filteredReleases.map((release, index) => {
@@ -633,7 +632,6 @@ export function ReleaseFolio({
                 id={`${activeRelease.anchorId}-detail`}
                 hidden={!isNotesExpanded}
                 className={styles.notesDetail}
-                data-lenis-prevent
               >
                 {activeRelease.sections.some((section) =>
                   section.items.some((item) => !item.isNonePlaceholder),

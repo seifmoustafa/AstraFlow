@@ -2,12 +2,10 @@
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, type ReactNode } from "react";
 
 let scrollTriggerRegistered = false;
-let activeLenis: Lenis | null = null;
 
 function ensureScrollTriggerRegistered() {
   if (!scrollTriggerRegistered && typeof window !== "undefined") {
@@ -26,8 +24,8 @@ function getHeaderScrollOffset(): number {
 }
 
 /**
- * Scrolls smoothly (via Lenis when active, or native scrollTo under reduced-motion)
- * to an element or `#id` hash while respecting sticky-header clearance.
+ * Scrolls to an element or `#id` hash using standard browser scrolling
+ * while respecting sticky-header clearance.
  */
 export function scrollToElementOrHash(
   target: string | HTMLElement,
@@ -53,8 +51,6 @@ export function scrollToElementOrHash(
   }
 
   const headerOffset = getHeaderScrollOffset();
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const immediate = Boolean(options?.immediate) || reduced;
   const targetTop = Math.max(
     0,
     window.scrollY + targetEl.getBoundingClientRect().top - headerOffset,
@@ -65,17 +61,11 @@ export function scrollToElementOrHash(
     window.dispatchEvent(new HashChangeEvent("hashchange"));
   }
 
-  if (activeLenis && !immediate) {
-    activeLenis.scrollTo(targetTop, {
-      duration: 0.85,
-      force: true,
-    });
-  } else {
-    window.scrollTo({
-      top: targetTop,
-      behavior: immediate ? "auto" : "smooth",
-    });
-  }
+  window.scrollTo({
+    top: targetTop,
+    left: 0,
+    behavior: "auto",
+  });
 
   if (targetEl.id === "main") {
     if (!targetEl.hasAttribute("tabindex")) {
@@ -93,7 +83,6 @@ export interface SmoothScrollProviderProps {
 
 export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
   const pathname = usePathname() ?? "/";
-  const lenisRef = useRef<Lenis | null>(null);
   const prevPathnameRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -102,54 +91,6 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
     }
 
     ensureScrollTriggerRegistered();
-
-    const reducedMotionQuery = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    );
-    let lenis: Lenis | null = null;
-    let tick: ((time: number) => void) | null = null;
-
-    const teardown = () => {
-      if (tick) {
-        gsap.ticker.remove(tick);
-        tick = null;
-      }
-      if (lenis) {
-        lenis.destroy();
-        lenis = null;
-      }
-      if (activeLenis === lenisRef.current) {
-        activeLenis = null;
-      }
-      lenisRef.current = null;
-    };
-
-    const setup = () => {
-      teardown();
-      if (reducedMotionQuery.matches) {
-        return;
-      }
-
-      const instance = new Lenis({
-        lerp: 0.095,
-        smoothWheel: true,
-        autoRaf: false,
-        respectReducedMotion: true,
-        prevent: (node: HTMLElement) =>
-          Boolean(node.closest("[data-lenis-prevent], pre, code")),
-      });
-
-      lenis = instance;
-      lenisRef.current = instance;
-      activeLenis = instance;
-      instance.on("scroll", ScrollTrigger.update);
-
-      tick = (time: number) => {
-        instance.raf(time * 1000);
-      };
-      gsap.ticker.add(tick);
-      gsap.ticker.lagSmoothing(0);
-    };
 
     const handleDocumentClick = (event: MouseEvent) => {
       if (
@@ -195,8 +136,6 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       }
     };
 
-    setup();
-    reducedMotionQuery.addEventListener("change", setup);
     document.addEventListener("click", handleDocumentClick);
 
     let initialHashRaf: number | null = null;
@@ -211,8 +150,6 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
         window.cancelAnimationFrame(initialHashRaf);
       }
       document.removeEventListener("click", handleDocumentClick);
-      reducedMotionQuery.removeEventListener("change", setup);
-      teardown();
     };
   }, []);
 
@@ -226,8 +163,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       prevPathnameRef.current = pathname;
 
       if (!window.location.hash) {
-        lenisRef.current?.scrollTo(0, { immediate: true });
-        window.scrollTo(0, 0);
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
       }
 
       let innerRaf = 0;
@@ -236,7 +172,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
         ScrollTrigger.refresh();
         if (window.location.hash.length > 1) {
           innerRaf = window.requestAnimationFrame(() => {
-            scrollToElementOrHash(window.location.hash, { immediate: false });
+            scrollToElementOrHash(window.location.hash, { immediate: true });
           });
         }
       });

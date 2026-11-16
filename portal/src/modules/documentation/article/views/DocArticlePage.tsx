@@ -69,7 +69,6 @@ export default async function DocArticlePage({ params }: DocPageProps) {
             <aside
               aria-label={t('navigationAriaLabel')}
               className={enhancerStyles.sidebarColumn}
-              data-lenis-prevent=""
             >
               <DocSidebarNav
                 activeSlugPath={doc.slugPath}
@@ -160,7 +159,6 @@ export default async function DocArticlePage({ params }: DocPageProps) {
             <aside
               aria-label={t('onThisPageAriaLabel')}
               className={enhancerStyles.tocAside}
-              data-lenis-prevent=""
             >
               <div className="docs-toc">
                 <p className="eyebrow">{t('onThisPage')}</p>

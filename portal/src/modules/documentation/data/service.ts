@@ -1,4 +1,5 @@
 import { renderMarkdown } from './markdown';
+import { documentationEn } from '../documentation.en';
 import { getGitHubBlobUrl } from '@core/config/site-config';
 import {
   DOC_CATEGORY_ORDER,
@@ -67,6 +68,10 @@ function buildDocsIndex(): DocDetail[] {
       sourcePath: entry.sourcePath,
       docSlugs: canonicalSlugSet,
       docAliases: DOC_SLUG_ALIASES,
+      codeBlockLabels: {
+        copy: documentationEn.enhancements.copyCommand,
+        copied: documentationEn.enhancements.copiedCommand,
+      },
     });
     const prose = extractPlainProse(entry.markdown);
     const readingMinutes = Math.max(1, Math.ceil(prose.wordCount / 220));

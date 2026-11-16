@@ -172,7 +172,6 @@
   border-bottom: 1px solid var(--border);
   max-height: clamp(760px, 102vh, 1020px);
   overflow-y: auto;
-  overscroll-behavior: contain;
 }
 
 .folioList:focus-visible {

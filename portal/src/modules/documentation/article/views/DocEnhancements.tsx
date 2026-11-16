@@ -1,5 +1,5 @@
 'use client';
-import { Button, Input } from '@core/ui';
+import { Button, Input, copyTextToClipboard } from '@core/ui';
 import { useTranslations } from 'next-intl';
 
 import Link from 'next/link';
@@ -27,36 +27,6 @@ export interface DocMobileNavDrawerProps {
   categories: DocCategoryGroup[];
   activeSlugPath: string;
   totalCount: number;
-}
-
-export async function copyTextToClipboard(text: string): Promise<boolean> {
-  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch {
-      // Fallback below
-    }
-  }
-
-  if (typeof document === 'undefined') {
-    return false;
-  }
-
-  try {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.setAttribute('readonly', '');
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(textarea);
-    return ok;
-  } catch {
-    return false;
-  }
 }
 
 export function DocSidebarNav({
@@ -153,7 +123,7 @@ export function DocMobileNavDrawer({
         </span>
         <span className={styles.mobileNavSummaryTag}>{t('index')}</span>
       </summary>
-      <div className={styles.mobileNavBody} data-lenis-prevent="">
+      <div className={styles.mobileNavBody}>
         <Link className={styles.desktopNavBack} href="/docs">
           {t('backToDocs')}
         </Link>
@@ -195,29 +165,46 @@ export function DocEnhancements({
   tocSelector = '.docs-toc',
 }: DocEnhancementsProps) {
   const t = useTranslations('documentation.enhancements');
-  const [progress, setProgress] = useState(0);
+  const progressTrackRef = useRef<HTMLDivElement | null>(null);
+  const progressBarRef = useRef<HTMLDivElement | null>(null);
   const [activeId, setActiveId] = useState<string>(toc[0]?.id ?? '');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [liveStatus, setLiveStatus] = useState('');
 
   useEffect(() => {
-    const updateProgress = () => {
+    let rafId: number | null = null;
+    let lastPercent = -1;
+
+    const applyProgress = () => {
+      rafId = null;
       const scrollable =
         document.documentElement.scrollHeight - window.innerHeight;
-      if (scrollable <= 0) {
-        setProgress(0);
-        return;
+      const ratio =
+        scrollable <= 0 ? 0 : Math.min(1, Math.max(0, window.scrollY / scrollable));
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${ratio})`;
       }
-      const ratio = Math.min(1, Math.max(0, window.scrollY / scrollable));
-      setProgress(Math.round(ratio * 100));
+      const nextPercent = Math.round(ratio * 100);
+      if (nextPercent !== lastPercent && progressTrackRef.current) {
+        lastPercent = nextPercent;
+        progressTrackRef.current.setAttribute('aria-valuenow', String(nextPercent));
+      }
     };
 
-    updateProgress();
-    window.addEventListener('scroll', updateProgress, { passive: true });
-    window.addEventListener('resize', updateProgress, { passive: true });
+    const scheduleUpdate = () => {
+      if (rafId !== null) return;
+      rafId = window.requestAnimationFrame(applyProgress);
+    };
+
+    applyProgress();
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate, { passive: true });
     return () => {
-      window.removeEventListener('scroll', updateProgress);
-      window.removeEventListener('resize', updateProgress);
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
     };
   }, []);
 
@@ -319,95 +306,54 @@ export function DocEnhancements({
       }
     }
 
-    const preBlocks = Array.from(
-      article.querySelectorAll<HTMLPreElement>('pre.code-block'),
-    );
-    const cleanups: Array<() => void> = [];
+    const resetTimers = new Map<HTMLButtonElement, number>();
 
-    for (const pre of preBlocks) {
-      if (pre.dataset.enhanced === 'true' || !pre.parentNode) {
-        continue;
+    const handleCodeCopyClick = async (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const button = target.closest<HTMLButtonElement>('[data-docs-copy-btn]');
+      if (!button || !article.contains(button)) return;
+
+      const wrap = button.closest('[data-docs-code-block]');
+      const pre = wrap?.querySelector<HTMLPreElement>('pre.code-block');
+      const codeText =
+        pre?.querySelector('code')?.textContent ?? pre?.textContent ?? '';
+      if (!codeText) return;
+
+      const ok = await copyTextToClipboard(codeText);
+      if (!ok) return;
+
+      const copyLabel = button.dataset.copyLabel || t('copyCommand');
+      const copiedLabel = button.dataset.copiedLabel || t('copiedCommand');
+      const rawLang = (pre?.dataset.lang || 'text').toUpperCase();
+
+      button.textContent = copiedLabel;
+      button.classList.add('docs-code-copy--copied');
+      setLiveStatus(`${rawLang} code copied to clipboard.`);
+
+      const existingTimer = resetTimers.get(button);
+      if (existingTimer !== undefined) {
+        window.clearTimeout(existingTimer);
       }
+      const nextTimer = window.setTimeout(() => {
+        button.textContent = copyLabel;
+        button.classList.remove('docs-code-copy--copied');
+        resetTimers.delete(button);
+      }, 1800);
+      resetTimers.set(button, nextTimer);
+    };
 
-      const rawLang = (pre.dataset.lang || 'text').toUpperCase();
-      pre.tabIndex = 0;
-      pre.setAttribute('data-lenis-prevent', '');
-
-      const wrapper = document.createElement('div');
-      wrapper.className = styles.codeBlockWrap;
-
-      const bar = document.createElement('div');
-      bar.className = styles.codeBlockBar;
-
-      const langBadge = document.createElement('span');
-      langBadge.className = styles.codeBlockLang;
-      langBadge.textContent = rawLang;
-
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = styles.codeCopyButton;
-      button.textContent = 'Copy';
-      button.setAttribute('aria-label', `Copy ${rawLang} code`);
-
-      let resetTimer: number | null = null;
-      button.addEventListener(
-        'click',
-        async () => {
-          const codeText =
-            pre.querySelector('code')?.textContent ?? pre.textContent ?? '';
-          const ok = await copyTextToClipboard(codeText);
-          if (!ok) {
-            return;
-          }
-
-          button.textContent = 'Copied ✓';
-          button.classList.add(styles.codeCopyButtonCopied);
-          setLiveStatus(`${rawLang} code copied to clipboard.`);
-
-          if (resetTimer !== null) {
-            window.clearTimeout(resetTimer);
-          }
-          resetTimer = window.setTimeout(() => {
-            button.textContent = 'Copy';
-            button.classList.remove(styles.codeCopyButtonCopied);
-          }, 1800);
-        },
-        { signal },
-      );
-
-      bar.appendChild(langBadge);
-      bar.appendChild(button);
-
-      pre.dataset.enhanced = 'true';
-      pre.classList.add(styles.codeBlockPreEnhanced);
-
-      const parent = pre.parentNode;
-      parent.insertBefore(wrapper, pre);
-      wrapper.appendChild(bar);
-      wrapper.appendChild(pre);
-
-      cleanups.push(() => {
-        if (resetTimer !== null) {
-          window.clearTimeout(resetTimer);
-        }
-        pre.classList.remove(styles.codeBlockPreEnhanced);
-        pre.removeAttribute('data-lenis-prevent');
-        delete pre.dataset.enhanced;
-        if (wrapper.parentNode) {
-          wrapper.parentNode.insertBefore(pre, wrapper);
-          wrapper.parentNode.removeChild(wrapper);
-        }
-      });
-    }
+    article.addEventListener('click', handleCodeCopyClick, { signal });
 
     return () => {
       abortController.abort();
       observer?.disconnect();
-      for (const cleanup of cleanups) {
-        cleanup();
+      for (const timerId of resetTimers.values()) {
+        window.clearTimeout(timerId);
       }
+      resetTimers.clear();
     };
-  }, [articleSelector]);
+  }, [articleSelector, t]);
 
   const activeTocItem = toc.find((item) => item.id === activeId) ?? toc[0] ?? null;
 
@@ -417,14 +363,12 @@ export function DocEnhancements({
         aria-label={t('readingProgressAriaLabel')}
         aria-valuemax={100}
         aria-valuemin={0}
-        aria-valuenow={progress}
+        aria-valuenow={0}
         className={styles.readingProgressTrack}
+        ref={progressTrackRef}
         role="progressbar"
       >
-        <div
-          className={styles.readingProgressBar}
-          style={{ width: `${progress}%` }}
-        />
+        <div className={styles.readingProgressBar} ref={progressBarRef} />
       </div>
 
       {toc.length > 0 ? (
@@ -452,7 +396,6 @@ export function DocEnhancements({
             {drawerOpen ? (
               <div
                 className={styles.mobileTocPanel}
-                data-lenis-prevent=""
                 id="doc-mobile-toc-panel"
               >
                 {toc.map((item) => {

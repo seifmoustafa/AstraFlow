@@ -59,7 +59,7 @@ export function CommunityStudySection({
   const [autoIndex, setAutoIndex] = useState(0);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-  const [pinnedIndex, setPinnedIndex] = useState<number | null>(null);
+  const [pinnedIndex, setPinnedIndex] = useState<number | null>(0);
   const [relayCaption, setRelayCaption] = useState<string>(() =>
     t('relayInitial'),
   );
@@ -69,7 +69,7 @@ export function CommunityStudySection({
   const reducedMotion = useReducedMotionSafe();
   const sectionActivity = useViewportActivity(sectionRef, {
     paused: reducedMotion,
-    initialInView: true,
+    initialInView: false,
   });
 
   const isUserControlled =
@@ -200,6 +200,10 @@ export function CommunityStudySection({
           >
             {STUDY_QUESTIONS.map((item, index) => {
               const isActive = activeIndex === index;
+              const isExpanded =
+                focusedIndex !== null
+                  ? focusedIndex === index
+                  : pinnedIndex === index;
               const copy = questionCopy[item.id];
               return (
                 <article
@@ -214,7 +218,7 @@ export function CommunityStudySection({
                       cardBtnRefs.current[index] = el;
                     }}
                     type="button"
-                    aria-expanded={isActive}
+                    aria-expanded={isExpanded}
                     aria-controls={`study-answer-${item.id}`}
                     className={styles.cardToggleBtn}
                     onClick={() =>
@@ -240,7 +244,7 @@ export function CommunityStudySection({
                     </strong>
                   </Button>
 
-                  {isActive ? (
+                  {isExpanded ? (
                     <p
                       id={`study-answer-${item.id}`}
                       className={styles.cardAnswer}
@@ -281,7 +285,7 @@ export function CommunityStudySection({
 
             <div className={styles.relayCanvas}>
               <Relay
-                play={!reducedMotion}
+                play={!reducedMotion && sectionActivity.isActive}
                 theme="light"
                 intensity={1.12}
                 label={t('relayAria')}

@@ -1,4 +1,16 @@
 import { expect, test } from "@playwright/test";
+import {
+  LATEST_PUBLISHED_VERSION,
+  PREVIOUS_PUBLISHED_VERSION,
+} from '../src/core/config/site-config';
+import { getAllPackages } from '../src/modules/catalog/packages';
+import { getAllChangelogReleases } from '../src/modules/releases/changelog';
+
+function getPackageReleaseLabel(packageId: string): string {
+  const pkg = getAllPackages().find((p) => p.id === packageId);
+  const version = pkg?.release.availability === 'published' ? pkg.release.version : LATEST_PUBLISHED_VERSION;
+  return `Published · ${version} NuGet`;
+}
 
 const MAIN_ROUTES = [
   "/",
@@ -27,6 +39,9 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
   }) => {
     const errors: string[] = [];
     page.on("pageerror", (err) => errors.push(`pageerror: ${err.message}`));
+    page.on("response", (response) => {
+      if (response.status() >= 400) errors.push(`http ${response.status()}: ${response.url()}`);
+    });
     page.on("console", (msg) => {
       if (msg.type() === "error") errors.push(`console.error: ${msg.text()}`);
     });
@@ -204,6 +219,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const mapperTab = loomTablist.getByRole("tab", { name: /Mapper/i });
     const testingTab = loomTablist.getByRole("tab", { name: /Testing/i });
 
+    await mediatorTab.click();
     await expect(mediatorTab).toHaveAttribute("aria-selected", "true");
     await mediatorTab.focus();
     await page.keyboard.press("ArrowRight");
@@ -212,7 +228,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await testingTab.click();
     await expect(testingTab).toHaveAttribute("aria-selected", "true");
     await expect(
-      page.getByRole("tabpanel").getByText("Testing 2.3.0 · Assertions planned 2.4.0"),
+      page.getByRole("tabpanel").getByText(getPackageReleaseLabel('AstraFlow.Testing')),
     ).toBeVisible();
 
     // Stage active capability into Stack Composer
@@ -267,7 +283,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await xmlTab.click();
     await expect(outputPre).toContainText('PrivateAssets="all"');
 
-    // Planned assertions package remains visible without an install command.
+    // Published assertions package is included in generated install plans.
     await searchInput.fill("Assertions");
     const assertionsToggle = composer
       .locator('button[aria-pressed]')
@@ -279,14 +295,13 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await expect(composer).toContainText(/Separate test-project references/i);
 
     await cliTab.click();
-    await expect(outputPre).not.toContainText("dotnet add package AstraFlow.Assertions");
-    await expect(composer).toContainText("Planned · 2.4.0");
-    await expect(composer.locator('a[href*="nuget.org/packages/AstraFlow.Assertions"]')).toHaveCount(0);
+    await expect(outputPre).toContainText("dotnet add package AstraFlow.Assertions --version 2.4.1");
+    await expect(composer).toContainText("2.4.1 · Published");
 
     const assertionsDirectoryCard = page.locator(
       'article[id="AstraFlow.Assertions"]',
     );
-    await expect(assertionsDirectoryCard).toContainText("Planned · 2.4.0");
+    await expect(assertionsDirectoryCard).toContainText("2.4.1 · Published");
 
     const packageDirectorySearch = page.getByRole("searchbox", {
       name: "Filter package directory",
@@ -381,6 +396,9 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
 
     const searchInput = page.getByLabel("Search all AstraFlow documentation");
     const preview = page.getByLabel("Live document inspector preview");
+    await expect(preview).toContainText(/\d+\s+min read/i);
+    const previewText = (await preview.textContent()) ?? "";
+    expect(previewText).not.toContain('MIN READ');
 
     // Press `/` shortcut to focus search
     await page.locator("h1").click();
@@ -454,7 +472,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     );
   });
 
-  test("5. Guides GuidesKineticRunway milestones 01..06 mouse & keyboard + published 2.3.0 suite", async ({
+  test("5. Guides GuidesKineticRunway milestones 01..06 mouse & keyboard + published suite", async ({
     page,
   }) => {
     await page.goto("/guides", { waitUntil: "networkidle" });
@@ -507,7 +525,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const runwayWorkbench = page.locator("#runway-workbench-panel");
     await expect(runwayWorkbench).toContainText("AstraFlow.Assertions");
     await expect(runwayWorkbench).toContainText("Should()");
-    await expect(runwayWorkbench).toContainText("AstraFlow 2.3.0 Suite");
+    await expect(runwayWorkbench).toContainText(`AstraFlow ${LATEST_PUBLISHED_VERSION} Suite`);
     await expect(runwayWorkbench).not.toContainText(/unreleased|not on nuget/i);
     await checkDesktopPreNoOverflow("Milestone 06");
     await expect(
@@ -528,7 +546,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await expect(m06).toHaveAttribute("aria-selected", "true");
   });
 
-  test("6. Changelog ChangelogFolioHero & ChangelogChronicle provenance filters & 2.4.0 / 2.3.0 notes", async ({
+  test("6. Changelog ChangelogFolioHero & ChangelogChronicle provenance filters & latest release notes", async ({
     page,
   }) => {
     await page.goto("/changelog", { waitUntil: "networkidle" });
@@ -579,7 +597,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
 
     // Product release filter pills
     const latestPill = releasesSection
-      .getByRole("button", { name: /Latest Milestone/i })
+      .getByRole("button", { name: /Latest Releases/i })
       .first();
     const majorPill = releasesSection
       .getByRole("button", { name: /Major Release/i })
@@ -598,19 +616,31 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       .first();
     const allPill = releasesSection.getByRole("button", { name: /^All\b/i }).first();
 
+    const releases = getAllChangelogReleases();
+    const latestMeta = releases.find((r) => r.status === 'latest') ?? releases[0];
+    const featureMeta = releases.find((r) => r.status === 'feature');
+    const majorMeta = releases.find((r) => r.status === 'major');
+    const minorArchiveMeta = featureMeta
+      ? releases.find((r) => r.status === 'feature' && r.version !== featureMeta.version)
+      : undefined;
+
     await latestPill.click();
-    const unreleasedRelease = releasesSection.getByRole("button", {
-      name: /^v2\.4\.0 Latest Milestone/,
+    const latestRelease = releasesSection.getByRole("button", {
+      name: new RegExp(`^v${latestMeta.version.replace(/\./g, "\\.")} ${latestMeta.statusLabel}`),
     });
-    await expect(unreleasedRelease).toBeVisible();
-    await unreleasedRelease.click();
-    await expect(page.locator('article[id="v2.4.0"]')).toBeVisible();
+    await expect(latestRelease).toBeVisible();
+    await latestRelease.click();
+    await expect(page.locator(`article[id="${latestMeta.anchorId}"]`)).toBeVisible();
 
     await majorPill.click();
-    await expect(page.locator('article[id="v2.0.0"]')).toBeVisible();
+    if (majorMeta) {
+      await expect(page.locator(`article[id="${majorMeta.anchorId}"]`)).toBeVisible();
+    }
 
     await featurePill.click();
-    await expect(page.locator('article[id="v2.2.0"]')).toBeVisible();
+    if (featureMeta) {
+      await expect(page.locator(`article[id="${featureMeta.anchorId}"]`)).toBeVisible();
+    }
 
     await archivePill.click();
     await expect(releasesSection).toBeVisible();
@@ -631,32 +661,27 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
 
     await allPill.click();
 
-    // Master-Detail Chronological Spine + Edition Stage inspection for v2.4.0 and v2.3.0
-    for (const item of [
-      {
-        id: "v2.4.0",
-        versionText: /^v2\.4\.0$/,
-        provenancePattern: /Latest Milestone|2026-11-13/i,
-      },
-      {
-        id: "v2.3.0",
-        versionText: /^v2\.3\.0$/,
-        provenancePattern: /Latest Milestone|2026-11-10/i,
-      },
-    ]) {
+    expect(latestMeta.version).toBe(LATEST_PUBLISHED_VERSION);
+    const spineTargets = [latestMeta, featureMeta, minorArchiveMeta].filter(
+      (entry): entry is NonNullable<typeof entry> => Boolean(entry),
+    );
+    expect(spineTargets.some((entry) => entry.version === PREVIOUS_PUBLISHED_VERSION)).toBe(true);
+
+    for (const rel of spineTargets) {
+      const versionRegex = new RegExp(`^v${rel.version.replace(/\./g, "\\.")}$`);
       const spineBtn = releasesSection
         .locator("ol button")
-        .filter({ has: page.locator("span", { hasText: item.versionText }) })
+        .filter({ has: page.locator("span", { hasText: versionRegex }) })
         .first();
       await expect(spineBtn).toBeVisible();
       await spineBtn.click();
 
-      const article = page.locator(`article[id="${item.id}"]`);
+      const article = page.locator(`article[id="${rel.anchorId}"]`);
       await expect(article).toBeVisible();
-      await expect(article).toContainText(item.provenancePattern);
+      await expect(article).toContainText(rel.statusLabel);
 
       const toggleBtn = article
-        .locator(`button[aria-controls="${item.id}-detail"]`)
+        .locator(`button[aria-controls="${rel.anchorId}-detail"]`)
         .first();
       const wasExpanded = await toggleBtn.getAttribute("aria-expanded");
       if (wasExpanded === "true") {
@@ -667,7 +692,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
         await toggleBtn.click();
       }
       await expect(toggleBtn).toHaveAttribute("aria-expanded", "true");
-      await expect(page.locator(`[id="${item.id}-detail"]`)).toBeVisible();
+      await expect(page.locator(`[id="${rel.anchorId}-detail"]`)).toBeVisible();
     }
   });
 

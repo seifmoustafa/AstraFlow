@@ -1,5 +1,5 @@
 'use client';
-import { Button, Input } from '@core/ui';
+import { Button, copyTextToClipboard, Input } from '@core/ui';
 import { useTranslations } from 'next-intl';
 
 import Link from 'next/link';
@@ -11,7 +11,7 @@ import {
   useState,
   type KeyboardEvent,
 } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   DOC_CATEGORY_MESSAGE_KEYS,
   DOC_CATEGORY_ORDER,
@@ -38,32 +38,6 @@ function isEditableTarget(target: EventTarget | null): boolean {
     tag === 'SELECT' ||
     target.isContentEditable
   );
-}
-
-async function copyText(text: string): Promise<boolean> {
-  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-    try {
-      await navigator.clipboard.writeText(text);
-      return true;
-    } catch {
-      // Fallback below
-    }
-  }
-  if (typeof document === 'undefined') return false;
-  try {
-    const area = document.createElement('textarea');
-    area.value = text;
-    area.setAttribute('readonly', '');
-    area.style.position = 'fixed';
-    area.style.opacity = '0';
-    document.body.appendChild(area);
-    area.select();
-    const copied = document.execCommand('copy');
-    document.body.removeChild(area);
-    return copied;
-  } catch {
-    return false;
-  }
 }
 
 export function DocsSearch({
@@ -240,7 +214,7 @@ export function DocsSearch({
 
   const handleCopyPreviewSnippet = async () => {
     if (!activeDoc?.firstCodeSnippet) return;
-    const ok = await copyText(activeDoc.firstCodeSnippet.code);
+    const ok = await copyTextToClipboard(activeDoc.firstCodeSnippet.code);
     if (!ok) return;
 
     setCopiedSlug(activeDoc.slugPath);
@@ -395,7 +369,6 @@ export function DocsSearch({
                       onClick={() => setActiveSlugPath(doc.slugPath)}
                       onFocus={() => setActiveSlugPath(doc.slugPath)}
                       onKeyDown={(event) => handleCardKeyDown(event, index)}
-                      onMouseEnter={() => setActiveSlugPath(doc.slugPath)}
                       ref={(el) => {
                         cardRefs.current[index] = el;
                       }}
@@ -474,21 +447,19 @@ export function DocsSearch({
             <span />
           </div>
 
-          <AnimatePresence mode="wait">
-            {activeDoc ? (
-              <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                exit={reducedMotion ? {} : { opacity: 0, y: -6 }}
-                initial={reducedMotion ? false : { opacity: 0, y: 6 }}
-                key={activeDoc.slugPath}
-                transition={{ duration: reducedMotion ? 0 : 0.16 }}
-              >
+          {activeDoc ? (
+            <motion.div
+              animate={{ opacity: 1, y: 0 }}
+              initial={reducedMotion ? false : { opacity: 0.85, y: 4 }}
+              key={activeDoc.slugPath}
+              transition={{ duration: reducedMotion ? 0 : 0.16 }}
+            >
                 <div className={styles.inspectorIndexLine}>
                   <span>
                     {String(activeDocIndex + 1).padStart(2, '0')} /{' '}
                     {String(filteredDocs.length).padStart(2, '0')} ·{' '}
                     {tCategory(DOC_CATEGORY_MESSAGE_KEYS[activeDoc.category])} ·{' '}
-                    {activeDoc.readingMinutes} MIN READ
+                    {t('readMinutes', { count: String(activeDoc.readingMinutes) })}
                   </span>
                 </div>
 
@@ -539,7 +510,6 @@ export function DocsSearch({
                     </div>
                     <pre
                       className={styles.codePreviewPre}
-                      data-lenis-prevent=""
                       tabIndex={0}
                     >
                       <code
@@ -575,7 +545,6 @@ export function DocsSearch({
                 {t('emptyInspector')}
               </p>
             )}
-          </AnimatePresence>
         </aside>
       </div>
     </div>

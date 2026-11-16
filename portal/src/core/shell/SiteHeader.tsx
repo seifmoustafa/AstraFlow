@@ -31,20 +31,21 @@ export function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const menuOpen = openAtPath === pathname;
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const updateProgress = () => {
       const max = Math.max(
-        1,
+        0,
         document.documentElement.scrollHeight - window.innerHeight,
       );
       const scrollY = window.scrollY;
-      const percent = Math.max(0, Math.min(1, scrollY / max));
-      document.documentElement.style.setProperty(
-        "--v11-scroll",
-        percent.toFixed(4),
-      );
-      setIsScrolled(scrollY > 12);
+      const percent = max > 0 ? Math.max(0, Math.min(1, scrollY / max)) : 0;
+      if (progressBarRef.current) {
+        progressBarRef.current.style.transform = `scaleX(${percent.toFixed(4)})`;
+      }
+      const nextScrolled = scrollY > 12;
+      setIsScrolled((prev) => (prev === nextScrolled ? prev : nextScrolled));
     };
 
     let pending = false;
@@ -176,7 +177,11 @@ export function SiteHeader() {
             </Link>
           </div>
         </div>
-        <div className="site-header-progress" aria-hidden="true" />
+        <div
+          ref={progressBarRef}
+          className="site-header-progress"
+          aria-hidden="true"
+        />
       </header>
     </>
   );
