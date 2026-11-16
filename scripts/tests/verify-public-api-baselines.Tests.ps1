@@ -47,7 +47,7 @@ try {
     Set-Content -LiteralPath (Join-Path $tempRoot "Directory.Build.props") -Value '<Project><PropertyGroup><Version>3.0.0</Version></PropertyGroup></Project>'
     $changelogPath = Join-Path $tempRoot "CHANGELOG.md"
     Set-Content -LiteralPath $changelogPath -Value @'
-## 3.0.0
+## [3.0.0] - 2026-11-16
 
 ### Breaking Changes
 - None.
@@ -72,7 +72,7 @@ try {
 '@
     & $changelogVerifier -RepositoryRoot $tempRoot
     Set-Content -LiteralPath $changelogPath -Value @'
-## 3.0.0
+## [3.0.0] - 2026-11-16
 
 ### Breaking Changes
 - None.

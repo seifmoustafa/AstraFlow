@@ -4,6 +4,12 @@ All notable AstraFlow changes are tracked here.
 
 ## [Unreleased]
 
+## [2.4.2] - 2026-11-16
+
+### Breaking Changes
+
+- None.
+
 ### Added
 
 - Add formatted reason/context overloads for common boolean, value, string, collection, dictionary, GUID, and throw assertions.
@@ -14,6 +20,22 @@ All notable AstraFlow changes are tracked here.
 ### Changed
 
 - Refresh assertion and generator package documentation and correct the 2.4.1 publication guidance.
+
+### Fixed
+
+- None.
+
+### Deprecated
+
+- None.
+
+### Removed
+
+- None.
+
+### Security
+
+- None.
 
 ## [2.4.1] - 2026-11-15
 

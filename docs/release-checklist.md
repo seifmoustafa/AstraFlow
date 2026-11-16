@@ -64,13 +64,13 @@
 ## Publish
 
 - Version is final.
-- Changelog entry exists.
-- `scripts/verify-changelog-entry.ps1` confirms the current package version has a non-empty changelog entry before CI produces release notes.
+- Before packing, move this version's release notes from `[Unreleased]` into a dated `## [<version>] - YYYY-MM-DD` section; keep `[Unreleased]` for future work.
+- `scripts/verify-changelog-entry.ps1` passes before CI release notes, local packing, and publishing, confirming the exact package version has a complete dated entry and cannot ship under `[Unreleased]`.
 - Git tag exists.
 - An active NuGet Trusted Publishing policy matches the repository owner, repository, workflow filename (`publish-nuget.yml`), and GitHub environment (`nuget`).
 - Trusted Publishing is scoped to the AstraFlow package family (`AstraFlow*`) and push of new packages and package versions only.
 - Publish workflow is run manually by a release owner.
-- Packages are verified on NuGet after publishing. NuGet validation and indexing can take up to one hour; the signature verifier polls during that window.
+- Each expected package is verified on NuGet at the exact version after publishing. NuGet validation and indexing can take up to one hour; until exact-version availability is confirmed, describe the release as publishing/pending indexing rather than published. Update portal latest-published version/date and package release manifests only after that confirmation.
 - If package pushes succeed but signature verification times out, confirm package status on NuGet and rerun verification after indexing. A verification timeout does not undo a successful push.
 - `scripts/verify-nuget-signatures.ps1 -Version <version>` passes against each exact version on NuGet.org.
 - Any exposed key is revoked immediately.

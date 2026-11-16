@@ -29,6 +29,9 @@ function Invoke-DotNetStep {
 }
 
 try {
+    Write-Host "==> Verify release changelog"
+    & .\scripts\verify-changelog-entry.ps1
+
     if (-not $SkipPack) {
         & .\scripts\pack.ps1 -Configuration $Configuration
     }
