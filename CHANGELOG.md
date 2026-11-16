@@ -4,6 +4,34 @@ All notable AstraFlow changes are tracked here.
 
 ## [Unreleased]
 
+### Breaking Changes
+
+- None.
+
+### Added
+
+- Add BooleanAssertions.Be(bool) and formatted failure-context overloads for null/presence, non-whitespace, negative containment, and dictionary-key assertions.
+
+### Changed
+
+- None.
+
+### Fixed
+
+- None.
+
+### Deprecated
+
+- None.
+
+### Removed
+
+- None.
+
+### Security
+
+- None.
+
 ## [2.4.2] - 2026-11-16
 
 ### Breaking Changes

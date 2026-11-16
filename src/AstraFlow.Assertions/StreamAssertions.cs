@@ -15,22 +15,32 @@ public sealed class StreamAssertions
     public Stream? Subject => _subject;
 
     /// <summary>Asserts that the stream reference is null.</summary>
-    public StreamAssertions BeNull()
+    public StreamAssertions BeNull() => BeNull(null);
+
+    /// <summary>Asserts that the stream reference is null and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public StreamAssertions BeNull(string? because, params object?[] becauseArgs)
     {
         if (_subject is not null)
         {
-            AssertionFailure.Fail("Expected a null stream.");
+            AssertionFailure.FailWithBecause("Expected a null stream.", because, becauseArgs);
         }
 
         return this;
     }
 
     /// <summary>Asserts that the stream reference is not null.</summary>
-    public StreamAssertions NotBeNull()
+    public StreamAssertions NotBeNull() => NotBeNull(null);
+
+    /// <summary>Asserts that the stream reference is not null and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public StreamAssertions NotBeNull(string? because, params object?[] becauseArgs)
     {
         if (_subject is null)
         {
-            AssertionFailure.Fail("Expected a non-null stream.");
+            AssertionFailure.FailWithBecause("Expected a non-null stream.", because, becauseArgs);
         }
 
         return this;

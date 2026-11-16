@@ -7,6 +7,21 @@ public sealed class BooleanAssertions
 
     internal BooleanAssertions(bool actual) => _actual = actual;
 
+    /// <summary>Asserts that the value equals the expected Boolean and adds optional formatted context to a failure message.</summary>
+    /// <param name="expected">The expected Boolean value.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void Be(bool expected, string? because = null, params object?[] becauseArgs)
+    {
+        if (_actual != expected)
+        {
+            AssertionFailure.FailWithBecause(
+                $"Expected {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.",
+                because,
+                becauseArgs);
+        }
+    }
+
     /// <summary>Asserts that the value is true.</summary>
     public void BeTrue()
     {

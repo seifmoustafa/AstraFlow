@@ -26,22 +26,32 @@ public sealed class NullableValueAssertions<T> where T : struct
     }
 
     /// <summary>Asserts that the subject has no value.</summary>
-    public NullableValueAssertions<T> BeNull()
+    public NullableValueAssertions<T> BeNull() => BeNull(null);
+
+    /// <summary>Asserts that the subject has no value and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public NullableValueAssertions<T> BeNull(string? because, params object?[] becauseArgs)
     {
         if (_actual.HasValue)
         {
-            AssertionFailure.Fail($"Expected null, but found {AssertionFailure.Describe(_actual.Value)}.");
+            AssertionFailure.FailWithBecause($"Expected null, but found {AssertionFailure.Describe(_actual.Value)}.", because, becauseArgs);
         }
 
         return this;
     }
 
     /// <summary>Asserts that the subject has a value.</summary>
-    public NullableValueAssertions<T> NotBeNull()
+    public NullableValueAssertions<T> NotBeNull() => NotBeNull(null);
+
+    /// <summary>Asserts that the subject has a value and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public NullableValueAssertions<T> NotBeNull(string? because, params object?[] becauseArgs)
     {
         if (!_actual.HasValue)
         {
-            AssertionFailure.Fail("Expected a non-null value, but found null.");
+            AssertionFailure.FailWithBecause("Expected a non-null value, but found null.", because, becauseArgs);
         }
 
         return this;

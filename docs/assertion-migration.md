@@ -28,6 +28,10 @@ dotnet add package AstraFlow.Assertions
 
 Reason strings are appended only when an assertion fails. Composite format placeholders use invariant formatting. Use `BeEmpty(reason, args)` and `NotBeEmpty(reason, args)` for string, sequence, and dictionary checks.
 
+## Additional 2.4.x compatibility coverage
+
+The next 2.4.x patch also supports boolean equality with formatted context, formatted null/presence checks, formatted non-whitespace checks, formatted negative containment, and formatted dictionary-key checks. These additions preserve the existing failure descriptions and append the supplied reason only when an assertion fails.
+
 ## Typed values after type checks
 
 `BeOfType<T>()` keeps its existing AstraFlow contract and returns the typed value directly. When migrated code needs an assertion result with `.Subject` or `.Which`, use the additive typed-result method:

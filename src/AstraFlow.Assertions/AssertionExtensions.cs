@@ -12,6 +12,19 @@ public static class AssertionExtensions
         this CollectionAssertions<KeyValuePair<TKey, TValue>> assertions,
         TKey key)
         where TKey : notnull
+        => ContainKey(assertions, key, null);
+
+    /// <summary>Asserts that a sequence of key-value pairs contains the specified key and adds formatted context to a failure message.</summary>
+    /// <param name="assertions">The key-value pair sequence assertions.</param>
+    /// <param name="key">The key that must be present.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public static CollectionAssertions<KeyValuePair<TKey, TValue>> ContainKey<TKey, TValue>(
+        this CollectionAssertions<KeyValuePair<TKey, TValue>> assertions,
+        TKey key,
+        string? because,
+        params object?[] becauseArgs)
+        where TKey : notnull
     {
         if (assertions is null)
         {
@@ -19,7 +32,7 @@ public static class AssertionExtensions
         }
         if (!DictionarySequenceAssertionExtensions.ContainsKey(assertions.Subject, key))
         {
-            AssertionFailure.Fail("Expected key-value pairs to contain the requested key.");
+            AssertionFailure.FailWithBecause("Expected key-value pairs to contain the requested key.", because, becauseArgs);
         }
 
         return assertions;
