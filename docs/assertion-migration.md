@@ -1,6 +1,6 @@
 # Migrating from AwesomeAssertions
 
-`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2 and 2.4.3 compatibility patches. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
+`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2, 2.4.3, and 2.4.4 compatibility patches. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
 
 Install the package in the test project:
 
@@ -32,7 +32,7 @@ Reason strings are appended only when an assertion fails. Composite format place
 
 The 2.4.3 patch also supports boolean equality with formatted context, formatted null/presence checks, formatted non-whitespace checks, formatted negative string/sequence containment, and formatted positive dictionary-key checks. These additions preserve the existing failure descriptions and append the supplied reason only when an assertion fails.
 
-The upcoming 2.4.4 hotfix completes additional migration call shapes with formatted reasons:
+The 2.4.4 release completes additional migration call shapes with formatted reasons:
 
 ```csharp
 typeof(IHandler).Should().Be(typeof(CreateHandler), "the {0} type is registered", "handler");
@@ -47,7 +47,7 @@ await action.Should().ThrowAsync<HttpRequestException>("the {0} request must fai
 text.Should().NotContainEquivalentOf("private-marker", "the {0} must be omitted", "secret");
 ```
 
-These APIs become available after upgrading to AstraFlow.Assertions 2.4.4. The negative string containment assertion compares ordinally while ignoring case, and failure messages omit the compared values.
+These APIs are available in AstraFlow.Assertions 2.4.4. The negative string containment assertion compares ordinally while ignoring case, and failure messages omit the compared values.
 
 For an `IEnumerable<string>`, `Contain(expected, because, args)` overlaps with the existing multiple-item `Contain(params T[])` overload. Cast string formatting arguments to `object` so overload resolution selects the context overload. To assert several expected strings, pass them as one array with `Contain(new[] { first, second })`.
 
