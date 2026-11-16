@@ -177,7 +177,7 @@ Use this only in test projects unless an application has a deliberate reason to 
 Included in the `2.4.0` release. Use it in any .NET test project that needs framework-neutral assertions for values, strings, collections, exceptions, and asynchronous operations.
 
 ```powershell
-dotnet add package AstraFlow.Assertions --version 2.4.0
+dotnet add package AstraFlow.Assertions
 ```
 
 This package is intended to assert behavior in the application under test. It has no AstraFlow runtime dependency and no test-runner dependency. Use `AstraFlow.Testing` separately when a test needs AstraFlow-specific fakes, harnesses, or mapper/diagnostics checks.

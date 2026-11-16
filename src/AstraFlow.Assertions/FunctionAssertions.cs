@@ -42,4 +42,21 @@ public sealed class FunctionAssertions<TResult>
 
         return this;
     }
+
+    /// <summary>Asserts that the function completes without throwing and includes formatted failure context.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public FunctionAssertions<TResult> NotThrow(string? because, params object?[] becauseArgs)
+    {
+        try
+        {
+            _ = _action();
+        }
+        catch (Exception exception)
+        {
+            AssertionFailure.FailWithBecause($"Expected function not to throw, but an exception of type '{exception.GetType().FullName}' was thrown.", because, becauseArgs);
+        }
+
+        return this;
+    }
 }

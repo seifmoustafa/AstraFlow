@@ -10,6 +10,8 @@ public sealed class DictionaryAssertions<TKey, TValue>
     private readonly IEnumerable<KeyValuePair<TKey, TValue>>? _actual;
     private readonly IDictionary<TKey, TValue>? _mutableActual;
     private readonly IReadOnlyDictionary<TKey, TValue>? _readOnlyActual;
+    private TValue? _whoseValue;
+    private bool _hasWhoseValue;
 
     internal DictionaryAssertions(IDictionary<TKey, TValue>? actual)
     {
@@ -35,6 +37,20 @@ public sealed class DictionaryAssertions<TKey, TValue>
     /// <summary>Returns this assertion object for an additional related check.</summary>
     public DictionaryAssertions<TKey, TValue> And => this;
 
+    /// <summary>Gets the value for the key most recently checked by <see cref="ContainKey(TKey)"/>.</summary>
+    public TValue WhoseValue
+    {
+        get
+        {
+            if (!_hasWhoseValue)
+            {
+                AssertionFailure.Fail("Expected ContainKey to establish a dictionary value before accessing WhoseValue.");
+            }
+
+            return _whoseValue!;
+        }
+    }
+
     /// <summary>Asserts that the dictionary is structurally equivalent to the expected value.</summary>
     /// <param name="expected">The expected dictionary or object graph.</param>
     /// <param name="configure">Optional settings for member selection, exclusions, custom comparers, fields, ordering, and maximum graph depth.</param>
@@ -52,6 +68,23 @@ public sealed class DictionaryAssertions<TKey, TValue>
         return this;
     }
 
+    /// <summary>Asserts dictionary equivalency and includes formatted context in a failure message.</summary>
+    /// <param name="expected">The expected dictionary or object graph.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public DictionaryAssertions<TKey, TValue> BeEquivalentTo<TExpected>(TExpected expected, string? because, params object?[] becauseArgs)
+    {
+        var options = new EquivalencyOptions();
+        options.ValidateIncludedPaths(expected);
+        var comparer = new ObjectGraphEquivalencyComparer(options);
+        if (!comparer.TryCompare(_actual, expected, out var mismatchPath))
+        {
+            AssertionFailure.FailWithBecause($"Expected dictionary values to be structurally equivalent at '{mismatchPath}'.", because, becauseArgs);
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the dictionary is not structurally equivalent to the unexpected value.</summary>
     /// <param name="unexpected">The object graph that must differ.</param>
     /// <param name="configure">Optional settings for member selection, exclusions, custom comparers, fields, ordering, and maximum graph depth.</param>
@@ -64,6 +97,23 @@ public sealed class DictionaryAssertions<TKey, TValue>
         if (comparer.TryCompare(_actual, unexpected, out _))
         {
             AssertionFailure.Fail("Expected dictionary values not to be structurally equivalent, but they matched.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts dictionary difference and includes formatted context in a failure message.</summary>
+    /// <param name="unexpected">The dictionary or object graph that must differ.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public DictionaryAssertions<TKey, TValue> NotBeEquivalentTo<TExpected>(TExpected unexpected, string? because, params object?[] becauseArgs)
+    {
+        var options = new EquivalencyOptions();
+        options.ValidateIncludedPaths(unexpected);
+        var comparer = new ObjectGraphEquivalencyComparer(options);
+        if (comparer.TryCompare(_actual, unexpected, out _))
+        {
+            AssertionFailure.FailWithBecause("Expected dictionary values not to be structurally equivalent, but they matched.", because, becauseArgs);
         }
 
         return this;
@@ -94,11 +144,18 @@ public sealed class DictionaryAssertions<TKey, TValue>
     /// <summary>Asserts that the dictionary contains the expected key.</summary>
     public DictionaryAssertions<TKey, TValue> ContainKey(TKey key)
     {
-        if (_actual is null || !ContainsKey(key))
+        if (_actual is null)
         {
             AssertionFailure.Fail("Expected dictionary to contain the requested key.");
         }
 
+        if (!TryGetValue(key, out var value))
+        {
+            AssertionFailure.Fail("Expected dictionary to contain the requested key.");
+        }
+
+        _whoseValue = value;
+        _hasWhoseValue = true;
         return this;
     }
 
@@ -266,12 +323,34 @@ public sealed class DictionaryAssertions<TKey, TValue>
         return this;
     }
 
+    /// <summary>Asserts that the dictionary is empty and includes formatted context in a failure message.</summary>
+    public DictionaryAssertions<TKey, TValue> BeEmpty(string? because, params object?[] becauseArgs)
+    {
+        if (_actual is null || GetCount() != 0)
+        {
+            AssertionFailure.FailWithBecause("Expected an empty dictionary.", because, becauseArgs);
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the dictionary contains at least one entry.</summary>
     public DictionaryAssertions<TKey, TValue> NotBeEmpty()
     {
         if (_actual is null || GetCount() == 0)
         {
             AssertionFailure.Fail("Expected a non-empty dictionary.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the dictionary is non-empty and includes formatted context in a failure message.</summary>
+    public DictionaryAssertions<TKey, TValue> NotBeEmpty(string? because, params object?[] becauseArgs)
+    {
+        if (_actual is null || GetCount() == 0)
+        {
+            AssertionFailure.FailWithBecause("Expected a non-empty dictionary.", because, becauseArgs);
         }
 
         return this;

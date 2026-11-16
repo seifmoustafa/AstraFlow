@@ -4,13 +4,15 @@
 
 ## Availability
 
-The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only.
+The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only. The 2.4.2 patch adds compile-tested migration compatibility APIs for common assertion patterns.
 
 The package has no runtime dependencies. Install it in a test project with:
 
 ```shell
-dotnet add package AstraFlow.Assertions --version 2.4.1
+dotnet add package AstraFlow.Assertions
 ```
+
+NuGet resolves the latest published package version. The migration compatibility additions are included when AstraFlow 2.4.2 becomes available.
 
 ## Start with `Should()`
 
@@ -52,6 +54,12 @@ HTTP response checks use `HttpResponseMessage.Should()` for status codes and res
 ## Values, booleans, enums, and GUIDs
 
 Object assertions include equality and inequality (`Be`, `NotBe`), null checks (`BeNull`, `NotBeNull`), reference identity (`BeSameAs`, `NotBeSameAs`), runtime type checks (`BeOfType<T>`, `BeAssignableTo<T>`), ranges and comparisons, and predicate checks (`Match`, `NotMatch`).
+
+Common migration checks support formatted failure context on `BeTrue`, `BeFalse`, value/string `Be`, empty sequence/string/dictionary checks, and `NotThrowAsync`. Collection equivalency accepts both item lists and collection expressions, and `WithStrictOrdering()` makes ordering explicit. `GuidAssertions` supports `NotBe`; collection assertions include `NotEqual`, `NotBeOfType`, and `NotBeAssignableTo`; stream assertions include `BeNull` and `NotBeNull`.
+
+`BeOfType<T>()` continues to return the typed value directly. Use `BeOfTypeAndWhich<T>()` or `BeAssignableToAndWhich<T>()` when a migrated call site needs a typed `.Subject` or `.Which` result. After `ContainKey(key)`, dictionary assertions expose the matching value through `.WhoseValue`.
+
+`MatchRegex` requires a finite timeout, for example `TimeSpan.FromSeconds(1)`. The explicit bound avoids unbounded regular-expression evaluation. When importing both `AstraFlow.Assertions` and `AstraFlow.Testing`, alias or fully qualify the two public `AstraFlowAssertionException` types.
 
 Booleans provide `BeTrue` and `BeFalse`. Enum assertions include `BeDefined`, `NotBeDefined`, `HaveFlag`, and `NotHaveFlag`. `Guid` assertions provide `Be`, `BeEmpty`, and `NotBeEmpty`.
 
