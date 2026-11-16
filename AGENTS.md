@@ -15,6 +15,7 @@ AstraFlow is a modular .NET library suite for mediator patterns, object mapping 
 
 ## Repository rules
 
+- **Branch naming:** Use conventional work-type prefixes and lowercase kebab-case names, such as `feature/<slug>`, `fix/<slug>`, `hotfix/<version>-<slug>`, `docs/<slug>`, `chore/<slug>`, or `release/<version>`. Never create AstraFlow branches with the `codex/` prefix. Keep existing branch names unchanged unless renaming is explicitly requested.
 - Preserve package boundaries and optional-dependency boundaries. `AstraFlow.Contracts` is the shared contract layer; integrations should depend only on the packages they need. Do not add a dependency to the core package merely to support an optional integration.
 - Treat public APIs as compatibility-sensitive. Prefer additive, minimal changes; check target frameworks, nullable annotations, package metadata, XML documentation, and existing compatibility scripts when public surface changes.
 - Keep behavior consistent across supported target frameworks. Check the affected `.csproj` and `Directory.Build.props`; do not assume every package has the same target frameworks.
