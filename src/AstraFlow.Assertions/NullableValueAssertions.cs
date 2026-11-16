@@ -108,11 +108,22 @@ public sealed class NullableValueAssertions<T> where T : struct
     }
 
     /// <summary>Asserts that the subject compares greater than the expected value.</summary>
-    public NullableValueAssertions<T> BeGreaterThan(T expected)
+    public NullableValueAssertions<T> BeGreaterThan(T expected) => BeGreaterThan(expected, null);
+
+    /// <summary>Asserts that the subject compares greater than the expected value and adds formatted failure context.</summary>
+    /// <param name="expected">The value the subject must exceed.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public NullableValueAssertions<T> BeGreaterThan(T expected, string? because, params object?[] becauseArgs)
     {
-        if (Comparer<T>.Default.Compare(Which, expected) <= 0)
+        if (!_actual.HasValue)
         {
-            AssertionFailure.Fail($"Expected a nullable value greater than {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.");
+            AssertionFailure.FailWithBecause("Expected a nullable value to be present, but found null.", because, becauseArgs);
+        }
+
+        if (Comparer<T>.Default.Compare(_actual.Value, expected) <= 0)
+        {
+            AssertionFailure.FailWithBecause($"Expected a nullable value greater than {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.", because, becauseArgs);
         }
 
         return this;
@@ -130,11 +141,22 @@ public sealed class NullableValueAssertions<T> where T : struct
     }
 
     /// <summary>Asserts that the subject compares less than the expected value.</summary>
-    public NullableValueAssertions<T> BeLessThan(T expected)
+    public NullableValueAssertions<T> BeLessThan(T expected) => BeLessThan(expected, null);
+
+    /// <summary>Asserts that the subject compares less than the expected value and adds formatted failure context.</summary>
+    /// <param name="expected">The value the subject must be below.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public NullableValueAssertions<T> BeLessThan(T expected, string? because, params object?[] becauseArgs)
     {
-        if (Comparer<T>.Default.Compare(Which, expected) >= 0)
+        if (!_actual.HasValue)
         {
-            AssertionFailure.Fail($"Expected a nullable value less than {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.");
+            AssertionFailure.FailWithBecause("Expected a nullable value to be present, but found null.", because, becauseArgs);
+        }
+
+        if (Comparer<T>.Default.Compare(_actual.Value, expected) >= 0)
+        {
+            AssertionFailure.FailWithBecause($"Expected a nullable value less than {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.", because, becauseArgs);
         }
 
         return this;

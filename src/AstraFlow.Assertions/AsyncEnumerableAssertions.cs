@@ -597,6 +597,17 @@ public sealed class AsyncEnumerableAssertions<T>
     /// <summary>Asserts that enumerating the asynchronous sequence throws the requested exception type or a derived type.</summary>
     public async Task<ExceptionAssertions<TException>> ThrowAsync<TException>(CancellationToken cancellationToken = default)
         where TException : Exception
+        => await ThrowAsyncCore<TException>(cancellationToken, null, Array.Empty<object?>()).ConfigureAwait(false);
+
+    /// <summary>Asserts that enumerating the asynchronous sequence throws the requested exception type or a derived type and adds formatted failure context.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public Task<ExceptionAssertions<TException>> ThrowAsync<TException>(string? because, params object?[] becauseArgs)
+        where TException : Exception
+        => ThrowAsyncCore<TException>(default, because, becauseArgs);
+
+    private async Task<ExceptionAssertions<TException>> ThrowAsyncCore<TException>(CancellationToken cancellationToken, string? because, object?[] becauseArgs)
+        where TException : Exception
     {
         var actual = RequireSubject();
         try
@@ -613,10 +624,10 @@ public sealed class AsyncEnumerableAssertions<T>
         }
         catch (Exception exception)
         {
-            AssertionFailure.Fail($"Expected async sequence enumeration to throw '{typeof(TException).FullName}', but an exception of type '{exception.GetType().FullName}' was thrown.");
+            AssertionFailure.FailWithBecause($"Expected async sequence enumeration to throw '{typeof(TException).FullName}', but an exception of type '{exception.GetType().FullName}' was thrown.", because, becauseArgs);
         }
 
-        AssertionFailure.Fail($"Expected async sequence enumeration to throw '{typeof(TException).FullName}', but it completed successfully.");
+        AssertionFailure.FailWithBecause($"Expected async sequence enumeration to throw '{typeof(TException).FullName}', but it completed successfully.", because, becauseArgs);
         throw new InvalidOperationException("Unreachable assertion state.");
     }
 

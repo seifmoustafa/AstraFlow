@@ -11,17 +11,30 @@ public static class DictionarySequenceAssertionExtensions
         this CollectionAssertions<KeyValuePair<TKey, TValue>> assertions,
         TKey unexpected)
         where TKey : notnull
+        => NotContainKey(assertions, unexpected, null);
+
+    /// <summary>Asserts that the sequence contains no pair with the specified key and adds formatted failure context.</summary>
+    /// <param name="assertions">The key-value sequence assertions.</param>
+    /// <param name="unexpected">The key that must not be present.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public static CollectionAssertions<KeyValuePair<TKey, TValue>> NotContainKey<TKey, TValue>(
+        this CollectionAssertions<KeyValuePair<TKey, TValue>> assertions,
+        TKey unexpected,
+        string? because,
+        params object?[] becauseArgs)
+        where TKey : notnull
     {
         Validate(assertions);
         var subject = assertions.Subject;
         if (subject is null)
         {
-            AssertionFailure.Fail("Expected key-value pairs without the requested key, but found null.");
+            AssertionFailure.FailWithBecause("Expected key-value pairs without the requested key, but found null.", because, becauseArgs);
         }
 
         if (ContainsKey(subject, unexpected))
         {
-            AssertionFailure.Fail("Expected key-value pairs not to contain the requested key.");
+            AssertionFailure.FailWithBecause("Expected key-value pairs not to contain the requested key.", because, becauseArgs);
         }
 
         return assertions;

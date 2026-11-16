@@ -8,7 +8,7 @@ dotnet add package AstraFlow.Assertions
 
 The 2.4.2 and 2.4.3 patches add the migration compatibility APIs described in [the migration guide](assertion-migration.md). Consumers who pin versions should use the exact version available on NuGet.org.
 
-The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, whitespace checks, negative containment, and dictionary-key checks.
+The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, whitespace checks, negative containment, and positive dictionary-key checks. The upcoming 2.4.4 hotfix adds reason overloads for type identity, numeric comparisons, collection and dictionary count/containment/prefix/single-item checks, dictionary key exclusion, predicate matching, and sync/async exception assertions. It also adds case-insensitive string `NotContainEquivalentOf`.
 
 The shipping project has no `PackageReference` dependencies. Test-runner packages stay in the consumer's test project.
 
@@ -33,6 +33,7 @@ Implemented checks currently include:
 - Typed nullable value assertions for null/presence, equality, comparison, ranges, and membership; nullable numeric values also support sign, approximation, NaN, and finite checks.
 - Inclusive generic comparisons and ranges for comparable types; true/false; enum-defined and flag checks; GUID empty checks.
 - Ordinal string equality, substring, prefix/suffix, empty and whitespace checks.
+- Case-insensitive string substring exclusion with `NotContainEquivalentOf`.
 - Negative string equality, explicit `StringComparison`, exact lengths, negative prefix/suffix checks, whole-string `*`/`?` matching, and regex matching with a required timeout.
 - Predicate-based positive and negative checks for object values, plus negative enum-definition checks.
 - Strict positive and negative checks for the eight standard integer types, `float`, `double`, `decimal`, and `TimeSpan`; floating-point NaN satisfies neither sign check, while matching infinities satisfy their sign check.
@@ -251,7 +252,11 @@ results.Should().HaveElementSucceeding("active", "completed");
 
 `StartWith` and `EndWith` compare an ordered prefix or suffix against a finite expected sequence. They accept either `params` values or an `IEnumerable<T>` and an optional equality comparer. The expected sequence is read at most once; the subject is read at most once and disposed. Prefix checks stop after the expected items, while suffix checks read the complete subject. A null expected sequence throws `ArgumentNullException`; a null subject fails even for an empty expectation. An empty expectation succeeds for a non-null subject without enumerating it. Failure messages report only the mismatch index or item counts, not compared values.
 
+`Contain(expected, because, args)` adds formatted failure context when an item is missing. For `IEnumerable<string>`, its reason overload overlaps with multi-item `Contain(params T[])`: cast string format arguments to `object` to select the reason overload, and pass multiple expected strings as one array (`Contain(new[] { first, second })`).
+
 `ContainEquivalentOf`, `NotContainEquivalentOf`, and `AllBeEquivalentTo` compare sequence items structurally against one expected value using the same per-call options as `BeEquivalentTo`. The positive containment check returns the matched item through `Which`; all-items succeeds for an empty sequence, while positive containment fails. Null subjects fail all three checks. Each outer subject is enumerated once, and nested sequence and dictionary snapshots are shared across item comparisons so one-shot values are read at most once. Failures report the first item index and, for an all-items mismatch, the differing member path without printing object values.
+
+For strings, `NotContainEquivalentOf(unexpected)` rejects a substring using ordinal case-insensitive comparison. Its reason overload appends formatted context on failure without printing either string.
 
 `SatisfyRespectively` requires one action per item and invokes them once in sequence order. `AllSatisfy` invokes its action once per item and succeeds for an empty sequence. Callback exceptions propagate unchanged.
 

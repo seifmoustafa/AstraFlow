@@ -4,7 +4,7 @@
 
 ## Availability
 
-The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only. The 2.4.2 patch adds compile-tested migration compatibility APIs for common assertion patterns, and 2.4.3 adds remaining migration overloads for boolean equality, null/presence, whitespace, containment, and dictionary-key checks.
+The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only. The 2.4.2 patch adds compile-tested migration compatibility APIs for common assertion patterns, and 2.4.3 adds remaining migration overloads for boolean equality, null/presence, whitespace, negative containment, and positive dictionary-key checks.
 
 The package has no runtime dependencies. Install it in a test project with:
 
@@ -12,7 +12,7 @@ The package has no runtime dependencies. Install it in a test project with:
 dotnet add package AstraFlow.Assertions
 ```
 
-NuGet resolves the latest published package version. The migration compatibility additions are included in the published AstraFlow 2.4.3 packages.
+NuGet resolves the latest published package version. The 2.4.2 and 2.4.3 migration compatibility additions are included in the published AstraFlow 2.4.3 packages. The upcoming 2.4.4 hotfix adds formatted reason overloads for type, comparison, collection and dictionary count/containment, predicate, and exception assertions, plus case-insensitive string `NotContainEquivalentOf`.
 
 ## Start with `Should()`
 
@@ -53,7 +53,7 @@ HTTP response checks use `HttpResponseMessage.Should()` for status codes and res
 
 ## Values, booleans, enums, and GUIDs
 
-The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, non-whitespace checks, negative containment, and dictionary-key checks.
+The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, non-whitespace checks, negative containment, and positive dictionary-key checks. The additional reason overloads described above require AstraFlow.Assertions 2.4.4.
 
 Object assertions include equality and inequality (`Be`, `NotBe`), null checks (`BeNull`, `NotBeNull`), reference identity (`BeSameAs`, `NotBeSameAs`), runtime type checks (`BeOfType<T>`, `BeAssignableTo<T>`), ranges and comparisons, and predicate checks (`Match`, `NotMatch`).
 
@@ -68,6 +68,8 @@ Booleans provide `BeTrue` and `BeFalse`. Enum assertions include `BeDefined`, `N
 Type metadata assertions start with `typeof(MyService).Should()`. `Be(expectedType)` and `NotBe(unexpectedType)` compare exact runtime type identity, while the same chain can check sealed, abstract, and static shape; inheritance and interfaces; public properties and exact property types; method overloads by exact parameter types; and public constructors. These checks inspect metadata only and never invoke user code. Failure messages do not print the compared type names.
 
 `NotBeDefined` succeeds only when the enum value is not a declared member. For flags enums, a bit combination with no explicitly declared enum member is undefined, even when its bits are composed of declared flags.
+
+The upcoming 2.4.4 hotfix adds string `NotContainEquivalentOf(unexpected)`, which rejects a substring using ordinal case-insensitive comparison and omits both strings from failure messages. For `IEnumerable<string>`, the new `Contain(expected, because, args)` overload overlaps with `Contain(params T[])`: cast string formatting arguments to `object` to select the reason overload, and pass multiple expected strings as one array (`Contain(new[] { first, second })`).
 
 ### Nullable value checks
 
