@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   getAllPackages,
   getComposerPresets,
+  getDirectoryBuildInfo,
   resolvePackageStack,
 } from '../src/modules/catalog/packages';
 import { PACKAGE_ORDER } from '../src/modules/catalog/packages/data/catalog';
@@ -203,10 +204,12 @@ test('published Assertions package metadata matches its current release', () => 
   const packages = getAllPackages();
   const assertions = packages.find((pkg) => pkg.id === 'AstraFlow.Assertions');
   const expectedVersion = getPublishedReleaseVersion('AstraFlow.Assertions');
+  const expectedSourceVersion = getDirectoryBuildInfo().sourceVersion;
 
+  expect(expectedSourceVersion).toMatch(/^\d+\.\d+\.\d+/);
   expect(assertions).toMatchObject({
     release: { availability: 'published', version: expectedVersion },
-    sourceVersion: expectedVersion,
+    sourceVersion: expectedSourceVersion,
     distribution: {
       nugetUrl: `https://www.nuget.org/packages/AstraFlow.Assertions/${expectedVersion}`,
       installCommand: `dotnet add package AstraFlow.Assertions --version ${expectedVersion}`,
@@ -312,7 +315,8 @@ test('changelog lifecycle policy marks 1.x releases deprecated on NuGet and keep
   expect(featured.length).toBeGreaterThan(0);
   expect(featured.length).toBeLessThanOrEqual(6);
   const featuredVersions = featured.map((release) => release.version);
-  expect(featuredVersions[0]).toBe(LATEST_PUBLISHED_VERSION);
+  expect(featuredVersions[0]).toBe(supportedLineReleases[0]?.version);
+  expect(featuredVersions).toContain(LATEST_PUBLISHED_VERSION);
   expect(featuredVersions).toContain(PREVIOUS_PUBLISHED_VERSION);
   expect(featuredVersions).toContain('2.0.0');
   expect(stats.deprecatedReleaseCount).toBeGreaterThanOrEqual(legacyReleases.length);

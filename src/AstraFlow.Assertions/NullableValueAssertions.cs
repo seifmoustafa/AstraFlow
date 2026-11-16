@@ -64,12 +64,34 @@ public sealed class NullableValueAssertions<T> where T : struct
         return this;
     }
 
+    /// <summary>Asserts that the nullable subject equals the expected value and includes formatted failure context.</summary>
+    public NullableValueAssertions<T> Be(T expected, string? because, params object?[] becauseArgs)
+    {
+        if (!_actual.HasValue || !EqualityComparer<T>.Default.Equals(_actual.Value, expected))
+        {
+            AssertionFailure.FailWithBecause($"Expected a nullable value equal to {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.", because, becauseArgs);
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the subject does not have the specified value.</summary>
     public NullableValueAssertions<T> NotBe(T unexpected)
     {
         if (_actual.HasValue && EqualityComparer<T>.Default.Equals(_actual.Value, unexpected))
         {
             AssertionFailure.Fail($"Expected a nullable value different from {AssertionFailure.Describe(unexpected)}, but the values were equal.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the nullable subject differs from the supplied value and includes formatted failure context.</summary>
+    public NullableValueAssertions<T> NotBe(T unexpected, string? because, params object?[] becauseArgs)
+    {
+        if (_actual.HasValue && EqualityComparer<T>.Default.Equals(_actual.Value, unexpected))
+        {
+            AssertionFailure.FailWithBecause($"Expected a nullable value different from {AssertionFailure.Describe(unexpected)}, but the values were equal.", because, becauseArgs);
         }
 
         return this;

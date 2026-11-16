@@ -11,6 +11,31 @@ public sealed class StreamAssertions
 
     internal StreamAssertions(Stream? subject) => _subject = subject;
 
+    /// <summary>Gets the stream being asserted.</summary>
+    public Stream? Subject => _subject;
+
+    /// <summary>Asserts that the stream reference is null.</summary>
+    public StreamAssertions BeNull()
+    {
+        if (_subject is not null)
+        {
+            AssertionFailure.Fail("Expected a null stream.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the stream reference is not null.</summary>
+    public StreamAssertions NotBeNull()
+    {
+        if (_subject is null)
+        {
+            AssertionFailure.Fail("Expected a non-null stream.");
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the stream reports that it can read.</summary>
     public StreamAssertions BeReadable() => CheckCapability(stream => stream.CanRead, "readable");
 

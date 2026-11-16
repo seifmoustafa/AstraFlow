@@ -617,7 +617,10 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const allPill = releasesSection.getByRole("button", { name: /^All\b/i }).first();
 
     const releases = getAllChangelogReleases();
-    const latestMeta = releases.find((r) => r.status === 'latest') ?? releases[0];
+    const latestMeta =
+      releases.find((r) => r.version === LATEST_PUBLISHED_VERSION) ??
+      releases.find((r) => r.status === 'latest') ??
+      releases[0];
     const featureMeta = releases.find((r) => r.status === 'feature');
     const majorMeta = releases.find((r) => r.status === 'major');
     const minorArchiveMeta = featureMeta
@@ -662,6 +665,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await allPill.click();
 
     expect(latestMeta.version).toBe(LATEST_PUBLISHED_VERSION);
+    expect(latestMeta.status).toBe('latest');
     const spineTargets = [latestMeta, featureMeta, minorArchiveMeta].filter(
       (entry): entry is NonNullable<typeof entry> => Boolean(entry),
     );

@@ -30,11 +30,79 @@ public sealed class CollectionAssertions<T>
         return this;
     }
 
+    /// <summary>Asserts that the sequence is structurally equivalent to the supplied items.</summary>
+    /// <param name="expected">The expected items. The default ordering is strict.</param>
+    public CollectionAssertions<T> BeEquivalentTo(params T[] expected)
+        => BeEquivalentTo((IEnumerable<T>)expected, configure: null);
+
+    /// <summary>Asserts sequence equivalency using the supplied options.</summary>
+    /// <param name="expected">The expected items.</param>
+    /// <param name="configure">Options for structural comparison.</param>
+    public CollectionAssertions<T> BeEquivalentTo(IEnumerable<T> expected, Action<EquivalencyOptions>? configure)
+    {
+        if (expected is null)
+        {
+            throw new ArgumentNullException(nameof(expected));
+        }
+
+        var comparer = CreateEquivalencyComparer(expected, configure);
+        if (!comparer.TryCompare(_actual, expected, out var mismatchPath))
+        {
+            AssertionFailure.Fail($"Expected sequence values to be structurally equivalent at '{mismatchPath}'.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts sequence equivalency and includes formatted context in a failure message.</summary>
+    /// <param name="expected">The expected items.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public CollectionAssertions<T> BeEquivalentTo(IEnumerable<T> expected, string? because, params object?[] becauseArgs)
+    {
+        if (expected is null)
+        {
+            throw new ArgumentNullException(nameof(expected));
+        }
+
+        var comparer = CreateEquivalencyComparer(expected, configure: null);
+        if (!comparer.TryCompare(_actual, expected, out var mismatchPath))
+        {
+            AssertionFailure.FailWithBecause($"Expected sequence values to be structurally equivalent at '{mismatchPath}'.", because, becauseArgs);
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the sequence is not structurally equivalent to the unexpected value.</summary>
     /// <param name="unexpected">The object graph that must differ.</param>
     /// <param name="configure">Optional settings for member selection, exclusions, custom comparers, fields, ordering, and maximum graph depth.</param>
     public CollectionAssertions<T> NotBeEquivalentTo<TExpected>(TExpected unexpected, Action<EquivalencyOptions>? configure = null)
     {
+        var comparer = CreateEquivalencyComparer(unexpected, configure);
+        if (comparer.TryCompare(_actual, unexpected, out _))
+        {
+            AssertionFailure.Fail("Expected sequence values not to be structurally equivalent, but they matched.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the sequence is not structurally equivalent to the supplied items.</summary>
+    /// <param name="unexpected">The items that must differ.</param>
+    public CollectionAssertions<T> NotBeEquivalentTo(params T[] unexpected)
+        => NotBeEquivalentTo((IEnumerable<T>)unexpected, configure: null);
+
+    /// <summary>Asserts sequence difference using the supplied options.</summary>
+    /// <param name="unexpected">The items that must differ.</param>
+    /// <param name="configure">Options for structural comparison.</param>
+    public CollectionAssertions<T> NotBeEquivalentTo(IEnumerable<T> unexpected, Action<EquivalencyOptions>? configure)
+    {
+        if (unexpected is null)
+        {
+            throw new ArgumentNullException(nameof(unexpected));
+        }
+
         var comparer = CreateEquivalencyComparer(unexpected, configure);
         if (comparer.TryCompare(_actual, unexpected, out _))
         {
@@ -83,6 +151,23 @@ public sealed class CollectionAssertions<T>
         return this;
     }
 
+    /// <summary>Asserts that the sequence is empty and includes formatted context in a failure message.</summary>
+    public CollectionAssertions<T> BeEmpty(string? because, params object?[] becauseArgs)
+    {
+        if (_actual is null)
+        {
+            AssertionFailure.FailWithBecause("Expected an empty sequence, but found null.", because, becauseArgs);
+        }
+
+        using var enumerator = _actual.GetEnumerator();
+        if (enumerator.MoveNext())
+        {
+            AssertionFailure.FailWithBecause("Expected an empty sequence, but it contained at least one item.", because, becauseArgs);
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the sequence contains at least one item.</summary>
     public CollectionAssertions<T> NotBeEmpty()
     {
@@ -95,6 +180,23 @@ public sealed class CollectionAssertions<T>
         if (!enumerator.MoveNext())
         {
             AssertionFailure.Fail("Expected a non-empty sequence, but found an empty sequence.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the sequence contains at least one item and includes formatted context on failure.</summary>
+    public CollectionAssertions<T> NotBeEmpty(string? because, params object?[] becauseArgs)
+    {
+        if (_actual is null)
+        {
+            AssertionFailure.FailWithBecause("Expected a non-empty sequence, but found null.", because, becauseArgs);
+        }
+
+        using var enumerator = _actual.GetEnumerator();
+        if (!enumerator.MoveNext())
+        {
+            AssertionFailure.FailWithBecause("Expected a non-empty sequence, but found an empty sequence.", because, becauseArgs);
         }
 
         return this;
@@ -209,6 +311,28 @@ public sealed class CollectionAssertions<T>
         }
 
         return (TExpected)(object)_actual!;
+    }
+
+    /// <summary>Asserts that the sequence does not have the exact requested runtime type.</summary>
+    public CollectionAssertions<T> NotBeOfType<TUnexpected>()
+    {
+        if (_actual is not null && _actual.GetType() == typeof(TUnexpected))
+        {
+            AssertionFailure.Fail($"Expected a sequence not to have exact runtime type '{typeof(TUnexpected).FullName}'.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the sequence object is not assignable to the requested type.</summary>
+    public CollectionAssertions<T> NotBeAssignableTo<TUnexpected>()
+    {
+        if (_actual is TUnexpected)
+        {
+            AssertionFailure.Fail($"Expected a sequence not assignable to '{typeof(TUnexpected).FullName}'.");
+        }
+
+        return this;
     }
 
     /// <summary>Asserts that the sequence contains at least one item satisfying the predicate.</summary>
@@ -326,6 +450,37 @@ public sealed class CollectionAssertions<T>
         if (actualEnumerator is not null && actualEnumerator.MoveNext())
         {
             AssertionFailure.Fail($"Expected sequence with {expected.Length} items, but it contained additional items.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the sequence does not equal the supplied items in order.</summary>
+    public CollectionAssertions<T> NotEqual(params T[] unexpected)
+    {
+        if (unexpected is null)
+        {
+            throw new ArgumentNullException(nameof(unexpected));
+        }
+
+        if (_actual is null)
+        {
+            return this;
+        }
+
+        using var actualEnumerator = _actual.GetEnumerator();
+        var comparer = EqualityComparer<T>.Default;
+        for (var index = 0; index < unexpected.Length; index++)
+        {
+            if (!actualEnumerator.MoveNext() || !comparer.Equals(actualEnumerator.Current, unexpected[index]))
+            {
+                return this;
+            }
+        }
+
+        if (!actualEnumerator.MoveNext())
+        {
+            AssertionFailure.Fail("Expected sequence not to equal the supplied items, but every item matched in order.");
         }
 
         return this;
