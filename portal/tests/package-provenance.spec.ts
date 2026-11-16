@@ -29,19 +29,20 @@ test('package release metadata is complete, explicit, and valid', () => {
   const releases = validatePackageReleaseManifest(PACKAGE_ORDER, PACKAGE_RELEASES);
 
   expect([LATEST_PUBLISHED_VERSION, LATEST_PUBLISHED_DATE, PREVIOUS_PUBLISHED_VERSION]).toEqual([
-    '2.3.0',
-    '2026-11-10',
-    '2.2.0',
+    '2.4.1',
+    '2026-11-16',
+    '2.4.0',
   ]);
   expect(releases.size).toBe(PACKAGE_ORDER.length);
   expect(releases.get('AstraFlow.Assertions')).toEqual({
-    availability: 'planned',
-    targetVersion: '2.4.0',
+    availability: 'published',
+    version: '2.4.1',
+    publishedAt: '2026-11-16',
   });
   expect(releases.get('AstraFlow.Mediator')).toEqual({
     availability: 'published',
-    version: '2.3.0',
-    publishedAt: '2026-11-10',
+    version: '2.4.1',
+    publishedAt: '2026-11-16',
   });
 });
 
@@ -189,17 +190,17 @@ test('release manifest supports independent package versions and publication dat
   });
 });
 
-test('planned packages never receive published install or feed metadata', () => {
+test('published packages receive explicit install and feed metadata', () => {
   const packages = getAllPackages();
   const assertions = packages.find((pkg) => pkg.id === 'AstraFlow.Assertions');
 
   expect(assertions).toMatchObject({
-    release: { availability: 'planned', targetVersion: '2.4.0' },
-    sourceVersion: '2.4.0',
+    release: { availability: 'published', version: '2.4.1' },
+    sourceVersion: '2.4.2',
     distribution: {
-      nugetUrl: null,
-      installCommand: null,
-      packageReferenceXml: null,
+      nugetUrl: 'https://www.nuget.org/packages/AstraFlow.Assertions/2.4.1',
+      installCommand: 'dotnet add package AstraFlow.Assertions --version 2.4.1',
+      packageReferenceXml: '<PackageReference Include="AstraFlow.Assertions" Version="2.4.1" />',
     },
   });
   expect(assertions).not.toHaveProperty('isPublished');
@@ -258,11 +259,15 @@ test('server and client stack composition share the same published install plan'
     'AstraFlow.Mediator',
   ]);
   expect(assertionsStack.combinedBlock).toContain(
-    'dotnet add package AstraFlow.Mediator --version 2.3.0',
+    'dotnet add package AstraFlow.Mediator --version 2.4.1',
   );
-  expect(assertionsStack.combinedBlock).not.toContain('AstraFlow.Assertions');
-  expect(assertionsStack.xmlBlock).not.toContain('AstraFlow.Assertions');
-  expect(assertionsStack.unreleasedCount).toBe(1);
+  expect(assertionsStack.combinedBlock).toContain(
+    'dotnet add package AstraFlow.Assertions --version 2.4.1',
+  );
+  expect(assertionsStack.xmlBlock).toContain(
+    '<PackageReference Include="AstraFlow.Assertions" Version="2.4.1" />',
+  );
+  expect(assertionsStack.unreleasedCount).toBe(0);
 });
 
 test('changelog lifecycle policy marks 1.x releases deprecated on NuGet and keeps 2.x active', () => {
@@ -287,12 +292,13 @@ test('changelog lifecycle policy marks 1.x releases deprecated on NuGet and keep
     expect(legacy.highlightTags).toContain('Deprecated');
   }
 
-  expect(supportedLineReleases).toHaveLength(5);
+  expect(supportedLineReleases).toHaveLength(6);
   for (const release of supportedLineReleases) {
     expect(release.isDeprecated).toBe(false);
   }
 
   expect(selectFeaturedReleases(releases).map((release) => release.version)).toEqual([
+    '2.4.1',
     '2.4.0',
     '2.3.0',
     '2.2.0',

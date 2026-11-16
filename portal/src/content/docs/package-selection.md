@@ -35,7 +35,7 @@ dotnet add package AstraFlow.Mapper
 | `AstraFlow.Generators` | `netstandard2.0` | Roslyn compiler package (`PrivateAssets="all"`) | Compile-time DI registration for mediator types and executable mapping implementations |
 | `AstraFlow.Cli` | `net10.0` (.NET tool) | Self-contained tool | Local or CI inspection, validation, SARIF reporting, diffing, and architecture graph exports |
 | `AstraFlow.Testing` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | `Contracts`, `Diagnostics`, `Mediator`, `Mapper` | Test projects needing `FakeMediator`, pipeline/handler harnesses, and test assertions |
-| `AstraFlow.Assertions` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | None | 2.4.0 release: runner-neutral `.Should()` assertions with safe failure messages |
+| `AstraFlow.Assertions` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | None | Runner-neutral `.Should()` assertions with safe failure messages; 2.4.2 adds common migration compatibility APIs |
 
 ## Analyzer and Generator Packaging (`PrivateAssets="all"`)
 

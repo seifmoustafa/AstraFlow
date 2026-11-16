@@ -4,6 +4,17 @@ All notable AstraFlow changes are tracked here.
 
 ## [Unreleased]
 
+### Added
+
+- Add formatted reason/context overloads for common boolean, value, string, collection, dictionary, GUID, and throw assertions.
+- Add explicit typed result access for runtime type and assignability assertions, dictionary value access after `ContainKey`, and missing negative/type collection checks used during migration.
+- Add collection equivalency overloads for params and collection-expression call sites, plus `WithStrictOrdering()`.
+- Add compile-tested migration examples for common AwesomeAssertions call patterns.
+
+### Changed
+
+- Refresh assertion and generator package documentation and correct the 2.4.1 publication guidance.
+
 ## [2.4.1] - 2026-11-15
 
 ### Breaking Changes

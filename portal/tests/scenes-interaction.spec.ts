@@ -21,6 +21,10 @@ const RESPONSIVE_ROUTES = [
 
 const RESPONSIVE_WIDTHS = [320, 390, 768, 1024, 1440, 1920] as const;
 
+// Vercel serves this optional analytics endpoint at deploy time; local `next start` does not.
+const isLocallyUnavailableVercelAnalytics = (url: string): boolean =>
+  url.includes("/_vercel/insights/script.js");
+
 test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsive Verification", () => {
   test("1-2. Home SignalArchitectureHero, LivingFlowAtlas (incl. 12 rapid clicks), and HomeExplodedArchitecture", async ({
     page,
@@ -28,7 +32,12 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const errors: string[] = [];
     page.on("pageerror", (err) => errors.push(`pageerror: ${err.message}`));
     page.on("console", (msg) => {
-      if (msg.type() === "error") errors.push(`console.error: ${msg.text()}`);
+      if (
+        msg.type() === "error" &&
+        !isLocallyUnavailableVercelAnalytics(msg.location().url)
+      ) {
+        errors.push(`console.error: ${msg.text()}`);
+      }
     });
 
     await page.goto("/", { waitUntil: "networkidle" });
@@ -212,7 +221,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await testingTab.click();
     await expect(testingTab).toHaveAttribute("aria-selected", "true");
     await expect(
-      page.getByRole("tabpanel").getByText("Testing 2.3.0 · Assertions planned 2.4.0"),
+      page.getByRole("tabpanel").getByText("Published · 2.4.1 NuGet"),
     ).toBeVisible();
 
     // Stage active capability into Stack Composer
@@ -267,7 +276,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await xmlTab.click();
     await expect(outputPre).toContainText('PrivateAssets="all"');
 
-    // Planned assertions package remains visible without an install command.
+    // Published assertions package remains selectable and receives an install command.
     await searchInput.fill("Assertions");
     const assertionsToggle = composer
       .locator('button[aria-pressed]')
@@ -279,14 +288,15 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await expect(composer).toContainText(/Separate test-project references/i);
 
     await cliTab.click();
-    await expect(outputPre).not.toContainText("dotnet add package AstraFlow.Assertions");
-    await expect(composer).toContainText("Planned · 2.4.0");
-    await expect(composer.locator('a[href*="nuget.org/packages/AstraFlow.Assertions"]')).toHaveCount(0);
+    await expect(outputPre).toContainText(
+      "dotnet add package AstraFlow.Assertions --version 2.4.1",
+    );
+    await expect(composer).toContainText("2.4.1 · Published");
 
     const assertionsDirectoryCard = page.locator(
       'article[id="AstraFlow.Assertions"]',
     );
-    await expect(assertionsDirectoryCard).toContainText("Planned · 2.4.0");
+    await expect(assertionsDirectoryCard).toContainText("2.4.1 · Published");
 
     const packageDirectorySearch = page.getByRole("searchbox", {
       name: "Filter package directory",
@@ -454,7 +464,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     );
   });
 
-  test("5. Guides GuidesKineticRunway milestones 01..06 mouse & keyboard + published 2.3.0 suite", async ({
+  test("5. Guides GuidesKineticRunway milestones 01..06 mouse & keyboard + published 2.4.1 suite", async ({
     page,
   }) => {
     await page.goto("/guides", { waitUntil: "networkidle" });
@@ -507,7 +517,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const runwayWorkbench = page.locator("#runway-workbench-panel");
     await expect(runwayWorkbench).toContainText("AstraFlow.Assertions");
     await expect(runwayWorkbench).toContainText("Should()");
-    await expect(runwayWorkbench).toContainText("AstraFlow 2.3.0 Suite");
+    await expect(runwayWorkbench).toContainText("AstraFlow 2.4.1 Suite");
     await expect(runwayWorkbench).not.toContainText(/unreleased|not on nuget/i);
     await checkDesktopPreNoOverflow("Milestone 06");
     await expect(
@@ -528,7 +538,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await expect(m06).toHaveAttribute("aria-selected", "true");
   });
 
-  test("6. Changelog ChangelogFolioHero & ChangelogChronicle provenance filters & 2.4.0 / 2.3.0 notes", async ({
+  test("6. Changelog ChangelogFolioHero & ChangelogChronicle provenance filters & 2.4.1 / 2.4.0 notes", async ({
     page,
   }) => {
     await page.goto("/changelog", { waitUntil: "networkidle" });
@@ -579,7 +589,7 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
 
     // Product release filter pills
     const latestPill = releasesSection
-      .getByRole("button", { name: /Latest Milestone/i })
+      .getByRole("button", { name: /Latest Releases/i })
       .first();
     const majorPill = releasesSection
       .getByRole("button", { name: /Major Release/i })
@@ -599,17 +609,23 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const allPill = releasesSection.getByRole("button", { name: /^All\b/i }).first();
 
     await latestPill.click();
-    const unreleasedRelease = releasesSection.getByRole("button", {
-      name: /^v2\.4\.0 Latest Milestone/,
+    const latestPublishedRelease = releasesSection.getByRole("button", {
+      name: /^v2\.4\.1 Latest NuGet/,
     });
-    await expect(unreleasedRelease).toBeVisible();
-    await unreleasedRelease.click();
-    await expect(page.locator('article[id="v2.4.0"]')).toBeVisible();
+    await expect(latestPublishedRelease).toBeVisible();
+    await latestPublishedRelease.click();
+    await expect(page.locator('article[id="v2.4.1"]')).toBeVisible();
 
     await majorPill.click();
     await expect(page.locator('article[id="v2.0.0"]')).toBeVisible();
 
     await featurePill.click();
+    const featureRelease = releasesSection
+      .locator("ol button")
+      .filter({ has: page.locator("span", { hasText: /^v2\.2\.0$/ }) })
+      .first();
+    await expect(featureRelease).toBeVisible();
+    await featureRelease.click();
     await expect(page.locator('article[id="v2.2.0"]')).toBeVisible();
 
     await archivePill.click();
@@ -631,17 +647,17 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
 
     await allPill.click();
 
-    // Master-Detail Chronological Spine + Edition Stage inspection for v2.4.0 and v2.3.0
+    // Master-Detail Chronological Spine + Edition Stage inspection for v2.4.1 and v2.4.0
     for (const item of [
+      {
+        id: "v2.4.1",
+        versionText: /^v2\.4\.1$/,
+        provenancePattern: /Latest NuGet|2026-11-15/i,
+      },
       {
         id: "v2.4.0",
         versionText: /^v2\.4\.0$/,
-        provenancePattern: /Latest Milestone|2026-11-13/i,
-      },
-      {
-        id: "v2.3.0",
-        versionText: /^v2\.3\.0$/,
-        provenancePattern: /Latest Milestone|2026-11-10/i,
+        provenancePattern: /Feature Release|2026-11-15/i,
       },
     ]) {
       const spineBtn = releasesSection
@@ -777,7 +793,12 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       const errors: string[] = [];
       page.on("pageerror", (err) => errors.push(err.message));
       page.on("console", (msg) => {
-        if (msg.type() === "error") errors.push(msg.text());
+        if (
+          msg.type() === "error" &&
+          !isLocallyUnavailableVercelAnalytics(msg.location().url)
+        ) {
+          errors.push(msg.text());
+        }
       });
 
       await page.emulateMedia({ reducedMotion: "reduce" });
@@ -806,10 +827,19 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     const failedResponses: string[] = [];
     page.on("pageerror", (err) => errors.push(`pageerror: ${err.message}`));
     page.on("console", (msg) => {
-      if (msg.type() === "error") errors.push(`console.error: ${msg.text()}`);
+      if (
+        msg.type() === "error" &&
+        !isLocallyUnavailableVercelAnalytics(msg.location().url)
+      ) {
+        errors.push(`console.error: ${msg.text()}`);
+      }
     });
     page.on("response", (res) => {
-      if (res.status() >= 400 && !res.url().includes("non-existent")) {
+      if (
+        res.status() >= 400 &&
+        !res.url().includes("non-existent") &&
+        !isLocallyUnavailableVercelAnalytics(res.url())
+      ) {
         failedResponses.push(`${res.status()} ${res.url()}`);
       }
     });

@@ -6,7 +6,7 @@ A modular .NET suite of **16 focused packages** for explicit request dispatch, o
 
 [Getting Started](docs/getting-started.md) · [Package Selection](docs/package-selection.md) · [Version & Upgrade Guide](docs/version-upgrade-guide.md) · [Compatibility](docs/compatibility.md) · [Changelog](CHANGELOG.md) · [Branding](docs/branding.md)
 
-> **Release status & support policy:** AstraFlow **`2.4.1`** is the latest release (2026-11-15). This patch fixes the package README image on NuGet.org. The 2.4.0 release added the standalone `AstraFlow.Assertions` package, expanded compile-time mapping generation, and introduced read-only CLI assertion migration analysis. Check NuGet.org for the exact package ID and version before installing; package availability can lag the GitHub release. All **`1.x`** packages are **deprecated** — use the **`2.x`** line.
+> **Release status & support policy:** The 2.4.x line includes the standalone `AstraFlow.Assertions` package, expanded compile-time mapping generation, and read-only CLI assertion migration analysis. The 2.4.1 patch fixed the package README image on NuGet.org; the 2.4.2 patch adds compile-tested assertion migration compatibility. Check NuGet.org for the latest package version before pinning it. All **`1.x`** packages are **deprecated** — use the **`2.x`** line.
 
 ---
 
@@ -35,26 +35,26 @@ See the [Package Selection Guide](docs/package-selection.md) for boundary rules 
 
 ---
 
-## Install AstraFlow `2.4.1`
+## Install AstraFlow
 
 Install the umbrella convenience package when a project uses both mediator and explicit mapping:
 
 ```powershell
-dotnet add package AstraFlow --version 2.4.1
+dotnet add package AstraFlow
 ```
 
 For cleaner layer boundaries, reference only what each assembly needs:
 
 ```powershell
 # Shared domain/API contracts library (no runtime dependency)
-dotnet add package AstraFlow.Contracts --version 2.4.1
+dotnet add package AstraFlow.Contracts
 
 # Application layer packages
-dotnet add package AstraFlow.Mediator --version 2.4.1
-dotnet add package AstraFlow.Mapper --version 2.4.1
+dotnet add package AstraFlow.Mediator
+dotnet add package AstraFlow.Mapper
 ```
 
-> `AstraFlow.Assertions` ships as a standalone package in **`2.4.0`**. Add it to test projects that need general-purpose assertions; it is not included by the `AstraFlow` convenience package.
+> `AstraFlow.Assertions` ships as a standalone package starting in **`2.4.0`**. Add it to test projects that need general-purpose assertions; it is not included by the `AstraFlow` convenience package.
 
 ---
 

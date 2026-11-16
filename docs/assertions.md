@@ -1,14 +1,12 @@
 # AstraFlow Assertions
 
-`AstraFlow.Assertions` is the general-purpose assertion library for tests of any .NET application. It checks values returned by the code under test and observable effects such as emitted items or thrown exceptions. It is independent of AstraFlow's mediator/mapper runtime and of test runners.
-
-> The package is implemented in the v2.4.0 source and has not been published yet.
-
-## Install when released
+`AstraFlow.Assertions` is the general-purpose assertion library for tests of any .NET application. It checks values returned by the code under test and observable effects such as emitted items or thrown exceptions. It is independent of AstraFlow's mediator/mapper runtime and of test runners. The package is published; install the latest version from NuGet with:
 
 ```powershell
-dotnet add package AstraFlow.Assertions --version 2.4.0
+dotnet add package AstraFlow.Assertions
 ```
+
+The 2.4.2 patch adds the migration compatibility APIs described in [the migration guide](assertion-migration.md). Consumers who pin versions should use the exact version available on NuGet.org.
 
 The shipping project has no `PackageReference` dependencies. Test-runner packages stay in the consumer's test project.
 
@@ -24,6 +22,8 @@ items.Should().Equal(first, second);
 ((Action)service.DeleteMissingRecord).Should().Throw<KeyNotFoundException>();
 await ((Func<Task>)(() => service.SaveAsync())).Should().NotThrowAsync();
 ```
+
+For migration from AwesomeAssertions, use the compile-tested call patterns in [the migration guide](assertion-migration.md). The guide calls out the few cases that need an explicit method-name change or a type alias.
 
 Implemented checks currently include:
 
