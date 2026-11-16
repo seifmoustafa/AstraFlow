@@ -1,6 +1,6 @@
 # Migrating from AwesomeAssertions
 
-`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2 compatibility patch. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
+`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2 and 2.4.3 compatibility patches. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
 
 Install the package in the test project:
 
@@ -27,6 +27,10 @@ dotnet add package AstraFlow.Assertions
 | `await action.Should().NotThrowAsync("context {0}", detail)` | `await action.Should().NotThrowAsync("context {0}", detail)` |
 
 Reason strings are appended only when an assertion fails. Composite format placeholders use invariant formatting. Use `BeEmpty(reason, args)` and `NotBeEmpty(reason, args)` for string, sequence, and dictionary checks.
+
+## Additional 2.4.x compatibility coverage
+
+The 2.4.3 patch also supports boolean equality with formatted context, formatted null/presence checks, formatted non-whitespace checks, formatted negative containment, and formatted dictionary-key checks. These additions preserve the existing failure descriptions and append the supplied reason only when an assertion fails.
 
 ## Typed values after type checks
 

@@ -142,16 +142,22 @@ public sealed class DictionaryAssertions<TKey, TValue>
     }
 
     /// <summary>Asserts that the dictionary contains the expected key.</summary>
-    public DictionaryAssertions<TKey, TValue> ContainKey(TKey key)
+    public DictionaryAssertions<TKey, TValue> ContainKey(TKey key) => ContainKey(key, null);
+
+    /// <summary>Asserts that the dictionary contains the expected key and adds formatted context to a failure message.</summary>
+    /// <param name="key">The key that must be present.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public DictionaryAssertions<TKey, TValue> ContainKey(TKey key, string? because, params object?[] becauseArgs)
     {
         if (_actual is null)
         {
-            AssertionFailure.Fail("Expected dictionary to contain the requested key.");
+            AssertionFailure.FailWithBecause("Expected dictionary to contain the requested key.", because, becauseArgs);
         }
 
         if (!TryGetValue(key, out var value))
         {
-            AssertionFailure.Fail("Expected dictionary to contain the requested key.");
+            AssertionFailure.FailWithBecause("Expected dictionary to contain the requested key.", because, becauseArgs);
         }
 
         _whoseValue = value;

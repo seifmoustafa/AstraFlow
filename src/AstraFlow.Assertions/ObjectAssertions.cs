@@ -200,20 +200,30 @@ public sealed class ObjectAssertions<T>
     }
 
     /// <summary>Asserts that the value is null.</summary>
-    public void BeNull()
+    public void BeNull() => BeNull(null);
+
+    /// <summary>Asserts that the value is null and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void BeNull(string? because, params object?[] becauseArgs)
     {
         if (_actual is not null)
         {
-            AssertionFailure.Fail($"Expected null, but found {AssertionFailure.Describe(_actual)}.");
+            AssertionFailure.FailWithBecause($"Expected null, but found {AssertionFailure.Describe(_actual)}.", because, becauseArgs);
         }
     }
 
     /// <summary>Asserts that the value is not null and returns it.</summary>
-    public T NotBeNull()
+    public T NotBeNull() => NotBeNull(null);
+
+    /// <summary>Asserts that the value is not null, returns it, and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public T NotBeNull(string? because, params object?[] becauseArgs)
     {
         if (_actual is null)
         {
-            AssertionFailure.Fail("Expected a non-null value, but found null.");
+            AssertionFailure.FailWithBecause("Expected a non-null value, but found null.", because, becauseArgs);
         }
 
         return _actual;

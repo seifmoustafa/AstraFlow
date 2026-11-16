@@ -295,13 +295,13 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
     await expect(composer).toContainText(/Separate test-project references/i);
 
     await cliTab.click();
-    await expect(outputPre).toContainText("dotnet add package AstraFlow.Assertions --version 2.4.1");
-    await expect(composer).toContainText("2.4.1 · Published");
+    await expect(outputPre).toContainText("dotnet add package AstraFlow.Assertions --version 2.4.3");
+    await expect(composer).toContainText("2.4.3 · Published");
 
     const assertionsDirectoryCard = page.locator(
       'article[id="AstraFlow.Assertions"]',
     );
-    await expect(assertionsDirectoryCard).toContainText("2.4.1 · Published");
+    await expect(assertionsDirectoryCard).toContainText("2.4.3 · Published");
 
     const packageDirectorySearch = page.getByRole("searchbox", {
       name: "Filter package directory",

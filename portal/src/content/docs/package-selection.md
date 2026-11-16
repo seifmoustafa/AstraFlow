@@ -35,7 +35,7 @@ dotnet add package AstraFlow.Mapper
 | `AstraFlow.Generators` | `netstandard2.0` | Roslyn compiler package (`PrivateAssets="all"`) | Compile-time DI registration for mediator types and executable mapping implementations |
 | `AstraFlow.Cli` | `net10.0` (.NET tool) | Self-contained tool | Local or CI inspection, validation, SARIF reporting, diffing, and architecture graph exports |
 | `AstraFlow.Testing` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | `Contracts`, `Diagnostics`, `Mediator`, `Mapper` | Test projects needing `FakeMediator`, pipeline/handler harnesses, and test assertions |
-| `AstraFlow.Assertions` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | None | Runner-neutral `.Should()` assertions with safe failure messages; 2.4.2 adds common migration compatibility APIs |
+| `AstraFlow.Assertions` | `netstandard2.0`, `net8.0`, `net9.0`, `net10.0` | None | Runner-neutral `.Should()` assertions with safe failure messages; 2.4.2 and 2.4.3 add common migration compatibility APIs |
 
 ## Analyzer and Generator Packaging (`PrivateAssets="all"`)
 
@@ -43,8 +43,8 @@ Compiler packages run during build and should not flow transitively into downstr
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="AstraFlow.Analyzers" Version="2.4.1" PrivateAssets="all" />
-  <PackageReference Include="AstraFlow.Generators" Version="2.4.1" PrivateAssets="all" />
+  <PackageReference Include="AstraFlow.Analyzers" Version="2.4.3" PrivateAssets="all" />
+  <PackageReference Include="AstraFlow.Generators" Version="2.4.3" PrivateAssets="all" />
 </ItemGroup>
 ```
 

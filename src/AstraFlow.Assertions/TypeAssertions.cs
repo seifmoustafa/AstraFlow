@@ -44,22 +44,32 @@ public sealed class TypeAssertions
     }
 
     /// <summary>Asserts that the type subject is null.</summary>
-    public TypeAssertions BeNull()
+    public TypeAssertions BeNull() => BeNull(null);
+
+    /// <summary>Asserts that the type subject is null and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public TypeAssertions BeNull(string? because, params object?[] becauseArgs)
     {
         if (_actual is not null)
         {
-            AssertionFailure.Fail("Expected a null type subject.");
+            AssertionFailure.FailWithBecause("Expected a null type subject.", because, becauseArgs);
         }
 
         return this;
     }
 
     /// <summary>Asserts that the type exists.</summary>
-    public TypeAssertions NotBeNull()
+    public TypeAssertions NotBeNull() => NotBeNull(null);
+
+    /// <summary>Asserts that the type exists and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public TypeAssertions NotBeNull(string? because, params object?[] becauseArgs)
     {
         if (_actual is null)
         {
-            AssertionFailure.Fail("Expected a type, but the subject was null.");
+            AssertionFailure.FailWithBecause("Expected a type, but the subject was null.", because, becauseArgs);
         }
 
         return this;

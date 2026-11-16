@@ -71,11 +71,16 @@ public sealed class StringAssertions
     }
 
     /// <summary>Asserts that the string is not null.</summary>
-    public void NotBeNull()
+    public void NotBeNull() => NotBeNull(null);
+
+    /// <summary>Asserts that the string is not null and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void NotBeNull(string? because, params object?[] becauseArgs)
     {
         if (_actual is null)
         {
-            AssertionFailure.Fail("Expected a non-null string.");
+            AssertionFailure.FailWithBecause("Expected a non-null string.", because, becauseArgs);
         }
     }
 
@@ -279,11 +284,16 @@ public sealed class StringAssertions
     }
 
     /// <summary>Asserts that the string is null.</summary>
-    public void BeNull()
+    public void BeNull() => BeNull(null);
+
+    /// <summary>Asserts that the string is null and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void BeNull(string? because, params object?[] becauseArgs)
     {
         if (_actual is not null)
         {
-            AssertionFailure.Fail($"Expected a null string, but actual string length was {_actual.Length}.");
+            AssertionFailure.FailWithBecause($"Expected a null string, but actual string length was {_actual.Length}.", because, becauseArgs);
         }
     }
 
@@ -315,11 +325,16 @@ public sealed class StringAssertions
     }
 
     /// <summary>Asserts that the string is not null, empty, or whitespace.</summary>
-    public void NotBeNullOrWhiteSpace()
+    public void NotBeNullOrWhiteSpace() => NotBeNullOrWhiteSpace(null);
+
+    /// <summary>Asserts that the string is not null, empty, or whitespace and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void NotBeNullOrWhiteSpace(string? because, params object?[] becauseArgs)
     {
         if (string.IsNullOrWhiteSpace(_actual))
         {
-            AssertionFailure.Fail("Expected a non-whitespace string, but found null, empty, or whitespace.");
+            AssertionFailure.FailWithBecause("Expected a non-whitespace string, but found null, empty, or whitespace.", because, becauseArgs);
         }
     }
 
@@ -335,11 +350,17 @@ public sealed class StringAssertions
     }
 
     /// <summary>Asserts that the string does not contain the specified substring.</summary>
-    public void NotContain(string unexpected)
+    public void NotContain(string unexpected) => NotContain(unexpected, null);
+
+    /// <summary>Asserts that the string does not contain the specified substring and adds formatted context to a failure message.</summary>
+    /// <param name="unexpected">The substring that must not be present.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void NotContain(string unexpected, string? because, params object?[] becauseArgs)
     {
         if (_actual is not null && unexpected is not null && _actual.IndexOf(unexpected, StringComparison.Ordinal) >= 0)
         {
-            AssertionFailure.Fail($"Expected string not to contain a substring of length {unexpected.Length}, but it did.");
+            AssertionFailure.FailWithBecause($"Expected string not to contain a substring of length {unexpected.Length}, but it did.", because, becauseArgs);
         }
     }
 
