@@ -359,7 +359,13 @@ public sealed class CollectionAssertions<T>
     }
 
     /// <summary>Asserts that the sequence does not contain an equal item.</summary>
-    public CollectionAssertions<T> NotContain(T unexpected)
+    public CollectionAssertions<T> NotContain(T unexpected) => NotContain(unexpected, null);
+
+    /// <summary>Asserts that the sequence does not contain an equal item and adds formatted context to a failure message.</summary>
+    /// <param name="unexpected">The item that must not be present.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public CollectionAssertions<T> NotContain(T unexpected, string? because, params object?[] becauseArgs)
     {
         if (_actual is not null)
         {
@@ -368,7 +374,10 @@ public sealed class CollectionAssertions<T>
             {
                 if (comparer.Equals(item, unexpected))
                 {
-                    AssertionFailure.Fail($"Expected sequence not to contain an item equal to {AssertionFailure.Describe(unexpected)}.");
+                    AssertionFailure.FailWithBecause(
+                        $"Expected sequence not to contain an item equal to {AssertionFailure.Describe(unexpected)}.",
+                        because,
+                        becauseArgs);
                 }
             }
         }
@@ -894,22 +903,32 @@ public sealed class CollectionAssertions<T>
     }
 
     /// <summary>Asserts that the sequence is null.</summary>
-    public CollectionAssertions<T> BeNull()
+    public CollectionAssertions<T> BeNull() => BeNull(null);
+
+    /// <summary>Asserts that the sequence is null and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public CollectionAssertions<T> BeNull(string? because, params object?[] becauseArgs)
     {
         if (_actual is not null)
         {
-            AssertionFailure.Fail("Expected a null sequence.");
+            AssertionFailure.FailWithBecause("Expected a null sequence.", because, becauseArgs);
         }
 
         return this;
     }
 
     /// <summary>Asserts that the sequence is not null.</summary>
-    public CollectionAssertions<T> NotBeNull()
+    public CollectionAssertions<T> NotBeNull() => NotBeNull(null);
+
+    /// <summary>Asserts that the sequence is not null and adds formatted context to a failure message.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public CollectionAssertions<T> NotBeNull(string? because, params object?[] becauseArgs)
     {
         if (_actual is null)
         {
-            AssertionFailure.Fail("Expected a non-null sequence.");
+            AssertionFailure.FailWithBecause("Expected a non-null sequence.", because, becauseArgs);
         }
 
         return this;

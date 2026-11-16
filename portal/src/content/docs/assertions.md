@@ -4,7 +4,7 @@
 
 ## Availability
 
-The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only. The 2.4.2 patch adds compile-tested migration compatibility APIs for common assertion patterns.
+The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only. The 2.4.2 patch adds compile-tested migration compatibility APIs for common assertion patterns, and 2.4.3 adds remaining migration overloads for boolean equality, null/presence, whitespace, containment, and dictionary-key checks.
 
 The package has no runtime dependencies. Install it in a test project with:
 
@@ -12,7 +12,7 @@ The package has no runtime dependencies. Install it in a test project with:
 dotnet add package AstraFlow.Assertions
 ```
 
-NuGet resolves the latest published package version. The migration compatibility additions are included when AstraFlow 2.4.2 becomes available.
+NuGet resolves the latest published package version. The migration compatibility additions are included in the published AstraFlow 2.4.3 packages.
 
 ## Start with `Should()`
 
@@ -52,6 +52,8 @@ XML assertions use `XDocument.Should()` and `XElement.Should()` for document roo
 HTTP response checks use `HttpResponseMessage.Should()` for status codes and response/content headers. These metadata checks do not read or serialize the body, mutate or dispose the response or its content, or expose header values or request URIs in failure messages. `HaveContentAsync`, `NotHaveContentAsync`, `ContainContentAsync`, and `NotContainContentAsync` read and buffer the body as text with ordinal comparison; missing content is treated as empty text. Body assertions do not dispose the response or content, and their failures omit expected and actual body text.
 
 ## Values, booleans, enums, and GUIDs
+
+The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, non-whitespace checks, negative containment, and dictionary-key checks.
 
 Object assertions include equality and inequality (`Be`, `NotBe`), null checks (`BeNull`, `NotBeNull`), reference identity (`BeSameAs`, `NotBeSameAs`), runtime type checks (`BeOfType<T>`, `BeAssignableTo<T>`), ranges and comparisons, and predicate checks (`Match`, `NotMatch`).
 
