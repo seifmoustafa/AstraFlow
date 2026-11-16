@@ -227,8 +227,11 @@ export function DocsHeroDesk({ docs = [] }: DocsHeroDeskProps) {
   };
   const rootRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const isInViewport = useViewportActivity(rootRef);
   const reducedMotion = useReducedMotionSafe();
+  const { isActive: isInViewport } = useViewportActivity(rootRef, {
+    paused: reducedMotion,
+    initialInView: true,
+  });
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
@@ -492,39 +495,41 @@ export function DocsHeroDesk({ docs = [] }: DocsHeroDeskProps) {
         className={styles.readoutBar}
         id={`codex-lens-${activeVolume.id}`}
       >
-        <AnimatePresence mode="wait">
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className={styles.readoutContent}
-            exit={reducedMotion ? {} : { opacity: 0, y: -4 }}
-            initial={reducedMotion ? false : { opacity: 0, y: 4 }}
-            key={activeVolume.id}
-            transition={{ duration: reducedMotion ? 0 : 0.16 }}
-          >
-            <div className={styles.readoutMeta}>
-              <span>
-                {t('folioLabel', {
-                  number: activeVolume.num,
-                  title: activeVolumeCopy.shelfTitle,
-                })}
-              </span>
-              {categoryCount > 0 ? (
-                <span>{t('guideCount', { count: String(categoryCount) })}</span>
-              ) : null}
-              <span>
-                {t('minutesRead', {
-                  count: String(flagshipDoc?.readingMinutes ?? activeVolume.defaultMinutes),
-                })}
-              </span>
-              <code className={styles.readoutApi}>{activeVolume.apiBadge}</code>
-            </div>
+        <div className={styles.readoutContent}>
+          <AnimatePresence initial={false} mode="sync">
+            <motion.div
+              animate={{ opacity: 1 }}
+              className={styles.readoutMotionLayer}
+              exit={reducedMotion ? undefined : { opacity: 0 }}
+              initial={reducedMotion ? false : { opacity: 0 }}
+              key={activeVolume.id}
+              transition={{ duration: reducedMotion ? 0 : 0.16 }}
+            >
+              <div className={styles.readoutMeta}>
+                <span>
+                  {t('folioLabel', {
+                    number: activeVolume.num,
+                    title: activeVolumeCopy.shelfTitle,
+                  })}
+                </span>
+                {categoryCount > 0 ? (
+                  <span>{t('guideCount', { count: String(categoryCount) })}</span>
+                ) : null}
+                <span>
+                  {t('minutesRead', {
+                    count: String(flagshipDoc?.readingMinutes ?? activeVolume.defaultMinutes),
+                  })}
+                </span>
+                <code className={styles.readoutApi}>{activeVolume.apiBadge}</code>
+              </div>
 
-            <h2 className={styles.readoutTitle}>
-              {flagshipDoc?.title ?? activeVolumeCopy.flagshipTitle}
-            </h2>
-            <p className={styles.readoutSummary}>{activeVolumeCopy.summary}</p>
-          </motion.div>
-        </AnimatePresence>
+              <h2 className={styles.readoutTitle}>
+                {flagshipDoc?.title ?? activeVolumeCopy.flagshipTitle}
+              </h2>
+              <p className={styles.readoutSummary}>{activeVolumeCopy.summary}</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
         <Link
           className={styles.readoutCta}

@@ -123,6 +123,14 @@ public sealed class EquivalencyOptions
         return this;
     }
 
+    /// <summary>Requires collection items to appear in the same order during equivalency checks.</summary>
+    /// <remarks>Strict ordering is the default. This method is useful when options are composed conditionally.</remarks>
+    public EquivalencyOptions WithStrictOrdering()
+    {
+        IsCollectionOrderIgnored = false;
+        return this;
+    }
+
     /// <summary>Uses the supplied equality comparer whenever both values can be compared as <typeparamref name="T"/>.</summary>
     /// <typeparam name="T">The value type handled by the comparer.</typeparam>
     /// <param name="comparer">The equality comparer to use.</param>

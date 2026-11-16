@@ -177,7 +177,6 @@ export default async function CommunityPage() {
               <pre
                 className="community-cmd-pre"
                 tabIndex={0}
-                data-lenis-prevent
               >
                 <code>{governance.buildTestCommands.join("\n")}</code>
               </pre>

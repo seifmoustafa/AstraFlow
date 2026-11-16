@@ -40,6 +40,21 @@ public sealed class AsyncActionAssertions
         }
     }
 
+    /// <summary>Asserts that the operation completes without throwing and includes formatted failure context.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public async Task NotThrowAsync(string? because, params object?[] becauseArgs)
+    {
+        try
+        {
+            await _action().ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            AssertionFailure.FailWithBecause($"Expected operation not to throw, but an exception of type '{exception.GetType().FullName}' was thrown.", because, becauseArgs);
+        }
+    }
+
     /// <summary>Asserts that the operation completes within the timeout and propagates its exception, if any.</summary>
     /// <param name="timeout">The nonnegative, finite timeout to observe.</param>
     /// <param name="cancellationToken">Cancels only the assertion's wait; it is not passed to the operation.</param>

@@ -142,7 +142,7 @@ public static partial class CustomerMaps
 
 The generator emits a deterministic, readable implementation with a direct null guard and typed assignments. It neither invokes `IMapper` nor registers a runtime rule. The API is intentionally separate: this generated method always constructs a new destination, unlike runtime facade identity/collection precedence.
 
-## v2.4 enterprise DTO mapping (implemented; 2.4.0 remains unpublished)
+## v2.4 enterprise DTO mapping (published in 2.4.0)
 
 The 2.4.0 scope expands this explicitly declared direct-mapping method to common domain-entity and immutable read-model shapes:
 

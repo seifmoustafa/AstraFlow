@@ -11,9 +11,16 @@
 }
 
 .readingProgressBar {
+  width: 100%;
   height: 100%;
   background: var(--signal);
-  transition: width 0.08s linear;
+  transform-origin: left center;
+  transform: scaleX(0);
+  will-change: transform;
+}
+
+:global([dir='rtl']) .readingProgressBar {
+  transform-origin: right center;
 }
 
 /* 3-Column #fffdf7 Article Shell (260px | minmax(0, 780px) | 220px) */
@@ -172,10 +179,8 @@
 /* Applied imperatively by scrollspy onto desktop .docs-toc links */
 .activeTocLink {
   color: var(--action) !important;
-  font-weight: 700;
-  border-inline-start: 2px solid var(--signal);
-  padding-inline-start: 10px;
-  margin-inline-start: -12px;
+  border-inline-start-color: var(--signal) !important;
+  text-shadow: 0 0 0.01px currentColor;
 }
 
 .tocFooterLink {
@@ -387,67 +392,6 @@
   font-weight: 700;
   border-inline-start-color: var(--signal);
   background: var(--paper-raised);
-}
-
-/* Injected copy bar wrapper around .docs-prose pre.code-block */
-.codeBlockWrap {
-  margin-block: 20px 24px;
-  border-radius: 8px;
-  border: 1px solid #20493e;
-  overflow: hidden;
-  background: #072720;
-  max-width: 100%;
-}
-
-.codeBlockBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 8px 14px;
-  background: var(--forest);
-  border-block-end: 1px solid #20493e;
-}
-
-.codeBlockLang {
-  font: 700 10.5px/1 var(--font-mono);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--peach);
-}
-
-.codeCopyButton {
-  appearance: none;
-  border: 1px solid #376053;
-  background: var(--forest-deep);
-  color: #ffffff;
-  border-radius: 4px;
-  padding: 5px 10px;
-  font: 700 11px/1.2 var(--font-mono);
-  cursor: pointer;
-  transition:
-    border-color 0.2s ease,
-    background-color 0.2s ease;
-}
-
-.codeCopyButton:hover,
-.codeCopyButton:focus-visible {
-  border-color: var(--signal);
-  outline: none;
-}
-
-.codeCopyButtonCopied {
-  background: #a8321b;
-  border-color: var(--peach);
-  color: #fffaf2;
-}
-
-.codeBlockPreEnhanced {
-  margin: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  max-width: 100%;
-  overflow-x: auto;
 }
 
 /* CLI Copy Pill inside Docs Callout */

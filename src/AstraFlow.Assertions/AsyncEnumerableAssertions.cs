@@ -649,6 +649,28 @@ public sealed class AsyncEnumerableAssertions<T>
         return this;
     }
 
+    /// <summary>Asserts that fully enumerating the sequence completes without throwing and includes formatted failure context.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public async Task<AsyncEnumerableAssertions<T>> NotThrowAsync(string? because, params object?[] becauseArgs)
+    {
+        var actual = RequireSubject();
+        try
+        {
+            await using var enumerator = actual.GetAsyncEnumerator();
+            while (await enumerator.MoveNextAsync().ConfigureAwait(false))
+            {
+                _ = enumerator.Current;
+            }
+        }
+        catch (Exception exception)
+        {
+            AssertionFailure.FailWithBecause($"Expected async sequence enumeration not to throw, but it threw '{exception.GetType().FullName}'.", because, becauseArgs);
+        }
+
+        return this;
+    }
+
     private IAsyncEnumerable<T> RequireSubject()
     {
         if (_actual is null)

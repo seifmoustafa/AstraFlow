@@ -427,3 +427,12 @@ test('CLI guide indexes the read-only assertion migration command and its limits
     'cli',
   );
 });
+
+test('documentation markdown emits SSR code-block copy bars with localized labels', () => {
+  const doc = getDocBySlug('getting-started');
+  expect(doc).not.toBeNull();
+  expect(doc?.html).toContain('data-docs-code-block');
+  expect(doc?.html).toContain('data-docs-copy-btn');
+  expect(doc?.html).toContain('class="docs-code-bar"');
+  expect(doc?.html).toContain('tabindex="0"');
+});

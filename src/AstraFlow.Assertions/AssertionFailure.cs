@@ -8,6 +8,31 @@ internal static class AssertionFailure
     [DoesNotReturn]
     public static void Fail(string message) => throw new AstraFlowAssertionException(message);
 
+    [DoesNotReturn]
+    public static void FailWithBecause(string message, string? because, params object?[] becauseArgs)
+        => Fail(AddBecause(message, because, becauseArgs));
+
+    public static string AddBecause(string message, string? because, params object?[] becauseArgs)
+    {
+        var reason = because ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return message;
+        }
+
+        var formattedBecause = (becauseArgs is not { Length: > 0 }
+            ? reason
+            : string.Format(CultureInfo.InvariantCulture, reason, becauseArgs)).Trim();
+        if (formattedBecause.Length == 0)
+        {
+            return message;
+        }
+
+        var lastCharacter = formattedBecause[formattedBecause.Length - 1];
+        var terminalPunctuation = lastCharacter is '.' or '!' or '?' ? string.Empty : ".";
+        return $"{message} Because {formattedBecause}{terminalPunctuation}";
+    }
+
     public static string Describe(object? value)
     {
         if (value is null)

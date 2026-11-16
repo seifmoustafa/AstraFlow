@@ -156,7 +156,10 @@
   padding: 18px 20px 20px;
   background: var(--paper-raised);
   display: grid;
+  grid-template-rows: auto auto 1fr auto auto;
+  align-content: start;
   gap: 10px;
+  min-height: 282px;
 }
 
 .inspectorHeader {
@@ -240,6 +243,8 @@
   justify-content: space-between;
   gap: 10px 14px;
   padding-block-start: 6px;
+  min-height: 44px;
+  align-self: end;
 }
 
 .destBadge {
@@ -304,6 +309,15 @@
 
   .inspectorPanel {
     padding: 14px;
+    min-height: 395px;
+  }
+
+  .governanceRule {
+    min-height: 105px;
+  }
+
+  .inspectorFooter {
+    min-height: 94px;
   }
 
   .destLink {

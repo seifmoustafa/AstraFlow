@@ -39,4 +39,19 @@ public sealed class ActionAssertions
             AssertionFailure.Fail($"Expected action not to throw, but an exception of type '{exception.GetType().FullName}' was thrown.");
         }
     }
+
+    /// <summary>Asserts that the action completes without throwing and includes formatted failure context.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void NotThrow(string? because, params object?[] becauseArgs)
+    {
+        try
+        {
+            _action();
+        }
+        catch (Exception exception)
+        {
+            AssertionFailure.FailWithBecause($"Expected action not to throw, but an exception of type '{exception.GetType().FullName}' was thrown.", because, becauseArgs);
+        }
+    }
 }

@@ -440,6 +440,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px 18px;
+  min-height: 140px;
   padding: 15px 18px;
   border-radius: 10px;
   background: var(--forest-deep);
@@ -450,6 +451,13 @@
 
 .readoutContent {
   flex: 1 1 250px;
+  min-width: 0;
+  display: grid;
+  align-items: start;
+}
+
+.readoutMotionLayer {
+  grid-area: 1 / 1;
   min-width: 0;
 }
 
@@ -566,6 +574,10 @@
   .folioSheetActive {
     z-index: 2 !important;
     transform: translateY(-3px);
+  }
+
+  .readoutBar {
+    min-height: 194px;
   }
 }
 

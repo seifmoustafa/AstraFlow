@@ -30,6 +30,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Verify release changelog
+        shell: pwsh
+        run: ./scripts/verify-changelog-entry.ps1
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:

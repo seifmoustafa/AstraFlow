@@ -238,7 +238,7 @@ export function HomeExplodedArchitecture({
     rootMargin: '80px',
     threshold: 0.12,
     paused: reducedMotion,
-    initialInView: true,
+    initialInView: false,
   });
 
   const isIdleCycleActive =

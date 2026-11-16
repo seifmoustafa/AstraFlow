@@ -24,6 +24,9 @@ function Invoke-DotNetStep {
 }
 
 try {
+    Write-Host "==> Verify release changelog"
+    & .\scripts\verify-changelog-entry.ps1
+
     $previousSourceDateEpoch = $env:SOURCE_DATE_EPOCH
     $sourceDateEpoch = (& git -C $repoRoot.Path log -1 --format=%ct).Trim()
     if ($LASTEXITCODE -ne 0 -or $sourceDateEpoch -notmatch '^\d+$') {

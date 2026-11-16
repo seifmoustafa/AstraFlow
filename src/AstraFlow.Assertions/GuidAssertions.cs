@@ -33,4 +33,41 @@ public sealed class GuidAssertions
             AssertionFailure.Fail("Expected GUID values to be equal.");
         }
     }
+
+    /// <summary>Asserts that the value equals the expected GUID and includes formatted failure context.</summary>
+    public void Be(Guid expected, string? because, params object?[] becauseArgs)
+    {
+        if (_actual != expected)
+        {
+            AssertionFailure.FailWithBecause("Expected GUID values to be equal.", because, becauseArgs);
+        }
+    }
+
+    /// <summary>Asserts that the value differs from the supplied GUID.</summary>
+    public void NotBe(Guid unexpected)
+    {
+        if (_actual == unexpected)
+        {
+            AssertionFailure.Fail("Expected GUID values to differ.");
+        }
+    }
+
+    /// <summary>Asserts that the value equals one of the supplied GUIDs.</summary>
+    public void BeOneOf(params Guid[] expectations)
+    {
+        if (expectations is null)
+        {
+            throw new System.ArgumentNullException(nameof(expectations));
+        }
+
+        foreach (var expected in expectations)
+        {
+            if (_actual == expected)
+            {
+                return;
+            }
+        }
+
+        AssertionFailure.Fail("Expected GUID to equal one of the supplied choices.");
+    }
 }

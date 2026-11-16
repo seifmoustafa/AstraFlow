@@ -9,6 +9,9 @@ public sealed class StringAssertions
 
     internal StringAssertions(string? actual) => _actual = actual;
 
+    /// <summary>Gets the string being asserted.</summary>
+    public string? Subject => _actual;
+
     /// <summary>Returns this assertion object for an additional related check.</summary>
     public StringAssertions And => this;
 
@@ -21,6 +24,15 @@ public sealed class StringAssertions
         }
     }
 
+    /// <summary>Asserts ordinal equality and includes formatted context in a failure message.</summary>
+    public void Be(string? expected, string? because, params object?[] becauseArgs)
+    {
+        if (!string.Equals(_actual, expected, StringComparison.Ordinal))
+        {
+            AssertionFailure.FailWithBecause($"Expected strings to be ordinally equal; actual string length was {_actual?.Length.ToString() ?? "<null>"}.", because, becauseArgs);
+        }
+    }
+
     /// <summary>Asserts that the string is not ordinally equal to the unexpected value.</summary>
     public void NotBe(string? unexpected)
     {
@@ -28,6 +40,34 @@ public sealed class StringAssertions
         {
             AssertionFailure.Fail("Expected strings not to be ordinally equal.");
         }
+    }
+
+    /// <summary>Asserts ordinal inequality and includes formatted context in a failure message.</summary>
+    public void NotBe(string? unexpected, string? because, params object?[] becauseArgs)
+    {
+        if (string.Equals(_actual, unexpected, StringComparison.Ordinal))
+        {
+            AssertionFailure.FailWithBecause("Expected strings not to be ordinally equal.", because, becauseArgs);
+        }
+    }
+
+    /// <summary>Asserts that the string equals one of the supplied choices using ordinal comparison.</summary>
+    public void BeOneOf(params string?[] expectations)
+    {
+        if (expectations is null)
+        {
+            throw new ArgumentNullException(nameof(expectations));
+        }
+
+        foreach (var expected in expectations)
+        {
+            if (string.Equals(_actual, expected, StringComparison.Ordinal))
+            {
+                return;
+            }
+        }
+
+        AssertionFailure.Fail("Expected string to equal one of the supplied choices.");
     }
 
     /// <summary>Asserts that the string is not null.</summary>
@@ -45,6 +85,15 @@ public sealed class StringAssertions
         if (string.IsNullOrEmpty(_actual))
         {
             AssertionFailure.Fail("Expected a non-empty string.");
+        }
+    }
+
+    /// <summary>Asserts that the string is non-empty and includes formatted context in a failure message.</summary>
+    public void NotBeEmpty(string? because, params object?[] becauseArgs)
+    {
+        if (string.IsNullOrEmpty(_actual))
+        {
+            AssertionFailure.FailWithBecause("Expected a non-empty string.", because, becauseArgs);
         }
     }
 
@@ -217,6 +266,15 @@ public sealed class StringAssertions
         if (_actual is null || _actual.Length != 0)
         {
             AssertionFailure.Fail($"Expected an empty string, but actual string length was {_actual?.Length.ToString() ?? "<null>"}.");
+        }
+    }
+
+    /// <summary>Asserts that the string is empty and includes formatted context in a failure message.</summary>
+    public void BeEmpty(string? because, params object?[] becauseArgs)
+    {
+        if (_actual is null || _actual.Length != 0)
+        {
+            AssertionFailure.FailWithBecause($"Expected an empty string, but actual string length was {_actual?.Length.ToString() ?? "<null>"}.", because, becauseArgs);
         }
     }
 

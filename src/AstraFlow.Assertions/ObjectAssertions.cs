@@ -10,6 +10,15 @@ public sealed class ObjectAssertions<T>
 
     internal ObjectAssertions(T actual) => _actual = actual;
 
+    /// <summary>Gets the value being asserted.</summary>
+    public T Subject => _actual;
+
+    /// <summary>Gets the value being asserted.</summary>
+    public T Which => _actual;
+
+    /// <summary>Returns this assertion object for another related check.</summary>
+    public ObjectAssertions<T> And => this;
+
     internal T SubjectValue => _actual;
 
     /// <summary>Asserts that the subject has matching values for the expected object's public members.</summary>
@@ -23,6 +32,23 @@ public sealed class ObjectAssertions<T>
         if (!comparer.TryCompare(_actual, expected, out var mismatchPath))
         {
             AssertionFailure.Fail($"Expected values to be structurally equivalent at '{mismatchPath}'.");
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts structural equivalency and includes formatted context in a failure message.</summary>
+    /// <param name="expected">The expected object graph.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public ObjectAssertions<T> BeEquivalentTo<TExpected>(TExpected expected, string? because, params object?[] becauseArgs)
+    {
+        var options = CreateEquivalencyOptions(configure: null);
+        options.ValidateIncludedPaths(expected);
+        var comparer = new ObjectGraphEquivalencyComparer(options);
+        if (!comparer.TryCompare(_actual, expected, out var mismatchPath))
+        {
+            AssertionFailure.FailWithBecause($"Expected values to be structurally equivalent at '{mismatchPath}'.", because, becauseArgs);
         }
 
         return this;
@@ -44,13 +70,41 @@ public sealed class ObjectAssertions<T>
         return this;
     }
 
+    /// <summary>Asserts structural difference and includes formatted context in a failure message.</summary>
+    /// <param name="unexpected">The object graph that must differ.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public ObjectAssertions<T> NotBeEquivalentTo<TExpected>(TExpected unexpected, string? because, params object?[] becauseArgs)
+    {
+        var options = CreateEquivalencyOptions(configure: null);
+        options.ValidateIncludedPaths(unexpected);
+        var comparer = new ObjectGraphEquivalencyComparer(options);
+        if (comparer.TryCompare(_actual, unexpected, out _))
+        {
+            AssertionFailure.FailWithBecause("Expected object graphs not to be structurally equivalent, but they matched.", because, becauseArgs);
+        }
+
+        return this;
+    }
+
     /// <summary>Asserts that the value equals the expected value.</summary>
     public void Be(T expected, string? because = null)
     {
         if (!EqualityComparer<T>.Default.Equals(_actual, expected))
         {
-            var reason = string.IsNullOrWhiteSpace(because) ? string.Empty : $" Because {because}.";
-            AssertionFailure.Fail($"Expected value equal to {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.{reason}");
+            AssertionFailure.FailWithBecause($"Expected value equal to {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.", because);
+        }
+    }
+
+    /// <summary>Asserts equality and includes formatted context in a failure message.</summary>
+    /// <param name="expected">The expected value.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void Be(T expected, string? because, params object?[] becauseArgs)
+    {
+        if (!EqualityComparer<T>.Default.Equals(_actual, expected))
+        {
+            AssertionFailure.FailWithBecause($"Expected value equal to {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.", because, becauseArgs);
         }
     }
 
@@ -61,6 +115,38 @@ public sealed class ObjectAssertions<T>
         {
             AssertionFailure.Fail($"Expected a value different from {AssertionFailure.Describe(unexpected)}, but the values were equal.");
         }
+    }
+
+    /// <summary>Asserts inequality and includes formatted context in a failure message.</summary>
+    /// <param name="unexpected">The value that must differ.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void NotBe(T unexpected, string? because, params object?[] becauseArgs)
+    {
+        if (EqualityComparer<T>.Default.Equals(_actual, unexpected))
+        {
+            AssertionFailure.FailWithBecause($"Expected a value different from {AssertionFailure.Describe(unexpected)}, but the values were equal.", because, becauseArgs);
+        }
+    }
+
+    /// <summary>Asserts that the value equals one of the supplied choices.</summary>
+    /// <param name="expectations">The accepted values.</param>
+    public void BeOneOf(params T[] expectations)
+    {
+        if (expectations is null)
+        {
+            throw new ArgumentNullException(nameof(expectations));
+        }
+
+        foreach (var expected in expectations)
+        {
+            if (EqualityComparer<T>.Default.Equals(_actual, expected))
+            {
+                return;
+            }
+        }
+
+        AssertionFailure.Fail("Expected value to equal one of the supplied choices.");
     }
 
     /// <summary>Asserts that the value compares greater than the expected value.</summary>
@@ -163,6 +249,10 @@ public sealed class ObjectAssertions<T>
         return (TExpected)(object)_actual!;
     }
 
+    /// <summary>Asserts the exact runtime type and returns a result exposing both <c>Subject</c> and <c>Which</c>.</summary>
+    /// <typeparam name="TExpected">The required exact runtime type.</typeparam>
+    public TypeAssertionResult<TExpected> BeOfTypeAndWhich<TExpected>() => new(BeOfType<TExpected>());
+
     /// <summary>Asserts that the value can be assigned to the requested type and returns it.</summary>
     public TExpected BeAssignableTo<TExpected>()
     {
@@ -174,6 +264,30 @@ public sealed class ObjectAssertions<T>
         var actualType = _actual?.GetType().FullName ?? "<null>";
         AssertionFailure.Fail($"Expected a value assignable to '{typeof(TExpected).FullName}', but found '{actualType}'.");
         throw new InvalidOperationException("Unreachable assertion state.");
+    }
+
+    /// <summary>Asserts assignability and returns a result exposing both <c>Subject</c> and <c>Which</c>.</summary>
+    /// <typeparam name="TExpected">The required assignable type.</typeparam>
+    public TypeAssertionResult<TExpected> BeAssignableToAndWhich<TExpected>() => new(BeAssignableTo<TExpected>());
+
+    /// <summary>Asserts that the subject is not assignable to the requested type.</summary>
+    /// <typeparam name="TUnexpected">The type the subject must not be assignable to.</typeparam>
+    public void NotBeAssignableTo<TUnexpected>()
+    {
+        if (_actual is TUnexpected)
+        {
+            AssertionFailure.Fail($"Expected a value not assignable to '{typeof(TUnexpected).FullName}'.");
+        }
+    }
+
+    /// <summary>Asserts that the subject does not have the exact requested runtime type.</summary>
+    /// <typeparam name="TUnexpected">The runtime type the subject must not have.</typeparam>
+    public void NotBeOfType<TUnexpected>()
+    {
+        if (_actual is not null && _actual.GetType() == typeof(TUnexpected))
+        {
+            AssertionFailure.Fail($"Expected a value not to have exact runtime type '{typeof(TUnexpected).FullName}'.");
+        }
     }
 
     /// <summary>Asserts that the value is a declared member of its enum type.</summary>

@@ -52,20 +52,18 @@ function getRevealKeyframes(
   el: HTMLElement,
   direction: string | null
 ): Keyframe[] {
-  const isMaskedHead =
+  const isSectionHead =
     el.matches(".section-head, .eyebrow") && !direction;
 
-  if (isMaskedHead) {
+  if (isSectionHead) {
     return [
       {
         opacity: 1,
-        transform: "translate3d(0, 22px, 0)",
-        clipPath: "inset(0 0 100% 0)",
+        transform: "translate3d(0, 14px, 0)",
       },
       {
         opacity: 1,
         transform: "translate3d(0, 0, 0)",
-        clipPath: "inset(0 0 0% 0)",
       },
     ];
   }
@@ -74,11 +72,11 @@ function getRevealKeyframes(
     return [
       {
         opacity: 1,
-        transform: "perspective(900px) rotateY(3deg) translate3d(-22px, 0, 0)",
+        transform: "translate3d(-16px, 0, 0)",
       },
       {
         opacity: 1,
-        transform: "none",
+        transform: "translate3d(0, 0, 0)",
       },
     ];
   }
@@ -87,11 +85,11 @@ function getRevealKeyframes(
     return [
       {
         opacity: 1,
-        transform: "perspective(900px) rotateY(-3deg) translate3d(22px, 0, 0)",
+        transform: "translate3d(16px, 0, 0)",
       },
       {
         opacity: 1,
-        transform: "none",
+        transform: "translate3d(0, 0, 0)",
       },
     ];
   }
@@ -100,11 +98,11 @@ function getRevealKeyframes(
     return [
       {
         opacity: 1,
-        clipPath: "inset(0 0 18% 0)",
+        transform: "translate3d(0, 8px, 0)",
       },
       {
         opacity: 1,
-        clipPath: "inset(0 0 0% 0)",
+        transform: "translate3d(0, 0, 0)",
       },
     ];
   }
@@ -112,11 +110,11 @@ function getRevealKeyframes(
   return [
     {
       opacity: 1,
-      transform: "perspective(900px) rotateX(4deg) translate3d(0, 26px, 0)",
+      transform: "translate3d(0, 18px, 0)",
     },
     {
       opacity: 1,
-      transform: "none",
+      transform: "translate3d(0, 0, 0)",
     },
   ];
 }
@@ -188,16 +186,16 @@ export function GlobalScrollChoreographer() {
                 : Number.NaN;
               const siblingDelay = Number.isFinite(parsedCustomDelay)
                 ? parsedCustomDelay
-                : Math.min(batchIndex, 6) * 50;
+                : Math.min(batchIndex, 4) * 35;
               batchIndex += 1;
 
               const direction = el.getAttribute("data-reveal");
               try {
                 el.animate(getRevealKeyframes(el, direction), {
-                  duration: 540,
+                  duration: 380,
                   delay: siblingDelay,
                   easing: "cubic-bezier(0.16, 1, 0.3, 1)",
-                  fill: "none",
+                  fill: "backwards",
                 });
               } catch {
                 // Ignore animation errors in constrained headless environments
