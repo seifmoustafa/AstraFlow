@@ -8,7 +8,12 @@ public sealed class AsyncActionAssertions
     internal AsyncActionAssertions(Func<Task> action) => _action = action ?? throw new ArgumentNullException(nameof(action));
 
     /// <summary>Asserts that the operation throws the requested exception type or a derived type.</summary>
-    public async Task<ExceptionAssertions<TException>> ThrowAsync<TException>() where TException : Exception
+    public Task<ExceptionAssertions<TException>> ThrowAsync<TException>() where TException : Exception => ThrowAsync<TException>(null);
+
+    /// <summary>Asserts that the operation throws the requested exception type or a derived type and adds formatted failure context.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public async Task<ExceptionAssertions<TException>> ThrowAsync<TException>(string? because, params object?[] becauseArgs) where TException : Exception
     {
         try
         {
@@ -20,10 +25,10 @@ public sealed class AsyncActionAssertions
         }
         catch (Exception exception)
         {
-            AssertionFailure.Fail($"Expected exception assignable to '{typeof(TException).FullName}', but an exception of type '{exception.GetType().FullName}' was thrown.");
+            AssertionFailure.FailWithBecause($"Expected exception assignable to '{typeof(TException).FullName}', but an exception of type '{exception.GetType().FullName}' was thrown.", because, becauseArgs);
         }
 
-        AssertionFailure.Fail($"Expected exception assignable to '{typeof(TException).FullName}', but the operation completed successfully.");
+        AssertionFailure.FailWithBecause($"Expected exception assignable to '{typeof(TException).FullName}', but the operation completed successfully.", because, becauseArgs);
         throw new InvalidOperationException("Unreachable assertion state.");
     }
 

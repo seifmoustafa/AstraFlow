@@ -8,8 +8,8 @@ Add `AstraFlow.Generators` as a build-time dependency alongside `AstraFlow.Media
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="AstraFlow.Mediator" Version="2.4.3" />
-  <PackageReference Include="AstraFlow.Generators" Version="2.4.3" PrivateAssets="all" />
+  <PackageReference Include="AstraFlow.Mediator" Version="2.4.4" />
+  <PackageReference Include="AstraFlow.Generators" Version="2.4.4" PrivateAssets="all" />
 </ItemGroup>
 ```
 

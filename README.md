@@ -6,7 +6,7 @@ A modular .NET suite of **16 focused packages** for explicit request dispatch, o
 
 [Getting Started](docs/getting-started.md) · [Package Selection](docs/package-selection.md) · [Version & Upgrade Guide](docs/version-upgrade-guide.md) · [Compatibility](docs/compatibility.md) · [Changelog](CHANGELOG.md) · [Branding](docs/branding.md)
 
-> **Release status & support policy:** The 2.4.x line includes the standalone `AstraFlow.Assertions` package, expanded compile-time mapping generation, and read-only CLI assertion migration analysis. The 2.4.1 patch fixed the package README image on NuGet.org; 2.4.2 and 2.4.3 add compile-tested assertion migration compatibility, with 2.4.3 covering additional formatted assertion overloads and the `netstandard2.0` nullable-flow fix. Check NuGet.org for the latest package version before pinning it. All **`1.x`** packages are **deprecated** — use the **`2.x`** line.
+> **Release status & support policy:** The 2.4.x line includes the standalone `AstraFlow.Assertions` package, expanded compile-time mapping generation, and read-only CLI assertion migration analysis. The 2.4.1 patch fixed the package README image on NuGet.org; 2.4.2 through 2.4.4 add compile-tested assertion migration compatibility, with 2.4.4 extending formatted failure reasons and case-insensitive string containment checks. Check NuGet.org for the latest package version before pinning it. All **`1.x`** packages are **deprecated** — use the **`2.x`** line.
 
 ---
 
