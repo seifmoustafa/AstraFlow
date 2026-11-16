@@ -16,6 +16,7 @@ import {
   poly,
   seg,
   useReducedMotionSafe,
+  useViewportActivity,
 } from "@core/hairline";
 import { scrollToElementOrHash } from "@core/motion";
 import type { ChangelogRelease, ChangelogStats } from '../data/model';
@@ -95,7 +96,12 @@ export function VersionDeck({
   onJumpToRelease,
 }: VersionDeckProps) {
   const t = useTranslations('releases.changelog.deck');
+  const deckRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotionSafe();
+  const { isActive: deckInViewport } = useViewportActivity(deckRef, {
+    paused: reducedMotion,
+    initialInView: true,
+  });
   const featured = useMemo(() => selectFeaturedReleases(releases), [releases]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
@@ -107,7 +113,7 @@ export function VersionDeck({
   const activeRelease = featured[safeIndex] ?? releases[0];
   const isUserInteracting = isHovered || isFocusInside;
   const shouldAutoCycle =
-    !reducedMotion && !isUserInteracting && featured.length > 1;
+    !reducedMotion && deckInViewport && !isUserInteracting && featured.length > 1;
 
   useEffect(() => {
     if (!shouldAutoCycle) {
@@ -190,6 +196,7 @@ export function VersionDeck({
 
   return (
     <div
+      ref={deckRef}
       className={styles.deckRoot}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

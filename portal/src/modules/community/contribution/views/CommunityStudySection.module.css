@@ -10,7 +10,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: clamp(28px, 4vw, 60px);
-  align-items: center;
+  align-items: start;
 }
 
 .copyColumn {
@@ -331,7 +331,7 @@
   font-size: 11.5px;
   line-height: 1.45;
   color: var(--ink);
-  min-height: 1.45em;
+  min-height: 2.9em;
 }
 
 @media (max-width: 1040px) {

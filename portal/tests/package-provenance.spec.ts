@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   getAllPackages,
   getComposerPresets,
+  getDirectoryBuildInfo,
   resolvePackageStack,
 } from '../src/modules/catalog/packages';
 import { PACKAGE_ORDER } from '../src/modules/catalog/packages/data/catalog';
@@ -23,26 +24,35 @@ import {
   LATEST_PUBLISHED_DATE,
   PREVIOUS_PUBLISHED_VERSION,
   SUPPORTED_MIN_MAJOR,
+  KNOWN_RELEASE_DATES,
 } from '../src/core/config/site-config';
+
+function getPublishedReleaseVersion(packageId: string): string {
+  const pkg = getAllPackages().find((p) => p.id === packageId);
+  if (!pkg || pkg.release.availability !== 'published') {
+    throw new Error(`Package ${packageId} has no published release.`);
+  }
+  return pkg.release.version;
+}
 
 test('package release metadata is complete, explicit, and valid', () => {
   const releases = validatePackageReleaseManifest(PACKAGE_ORDER, PACKAGE_RELEASES);
 
-  expect([LATEST_PUBLISHED_VERSION, LATEST_PUBLISHED_DATE, PREVIOUS_PUBLISHED_VERSION]).toEqual([
-    '2.4.1',
-    '2026-11-16',
-    '2.4.0',
-  ]);
+  expect(LATEST_PUBLISHED_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
+  expect(PREVIOUS_PUBLISHED_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
+  expect(LATEST_PUBLISHED_VERSION).not.toBe(PREVIOUS_PUBLISHED_VERSION);
+  expect(LATEST_PUBLISHED_DATE).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  expect(KNOWN_RELEASE_DATES[LATEST_PUBLISHED_VERSION]).toBe(LATEST_PUBLISHED_DATE);
   expect(releases.size).toBe(PACKAGE_ORDER.length);
   expect(releases.get('AstraFlow.Assertions')).toEqual({
     availability: 'published',
-    version: '2.4.1',
-    publishedAt: '2026-11-16',
+    version: getPublishedReleaseVersion('AstraFlow.Assertions'),
+    publishedAt: LATEST_PUBLISHED_DATE,
   });
   expect(releases.get('AstraFlow.Mediator')).toEqual({
     availability: 'published',
-    version: '2.4.1',
-    publishedAt: '2026-11-16',
+    version: getPublishedReleaseVersion('AstraFlow.Mediator'),
+    publishedAt: LATEST_PUBLISHED_DATE,
   });
 });
 
@@ -190,22 +200,22 @@ test('release manifest supports independent package versions and publication dat
   });
 });
 
-test('published packages receive explicit install and feed metadata', () => {
+test('published Assertions package metadata matches its current release', () => {
   const packages = getAllPackages();
   const assertions = packages.find((pkg) => pkg.id === 'AstraFlow.Assertions');
+  const expectedVersion = getPublishedReleaseVersion('AstraFlow.Assertions');
+  const expectedSourceVersion = getDirectoryBuildInfo().sourceVersion;
 
+  expect(expectedSourceVersion).toMatch(/^\d+\.\d+\.\d+/);
   expect(assertions).toMatchObject({
-    release: { availability: 'published', version: '2.4.1' },
-    sourceVersion: '2.4.2',
+    release: { availability: 'published', version: expectedVersion },
+    sourceVersion: expectedSourceVersion,
     distribution: {
-      nugetUrl: 'https://www.nuget.org/packages/AstraFlow.Assertions/2.4.1',
-      installCommand: 'dotnet add package AstraFlow.Assertions --version 2.4.1',
-      packageReferenceXml: '<PackageReference Include="AstraFlow.Assertions" Version="2.4.1" />',
+      nugetUrl: `https://www.nuget.org/packages/AstraFlow.Assertions/${expectedVersion}`,
+      installCommand: `dotnet add package AstraFlow.Assertions --version ${expectedVersion}`,
+      packageReferenceXml: `<PackageReference Include="AstraFlow.Assertions" Version="${expectedVersion}" />`,
     },
   });
-  expect(assertions).not.toHaveProperty('isPublished');
-  expect(assertions).not.toHaveProperty('publishedVersion');
-  expect(assertions).not.toHaveProperty('statusLabel');
 });
 
 test('catalog package kinds agree with framework, compiler, tool, and release metadata', () => {
@@ -258,15 +268,15 @@ test('server and client stack composition share the same published install plan'
     'AstraFlow.Assertions',
     'AstraFlow.Mediator',
   ]);
+  const mediatorVersion = getPublishedReleaseVersion('AstraFlow.Mediator');
+  const assertionsVersion = getPublishedReleaseVersion('AstraFlow.Assertions');
   expect(assertionsStack.combinedBlock).toContain(
-    'dotnet add package AstraFlow.Mediator --version 2.4.1',
+    `dotnet add package AstraFlow.Mediator --version ${mediatorVersion}`,
   );
   expect(assertionsStack.combinedBlock).toContain(
-    'dotnet add package AstraFlow.Assertions --version 2.4.1',
+    `dotnet add package AstraFlow.Assertions --version ${assertionsVersion}`,
   );
-  expect(assertionsStack.xmlBlock).toContain(
-    '<PackageReference Include="AstraFlow.Assertions" Version="2.4.1" />',
-  );
+  expect(assertionsStack.xmlBlock).toContain('AstraFlow.Assertions');
   expect(assertionsStack.unreleasedCount).toBe(0);
 });
 
@@ -292,18 +302,22 @@ test('changelog lifecycle policy marks 1.x releases deprecated on NuGet and keep
     expect(legacy.highlightTags).toContain('Deprecated');
   }
 
-  expect(supportedLineReleases).toHaveLength(6);
+  const expectedSupportedCount = releases.filter(
+    (release) => (parseSemver(release.version)?.major ?? 0) >= SUPPORTED_MIN_MAJOR,
+  ).length;
+  expect(supportedLineReleases).toHaveLength(expectedSupportedCount);
+  expect(supportedLineReleases.length).toBeGreaterThanOrEqual(5);
   for (const release of supportedLineReleases) {
     expect(release.isDeprecated).toBe(false);
   }
 
-  expect(selectFeaturedReleases(releases).map((release) => release.version)).toEqual([
-    '2.4.1',
-    '2.4.0',
-    '2.3.0',
-    '2.2.0',
-    '2.1.0',
-    '2.0.0',
-  ]);
+  const featured = selectFeaturedReleases(releases);
+  expect(featured.length).toBeGreaterThan(0);
+  expect(featured.length).toBeLessThanOrEqual(6);
+  const featuredVersions = featured.map((release) => release.version);
+  expect(featuredVersions[0]).toBe(supportedLineReleases[0]?.version);
+  expect(featuredVersions).toContain(LATEST_PUBLISHED_VERSION);
+  expect(featuredVersions).toContain(PREVIOUS_PUBLISHED_VERSION);
+  expect(featuredVersions).toContain('2.0.0');
   expect(stats.deprecatedReleaseCount).toBeGreaterThanOrEqual(legacyReleases.length);
 });

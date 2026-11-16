@@ -658,7 +658,7 @@ export function LivingFlowAtlas({
   const reducedMotion = useReducedMotionSafe();
   const { isActive: viewportActive } = useViewportActivity(sectionRef, {
     paused: reducedMotion,
-    initialInView: true,
+    initialInView: false,
   });
 
   const sceneGeom = useMemo(() => buildAtlasSceneGeometry(), []);
@@ -1150,7 +1150,6 @@ export function LivingFlowAtlas({
 
               <div
                 className={styles.codeScroll}
-                data-lenis-prevent
                 tabIndex={0}
                 role="region"
                 aria-label={t('exampleViewportAria', { file: spec.fileName })}

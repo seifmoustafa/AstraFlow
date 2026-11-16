@@ -14,6 +14,11 @@ export interface CodeSnippet {
   html: string;
 }
 
+export interface CodeBlockLabels {
+  copy: string;
+  copied: string;
+}
+
 export interface RenderMarkdownOptions {
   /** Repo-relative POSIX source path, e.g. `docs/adr/0001-generated-mapper.md` or `README.md`. */
   sourcePath?: string;
@@ -21,6 +26,8 @@ export interface RenderMarkdownOptions {
   docSlugs?: ReadonlySet<string>;
   /** Optional slug alias map, e.g. `quick-start` -> `getting-started`. */
   docAliases?: ReadonlyMap<string, string>;
+  /** Localized button labels for SSR fenced code block headers. */
+  codeBlockLabels?: CodeBlockLabels;
 }
 
 export interface RenderedMarkdown {
@@ -389,8 +396,19 @@ export function renderMarkdown(
 
       code(token: Tokens.Code): string {
         const normalizedLang = normalizeCodeLanguage(token.lang);
+        const displayLang = normalizedLang.toUpperCase();
         const highlighted = highlightCode(token.text, normalizedLang);
-        const blockHtml = `<pre class="code-block" data-lang="${escapeHtml(normalizedLang)}"><code class="language-${escapeHtml(normalizedLang)}">${highlighted}</code></pre>\n`;
+        const copyLabel = options.codeBlockLabels?.copy ?? 'Copy';
+        const copiedLabel = options.codeBlockLabels?.copied ?? 'Copied ✓';
+        const ariaLabel = `${copyLabel} ${displayLang} code`;
+        const blockHtml =
+          `<div class="docs-code-wrap" data-docs-code-block>` +
+          `<div class="docs-code-bar">` +
+          `<span class="docs-code-lang">${escapeHtml(displayLang)}</span>` +
+          `<button type="button" class="docs-code-copy" data-docs-copy-btn data-copy-label="${escapeHtml(copyLabel)}" data-copied-label="${escapeHtml(copiedLabel)}" aria-label="${escapeHtml(ariaLabel)}">${escapeHtml(copyLabel)}</button>` +
+          `</div>` +
+          `<pre class="code-block" data-lang="${escapeHtml(normalizedLang)}" tabindex="0"><code class="language-${escapeHtml(normalizedLang)}">${highlighted}</code></pre>` +
+          `</div>\n`;
 
         if (firstCodeSnippet === null && token.text.trim().length > 0) {
           firstCodeSnippet = {

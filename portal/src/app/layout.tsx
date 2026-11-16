@@ -54,13 +54,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       lang={DEFAULT_LOCALE}
       dir={getDirection(DEFAULT_LOCALE)}
       data-theme="warm-forest"
-      data-scroll-behavior="smooth"
     >
       <body>
         <NextIntlClientProvider locale={DEFAULT_LOCALE} messages={messages}>
           {children}
         </NextIntlClientProvider>
-        <Analytics />
+      {process.env.VERCEL === '1' ? <Analytics /> : null}
       </body>
     </html>
   );

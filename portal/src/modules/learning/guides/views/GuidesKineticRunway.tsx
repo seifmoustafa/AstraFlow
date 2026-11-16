@@ -403,7 +403,7 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
   const reducedMotion = useReducedMotionSafe();
   const stageActivity = useViewportActivity(stageRef, {
     paused: reducedMotion,
-    initialInView: true,
+    initialInView: false,
   });
 
   useEffect(() => {
@@ -984,7 +984,7 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
                     {copiedKind === 'code' ? t('copied') : t('copySnippet')}
                   </Button>
                 </div>
-                <pre className={styles.codePre} tabIndex={0} data-lenis-prevent>
+                <pre className={styles.codePre} tabIndex={0}>
                   <code
                     className={`language-${active.codeLang}`}
                     dangerouslySetInnerHTML={{ __html: active.codeHtml }}
@@ -1011,7 +1011,7 @@ export function GuidesKineticRunway({ milestones }: GuidesKineticRunwayProps) {
                       : t('copyVerification')}
                   </Button>
                 </div>
-                <code className={styles.verifyCmd} tabIndex={0} data-lenis-prevent>
+                <code className={styles.verifyCmd} tabIndex={0}>
                   {localCheck.command}
                 </code>
                 <p className={styles.verifyCaption}>{localCheck.note}</p>

@@ -6,19 +6,19 @@ These rules govern the Next.js 16 developer web portal under `portal/` and its s
 
 - Every AstraFlow version bump, new package, public API change, CLI/analyzer capability addition, or release update **MUST** synchronize `portal/` in the same task.
 - Keep these portal source-of-truth modules and product guides aligned with `Directory.Build.props`, `src/*/*.csproj`, shipped C# contracts, and `CHANGELOG.md`:
-  - `portal/src/lib/site-config.ts`
-  - `portal/src/lib/packages.ts`
+  - `portal/src/core/config/site-config.ts`
+  - `portal/src/modules/catalog/packages/` (`data/catalog.ts`, `data/release-manifest.ts`, `data/presets.ts`, `packages.en.ts`)
   - `portal/src/content/docs/*.md`
-  - `portal/src/lib/guides.ts`
-  - `portal/src/lib/changelog.ts`
-  - `portal/src/content/ui-copy.ts`
+  - `portal/src/modules/learning/guides/` (`data/catalog.ts`, `guides.en.ts`)
+  - `portal/src/modules/releases/changelog/` (`data/policy.ts`, `changelog.en.ts`)
+  - `portal/src/core/locales/` and module `*.en.ts` translation files
 - Follow `.agents/skills/portal-maintenance/SKILL.md` whenever synchronizing portal data or documentation, and run the portal verification suite (`npm run typecheck`, `npx eslint . --max-warnings 0`, `npm run build`, `npm run test:e2e`) before completion.
 - **Version, Deck & Playground Scalability Rules**:
   - Format `CHANGELOG.md` release headings using the [Keep a Changelog convention](https://keepachangelog.com/en/1.1.0/): `## [Unreleased]` followed by dated releases such as `## [2.4.0] - 2026-11-15`. Use ISO `YYYY-MM-DD` release dates; do not add a `published` label to headings. Do not invent dates when backfilling older entries.
   - Before packing a stable release, move that version's notes out of `[Unreleased]` into its dated version section. `[Unreleased]` is reserved for work after the release; the packaged `CHANGELOG.md` must name the package version being packed. `scripts/verify-changelog-entry.ps1` must pass before any pack or publish path.
   - A changelog version and date do not prove NuGet publication. After publishing, confirm every expected package at the exact version on NuGet; then update `portal/src/core/config/site-config.ts` (`LATEST_PUBLISHED_VERSION`, `LATEST_PUBLISHED_DATE`) and package release manifests in the same task. Until NuGet confirms availability, describe the release as publishing/pending indexing, not published. Never leave a confirmed release under `[Unreleased]` or call an upload attempt a completed publication.
   - `VersionDeck` on `/changelog` uses an automatic **6-card sliding window** driven by `CHANGELOG.md` (pinning the newest active edition and major landmarks, retiring older minor editions cleanly to `ReleaseFolio` so adding versions never breaks hero deck geometry).
-  - Adding new packages or interactive stack layers requires updating `portal/src/lib/packages.ts` (`PACKAGE_CATALOG` + `PACKAGE_CATEGORIES` + `PACKAGE_PRESETS`); `PackagesModuleLoom`, `PackagesStackComposer`, and `stack-resolver.ts` scale heights, plates, and camera fit automatically from catalog metadata.
+  - Adding new packages or interactive stack layers requires updating `portal/src/modules/catalog/packages/data/` (`catalog.ts`, `presets.ts`, `release-manifest.ts`, and `packages.en.ts`); `PackagesModuleLoom`, `PackagesStackComposer`, and `portal/src/modules/catalog/packages/views/stack-resolver.ts` scale heights, plates, and camera fit automatically from catalog metadata.
   - Record deprecations under a release's `### Deprecated` section in `CHANGELOG.md`; do not add lifecycle labels to version headings. The portal's release policy and `ReleaseFolio` surface verified deprecation state and notes.
 
 ## 2. Warm Forest Design & Structure Preservation

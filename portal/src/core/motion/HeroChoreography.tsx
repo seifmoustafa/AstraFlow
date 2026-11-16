@@ -68,7 +68,7 @@ export function HeroTextReveal({
           duration: 520,
           delay: delayMs,
           easing: "cubic-bezier(0.16, 1, 0.3, 1)",
-          fill: "none",
+          fill: "backwards",
         }
       );
 
@@ -105,11 +105,13 @@ export function HeroStageEntrance({
   className,
   parallax = true,
 }: HeroStageEntranceProps) {
-  const stageRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const scrubRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const el = stageRef.current;
-    if (!el || typeof window === "undefined") {
+    const outerEl = stageRef.current;
+    const scrubEl = scrubRef.current;
+    if (!outerEl || !scrubEl || typeof window === "undefined") {
       return;
     }
 
@@ -118,9 +120,9 @@ export function HeroStageEntrance({
     }
 
     let entranceAnim: Animation | null = null;
-    if (typeof el.animate === "function") {
+    if (typeof outerEl.animate === "function") {
       try {
-        entranceAnim = el.animate(
+        entranceAnim = outerEl.animate(
           [
             {
               transform: "translate3d(0, 16px, 0) scale(0.975)",
@@ -135,7 +137,7 @@ export function HeroStageEntrance({
             duration: 640,
             easing: "cubic-bezier(0.16, 1, 0.3, 1)",
             fill: "none",
-          }
+          },
         );
       } catch {
         entranceAnim = null;
@@ -146,18 +148,18 @@ export function HeroStageEntrance({
     if (parallax) {
       ensureScrollTrigger();
       ctx = gsap.context(() => {
-        gsap.to(el, {
+        gsap.to(scrubEl, {
           y: 14,
           ease: "none",
           scrollTrigger: {
-            trigger: el,
+            trigger: outerEl,
             start: "top top",
             end: "bottom top",
             scrub: 0.5,
             invalidateOnRefresh: true,
           },
         });
-      }, el);
+      }, outerEl);
     }
 
     return () => {
@@ -168,7 +170,7 @@ export function HeroStageEntrance({
 
   return (
     <div ref={stageRef} data-hero-stage="true" className={className}>
-      {children}
+      <div ref={scrubRef}>{children}</div>
     </div>
   );
 }

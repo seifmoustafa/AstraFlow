@@ -7,7 +7,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   scroll-padding-top: 92px;
   overflow-x: clip;
 }
@@ -219,7 +218,7 @@ h3 {
   pointer-events: none;
   background: var(--signal, #f25e3b);
   transform-origin: 0 50%;
-  transform: scaleX(var(--v11-scroll, 0));
+  transform: scaleX(0);
   will-change: transform;
   opacity: 0.92;
 }
@@ -2053,6 +2052,9 @@ h3 {
 .docs-toc a {
   display: block;
   padding-block: 6px;
+  padding-inline-start: 10px;
+  margin-inline-start: -12px;
+  border-inline-start: 2px solid transparent;
   color: var(--ink-secondary);
   line-height: 1.4;
 }
@@ -2062,7 +2064,7 @@ h3 {
 }
 
 .docs-toc a[data-level="3"] {
-  padding-inline-start: 12px;
+  padding-inline-start: 22px;
   font-size: 11px;
   color: var(--muted);
 }
@@ -2191,6 +2193,66 @@ h3 {
   overflow-x: auto;
   font: 13px/1.7 var(--font-mono);
   margin-block: 20px 24px;
+}
+
+.docs-prose .docs-code-wrap {
+  margin-block: 20px 24px;
+  border-radius: 8px;
+  border: 1px solid #20493e;
+  overflow: hidden;
+  background: #072720;
+  max-width: 100%;
+}
+
+.docs-prose .docs-code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--forest);
+  border-block-end: 1px solid #20493e;
+}
+
+.docs-prose .docs-code-lang {
+  font: 700 10.5px/1 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--peach);
+}
+
+.docs-prose .docs-code-copy {
+  appearance: none;
+  border: 1px solid #376053;
+  background: var(--forest-deep);
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font: 700 11px/1.2 var(--font-mono);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.docs-prose .docs-code-copy:hover,
+.docs-prose .docs-code-copy:focus-visible {
+  border-color: var(--signal);
+  outline: none;
+}
+
+.docs-prose .docs-code-copy--copied {
+  background: #a8321b;
+  border-color: var(--peach);
+  color: #fffaf2;
+}
+
+.docs-prose .docs-code-wrap pre.code-block {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .docs-prose pre code {
@@ -3827,27 +3889,7 @@ h3 {
   }
 }
 
-/* Lenis Smooth Scroll, Sticky Elevation & Agency Motion System */
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-
-html.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-  overflow: clip;
-}
-
-[data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
+/* Sticky Elevation & Agency Motion System */
 
 .site-header {
   transition:

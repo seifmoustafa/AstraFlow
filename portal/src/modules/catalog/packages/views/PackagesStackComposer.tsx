@@ -106,12 +106,12 @@ export function PackagesStackComposer({
   const [hoveredLayerId, setHoveredLayerId] = useState<string | null>(null);
   const [stagedBanner, setStagedBanner] = useState<string | null>(null);
   const [copiedTab, setCopiedTab] = useState<InstallOutputTab | null>(null);
-  const [prevStagedSeq, setPrevStagedSeq] = useState<number | null>(null);
+  const lastStagedSeqRef = useRef<number | null>(null);
 
   const reducedMotion = useReducedMotionSafe();
   const { isActive: viewportActive } = useViewportActivity(stackStageRef, {
     paused: reducedMotion,
-    initialInView: true,
+    initialInView: false,
   });
 
   const applyStagedDetail = useCallback((detail: StageStackEventDetail) => {
@@ -146,15 +146,18 @@ export function PackagesStackComposer({
     );
   }, [t]);
 
-  if (stagedRequest && stagedRequest.seq !== prevStagedSeq) {
-    setPrevStagedSeq(stagedRequest.seq);
+  useEffect(() => {
+    if (!stagedRequest || stagedRequest.seq === lastStagedSeqRef.current) {
+      return;
+    }
+    lastStagedSeqRef.current = stagedRequest.seq;
     applyStagedDetail({
       packageIds: stagedRequest.packageIds,
       moduleId: stagedRequest.moduleId,
       label: stagedRequest.label,
       mode: stagedRequest.mode,
     });
-  }
+  }, [stagedRequest, applyStagedDetail]);
 
   useEffect(() => {
     const onStageEvent = (event: Event) => {
@@ -556,7 +559,6 @@ export function PackagesStackComposer({
             {visibleGroups.length > 0 ? (
               <div
                 className={styles.groupList}
-                data-lenis-prevent=""
                 tabIndex={0}
               >
                 {visibleGroups.map((group) => (
@@ -958,7 +960,6 @@ export function PackagesStackComposer({
             >
               <pre
                 className={styles.codeBox}
-                data-lenis-prevent=""
                 tabIndex={0}
               >
                 {currentOutputCode}
