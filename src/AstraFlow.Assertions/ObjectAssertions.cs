@@ -250,6 +250,18 @@ public sealed class ObjectAssertions<T>
         }
     }
 
+    /// <summary>Asserts reference identity and adds formatted failure context.</summary>
+    /// <param name="expected">The object instance the subject must reference.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void BeSameAs(object? expected, string? because, params object?[] becauseArgs)
+    {
+        if (!ReferenceEquals(_actual, expected))
+        {
+            AssertionFailure.FailWithBecause("Expected both values to reference the same object instance.", because, becauseArgs);
+        }
+    }
+
     /// <summary>Asserts that the value is not the same object instance as unexpected.</summary>
     public void NotBeSameAs(object? unexpected)
     {

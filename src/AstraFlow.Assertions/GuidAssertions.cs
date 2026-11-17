@@ -52,6 +52,18 @@ public sealed class GuidAssertions
         }
     }
 
+    /// <summary>Asserts that the value differs from the supplied GUID and adds formatted failure context.</summary>
+    /// <param name="unexpected">The GUID value the subject must not equal.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void NotBe(Guid unexpected, string? because, params object?[] becauseArgs)
+    {
+        if (_actual == unexpected)
+        {
+            AssertionFailure.FailWithBecause("Expected GUID values to differ.", because, becauseArgs);
+        }
+    }
+
     /// <summary>Asserts that the value equals one of the supplied GUIDs.</summary>
     public void BeOneOf(params Guid[] expectations)
     {

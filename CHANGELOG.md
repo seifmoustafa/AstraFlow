@@ -32,6 +32,37 @@ All notable AstraFlow changes are tracked here.
 
 - None.
 
+## [2.4.5] - (unreleased)
+
+### Breaking Changes
+
+- None.
+
+### Added
+
+- Add formatted failure context to string prefix checks, finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity checks, and GUID inequality checks.
+- Support nullable-to-nullable `Be(T?)` equality, including matching null to null.
+
+### Changed
+
+- None.
+
+### Fixed
+
+- None.
+
+### Deprecated
+
+- None.
+
+### Removed
+
+- None.
+
+### Security
+
+- None.
+
 ## [2.4.4] - 2026-11-17
 
 ### Breaking Changes
@@ -1041,7 +1072,8 @@ All notable AstraFlow changes are tracked here.
 - Added `AstraFlow` convenience registration package.
 - Added package tests, integration tests, samples, NuGet metadata, XML documentation, symbols, SourceLink-ready metadata, and MIT license.
 
-[Unreleased]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.4...HEAD
+[Unreleased]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.5...HEAD
+[2.4.5]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.4...v2.4.5
 [2.4.4]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.3...v2.4.4
 [2.4.3]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.2...v2.4.3
 [2.4.2]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.1...v2.4.2
