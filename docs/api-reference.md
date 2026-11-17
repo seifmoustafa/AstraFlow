@@ -17,7 +17,7 @@ This reference describes the AstraFlow `2.4.x` API and retains relevant `2.3.0` 
 
 ## Assertions API (`2.4.x`)
 
-`AstraFlow.Assertions` is for tests of any application. It is independent of AstraFlow runtime packages and test runners. The package was introduced in 2.4.0 and is published. The 2.4.2, 2.4.3, and 2.4.4 compatibility patches add the migration calls marked in [the AwesomeAssertions migration guide](assertion-migration.md); they do not claim full API parity.
+`AstraFlow.Assertions` is for tests of any application. It is independent of AstraFlow runtime packages and test runners. The package was introduced in 2.4.0 and is published. The 2.4.2, 2.4.3, 2.4.4, and 2.4.5 compatibility patches add the migration calls marked in [the AwesomeAssertions migration guide](assertion-migration.md); they do not claim full API parity.
 
 | Type | Public methods | Semantics |
 | --- | --- | --- |

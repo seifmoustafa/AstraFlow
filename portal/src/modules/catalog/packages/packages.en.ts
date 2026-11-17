@@ -264,7 +264,7 @@ export const packagesEn = {
         'Zero AstraFlow runtime or test-runner package dependencies',
         'Value-free predicates, ordinal/wildcard/timeout-bounded regex matching, and safe failure messages',
         'AstraFlow 2.4.4 adds formatted reasons for type identity, comparisons, collection and dictionary checks, predicates, and sync/async exceptions, plus case-insensitive string NotContainEquivalentOf',
-        'The upcoming AstraFlow 2.4.5 patch adds formatted reasons for string prefixes and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality',
+        'The published AstraFlow 2.4.5 patch adds formatted reasons for string prefixes and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality',
         'Strict positive/negative assertions for integral, floating-point, and decimal values, with defined zero, NaN, and infinity behavior',
         'Nullable scalar, enum, numeric, temporal, and GUID assertions on all four targets; nullable DateOnly and TimeOnly checks are available on net8.0, net9.0, and net10.0',
         'Non-consuming Stream.Should() capability and seekable metadata checks on all four targets, with safe null/disposed/unsupported-metadata failures and propagated unexpected I/O errors',

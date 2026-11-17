@@ -4,7 +4,7 @@
 
 ## Availability
 
-The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only. The 2.4.2 patch adds compile-tested migration compatibility APIs for common assertion patterns, 2.4.3 adds boolean equality, null/presence, whitespace, negative containment, and positive dictionary-key checks, and 2.4.4 adds formatted reasons across type, comparison, collection, dictionary, predicate, and exception assertions. The upcoming 2.4.5 patch adds formatted reasons to string prefixes and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality.
+The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only. The 2.4.2 patch adds compile-tested migration compatibility APIs for common assertion patterns, 2.4.3 adds boolean equality, null/presence, whitespace, negative containment, and positive dictionary-key checks, and 2.4.4 adds formatted reasons across type, comparison, collection, dictionary, predicate, and exception assertions. The published 2.4.5 release adds formatted reasons to string prefixes and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality.
 
 The package has no runtime dependencies. Install it in a test project with:
 
@@ -12,7 +12,7 @@ The package has no runtime dependencies. Install it in a test project with:
 dotnet add package AstraFlow.Assertions
 ```
 
-NuGet resolves the latest published package version. AstraFlow.Assertions 2.4.4 includes the 2.4.2 and 2.4.3 migration compatibility additions, plus formatted reason overloads for type, comparison, collection and dictionary count/containment, predicate, and exception assertions, and case-insensitive string `NotContainEquivalentOf`.
+NuGet resolves the latest published package version. AstraFlow.Assertions 2.4.5 includes the 2.4.2 through 2.4.4 migration compatibility additions, plus formatted reason overloads for string prefixes, finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality.
 
 ## Start with `Should()`
 
@@ -43,7 +43,7 @@ Stream checks use `Stream.Should()` on all targets. Capability and metadata chec
 
 `HaveContent(byte[])` and `NotHaveContent(byte[])` compare the exact bytes remaining from the stream's current position, including the absence of trailing bytes. They use a fixed 4 KiB buffer. Seekable streams return to their starting position after a match, mismatch, or read failure. Non-seekable streams are consumed, so use these assertions only when consuming the stream is acceptable. Failure messages report the expected byte count without printing byte values; unexpected I/O exceptions propagate after restoring a seekable stream's position.
 
-Nullable `T?` assertions are available on all package targets and include null/presence checks (`BeNull`, `HaveValue`), equality (`Be`, `NotBe`), comparisons, ranges, and membership (`BeOneOf`, `NotBeOneOf`). In the upcoming 2.4.5 patch, nullable-to-nullable `Be(T?)` uses `EqualityComparer<T?>.Default`, so null matches null; `BeGreaterThanOrEqualTo` adds formatted failure context. Nullable enums add `BeDefined`, `NotBeDefined`, `HaveFlag`, and `NotHaveFlag`; nullable numbers add `BeApproximately`, `NotBeApproximately`, `BeNaN`, `NotBeNaN`, `BeFinite`, `BePositive`, and `BeNegative`. Nullable `DateTime?`, `DateTimeOffset?`, and `TimeSpan?` checks include `BeBefore`, `BeAfter`, `BeCloseTo`, `HaveKind`, `HaveOffset`, and duration sign checks. `Guid?` supports `BeEmpty` and `NotBeEmpty`. Nullable `DateOnly?` and `TimeOnly?` add `BeBefore`, `BeAfter`, and `BeCloseTo` on `net8.0`, `net9.0`, and `net10.0` only. Checks that need a present value fail for null; nullable-to-nullable equality matches null with null.
+Nullable `T?` assertions are available on all package targets and include null/presence checks (`BeNull`, `HaveValue`), equality (`Be`, `NotBe`), comparisons, ranges, and membership (`BeOneOf`, `NotBeOneOf`). In the published 2.4.5 release, nullable-to-nullable `Be(T?)` uses `EqualityComparer<T?>.Default`, so null matches null; `BeGreaterThanOrEqualTo` adds formatted failure context. Nullable enums add `BeDefined`, `NotBeDefined`, `HaveFlag`, and `NotHaveFlag`; nullable numbers add `BeApproximately`, `NotBeApproximately`, `BeNaN`, `NotBeNaN`, `BeFinite`, `BePositive`, and `BeNegative`. Nullable `DateTime?`, `DateTimeOffset?`, and `TimeSpan?` checks include `BeBefore`, `BeAfter`, `BeCloseTo`, `HaveKind`, `HaveOffset`, and duration sign checks. `Guid?` supports `BeEmpty` and `NotBeEmpty`. Nullable `DateOnly?` and `TimeOnly?` add `BeBefore`, `BeAfter`, and `BeCloseTo` on `net8.0`, `net9.0`, and `net10.0` only. Checks that need a present value fail for null; nullable-to-nullable equality matches null with null.
 
 Captured exceptions support exact and assignable type checks (`BeOfType`, `BeAssignableTo`), immediate inner exception checks (`WithInnerException`, `WithInnerExceptionExactly`, `HaveInnerException`, `NotHaveInnerException`), wildcard `WithInnerExceptionMessage` matching, and `Where` / `NotWhere` predicates that each invoke the supplied predicate exactly once. Generic and runtime `Type` overloads are available for inner exception type checks; successful checks return chainable exception assertions.
 
@@ -53,7 +53,7 @@ HTTP response checks use `HttpResponseMessage.Should()` for status codes and res
 
 ## Values, booleans, enums, and GUIDs
 
-The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, non-whitespace checks, negative containment, and positive dictionary-key checks. AstraFlow.Assertions 2.4.4 includes the additional reason overloads described above.
+The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, non-whitespace checks, negative containment, and positive dictionary-key checks. AstraFlow.Assertions 2.4.4 includes the additional reason overloads described above. The published 2.4.5 release adds the string, nullable, reference, and GUID reason overloads summarized above.
 
 Object assertions include equality and inequality (`Be`, `NotBe`), null checks (`BeNull`, `NotBeNull`), reference identity (`BeSameAs`, `NotBeSameAs`), runtime type checks (`BeOfType<T>`, `BeAssignableTo<T>`), ranges and comparisons, and predicate checks (`Match`, `NotMatch`).
 
@@ -197,13 +197,13 @@ Temporal failures omit compared values and precision.
 
 String comparisons are ordinal by default. Use `BeEquivalentTo(expected, comparison)` when a specific `StringComparison` is needed; the comparison mode must be supplied explicitly.
 
-The available checks include `Be`, `NotBe`, `BeNull`, `NotBeNull`, `BeEmpty`, `NotBeEmpty`, `BeNullOrEmpty`, `NotBeNullOrEmpty`, `BeNullOrWhiteSpace`, `NotBeNullOrWhiteSpace`, `HaveLength`, `Contain`, `NotContain`, `StartWith`, `NotStartWith`, `EndWith`, and `NotEndWith`. The upcoming 2.4.5 `StartWith(prefix, because, args)` overload appends formatted context to a failed string-prefix check.
+The available checks include `Be`, `NotBe`, `BeNull`, `NotBeNull`, `BeEmpty`, `NotBeEmpty`, `BeNullOrEmpty`, `NotBeNullOrEmpty`, `BeNullOrWhiteSpace`, `NotBeNullOrWhiteSpace`, `HaveLength`, `Contain`, `NotContain`, `StartWith`, `NotStartWith`, `EndWith`, and `NotEndWith`. The published 2.4.5 `StartWith(prefix, because, args)` overload appends formatted context to a failed string-prefix check.
 
 `NotBeEmpty` fails for both `null` and an empty string. `HaveLength` accepts zero and throws `ArgumentOutOfRangeException` for a negative expected length. Negative prefix and suffix checks reject a `null` search value with `ArgumentNullException`.
 
 `Match(pattern)` uses ordinal wildcard matching across the entire string: `*` matches any number of characters and `?` matches one character. Both wildcards can match line breaks. Empty patterns are rejected with `ArgumentException`.
 
-`MatchRegex(pattern, timeout)` uses .NET regular-expression search behavior, so it can match a substring unless the expression is anchored. It requires a positive finite timeout and a nonempty pattern. The upcoming 2.4.5 overload accepts a formatted reason while preserving this timeout requirement. Invalid patterns are rejected without including the pattern in the error. When matching exceeds its timeout, the assertion fails safely without printing the pattern or subject.
+`MatchRegex(pattern, timeout)` uses .NET regular-expression search behavior, so it can match a substring unless the expression is anchored. It requires a positive finite timeout and a nonempty pattern. The published 2.4.5 overload accepts a formatted reason while preserving this timeout requirement. Invalid patterns are rejected without including the pattern in the error. When matching exceeds its timeout, the assertion fails safely without printing the pattern or subject.
 
 String failure messages report lengths or the failed condition instead of string contents.
 

@@ -32,7 +32,7 @@ All notable AstraFlow changes are tracked here.
 
 - None.
 
-## [2.4.5] - (unreleased)
+## [2.4.5] - 2026-11-18
 
 ### Breaking Changes
 

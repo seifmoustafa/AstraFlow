@@ -1,6 +1,6 @@
 # Migrating from AwesomeAssertions
 
-`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2, 2.4.3, and 2.4.4 compatibility patches, with additional calls planned for 2.4.5. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
+`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2, 2.4.3, 2.4.4, and 2.4.5 compatibility patches. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
 
 Install the package in the test project:
 
@@ -51,9 +51,9 @@ These APIs are available in AstraFlow.Assertions 2.4.4. The negative string cont
 
 For an `IEnumerable<string>`, `Contain(expected, because, args)` overlaps with the existing multiple-item `Contain(params T[])` overload. Cast string formatting arguments to `object` so overload resolution selects the context overload. To assert several expected strings, pass them as one array with `Contain(new[] { first, second })`.
 
-## Additional 2.4.5 migration coverage (upcoming)
+## 2.4.5 migration coverage
 
-The upcoming 2.4.5 patch adds formatted reasons to these remaining reported call shapes while keeping regex evaluation bounded and nullable equality predictable:
+The 2.4.5 release adds formatted reasons to these remaining reported call shapes while keeping regex evaluation bounded and nullable equality predictable:
 
 ```csharp
 name.Should().StartWith("api-", "the {0} prefix is required", "route");
