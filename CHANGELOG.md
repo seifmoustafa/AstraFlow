@@ -32,6 +32,37 @@ All notable AstraFlow changes are tracked here.
 
 - None.
 
+## [2.4.6] - 2026-11-18 (Upcoming)
+
+### Breaking Changes
+
+- None.
+
+### Added
+
+- Add formatted failure context to non-nullable BeGreaterThanOrEqualTo comparisons.
+- Add null and non-null checks to dictionary assertion chains.
+
+### Changed
+
+- None.
+
+### Fixed
+
+- None.
+
+### Deprecated
+
+- None.
+
+### Removed
+
+- None.
+
+### Security
+
+- None.
+
 ## [2.4.5] - 2026-11-18
 
 ### Breaking Changes
@@ -164,7 +195,8 @@ All notable AstraFlow changes are tracked here.
 
 ### Added
 
-- None.
+- Add formatted failure context to non-nullable `BeGreaterThanOrEqualTo` comparisons.
+- Add null and non-null checks to dictionary assertion chains.
 
 ### Changed
 
@@ -1072,7 +1104,8 @@ All notable AstraFlow changes are tracked here.
 - Added `AstraFlow` convenience registration package.
 - Added package tests, integration tests, samples, NuGet metadata, XML documentation, symbols, SourceLink-ready metadata, and MIT license.
 
-[Unreleased]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.5...HEAD
+[Unreleased]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.6...HEAD
+[2.4.6]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.5...HEAD
 [2.4.5]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.4...v2.4.5
 [2.4.4]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.3...v2.4.4
 [2.4.3]: https://github.com/seifmoustafa/AstraFlow/compare/v2.4.2...v2.4.3

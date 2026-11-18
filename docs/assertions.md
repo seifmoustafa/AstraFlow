@@ -6,9 +6,11 @@
 dotnet add package AstraFlow.Assertions
 ```
 
-The released 2.4.2, 2.4.3, 2.4.4, and 2.4.5 patches add migration compatibility APIs described in [the migration guide](assertion-migration.md). The 2.4.5 release adds formatted reasons to string prefix and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality. Consumers who pin versions should use the exact version available on NuGet.org.
+The released 2.4.2, 2.4.3, 2.4.4, and 2.4.5 patches add migration compatibility APIs; the upcoming 2.4.6 patch adds the remaining confirmed call shapes described in [the migration guide](assertion-migration.md). The 2.4.5 release adds formatted reasons to string prefix and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality. Consumers who pin versions should use the exact version available on NuGet.org.
 
 The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, whitespace checks, negative containment, and positive dictionary-key checks. The published 2.4.4 release adds reason overloads for type identity, numeric comparisons, collection and dictionary count/containment/prefix/single-item checks, dictionary key exclusion, predicate matching, and sync/async exception assertions. It also adds case-insensitive string `NotContainEquivalentOf`. The published 2.4.5 release adds formatted reasons to `StartWith`, finite-timeout `MatchRegex`, nullable `Be(T?)` and `BeGreaterThanOrEqualTo`, `BeSameAs`, and GUID `NotBe`.
+
+The upcoming 2.4.6 patch adds formatted failure context to non-nullable `BeGreaterThanOrEqualTo` and chainable `BeNull` / `NotBeNull` checks for dictionary assertions. These APIs are not part of the published 2.4.5 package.
 
 The shipping project has no `PackageReference` dependencies. Test-runner packages stay in the consumer's test project.
 
@@ -48,7 +50,7 @@ Implemented checks currently include:
 - One-run synchronous and asynchronous delegate timing, returning `TimeSpan` for the existing comparison assertions; delegate failures propagate unchanged.
 - Enumerable null/empty and count checks, value/predicate/multiple-item membership, ordered equality, ordered subsequences, consecutive items, structural-equivalency membership/all-item checks, uniqueness and multiset checks, per-item callbacks, exact sequence runtime type, one-item checks, predicate constraints, and key checks for key-value-pair sequences.
 - Asynchronous sequence checks for empty state, count, value/predicate membership, per-item predicate constraints, ordered subsequences, consecutive items, single-item capture, and ordered equality on the `net8.0`, `net9.0`, and `net10.0` package assets.
-- Dictionary key and key/value checks, negative key/value and predicate checks, comparer-aware key batches, value batches, entry equality/inequality, empty-state checks, and entry-count comparisons. The key/value batch checks also work on `IReadOnlyDictionary<TKey,TValue>` and sequences of key-value pairs.
+- Dictionary null/presence, key and key/value checks, negative key/value and predicate checks, comparer-aware key batches, value batches, entry equality/inequality, empty-state checks, and entry-count comparisons. The key/value batch checks also work on `IReadOnlyDictionary<TKey,TValue>` and sequences of key-value pairs.
 - Synchronous and asynchronous action/function expected-exception or no-throw checks, plus exception message patterns (`*` for any run of characters and `?` for one character).
 - Deferred `Invoking`, `Awaiting`, and `Enumerating` helpers for static delegates, subject methods, `Task`/`ValueTask` operations, and lazy generic/non-generic sequences.
 - Captured-exception exact/assignable type checks, immediate inner-exception traversal by generic or runtime type, inner-message matching, `ArgumentException` parameter-name checks, and positive/negative predicates.

@@ -165,11 +165,17 @@ public sealed class ObjectAssertions<T>
     }
 
     /// <summary>Asserts that the value compares greater than or equal to the expected value.</summary>
-    public void BeGreaterThanOrEqualTo(T expected)
+    public void BeGreaterThanOrEqualTo(T expected) => BeGreaterThanOrEqualTo(expected, null);
+
+    /// <summary>Asserts an inclusive comparison and adds formatted failure context.</summary>
+    /// <param name="expected">The value the subject must meet or exceed.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void BeGreaterThanOrEqualTo(T expected, string? because, params object?[] becauseArgs)
     {
         if (Comparer<T>.Default.Compare(_actual, expected) < 0)
         {
-            AssertionFailure.Fail($"Expected a value greater than or equal to {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.");
+            AssertionFailure.FailWithBecause($"Expected a value greater than or equal to {AssertionFailure.Describe(expected)}, but found {AssertionFailure.Describe(_actual)}.", because, becauseArgs);
         }
     }
 
