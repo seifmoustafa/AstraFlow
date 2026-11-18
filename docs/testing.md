@@ -9,7 +9,7 @@ See the [AstraFlow Assertions guide](assertions.md) for the current method list,
 Use it to verify the result or observable effects of the application under test. It is not a runtime input-validation library and does not execute or mock the application for you. An assertion failure throws `AstraFlowAssertionException`, which ordinary test runners report as a failed test.
 
 ```powershell
-dotnet add package AstraFlow.Assertions --version 2.4.0
+dotnet add package AstraFlow.Assertions --version 2.4.7
 ```
 
 Check NuGet for the exact package ID and version before installing.
@@ -36,7 +36,7 @@ The shipping assembly has no dependency on a test runner or mocking framework. H
 Install:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 2.3.0
+dotnet add package AstraFlow.Testing --version 2.4.7
 ```
 
 ## Fake Mediator

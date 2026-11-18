@@ -190,55 +190,55 @@ Do not save the key in shell profiles, `.env` files, source files, or documentat
 
 ## After Publish: Consumer Verification
 
-After NuGet shows all fourteen packages, verify clean consumer projects can consume the published runtime packages and install the CLI tool:
+After NuGet shows all sixteen packages, verify clean consumer projects can consume the published runtime packages and install the CLI tool:
 
 ```xml
-<PackageReference Include="AstraFlow.Mediator" Version="2.0.0" />
-<PackageReference Include="AstraFlow.Mapper" Version="2.0.0" />
-<PackageReference Include="AstraFlow.Security" Version="2.0.0" />
-<PackageReference Include="AstraFlow.Mapper.Conventions" Version="2.0.0" />
-<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="2.0.0" />
-<PackageReference Include="AstraFlow.Diagnostics" Version="2.0.0" />
-<PackageReference Include="AstraFlow.AspNetCore" Version="2.0.0" />
-<PackageReference Include="AstraFlow.FluentValidation" Version="2.0.0" />
-<PackageReference Include="AstraFlow.OpenTelemetry" Version="2.0.0" />
+<PackageReference Include="AstraFlow.Mediator" Version="2.4.7" />
+<PackageReference Include="AstraFlow.Mapper" Version="2.4.7" />
+<PackageReference Include="AstraFlow.Security" Version="2.4.7" />
+<PackageReference Include="AstraFlow.Mapper.Conventions" Version="2.4.7" />
+<PackageReference Include="AstraFlow.Mapper.EntityFrameworkCore" Version="2.4.7" />
+<PackageReference Include="AstraFlow.Diagnostics" Version="2.4.7" />
+<PackageReference Include="AstraFlow.AspNetCore" Version="2.4.7" />
+<PackageReference Include="AstraFlow.FluentValidation" Version="2.4.7" />
+<PackageReference Include="AstraFlow.OpenTelemetry" Version="2.4.7" />
 ```
 
 Use `AstraFlow.Contracts` in shared contract projects that should not reference the mediator runtime:
 
 ```xml
-<PackageReference Include="AstraFlow.Contracts" Version="2.0.0" />
+<PackageReference Include="AstraFlow.Contracts" Version="2.4.7" />
 ```
 
 Use `AstraFlow.Testing` only in test projects:
 
 ```xml
-<PackageReference Include="AstraFlow.Testing" Version="2.0.0" />
+<PackageReference Include="AstraFlow.Testing" Version="2.4.7" />
 ```
 
 Use `AstraFlow.Analyzers` as a private analyzer reference:
 
 ```xml
-<PackageReference Include="AstraFlow.Analyzers" Version="2.0.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Analyzers" Version="2.4.7" PrivateAssets="all" />
 ```
 
 Use `AstraFlow.Generators` as a private generator reference:
 
 ```xml
-<PackageReference Include="AstraFlow.Generators" Version="2.0.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Generators" Version="2.4.7" PrivateAssets="all" />
 ```
 
 Install and smoke-test the CLI package:
 
 ```powershell
-dotnet tool install --global AstraFlow.Cli --version 2.3.0
+dotnet tool install --global AstraFlow.Cli --version 2.4.7
 astraflow inspect .
 ```
 
 Use the meta-package only where both mediator and mapper are intentionally needed:
 
 ```xml
-<PackageReference Include="AstraFlow" Version="2.0.0" />
+<PackageReference Include="AstraFlow" Version="2.4.7" />
 ```
 
 Then run:

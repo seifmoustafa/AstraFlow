@@ -18,6 +18,9 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
     throw "Could not determine package version from Directory.Build.props."
 }
 
+Write-Host "==> Verify packaged documentation version pins"
+& (Join-Path $PSScriptRoot "verify-packaged-doc-version-pins.ps1") -Configuration $Configuration -Version $Version
+
 $localSource = Join-Path $repoRoot ".dotnet-cli-home\local-packages\$Version"
 $checkRootName = if ($NoRestore) { $Version } else { "$Version-$([guid]::NewGuid().ToString("N").Substring(0, 8))" }
 $checkRoot = Join-Path $WorkRoot $checkRootName
