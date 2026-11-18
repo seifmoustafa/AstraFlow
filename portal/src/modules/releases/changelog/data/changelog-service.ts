@@ -404,11 +404,11 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
       : `${GITHUB_LINKS.releases}/tag/v${version}`;
 
     const sanitizedQualifier =
-      rawQualifier && /unverified|unreleased|not on nuget/i.test(rawQualifier)
+      rawQualifier && /unverified|unreleased|upcoming|not on nuget/i.test(rawQualifier)
         ? provenance.statusLabel
         : rawQualifier;
     const sanitizedHeading =
-      rawQualifier && /unverified|unreleased|not on nuget/i.test(rawQualifier)
+      rawQualifier && /unverified|unreleased|upcoming|not on nuget/i.test(rawQualifier)
         ? `${version} (${provenance.statusLabel})`
         : block.rawHeading;
 

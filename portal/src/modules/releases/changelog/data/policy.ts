@@ -43,7 +43,7 @@ export function isDeprecatedQualifier(rawQualifier: string | null): boolean {
 }
 
 export function isUnreleasedQualifier(rawQualifier: string | null): boolean {
-  return Boolean(rawQualifier && /\bunreleased\b/i.test(rawQualifier));
+  return Boolean(rawQualifier && /\b(unreleased|upcoming)\b/i.test(rawQualifier));
 }
 
 export interface ReleaseProvenanceClassification {
