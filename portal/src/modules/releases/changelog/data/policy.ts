@@ -6,8 +6,11 @@ import {
 } from '@core/config/site-config';
 import type {
   ChangelogRelease,
+  ChangelogSection,
   ReleaseLifecyclePolicy,
   ReleaseProvenanceStatus,
+  ReleaseType,
+  ReleaseTypeFacet,
   SemverVersion,
 } from './model';
 
@@ -40,6 +43,52 @@ export function isDeprecatedQualifier(rawQualifier: string | null): boolean {
   return Boolean(
     rawQualifier && /\b(deprecated|yanked|retired)\b/i.test(rawQualifier),
   );
+}
+
+export interface ReleaseTypeClassification {
+  type: ReleaseType;
+  facets: ReleaseTypeFacet[];
+  label: string;
+}
+
+const RELEASE_TYPE_LABELS: Readonly<Record<ReleaseTypeFacet, string>> = {
+  feature: 'Feature',
+  bugfix: 'Bug Fix',
+  improvement: 'Improvement',
+  security: 'Security',
+};
+
+export function classifyReleaseType(
+  version: string,
+  sections: readonly ChangelogSection[],
+): ReleaseTypeClassification {
+  const semver = parseSemver(version);
+  if (semver && semver.minor === 0 && semver.patch === 0) {
+    return { type: 'major', facets: [], label: 'Major Release' };
+  }
+
+  const hasSubstantiveSection = (title: string) =>
+    sections.some(
+      (section) =>
+        section.normalizedTitle === title &&
+        section.items.some((item) => !item.isNonePlaceholder),
+    );
+  const facets: ReleaseTypeFacet[] = [];
+  if (hasSubstantiveSection('Added')) facets.push('feature');
+  if (hasSubstantiveSection('Fixed')) facets.push('bugfix');
+  if (hasSubstantiveSection('Changed')) facets.push('improvement');
+  if (hasSubstantiveSection('Security')) facets.push('security');
+
+  if (facets.length === 0) {
+    return { type: 'maintenance', facets, label: 'Maintenance Release' };
+  }
+
+  const type: ReleaseType = facets.length > 1 ? 'mixed' : facets[0]!;
+  const label =
+    facets.length > 1
+      ? facets.map((facet) => RELEASE_TYPE_LABELS[facet]).join(' + ') + ' Release'
+      : RELEASE_TYPE_LABELS[facets[0]!] + ' Release';
+  return { type, facets, label };
 }
 
 export function isUnreleasedQualifier(rawQualifier: string | null): boolean {
@@ -130,9 +179,9 @@ export function classifyReleaseProvenance(
 
   if (semver && semver.minor === 0 && semver.patch === 0) {
     return {
-      status: 'major',
-      statusLabel: 'Major Release',
-      provenanceNote: `Major AstraFlow ${semver.major}.0 platform milestone (${version}).`,
+      status: 'published',
+      statusLabel: 'Published Release',
+      provenanceNote: 'Published AstraFlow major release (' + version + ').',
       releaseDate: extractedDate,
       isPublished: true,
       isUnreleased: false,
@@ -142,9 +191,12 @@ export function classifyReleaseProvenance(
 
   const seriesLabel = semver ? `${semver.major}.x` : 'current';
   return {
-    status: 'feature',
-    statusLabel: 'Feature Release',
-    provenanceNote: `Feature release in the AstraFlow ${seriesLabel} series (${version})${extractedDate ? ` (${extractedDate})` : ''}.`,
+    status: 'published',
+    statusLabel: 'Published Release',
+    provenanceNote:
+      'Published AstraFlow ' + seriesLabel + ' release (' + version + ')' +
+      (extractedDate ? ' (' + extractedDate + ')' : '') +
+      '.',
     releaseDate: extractedDate,
     isPublished: true,
     isUnreleased: false,
@@ -173,7 +225,7 @@ export function selectFeaturedReleases(
   selected.add(pool[0].version);
 
   const majorCandidates = pool.filter(
-    (release) => release.status === 'major' && !selected.has(release.version),
+    (release) => release.releaseType === 'major' && !selected.has(release.version),
   );
   for (const major of majorCandidates.slice(0, 2)) {
     if (selected.size < maxCards) {

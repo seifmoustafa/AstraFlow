@@ -25,6 +25,11 @@ export type ReleaseFilter =
   | "latest"
   | "major"
   | "feature"
+  | "bugfix"
+  | "improvement"
+  | "security"
+  | "mixed"
+  | "maintenance"
   | "historical"
   | "breaking"
   | "deprecated";
@@ -48,9 +53,19 @@ function matchesFilter(
     case "latest":
       return release.status === "latest";
     case "major":
-      return release.status === "major";
+      return release.releaseType === "major";
     case "feature":
-      return release.status === "feature";
+      return release.releaseTypeFacets.includes("feature");
+    case "bugfix":
+      return release.releaseTypeFacets.includes("bugfix");
+    case "improvement":
+      return release.releaseTypeFacets.includes("improvement");
+    case "security":
+      return release.releaseTypeFacets.includes("security");
+    case "mixed":
+      return release.releaseType === "mixed";
+    case "maintenance":
+      return release.releaseType === "maintenance";
     case "historical":
       return release.status === "historical";
     case "breaking":
@@ -75,6 +90,7 @@ function matchesQuery(
     release.version,
     `v${release.version}`,
     release.statusLabel,
+    release.releaseTypeLabel,
     release.provenanceNote,
     release.headline,
     release.rawQualifier ?? "",
@@ -97,15 +113,14 @@ function getBadgeStyleClass(release: ChangelogRelease): string {
   switch (release.status) {
     case "latest":
       return styles.badgeLatest;
-    case "major":
-      return styles.badgePublished;
-    case "feature":
-      return styles.badgeFeature;
     case "deprecated":
       return styles.badgeDeprecated;
     case "historical":
-    default:
       return styles.badgeHistorical;
+    default:
+      return release.releaseType === "major"
+        ? styles.badgePublished
+        : styles.badgeFeature;
   }
 }
 
@@ -307,6 +322,11 @@ export function ReleaseFolio({
     latest: t('filterLabels.latest'),
     major: t('filterLabels.major'),
     feature: t('filterLabels.feature'),
+    bugfix: t('filterLabels.bugfix'),
+    improvement: t('filterLabels.improvement'),
+    security: t('filterLabels.security'),
+    mixed: t('filterLabels.mixed'),
+    maintenance: t('filterLabels.maintenance'),
     historical: t('filterLabels.historical'),
     breaking: t('filterLabels.breaking'),
     deprecated: t('filterLabels.deprecated'),
@@ -320,6 +340,11 @@ export function ReleaseFolio({
     { key: "latest", count: stats.latestCount },
     { key: "major", count: stats.majorCount },
     { key: "feature", count: stats.featureCount },
+    { key: "bugfix", count: stats.bugFixCount },
+    { key: "improvement", count: stats.improvementCount },
+    { key: "security", count: stats.securityCount },
+    { key: "mixed", count: stats.mixedCount },
+    { key: "maintenance", count: stats.maintenanceCount },
     { key: "historical", count: stats.historicalCount },
     {
       key: "breaking",
@@ -337,6 +362,10 @@ export function ReleaseFolio({
 
   const localizedSpineTag = (release: ChangelogRelease): string => {
     const date = release.releaseDate;
+    const releaseType = release.releaseTypeLabel.endsWith(' Release')
+      ? release.releaseTypeLabel.slice(0, -8)
+      : release.releaseTypeLabel;
+    if (release.isUnreleased) return t('upcomingStatus');
     if (release.status === 'deprecated') {
       return date
         ? t('spineDeprecatedDate', { date })
@@ -351,29 +380,34 @@ export function ReleaseFolio({
       const isLatestNuGet = release.statusLabel === 'Latest NuGet';
       if (isLatestNuGet) {
         return date
-          ? t('spineLatestNuGetDate', { date })
-          : t('spineLatestNuGet');
+          ? 'Latest NuGet · ' + releaseType + ' · ' + date
+          : 'Latest NuGet · ' + releaseType;
       }
-      return date ? t('spineLatestDate', { date }) : t('spineLatest');
     }
-    if (release.status === 'major') {
-      return date ? t('spineMajorDate', { date }) : t('spineMajor');
+    if (release.status === 'latest') {
+      return date
+        ? 'Latest Release · ' + releaseType + ' · ' + date
+        : 'Latest Release · ' + releaseType;
     }
-    if (release.status === 'feature') {
-      return date ? t('spineFeatureDate', { date }) : t('spineFeature');
+    if (release.status === 'historical') {
+      return date ? t('spineArchiveDate', { date }) : t('spineArchive');
     }
-    return date ? t('spineArchiveDate', { date }) : t('spineArchive');
+    return date ? releaseType + ' · ' + date : releaseType;
   };
 
   const localizedStatusLabel = (release: ChangelogRelease): string => {
     if (release.isUnreleased) return t('upcomingStatus');
-    if (release.status === 'latest') return release.statusLabel;
+    const releaseType = release.releaseTypeLabel.endsWith(' Release')
+      ? release.releaseTypeLabel.slice(0, -8)
+      : release.releaseTypeLabel;
+    if (release.status === 'latest') return release.statusLabel + ' · ' + releaseType;
     if (release.isDeprecated && release.status === 'historical') {
       return t('legacyArchiveStatus', {
         major: release.version.split('.')[0] ?? t('legacyMajor'),
       });
     }
-    return filterLabels[release.status];
+    if (release.status === 'deprecated') return t('filterLabels.deprecated');
+    return release.releaseTypeLabel;
   };
 
   return (

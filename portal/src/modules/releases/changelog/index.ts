@@ -2,6 +2,7 @@ export {
   getAllChangelogReleases,
   getChangelogRelease,
   getChangelogStats,
+  classifyReleaseType,
   classifyReleaseProvenance,
   DEFAULT_MAX_FEATURED_CARDS,
   DEFAULT_RELEASE_LIFECYCLE_POLICY,
@@ -20,6 +21,8 @@ export type {
   ChangelogStats,
   ReleaseLifecyclePolicy,
   ReleaseProvenanceStatus,
+  ReleaseType,
+  ReleaseTypeFacet,
   SemverVersion,
 } from './data/model';
 export {

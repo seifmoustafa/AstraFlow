@@ -5,9 +5,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>2.4.6</Version>
-    <AssemblyVersion>2.4.6.0</AssemblyVersion>
-    <FileVersion>2.4.6.0</FileVersion>
+    <Version>2.4.7</Version>
+    <AssemblyVersion>2.4.7.0</AssemblyVersion>
+    <FileVersion>2.4.7.0</FileVersion>
     <IsPackable>true</IsPackable>
     <Authors>AstraFlow Contributors</Authors>
     <Company>AstraFlow Contributors</Company>
@@ -18,9 +18,9 @@
     <RepositoryUrl>https://github.com/seifmoustafa/AstraFlow</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <PackageReleaseNotes>AstraFlow 2.4.6:
-      - Add formatted failure context to non-nullable inclusive comparisons.
-      - Add chainable null and non-null checks to dictionary assertions.
+    <PackageReleaseNotes>AstraFlow 2.4.7:
+      - Correct CLI migration scans to ignore incidental text while recognizing C# namespace/API and declared package references.
+      - Sort migration scan findings by item, source path, and type for stable output ordering.
       - Full changelog: https://github.com/seifmoustafa/AstraFlow/blob/main/CHANGELOG.md
       - GitHub releases: https://github.com/seifmoustafa/AstraFlow/releases</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

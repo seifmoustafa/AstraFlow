@@ -20,6 +20,7 @@ import {
 } from "@core/hairline";
 import { scrollToElementOrHash } from "@core/motion";
 import type { ChangelogRelease, ChangelogStats } from '../data/model';
+import { getShortSpineTag } from '../data/presentation';
 import { selectFeaturedReleases } from '../data/policy';
 import styles from "./VersionDeck.module.css";
 
@@ -188,11 +189,7 @@ export function VersionDeck({
   };
 
   const isLatestMilestone = activeRelease.status === "latest";
-  const editionStamp =
-    activeRelease.releaseDate &&
-    !activeRelease.statusLabel.includes(activeRelease.releaseDate)
-      ? `${activeRelease.statusLabel} · ${activeRelease.releaseDate}`
-      : activeRelease.statusLabel;
+  const editionStamp = getShortSpineTag(activeRelease);
 
   return (
     <div

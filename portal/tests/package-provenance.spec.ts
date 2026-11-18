@@ -16,6 +16,7 @@ import { resolvePackageStackClient } from '../src/modules/catalog/packages';
 import {
   getAllChangelogReleases,
   getChangelogStats,
+  classifyReleaseType,
   parseSemver,
   selectFeaturedReleases,
 } from '../src/modules/releases/changelog';
@@ -320,4 +321,56 @@ test('changelog lifecycle policy marks 1.x releases deprecated on NuGet and keep
   expect(featuredVersions).toContain(PREVIOUS_PUBLISHED_VERSION);
   expect(featuredVersions).toContain('2.0.0');
   expect(stats.deprecatedReleaseCount).toBeGreaterThanOrEqual(legacyReleases.length);
+});
+
+test('changelog release types follow section content independently from publication status', () => {
+  const releases = getAllChangelogReleases();
+  const releaseByVersion = new Map(releases.map((release) => [release.version, release]));
+
+  expect(releaseByVersion.get('2.4.7')).toMatchObject({
+    status: 'latest',
+    statusLabel: 'Latest NuGet',
+    releaseType: 'mixed',
+    releaseTypeFacets: ['bugfix', 'improvement'],
+    releaseTypeLabel: 'Bug Fix + Improvement Release',
+  });
+  expect(releaseByVersion.get('2.0.0')).toMatchObject({
+    releaseType: 'major',
+    releaseTypeLabel: 'Major Release',
+  });
+  expect(releaseByVersion.get('2.4.6')).toMatchObject({
+    status: 'published',
+    releaseType: 'feature',
+    releaseTypeFacets: ['feature'],
+    releaseTypeLabel: 'Feature Release',
+  });
+  expect(releaseByVersion.get('2.4.1')?.releaseTypeFacets).toEqual([
+    'feature',
+    'bugfix',
+  ]);
+  expect(releaseByVersion.get('2.4.2')?.releaseTypeFacets).toEqual([
+    'feature',
+    'improvement',
+  ]);
+  expect(releaseByVersion.get('2.4.3')?.releaseTypeFacets).toEqual([
+    'feature',
+    'bugfix',
+  ]);
+
+  expect(
+    classifyReleaseType('2.4.8', [
+      {
+        title: 'Added',
+        normalizedTitle: 'Added',
+        items: [
+          { text: 'None.', html: 'None.', isNonePlaceholder: true },
+        ],
+        isEmptyNone: true,
+      },
+    ]),
+  ).toEqual({
+    type: 'maintenance',
+    facets: [],
+    label: 'Maintenance Release',
+  });
 });

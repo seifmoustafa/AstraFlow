@@ -155,6 +155,11 @@ export function ChangelogShell({ releases, stats }: ChangelogShellProps) {
                 latest: String(stats.latestCount),
                 major: String(stats.majorCount),
                 features: String(stats.featureCount),
+                bugfixes: String(stats.bugFixCount),
+                improvements: String(stats.improvementCount),
+                security: String(stats.securityCount),
+                mixed: String(stats.mixedCount),
+                maintenance: String(stats.maintenanceCount),
                 historical: String(stats.historicalCount),
                 deprecated: stats.deprecatedReleaseCount > 0
                   ? t('deprecatedSummary', { count: String(stats.deprecatedReleaseCount) })
