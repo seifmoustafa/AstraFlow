@@ -300,6 +300,35 @@ public sealed class CliCommandTests
     }
 
     [Fact]
+    public void Scan_FindsQualifiedMigrationCallsInsideConditionalBranches()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "Sample.cs"), """
+            #if ASTRAFLOW_NET8_OR_GREATER
+            #if ASTRAFLOW_NESTED
+            namespace Sample
+            {
+                public sealed class UsesLegacyApis
+                {
+                    public object Map(object source) => AutoMapper.Mapper.Map<object>(source);
+                }
+            }
+            #endif
+            #else
+            using MediatR;
+            #endif
+            """);
+
+        using var document = JsonDocument.Parse(Run("scan", temp.Path));
+        var itemTypes = document.RootElement.GetProperty("sections")[0].GetProperty("items")
+            .EnumerateArray()
+            .Select(item => item.GetProperty("type").GetString())
+            .ToArray();
+
+        itemTypes.Should().BeEquivalentTo("automapper", "mediatr");
+    }
+
+    [Fact]
     public void Scan_FindsExactPackageReferencesInProjectsAndCentralProps()
     {
         using var temp = new TempDirectory();

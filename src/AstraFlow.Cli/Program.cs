@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -648,18 +649,53 @@ internal static class AstraFlowScanner
 
     private static bool ReferencesMigrationNamespace(CompilationUnitSyntax syntaxRoot, string namespaceRoot)
     {
-        return syntaxRoot.DescendantNodes()
-            .OfType<UsingDirectiveSyntax>()
-            .Any(usingDirective => usingDirective.Name is { } usingName
-                && string.Equals(
-                    GetRootIdentifier(usingName),
-                    namespaceRoot,
-                    StringComparison.Ordinal))
-            || syntaxRoot.DescendantNodes()
+        return EnumerateSyntaxRoots(syntaxRoot).Any(root =>
+            root.DescendantNodes()
+                .OfType<UsingDirectiveSyntax>()
+                .Any(usingDirective => usingDirective.Name is { } usingName
+                    && string.Equals(
+                        GetRootIdentifier(usingName),
+                        namespaceRoot,
+                        StringComparison.Ordinal))
+            || root.DescendantNodes()
                 .OfType<NameSyntax>()
                 .Where(name => name is QualifiedNameSyntax or AliasQualifiedNameSyntax)
                 .Any(name => !IsNamespaceDeclarationName(name)
-                    && string.Equals(GetRootIdentifier(name), namespaceRoot, StringComparison.Ordinal));
+                    && string.Equals(GetRootIdentifier(name), namespaceRoot, StringComparison.Ordinal))
+            || root.DescendantNodes()
+                .OfType<MemberAccessExpressionSyntax>()
+                .Where(memberAccess => memberAccess.IsKind(SyntaxKind.SimpleMemberAccessExpression))
+                .Any(memberAccess => string.Equals(
+                    GetRootIdentifier(memberAccess),
+                    namespaceRoot,
+                    StringComparison.Ordinal)));
+    }
+
+    private static IEnumerable<CompilationUnitSyntax> EnumerateSyntaxRoots(CompilationUnitSyntax syntaxRoot)
+    {
+        var pendingRoots = new Stack<CompilationUnitSyntax>();
+        var seenDisabledText = new HashSet<string>(StringComparer.Ordinal);
+        pendingRoots.Push(syntaxRoot);
+
+        while (pendingRoots.Count > 0)
+        {
+            var root = pendingRoots.Pop();
+            yield return root;
+
+            foreach (var trivia in root.DescendantTrivia(descendIntoTrivia: true))
+            {
+                if (!trivia.IsKind(SyntaxKind.DisabledTextTrivia))
+                {
+                    continue;
+                }
+
+                var disabledText = trivia.ToFullString();
+                if (seenDisabledText.Add(disabledText))
+                {
+                    pendingRoots.Push(CSharpSyntaxTree.ParseText(disabledText).GetCompilationUnitRoot());
+                }
+            }
+        }
     }
 
     private static bool IsNamespaceDeclarationName(NameSyntax name)
@@ -675,7 +711,7 @@ internal static class AstraFlowScanner
         return declarationSpan.Start <= nameSpan.Start && declarationSpan.End >= nameSpan.End;
     }
 
-    private static string? GetRootIdentifier(NameSyntax name)
+    private static string? GetRootIdentifier(SyntaxNode name)
     {
         return name switch
         {
@@ -683,6 +719,10 @@ internal static class AstraFlowScanner
             AliasQualifiedNameSyntax alias when alias.Alias.Identifier.ValueText == "global" =>
                 GetRootIdentifier(alias.Name),
             AliasQualifiedNameSyntax => null,
+            MemberAccessExpressionSyntax memberAccess
+                when memberAccess.IsKind(SyntaxKind.SimpleMemberAccessExpression) =>
+                GetRootIdentifier(memberAccess.Expression),
+            MemberAccessExpressionSyntax => null,
             IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
             GenericNameSyntax generic => generic.Identifier.ValueText,
             _ => null
