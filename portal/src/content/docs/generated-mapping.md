@@ -8,8 +8,8 @@ Add `AstraFlow.Generators` alongside `AstraFlow.Mapper`:
 
 ```xml
 <ItemGroup>
-  <PackageReference Include="AstraFlow.Mapper" Version="2.4.6" />
-  <PackageReference Include="AstraFlow.Generators" Version="2.4.6" PrivateAssets="all" />
+  <PackageReference Include="AstraFlow.Mapper" Version="2.4.7" />
+  <PackageReference Include="AstraFlow.Generators" Version="2.4.7" PrivateAssets="all" />
 </ItemGroup>
 ```
 

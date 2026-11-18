@@ -1,9 +1,19 @@
 export type ReleaseProvenanceStatus =
   | 'latest'
-  | 'major'
-  | 'feature'
+  | 'published'
   | 'historical'
   | 'deprecated';
+
+export type ReleaseType =
+  | 'major'
+  | 'feature'
+  | 'bugfix'
+  | 'improvement'
+  | 'security'
+  | 'mixed'
+  | 'maintenance';
+
+export type ReleaseTypeFacet = 'feature' | 'bugfix' | 'improvement' | 'security';
 
 export interface SemverVersion {
   major: number;
@@ -39,6 +49,9 @@ export interface ChangelogRelease {
   releaseDate: string | null;
   status: ReleaseProvenanceStatus;
   statusLabel: string;
+  releaseType: ReleaseType;
+  releaseTypeFacets: ReleaseTypeFacet[];
+  releaseTypeLabel: string;
   provenanceNote: string;
   isPublished: boolean;
   isUnreleased: boolean;
@@ -60,6 +73,11 @@ export interface ChangelogStats {
   latestCount: number;
   majorCount: number;
   featureCount: number;
+  bugFixCount: number;
+  improvementCount: number;
+  securityCount: number;
+  mixedCount: number;
+  maintenanceCount: number;
   historicalCount: number;
   publishedCount: number;
   latestVersion: string;

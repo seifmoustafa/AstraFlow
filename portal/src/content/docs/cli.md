@@ -37,7 +37,7 @@ astraflow inspect ./src
 
 ## Migration candidate scan
 
-The `scan` command reviews C# source and project metadata for MediatR and AutoMapper migration candidates. The upcoming 2.4.7 patch parses namespace imports and qualified API type references, and reads explicit `PackageReference` and `PackageVersion` declarations from project, props, and targets XML. Comments, string literals, and unrelated assertion search text do not count as package usage. Scanning is read-only and does not evaluate MSBuild, restore packages, or execute project code; findings use stable item, source, and type ordering in JSON and Markdown.
+The `scan` command reviews C# source and project metadata for MediatR and AutoMapper migration candidates. The published 2.4.7 release parses namespace imports and qualified API type references, and reads explicit `PackageReference` and `PackageVersion` declarations from project, props, and targets XML. Comments, string literals, and unrelated assertion search text do not count as package usage. Scanning is read-only and does not evaluate MSBuild, restore packages, or execute project code; findings use stable item, source, and type ordering in JSON and Markdown.
 
 ## CI Pipeline & SARIF Integration
 

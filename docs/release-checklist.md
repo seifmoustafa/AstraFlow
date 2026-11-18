@@ -70,7 +70,7 @@
 - An active NuGet Trusted Publishing policy matches the repository owner, repository, workflow filename (`publish-nuget.yml`), and GitHub environment (`nuget`).
 - Trusted Publishing is scoped to the AstraFlow package family (`AstraFlow*`) and push of new packages and package versions only.
 - Publish workflow is run manually by a release owner.
-- Each expected package is verified on NuGet at the exact version after publishing. NuGet validation and indexing can take up to one hour; until exact-version availability is confirmed, describe the release as publishing/pending indexing rather than published. Update portal latest-published version/date and package release manifests only after that confirmation.
+- Check each expected package on NuGet at the exact version after publishing when the index is accessible. The release owner’s explicit confirmation that publishing completed is authoritative: update portal latest-published version/date and package release manifests then, even if NuGet indexing is delayed or unavailable. Record missing/stale index results as an indexing discrepancy; use exact-version NuGet evidence when no owner confirmation is available. A push attempt alone is not confirmation.
 - If package pushes succeed but signature verification times out, confirm package status on NuGet and rerun verification after indexing. A verification timeout does not undo a successful push.
 - `scripts/verify-nuget-signatures.ps1 -Version <version>` passes against each exact version on NuGet.org.
 - Any exposed key is revoked immediately.

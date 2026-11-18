@@ -1,16 +1,18 @@
 # AstraFlow Version Comparison and Upgrade Guide
 
-This guide compares the `1.13.0`, `2.2.0`, `2.3.0`, and `2.4.0` releases and explains their consumer impact. It separates a package-version update from opting into new features and distinguishes the tagged release from the availability of each exact NuGet package.
+This guide compares the `1.13.0`, `2.2.0`, `2.3.0`, and `2.4.0` milestones and explains their consumer impact through the current `2.4.x` line. It separates package-version updates from opting into new features and notes the package-specific target-framework matrix.
 
 ## Read the version numbers correctly
 
 | Label | What it means | Can a consumer install it from NuGet? |
 | --- | --- | --- |
-| `2.2.0` | The previously published baseline shown in the maintainer-provided NuGet screenshot dated 2026-11-10. | Yes; it remains installable as a pinned older version. The screenshot is historical and has been superseded by the reported `2.3.0` publication. |
-| `2.3.0` | Published on 2026-11-10; it contains the feature set represented by PR #57. | Yes. The live AstraFlow version index confirms `2.3.0`; check satellite package IDs and assets individually. |
-| `2.4.0` | The latest tagged release; adds standalone Assertions and enterprise generated mapping for inherited properties and immutable DTOs. Generated mediator dispatch remains a separate, unimplemented roadmap candidate. | Check NuGet for the exact package ID and version; package availability is tracked per package. |
+| `2.2.0` | The previously published baseline shown in the maintainer-provided NuGet screenshot dated 2026-11-10. | Yes; it remains installable as a pinned older version. The screenshot is historical and has been superseded by the current `2.4.7` published suite. |
+| `2.3.0` | Published on 2026-11-10; it contains the feature set represented by PR #57. | Yes; this is a historical published release. Package target frameworks vary by package. |
+| `2.4.0` | First 2.4.x minor release; adds standalone Assertions and generated mapping for inherited properties and immutable DTOs. Generated mediator dispatch remains a separate capability. | Published; use the package-specific target-framework matrix below. |
+| `2.4.6` | Previous published suite release; adds formatted assertion context for comparisons and dictionary null checks. | Published; use the exact package version when pinning. |
+| `2.4.7` | Latest published NuGet suite release; fixes CLI migration scans to detect declared namespace, API, and package references without incidental text matches. | Published for all 16 package IDs; target-framework support varies by package. |
 
-**`2.4.0` is the latest tagged release.** Verify the exact NuGet package ID and version before changing a project reference; the release tag alone does not establish package availability.
+**`2.4.7` is the latest published NuGet release; `2.4.6` is the previous release.** Check the package-specific target-framework matrix before changing project references.
 
 ## Executive comparison
 
@@ -18,10 +20,12 @@ This guide compares the `1.13.0`, `2.2.0`, `2.3.0`, and `2.4.0` releases and exp
 | --- | --- |
 | What is `1.13.0`? | A published AstraFlow baseline. Its NuGet version page is [AstraFlow 1.13.0](https://www.nuget.org/packages/AstraFlow/1.13.0). It already contains the accumulated v1 mediator, mapper, projection, diagnostics, testing, convention mapping, analyzer/generator foundations, CLI, integrations, and observability capabilities listed below. |
 | What is `2.2.0`? | The previous published release shown in the supplied [NuGet package screenshot](https://www.nuget.org/packages/AstraFlow/2.2.0). It remains available for consumers who pin it. |
-| What is `2.3.0`? | The newly published release, per maintainer confirmation. See [AstraFlow 2.3.0 on NuGet](https://www.nuget.org/packages/AstraFlow/2.3.0) and the feature set described below and in PR #57. The page could not be independently fetched from this environment. |
+| What is `2.3.0`? | A published historical release from 2026-11-10. See [AstraFlow 2.3.0 on NuGet](https://www.nuget.org/packages/AstraFlow/2.3.0) and the feature set described below and in PR #57. |
 | What is `2.4.0`? | The release containing the general-purpose assertions package and enterprise generated mapping. Generated mediator dispatch remains behind feasibility and behavior-parity gates. |
-| What should a current `2.2.0` application do now? | Update only the AstraFlow package IDs it already uses to `2.3.0`, restore, build, and test. The 2.3.0 changelog classifies the release as having no breaking changes; adopting its optional new features requires extra, targeted edits. |
+| What is `2.4.7`? | The latest published NuGet suite release. Its CLI patch improves migration scan precision; it does not require application code changes for consumers that do not use the CLI. |
+| What should a current `2.2.0` application do now? | Update only the AstraFlow package IDs it already uses to `2.4.7`, restore, build, and test. Review the intervening release notes and package target frameworks; optional capabilities still require targeted adoption. |
 | What should a `2.3.0` application change for `2.4.0`? | No source change is needed for applications that keep using their existing mediator, mapper, and integration paths. Update only package IDs you choose to upgrade, then restore, build, and test. Add the assertions package to a test project only if you want to use it. |
+| What should a `2.4.6` application change for `2.4.7`? | No source change is needed for the CLI migration-scan fix. Update the AstraFlow package IDs it already uses, restore, and run the consuming solution's build and tests. |
 | How much code changes to “use everything”? | There is no single switch and no good reason to install every package. A version-only update is usually package-version edits plus verification. Adopting optional capabilities is incremental: a tool command or CI edit for CLI exports, and per-mapping declarations for generated mapping. Migrating every mapping is a separate project sized by the application's mapping inventory and unsupported shapes. |
 
 ### What the version number means for an application
@@ -78,13 +82,13 @@ At the `v1.13.0` Git tag, the repository contains the fourteen packages below. `
 | `AstraFlow.Security` | Shared sensitive-name and redaction policy. | No; added in `2.0.0`. | New in v2; optional for applications that do not need shared policy primitives. |
 | `AstraFlow.Assertions` | General-purpose assertions for any .NET test project. | New in `2.4.0`. | Standalone test package; add it directly to test projects. It is not included by the `AstraFlow` convenience package. |
 
-The historical screenshot showed the umbrella package at `2.2.0`; the maintainer has since reported `2.3.0` published. A top-level package page does not prove every satellite package's availability or target-framework assets. Check each package ID used by a consumer on NuGet before changing it.
+The historical screenshot showed the umbrella package at `2.2.0`. The current published suite is `2.4.7`, with `2.4.6` immediately before it. Package target-framework assets vary, so check the matrix for the package IDs used by a consumer before changing them.
 
 ### Why repository pages may look inconsistent
 
-The screenshot supplied earlier in this thread is a historical view showing `AstraFlow` at `2.2.0`; it predates the maintainer's later report that `2.3.0` has been published. Some repository evidence documents an earlier verification snapshot. Such records explain what was tested at that time, but they do not override a later publication. Verify exact satellite package IDs and target-framework assets before updating them.
+The screenshot supplied earlier in this thread is a historical view showing `AstraFlow` at `2.2.0`. Some repository evidence documents earlier verification snapshots. Those records explain what was tested at the time; the current published suite is `2.4.7`. Check package-specific target-framework assets before updating a consumer.
 
-The earlier screenshot verifies the previous `2.2.0` display only. The live NuGet version index confirms AstraFlow `2.3.0` and currently lists no `2.4.0`; exact satellite package availability remains package-specific. See [compatibility](compatibility.md) and [release evidence](decisions/v2.2-draft-evidence.md) for the scope of repository-recorded verification.
+The earlier screenshot verifies the historical `2.2.0` display only. The current release metadata records all 16 package IDs at `2.4.7` and `2.4.6` as the previous published suite version. Package-specific target-framework support remains listed in [compatibility](compatibility.md); see [release evidence](decisions/v2.2-draft-evidence.md) for the scope of earlier repository verification.
 
 ## What changes from `2.2.0` to published `2.3.0`
 
@@ -95,7 +99,7 @@ The earlier screenshot verifies the previous `2.2.0` display only. The live NuGe
 | CLI graphs | Existing graph/report commands are available. | Adds relational request → handler → response Mermaid graphs, pipeline/event views, module/feature grouping, Canvas JSON, and graph-file output. | No runtime application changes. Adopt by updating the CLI tool and the graph command/configuration that produces the desired artifact. |
 | CLI formatting fixes | Existing JSON and Markdown exports. | Fixes Mermaid cluster-ID collisions, readable generic signatures, and escaped Markdown cells; adds `-f` and `-o` aliases. | Usually no code edits. If a script compares raw text or snapshots, refresh it and prefer structural JSON comparisons. |
 | Generated mapping | The generator supports opt-in typed scalar-property mapping and metadata/registration features in the earlier release line. | Adds supported array/enumerable-to-list mapping, flat scalar element mapping, declared scalar converters, and declared polymorphic collection dispatch. | Nothing changes unless the application opts in. Add a generated partial mapping declaration only for mappings that should use these features. |
-| NuGet/release status | Previously published baseline. | The live AstraFlow NuGet index lists `2.3.0`; package availability is checked per package ID. | Upgrade package IDs already used after checking those exact IDs and assets; then restore, build, and test. |
+| NuGet/release status | Previously published baseline. | `2.3.0` was published historically; the current suite is `2.4.7`. | Upgrade package IDs already used after checking their target-framework assets; then restore, build, and test. |
 
 The package's 2.3.0 changelog says **Breaking Changes: None**. That is the intended SemVer classification. It is not a promise that every application has zero work: applications may need to update exact package versions, refresh snapshots for output bug fixes, or make code changes when they choose to adopt new opt-in features.
 

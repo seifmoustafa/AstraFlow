@@ -12,6 +12,7 @@ import type {
   ChangelogStats,
 } from './model';
 import {
+  classifyReleaseType,
   classifyReleaseProvenance,
   isDeprecatedQualifier,
   isUnreleasedQualifier,
@@ -24,9 +25,12 @@ export type {
   ChangelogStats,
   ReleaseLifecyclePolicy,
   ReleaseProvenanceStatus,
+  ReleaseType,
+  ReleaseTypeFacet,
   SemverVersion,
 } from './model';
 export {
+  classifyReleaseType,
   classifyReleaseProvenance,
   DEFAULT_MAX_FEATURED_CARDS,
   DEFAULT_RELEASE_LIFECYCLE_POLICY,
@@ -375,6 +379,7 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
 
     const provenance = classifyReleaseProvenance(version, rawQualifier, isNewestActive);
     const sections = parseSections(block.lines);
+    const releaseType = classifyReleaseType(version, sections);
 
     const breakingSection = sections.find(
       (section) => section.normalizedTitle === 'Breaking Changes'
@@ -419,13 +424,16 @@ function parseAllChangelogReleases(): ChangelogRelease[] {
       releaseDate: provenance.releaseDate,
       status: provenance.status,
       statusLabel: provenance.statusLabel,
+      releaseType: releaseType.type,
+      releaseTypeFacets: releaseType.facets,
+      releaseTypeLabel: releaseType.label,
       provenanceNote: provenance.provenanceNote,
       isPublished: provenance.isPublished,
       isUnreleased: provenance.isUnreleased,
       isDeprecated: provenance.isDeprecated,
       hasDeprecations,
       isBreaking,
-      headline: deriveHeadline(version, sections, provenance.statusLabel),
+      headline: deriveHeadline(version, sections, releaseType.label),
       highlightTags: extractHighlightTags(
         version,
         sections,
@@ -473,8 +481,13 @@ export function getChangelogStats(): ChangelogStats {
   return {
     totalReleases: releases.length,
     latestCount: releases.filter((release) => release.status === 'latest').length,
-    majorCount: releases.filter((release) => release.status === 'major').length,
-    featureCount: releases.filter((release) => release.status === 'feature').length,
+    majorCount: releases.filter((release) => release.releaseType === 'major').length,
+    featureCount: releases.filter((release) => release.releaseTypeFacets.includes('feature')).length,
+    bugFixCount: releases.filter((release) => release.releaseTypeFacets.includes('bugfix')).length,
+    improvementCount: releases.filter((release) => release.releaseTypeFacets.includes('improvement')).length,
+    securityCount: releases.filter((release) => release.releaseTypeFacets.includes('security')).length,
+    mixedCount: releases.filter((release) => release.releaseType === 'mixed').length,
+    maintenanceCount: releases.filter((release) => release.releaseType === 'maintenance').length,
     historicalCount: releases.filter((release) => release.status === 'historical').length,
     publishedCount: releases.filter((release) => release.isPublished).length,
     latestVersion: latestRelease?.version ?? LATEST_PUBLISHED_VERSION,

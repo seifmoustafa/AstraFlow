@@ -621,10 +621,12 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
       releases.find((r) => r.version === LATEST_PUBLISHED_VERSION) ??
       releases.find((r) => r.status === 'latest') ??
       releases[0];
-    const featureMeta = releases.find((r) => r.status === 'feature');
-    const majorMeta = releases.find((r) => r.status === 'major');
+    const featureMeta = releases.find((r) => r.releaseTypeFacets.includes('feature'));
+    const majorMeta = releases.find((r) => r.releaseType === 'major');
     const minorArchiveMeta = featureMeta
-      ? releases.find((r) => r.status === 'feature' && r.version !== featureMeta.version)
+      ? releases.find(
+          (r) => r.releaseTypeFacets.includes('feature') && r.version !== featureMeta.version,
+        )
       : undefined;
 
     await latestPill.click();
@@ -683,7 +685,14 @@ test.describe("AstraFlow Interactive Scenes, Keyboard, Reduced Motion & Responsi
 
       const article = page.locator(`article[id="${rel.anchorId}"]`);
       await expect(article).toBeVisible();
-      await expect(article).toContainText(rel.statusLabel);
+      if (rel.status === 'latest') {
+        await expect(article).toContainText(rel.statusLabel);
+        await expect(article).toContainText(
+          rel.releaseTypeLabel.replace(/ Release$/, ''),
+        );
+      } else {
+        await expect(article).toContainText(rel.releaseTypeLabel);
+      }
 
       const toggleBtn = article
         .locator(`button[aria-controls="${rel.anchorId}-detail"]`)

@@ -12,7 +12,7 @@ The package has no runtime dependencies. Install it in a test project with:
 dotnet add package AstraFlow.Assertions
 ```
 
-NuGet resolves the latest published package version. AstraFlow.Assertions 2.4.6 includes the 2.4.2 through 2.4.5 migration compatibility additions, plus formatted context for non-nullable inclusive comparisons and null/presence checks for dictionaries.
+NuGet resolves the latest published package version. AstraFlow.Assertions 2.4.7 includes the 2.4.2 through 2.4.6 migration compatibility additions, plus formatted context for non-nullable inclusive comparisons and null/presence checks for dictionaries.
 
 ## Start with `Should()`
 

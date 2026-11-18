@@ -1,6 +1,6 @@
 # Compatibility
 
-This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion. Version `2.4.6` is the latest published release. Verify NuGet availability for the exact package ID and version before upgrading.
+This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion. Version `2.4.7` is the latest published release. Verify NuGet availability for the exact package ID and version before upgrading.
 
 ## Current Support
 
@@ -114,7 +114,7 @@ Do not add a target framework to package metadata until all of these are true:
 
 ## Consumer Guidance
 
-Version `2.4.0` is the latest tagged release. NuGet package publication is a separate step, so verify the exact package ID and assets in the feed your project uses. Use the target framework matrix above to select compatible packages, then build and test the consuming solution.
+Version `2.4.7` is the latest published NuGet suite release, with `2.4.6` immediately before it. Package target-framework support still varies by package; use the matrix above to select compatible packages, then build and test the consuming solution.
 
 Use `AstraFlow.Mapper.EntityFrameworkCore` only from `net10.0` projects in this release.
 
