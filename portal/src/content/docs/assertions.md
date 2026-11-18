@@ -4,7 +4,7 @@
 
 ## Availability
 
-The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only. The 2.4.2 patch adds compile-tested migration compatibility APIs for common assertion patterns, 2.4.3 adds boolean equality, null/presence, whitespace, negative containment, and positive dictionary-key checks, and 2.4.4 adds formatted reasons across type, comparison, collection, dictionary, predicate, and exception assertions. The published 2.4.5 release adds formatted reasons to string prefixes and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality.
+The AstraFlow 2.4.0 release includes `AstraFlow.Assertions`. The package targets `netstandard2.0`, `net8.0`, `net9.0`, and `net10.0`; `DateOnly` and `TimeOnly` assertions are available on `net8.0`, `net9.0`, and `net10.0` only. The 2.4.2 patch adds compile-tested migration compatibility APIs for common assertion patterns, 2.4.3 adds boolean equality, null/presence, whitespace, negative containment, and positive dictionary-key checks, and 2.4.4 adds formatted reasons across type, comparison, collection, dictionary, predicate, and exception assertions. The published 2.4.5 release adds formatted reasons to string prefixes and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality. The published 2.4.6 release adds formatted context to non-nullable inclusive comparisons and null/presence checks for dictionaries.
 
 The package has no runtime dependencies. Install it in a test project with:
 
@@ -12,7 +12,7 @@ The package has no runtime dependencies. Install it in a test project with:
 dotnet add package AstraFlow.Assertions
 ```
 
-NuGet resolves the latest published package version. AstraFlow.Assertions 2.4.5 includes the 2.4.2 through 2.4.4 migration compatibility additions, plus formatted reason overloads for string prefixes, finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality.
+NuGet resolves the latest published package version. AstraFlow.Assertions 2.4.6 includes the 2.4.2 through 2.4.5 migration compatibility additions, plus formatted context for non-nullable inclusive comparisons and null/presence checks for dictionaries.
 
 ## Start with `Should()`
 
@@ -53,9 +53,9 @@ HTTP response checks use `HttpResponseMessage.Should()` for status codes and res
 
 ## Values, booleans, enums, and GUIDs
 
-The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, non-whitespace checks, negative containment, and positive dictionary-key checks. AstraFlow.Assertions 2.4.4 includes the additional reason overloads described above. The published 2.4.5 release adds the string, nullable, reference, and GUID reason overloads summarized above. The upcoming 2.4.6 patch adds formatted context to non-nullable `BeGreaterThanOrEqualTo` and null/presence checks for dictionaries; these additions are not in 2.4.5.
+The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, non-whitespace checks, negative containment, and positive dictionary-key checks. AstraFlow.Assertions 2.4.4 includes the additional reason overloads described above. The published 2.4.5 release adds the string, nullable, reference, and GUID reason overloads summarized above. The published 2.4.6 release adds formatted context to non-nullable `BeGreaterThanOrEqualTo` and null/presence checks for dictionaries.
 
-Object assertions include equality and inequality (`Be`, `NotBe`), null checks (`BeNull`, `NotBeNull`), reference identity (`BeSameAs`, `NotBeSameAs`), runtime type checks (`BeOfType<T>`, `BeAssignableTo<T>`), ranges and comparisons, and predicate checks (`Match`, `NotMatch`). The upcoming 2.4.6 patch adds formatted failure context to non-nullable `BeGreaterThanOrEqualTo`.
+Object assertions include equality and inequality (`Be`, `NotBe`), null checks (`BeNull`, `NotBeNull`), reference identity (`BeSameAs`, `NotBeSameAs`), runtime type checks (`BeOfType<T>`, `BeAssignableTo<T>`), ranges and comparisons, and predicate checks (`Match`, `NotMatch`). The published 2.4.6 release adds formatted failure context to non-nullable `BeGreaterThanOrEqualTo`.
 
 Common migration checks support formatted failure context on `BeTrue`, `BeFalse`, value/string `Be`, empty sequence/string/dictionary checks, and `NotThrowAsync`. Collection equivalency accepts both item lists and collection expressions, and `WithStrictOrdering()` makes ordering explicit. `GuidAssertions` supports `NotBe`; collection assertions include `NotEqual`, `NotBeOfType`, and `NotBeAssignableTo`; stream assertions include `BeNull` and `NotBeNull`.
 

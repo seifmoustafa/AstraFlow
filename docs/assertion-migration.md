@@ -1,6 +1,6 @@
 # Migrating from AwesomeAssertions
 
-`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2, 2.4.3, 2.4.4, and 2.4.5 compatibility patches; the upcoming 2.4.6 patch adds the remaining confirmed call shapes. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
+`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2 through 2.4.6 compatibility patches. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
 
 Install the package in the test project:
 
@@ -73,7 +73,7 @@ id.Should().NotBe(unexpectedGuid, "the {0} GUID must differ", "current");
 
 ## 2.4.6 migration coverage
 
-The published 2.4.5 package does not include these non-nullable and dictionary null-check call shapes. The upcoming 2.4.6 patch adds formatted context for non-nullable `BeGreaterThanOrEqualTo` and chainable null/presence checks on dictionary assertions:
+The published 2.4.6 release adds formatted context for non-nullable `BeGreaterThanOrEqualTo` and chainable null/presence checks on dictionary assertions:
 
 ```csharp
 int actual = 3;

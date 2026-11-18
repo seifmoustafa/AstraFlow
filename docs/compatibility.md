@@ -1,6 +1,6 @@
 # Compatibility
 
-This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion. Version `2.4.5` is the latest published release. Verify NuGet availability for the exact package ID and version before upgrading.
+This guide documents AstraFlow target framework support, compatibility goals, and the rules for future target expansion. Version `2.4.6` is the latest published release. Verify NuGet availability for the exact package ID and version before upgrading.
 
 ## Current Support
 
