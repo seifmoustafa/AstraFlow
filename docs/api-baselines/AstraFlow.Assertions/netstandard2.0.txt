@@ -154,6 +154,8 @@ M:AstraFlow.Assertions.DictionaryAssertions`2.BeEmpty
 M:AstraFlow.Assertions.DictionaryAssertions`2.BeEmpty(System.String,System.Object[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.BeEquivalentTo``1(``0,System.Action{AstraFlow.Assertions.EquivalencyOptions})
 M:AstraFlow.Assertions.DictionaryAssertions`2.BeEquivalentTo``1(``0,System.String,System.Object[])
+M:AstraFlow.Assertions.DictionaryAssertions`2.BeNull
+M:AstraFlow.Assertions.DictionaryAssertions`2.BeNull(System.String,System.Object[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.BeSameAs(System.Object)
 M:AstraFlow.Assertions.DictionaryAssertions`2.Contain(`0,`1)
 M:AstraFlow.Assertions.DictionaryAssertions`2.ContainKey(`0)
@@ -171,6 +173,8 @@ M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeEmpty
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeEmpty(System.String,System.Object[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeEquivalentTo``1(``0,System.Action{AstraFlow.Assertions.EquivalencyOptions})
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeEquivalentTo``1(``0,System.String,System.Object[])
+M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeNull
+M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeNull(System.String,System.Object[])
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotBeSameAs(System.Object)
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContain(System.Func{System.Collections.Generic.KeyValuePair{`0,`1},System.Boolean})
 M:AstraFlow.Assertions.DictionaryAssertions`2.NotContain(`0,`1)
@@ -384,6 +388,7 @@ M:AstraFlow.Assertions.ObjectAssertions`1.BeEquivalentTo``1(``0,System.String,Sy
 M:AstraFlow.Assertions.ObjectAssertions`1.BeGreaterThan(`0)
 M:AstraFlow.Assertions.ObjectAssertions`1.BeGreaterThan(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.ObjectAssertions`1.BeGreaterThanOrEqualTo(`0)
+M:AstraFlow.Assertions.ObjectAssertions`1.BeGreaterThanOrEqualTo(`0,System.String,System.Object[])
 M:AstraFlow.Assertions.ObjectAssertions`1.BeInRange(`0,`0)
 M:AstraFlow.Assertions.ObjectAssertions`1.BeLessThan(`0)
 M:AstraFlow.Assertions.ObjectAssertions`1.BeLessThan(`0,System.String,System.Object[])

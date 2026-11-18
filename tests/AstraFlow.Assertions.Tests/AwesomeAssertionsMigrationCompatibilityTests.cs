@@ -72,6 +72,12 @@ public sealed class AwesomeAssertionsMigrationCompatibilityTests
             () => quota.Should().BeGreaterThanOrEqualTo(4, "the {0} minimum must be met", "quota"));
         Assert.Contains("Because the quota minimum must be met.", comparisonFailure.Message);
 
+        int nonNullableQuota = 3;
+        nonNullableQuota.Should().BeGreaterThanOrEqualTo(3, "the {0} minimum must be met", "quota");
+        var nonNullableComparisonFailure = Assert.Throws<AstraFlowAssertionException>(
+            () => nonNullableQuota.Should().BeGreaterThanOrEqualTo(4, "the {0} minimum must be met", "quota"));
+        Assert.Contains("Because the quota minimum must be met.", nonNullableComparisonFailure.Message);
+
         object actualReference = new MigrationValue();
         object otherReference = new MigrationValue();
         actualReference.Should().BeSameAs(actualReference, "the {0} should retain identity", "result");
