@@ -35,6 +35,10 @@ astraflow inspect ./src
 | `scan` | `astraflow scan [path] [-o json\|markdown\|text]` | Scans repositories for AstraFlow conventions and migration opportunities |
 | `assertions analyze` | `astraflow assertions analyze [path] [--format text\|json]` | Read-only Roslyn migration review with optional project compile metadata; reports verified mappings and review-required candidates without editing source |
 
+## Migration candidate scan
+
+The `scan` command reviews C# source and project metadata for MediatR and AutoMapper migration candidates. The upcoming 2.4.7 patch parses namespace imports and qualified API type references, and reads explicit `PackageReference` and `PackageVersion` declarations from project, props, and targets XML. Comments, string literals, and unrelated assertion search text do not count as package usage. Scanning is read-only and does not evaluate MSBuild, restore packages, or execute project code; findings use stable item, source, and type ordering in JSON and Markdown.
+
 ## CI Pipeline & SARIF Integration
 
 Generate SARIF reports for GitHub Code Scanning or pull-request review artifacts, or track structural contract changes across releases with `diff`:

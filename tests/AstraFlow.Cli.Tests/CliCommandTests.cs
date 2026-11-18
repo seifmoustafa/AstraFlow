@@ -257,6 +257,97 @@ public sealed class CliCommandTests
     }
 
     [Fact]
+    public void Scan_IgnoresPackageMentionsInCommentsStringsAndNegativeAssertions()
+    {
+        using var temp = new TempDirectory();
+        var sourcePath = Path.Combine(temp.Path, "Sample.cs");
+        const string source = """
+            // AutoMapper and MediatR mentioned in comments are not package usage.
+            string[] packageNames = ["MediatR", "AutoMapper"];
+            packageNames.Should().NotContain(name => name.Contains("AutoMapper", StringComparison.OrdinalIgnoreCase));
+            packageNames.Should().NotContain(name => name.Contains("MediatR", StringComparison.OrdinalIgnoreCase));
+            """;
+        File.WriteAllText(sourcePath, source);
+
+        var output = Run("scan", temp.Path);
+
+        using var document = JsonDocument.Parse(output);
+        document.RootElement.GetProperty("status").GetString().Should().Be("ok");
+        document.RootElement.GetProperty("sections").GetArrayLength().Should().Be(0);
+        File.ReadAllText(sourcePath).Should().Be(source);
+    }
+
+    [Fact]
+    public void Scan_FindsFullyQualifiedMigrationApiTypes()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "Sample.cs"), """
+            namespace Sample;
+            public sealed class UsesLegacyApis
+            {
+                public global::MediatR.IRequestHandler<Request, Response> Handler { get; }
+                public global::AutoMapper.IMapper Mapper { get; }
+            }
+            """);
+
+        using var document = JsonDocument.Parse(Run("scan", temp.Path));
+        var itemTypes = document.RootElement.GetProperty("sections")[0].GetProperty("items")
+            .EnumerateArray()
+            .Select(item => item.GetProperty("type").GetString())
+            .ToArray();
+
+        itemTypes.Should().BeEquivalentTo("automapper", "mediatr");
+    }
+
+    [Fact]
+    public void Scan_FindsExactPackageReferencesInProjectsAndCentralProps()
+    {
+        using var temp = new TempDirectory();
+        File.WriteAllText(Path.Combine(temp.Path, "Sample.csproj"), """
+            <Project>
+              <!-- AutoMapper in a comment is not a package reference. -->
+              <PropertyGroup><Description>MediatR is mentioned as prose.</Description></PropertyGroup>
+              <ItemGroup>
+                <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
+                <PackageReference Include="MyMediatRHelper" Version="1.0.0" />
+              </ItemGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(temp.Path, "Directory.Packages.props"), """
+            <Project>
+              <ItemGroup>
+                <PackageVersion Include="AutoMapper" Version="15.0.0" />
+              </ItemGroup>
+            </Project>
+            """);
+
+        using var document = JsonDocument.Parse(Run("scan", temp.Path));
+        var items = document.RootElement.GetProperty("sections")[0].GetProperty("items")
+            .EnumerateArray()
+            .ToArray();
+
+        items.Should().HaveCount(2);
+        items.Select(item => item.GetProperty("type").GetString())
+            .Should()
+            .BeEquivalentTo("automapper", "mediatr");
+        items.Select(item => Path.GetFileName(item.GetProperty("source").GetString()))
+            .Should()
+            .BeEquivalentTo("Directory.Packages.props", "Sample.csproj");
+    }
+
+    [Fact]
+    public void Scan_OrdersJsonAndMarkdownFindingsDeterministically()
+    {
+        using var temp = new TempDirectory();
+        var firstDirectory = Directory.CreateDirectory(Path.Combine(temp.Path, "A")).FullName;
+        var secondDirectory = Directory.CreateDirectory(Path.Combine(temp.Path, "B")).FullName;
+        File.WriteAllText(Path.Combine(secondDirectory, "Sample.cs"), "using MediatR;");
+        File.WriteAllText(Path.Combine(firstDirectory, "Sample.cs"), "using AutoMapper;");
+
+        Run("scan", temp.Path).Should().Be(Run("scan", temp.Path));
+        Run("scan", temp.Path, "-o", "markdown").Should().Be(Run("scan", temp.Path, "-o", "markdown"));
+    }
+    [Fact]
     public void AssertionsAnalyze_ReportsUnknownCandidatesWithoutSourceTextOrEdits()
     {
         using var temp = new TempDirectory();

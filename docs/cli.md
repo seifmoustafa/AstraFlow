@@ -13,7 +13,7 @@ dotnet run --project src/AstraFlow.Cli -- inspect AstraFlow.slnx
 After packing and publishing, install it as a .NET tool:
 
 ```powershell
-dotnet tool install --global AstraFlow.Cli --version 2.3.0
+dotnet tool install --global AstraFlow.Cli --version 2.4.6
 ```
 
 ## Commands
@@ -28,6 +28,10 @@ astraflow graph [path] --style relational|pipeline|events --group-by module|feat
 astraflow scan [path] -o json|markdown|text
 astraflow assertions analyze [C# file|project|solution|directory] --format text|json
 ```
+
+## Migration candidate scan
+
+`scan` is a read-only migration aid. The upcoming 2.4.7 patch parses C# namespace imports and qualified API type references, and reads explicit `PackageReference` and `PackageVersion` declarations from project, props, and targets XML. Comments, string literals, and unrelated assertion search text do not count as package usage. The scanner does not evaluate MSBuild, run restore, or execute project code. Findings are sorted by item, source path, and type so JSON and Markdown report ordering stays stable.
 
 `assertions analyze` is a read-only migration aid in `2.4.0`. It accepts a `.cs` file, `.csproj`, `.sln`, `.slnx`, or directory and scans C# source without changing it. When a single-target `.csproj` is selected and restored `obj/project.assets.json` exists, the command may read package compile assets for Roslyn symbol binding. JSON output has a versioned schema with `schemaVersion`, `status`, `resolutionContext`, `filesAnalyzed`, and `findings`; each finding has a code, relative source path, one-based line and column, method name when known, classification, and safe suggestion. Text output presents the same findings. Neither output includes source expressions, literal values, or an absolute project path.
 

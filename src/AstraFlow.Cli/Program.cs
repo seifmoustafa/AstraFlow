@@ -1,6 +1,9 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Xml.Linq;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AstraFlow.Cli;
 
@@ -581,10 +584,16 @@ internal static class AstraFlowScanner
 
     public static IReadOnlyList<CliSection> ScanMigrationCandidates(string target)
     {
-        var files = EnumerateSourceFiles(target).Concat(EnumerateProjectFiles(target)).Distinct(StringComparer.Ordinal).ToArray();
+        var files = EnumerateSourceFiles(target)
+            .Concat(EnumerateProjectFiles(target))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(file => file, StringComparer.Ordinal)
+            .ToArray();
         var items = files
             .SelectMany(file => FindMigrationItems(file))
             .OrderBy(item => item.Id, StringComparer.Ordinal)
+            .ThenBy(item => item.Source, StringComparer.Ordinal)
+            .ThenBy(item => item.Type, StringComparer.Ordinal)
             .ToArray();
 
         return items.Length == 0 ? [] : [new CliSection("migration-candidates", items)];
@@ -613,15 +622,99 @@ internal static class AstraFlowScanner
 
     private static IEnumerable<CliItem> FindMigrationItems(string file)
     {
-        var text = File.ReadAllText(file);
+        if (Path.GetExtension(file).Equals(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            var syntaxRoot = CSharpSyntaxTree.ParseText(File.ReadAllText(file)).GetCompilationUnitRoot();
+            foreach (var rule in MigrationRules)
+            {
+                if (ReferencesMigrationNamespace(syntaxRoot, rule.Token))
+                {
+                    yield return new CliItem(Path.GetFileName(file), rule.Type, file, rule.Message);
+                }
+            }
 
+            yield break;
+        }
+
+        var packageIds = ReadProjectPackageIds(file);
         foreach (var rule in MigrationRules)
         {
-            if (text.Contains(rule.Token, StringComparison.OrdinalIgnoreCase))
+            if (packageIds.Any(packageId => IsMigrationPackage(packageId, rule.Token)))
             {
                 yield return new CliItem(Path.GetFileName(file), rule.Type, file, rule.Message);
             }
         }
+    }
+
+    private static bool ReferencesMigrationNamespace(CompilationUnitSyntax syntaxRoot, string namespaceRoot)
+    {
+        return syntaxRoot.DescendantNodes()
+            .OfType<UsingDirectiveSyntax>()
+            .Any(usingDirective => usingDirective.Name is { } usingName
+                && string.Equals(
+                    GetRootIdentifier(usingName),
+                    namespaceRoot,
+                    StringComparison.Ordinal))
+            || syntaxRoot.DescendantNodes()
+                .OfType<NameSyntax>()
+                .Where(name => name is QualifiedNameSyntax or AliasQualifiedNameSyntax)
+                .Any(name => !IsNamespaceDeclarationName(name)
+                    && string.Equals(GetRootIdentifier(name), namespaceRoot, StringComparison.Ordinal));
+    }
+
+    private static bool IsNamespaceDeclarationName(NameSyntax name)
+    {
+        var declaration = name.AncestorsAndSelf().OfType<BaseNamespaceDeclarationSyntax>().FirstOrDefault();
+        if (declaration is null)
+        {
+            return false;
+        }
+
+        var declarationSpan = declaration.Name.Span;
+        var nameSpan = name.Span;
+        return declarationSpan.Start <= nameSpan.Start && declarationSpan.End >= nameSpan.End;
+    }
+
+    private static string? GetRootIdentifier(NameSyntax name)
+    {
+        return name switch
+        {
+            QualifiedNameSyntax qualified => GetRootIdentifier(qualified.Left),
+            AliasQualifiedNameSyntax alias when alias.Alias.Identifier.ValueText == "global" =>
+                GetRootIdentifier(alias.Name),
+            AliasQualifiedNameSyntax => null,
+            IdentifierNameSyntax identifier => identifier.Identifier.ValueText,
+            GenericNameSyntax generic => generic.Identifier.ValueText,
+            _ => null
+        };
+    }
+
+    private static IReadOnlyList<string> ReadProjectPackageIds(string file)
+    {
+        try
+        {
+            return XDocument.Load(file)
+                .Descendants()
+                .Where(element => element.Name.LocalName is "PackageReference" or "PackageVersion")
+                .SelectMany(element => new[]
+                {
+                    element.Attribute("Include")?.Value,
+                    element.Attribute("Update")?.Value
+                })
+                .Where(packageId => !string.IsNullOrWhiteSpace(packageId))
+                .Select(packageId => packageId!)
+                .ToArray();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or System.Xml.XmlException)
+        {
+            return [];
+        }
+    }
+
+    private static bool IsMigrationPackage(string packageId, string packageRoot)
+    {
+        return packageId.Equals(packageRoot, StringComparison.OrdinalIgnoreCase)
+            || packageId.StartsWith($"{packageRoot}.", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IEnumerable<string> EnumerateSourceFiles(string target)
@@ -631,9 +724,10 @@ internal static class AstraFlowScanner
 
     private static IEnumerable<string> EnumerateProjectFiles(string target)
     {
-        return EnumerateFiles(target, "*.csproj");
+        return EnumerateFiles(target, "*.csproj")
+            .Concat(EnumerateFiles(target, "*.props"))
+            .Concat(EnumerateFiles(target, "*.targets"));
     }
-
     private static IEnumerable<string> EnumerateFiles(string target, string pattern)
     {
         if (File.Exists(target))
