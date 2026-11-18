@@ -18,7 +18,7 @@ All notable AstraFlow changes are tracked here.
 
 ### Fixed
 
-- None.
+- Align bundled package installation and project-reference examples with the current AstraFlow family version; verify version pins in every packed package.
 
 ### Deprecated
 

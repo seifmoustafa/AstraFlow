@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 2.3.0
+dotnet add package AstraFlow.Diagnostics --version 2.4.7
 ```
 
 The package references `AstraFlow.Mediator` and `AstraFlow.Mapper` so it can understand the core public contracts.

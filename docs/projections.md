@@ -5,7 +5,7 @@ AstraFlow projections are explicit LINQ expressions used to shape query results 
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 2.3.0
+dotnet add package AstraFlow.Mapper --version 2.4.7
 ```
 
 ## Basic Projection

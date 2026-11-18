@@ -147,13 +147,13 @@ The `AstraFlow` convenience package continues to cover mediator and mapper. It d
 For example, a Central Package Management consumer would update the version of a package it already uses:
 
 ```xml
-<PackageVersion Include="AstraFlow" Version="2.4.0" />
+<PackageVersion Include="AstraFlow" Version="2.4.7" />
 ```
 
 The assertion dependency is a separate test-project entry, added only after publication:
 
 ```xml
-<PackageReference Include="AstraFlow.Assertions" Version="2.4.0" />
+<PackageReference Include="AstraFlow.Assertions" Version="2.4.7" />
 ```
 
 The planned release does not require a database migration, a new test runner, or a framework retarget solely to keep using existing `2.3.0` APIs. See [Assertions](assertions.md), [Package Selection](package-selection.md), [Generators](generators.md), and the [v2.4 release work plan](plans/v2.4-release.md) for the current scope and limits.
