@@ -37,6 +37,38 @@ public sealed class DictionaryAssertions<TKey, TValue>
     /// <summary>Returns this assertion object for an additional related check.</summary>
     public DictionaryAssertions<TKey, TValue> And => this;
 
+    /// <summary>Asserts that the dictionary subject is null.</summary>
+    public DictionaryAssertions<TKey, TValue> BeNull() => BeNull(null);
+
+    /// <summary>Asserts that the dictionary subject is null and adds formatted failure context.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public DictionaryAssertions<TKey, TValue> BeNull(string? because, params object?[] becauseArgs)
+    {
+        if (_actual is not null)
+        {
+            AssertionFailure.FailWithBecause("Expected a null dictionary, but found a non-null dictionary.", because, becauseArgs);
+        }
+
+        return this;
+    }
+
+    /// <summary>Asserts that the dictionary subject is not null.</summary>
+    public DictionaryAssertions<TKey, TValue> NotBeNull() => NotBeNull(null);
+
+    /// <summary>Asserts that the dictionary subject is not null and adds formatted failure context.</summary>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public DictionaryAssertions<TKey, TValue> NotBeNull(string? because, params object?[] becauseArgs)
+    {
+        if (_actual is null)
+        {
+            AssertionFailure.FailWithBecause("Expected a non-null dictionary, but found null.", because, becauseArgs);
+        }
+
+        return this;
+    }
+
     /// <summary>Gets the value for the key most recently checked by <see cref="ContainKey(TKey)"/>.</summary>
     public TValue WhoseValue
     {

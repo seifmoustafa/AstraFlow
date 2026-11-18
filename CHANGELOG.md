@@ -10,7 +10,8 @@ All notable AstraFlow changes are tracked here.
 
 ### Added
 
-- None.
+- Add formatted failure context to non-nullable `BeGreaterThanOrEqualTo` comparisons.
+- Add null and non-null checks to dictionary assertion chains.
 
 ### Changed
 
@@ -164,7 +165,8 @@ All notable AstraFlow changes are tracked here.
 
 ### Added
 
-- None.
+- Add formatted failure context to non-nullable `BeGreaterThanOrEqualTo` comparisons.
+- Add null and non-null checks to dictionary assertion chains.
 
 ### Changed
 
