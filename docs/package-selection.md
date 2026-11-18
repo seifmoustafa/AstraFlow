@@ -40,7 +40,7 @@ Install this package in projects that only need shared mediator contract types:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Contracts --version 2.3.0
+dotnet add package AstraFlow.Contracts --version 2.4.7
 ```
 
 Use this in shared contracts, client contract assemblies, Blazor/shared projects, and modular boundaries that should not reference the mediator runtime.
@@ -64,7 +64,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mediator --version 2.3.0
+dotnet add package AstraFlow.Mediator --version 2.4.7
 ```
 
 Use this in application layers, worker services, APIs, and modular monolith modules that own request handling.
@@ -84,7 +84,7 @@ Install this package when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper --version 2.3.0
+dotnet add package AstraFlow.Mapper --version 2.4.7
 ```
 
 Use this in application or contract-mapping layers that need auditable DTO conversion.
@@ -104,7 +104,7 @@ Install this package when you need opt-in convention mapping for simple DTOs:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.Conventions --version 2.3.0
+dotnet add package AstraFlow.Mapper.Conventions --version 2.4.7
 ```
 
 Use this with `AstraFlow.Mapper`. Convention mapping is not enabled by the meta package and is never enabled by default.
@@ -116,7 +116,7 @@ Install this package only when you need EF Core relational projection validation
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 2.3.0
+dotnet add package AstraFlow.Mapper.EntityFrameworkCore --version 2.4.7
 ```
 
 This package references EF Core. Keep it out of projects that do not use EF Core.
@@ -128,7 +128,7 @@ Install this package when you want registration and validation reports.
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Diagnostics --version 2.3.0
+dotnet add package AstraFlow.Diagnostics --version 2.4.7
 ```
 
 Register diagnostics after mediator and mapper registrations so the reporter can inspect those service descriptors.
@@ -144,7 +144,7 @@ Install this package when you need shared security policy primitives:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Security --version 2.3.0
+dotnet add package AstraFlow.Security --version 2.4.7
 ```
 
 Use this package in host, tooling, or integration code that needs AstraFlow's shared secure DTO governance policy without referencing mediator or mapper runtime packages.
@@ -165,7 +165,7 @@ Install this package in test projects when you need:
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Testing --version 2.3.0
+dotnet add package AstraFlow.Testing --version 2.4.7
 ```
 
 The package is test-framework-neutral. It does not depend on xUnit, NUnit, MSTest, or a mocking framework.
@@ -189,13 +189,13 @@ Install this package when you want build-time AstraFlow diagnostics.
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Analyzers --version 2.3.0
+dotnet add package AstraFlow.Analyzers --version 2.4.7
 ```
 
 For project files, prefer a private analyzer reference:
 
 ```xml
-<PackageReference Include="AstraFlow.Analyzers" Version="2.0.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Analyzers" Version="2.4.7" PrivateAssets="all" />
 ```
 
 The analyzer package includes analyzer infrastructure, stable rule IDs, severity metadata, suppression guidance, tests, mediator warnings, mapper warnings, and projection warnings. Mapper and projection rules cover undeclared mapping rules, reverse sensitive writes, raw public ID projection shapes, mapper calls inside query expressions, custom projection methods, and complex projection captures.
@@ -207,13 +207,13 @@ Install this package when you want compile-time generated mediator component reg
 Example:
 
 ```powershell
-dotnet add package AstraFlow.Generators --version 2.3.0
+dotnet add package AstraFlow.Generators --version 2.4.7
 ```
 
 For project files, prefer a private generator reference:
 
 ```xml
-<PackageReference Include="AstraFlow.Generators" Version="2.0.0" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Generators" Version="2.4.7" PrivateAssets="all" />
 ```
 
 `2.0.0` includes `AddAstraFlowGeneratedMediatorRegistrations` for closed mediator components and adds `AddAstraFlowGeneratedMapperMetadata` plus `GetAstraFlowGeneratedMapperMetadata` for generated mapping rule and projection metadata. Runtime assembly scanning remains available through `AddAstraFlowMediator(...)` and `AddAstraFlowMapper(...)` and should stay as the fallback path.
@@ -225,7 +225,7 @@ Install this package as a .NET tool when you want command-line inspection, repor
 Example:
 
 ```powershell
-dotnet tool install --global AstraFlow.Cli --version 2.3.0
+dotnet tool install --global AstraFlow.Cli --version 2.4.7
 ```
 
 `2.0.0` includes:
@@ -250,7 +250,7 @@ Install this package in ASP.NET Core applications that want AstraFlow minimal AP
 Example:
 
 ```powershell
-dotnet add package AstraFlow.AspNetCore --version 2.3.0
+dotnet add package AstraFlow.AspNetCore --version 2.4.7
 ```
 
 Use this at the web application boundary. Core/domain projects should not reference it.
@@ -262,7 +262,7 @@ Install this package when you want FluentValidation validators to run through As
 Example:
 
 ```powershell
-dotnet add package AstraFlow.FluentValidation --version 2.3.0
+dotnet add package AstraFlow.FluentValidation --version 2.4.7
 ```
 
 Register validators separately as `IValidator<TRequest>`. The package provides the pipeline behavior and validation diagnostics, not automatic assembly scanning.
@@ -274,7 +274,7 @@ Install this package when you want opt-in AstraFlow tracing and metrics without 
 Example:
 
 ```powershell
-dotnet add package AstraFlow.OpenTelemetry --version 2.3.0
+dotnet add package AstraFlow.OpenTelemetry --version 2.4.7
 ```
 
 Register it after mediator registration:
@@ -293,7 +293,7 @@ Install the meta package when a project intentionally uses mediator and mapper t
 Example:
 
 ```powershell
-dotnet add package AstraFlow --version 2.3.0
+dotnet add package AstraFlow --version 2.4.7
 ```
 
 The meta package is convenient, but focused packages keep dependency intent clearer in shared libraries and smaller projects.

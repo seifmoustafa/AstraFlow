@@ -103,7 +103,7 @@ dotnet add package AstraFlow.Analyzers
 In your `.csproj`, keep the analyzer dependency build-time only:
 
 ```xml
-<PackageReference Include="AstraFlow.Analyzers" Version="*" PrivateAssets="all" />
+<PackageReference Include="AstraFlow.Analyzers" Version="2.4.7" PrivateAssets="all" />
 ```
 
 ## Next Steps

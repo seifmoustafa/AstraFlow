@@ -5,7 +5,7 @@
 ## Install
 
 ```powershell
-dotnet add package AstraFlow.AspNetCore --version 2.3.0
+dotnet add package AstraFlow.AspNetCore --version 2.4.7
 ```
 
 Register AstraFlow, diagnostics, and ASP.NET Core integration in the web app:
