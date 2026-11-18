@@ -178,7 +178,14 @@ public sealed class StringAssertions
     }
 
     /// <summary>Asserts that the string matches a regular expression within the specified timeout.</summary>
-    public void MatchRegex(string pattern, TimeSpan timeout)
+    public void MatchRegex(string pattern, TimeSpan timeout) => MatchRegex(pattern, timeout, null);
+
+    /// <summary>Asserts that the string matches a regular expression within the specified timeout and adds formatted failure context.</summary>
+    /// <param name="pattern">The regular expression to match.</param>
+    /// <param name="timeout">The positive, finite maximum matching duration.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void MatchRegex(string pattern, TimeSpan timeout, string? because, params object?[] becauseArgs)
     {
         if (timeout <= TimeSpan.Zero || timeout == Regex.InfiniteMatchTimeout)
         {
@@ -213,12 +220,12 @@ public sealed class StringAssertions
         {
             if (_actual is null || !regex.IsMatch(_actual))
             {
-                AssertionFailure.Fail("Expected string to match the regular expression.");
+                AssertionFailure.FailWithBecause("Expected string to match the regular expression.", because, becauseArgs);
             }
         }
         catch (RegexMatchTimeoutException)
         {
-            AssertionFailure.Fail("Regular expression matching exceeded its timeout.");
+            AssertionFailure.FailWithBecause("Regular expression matching exceeded its timeout.", because, becauseArgs);
         }
     }
 
@@ -381,11 +388,17 @@ public sealed class StringAssertions
     }
 
     /// <summary>Asserts that the string starts with the specified value.</summary>
-    public void StartWith(string expected)
+    public void StartWith(string expected) => StartWith(expected, null);
+
+    /// <summary>Asserts that the string starts with the specified value and adds formatted failure context.</summary>
+    /// <param name="expected">The prefix the string must start with.</param>
+    /// <param name="because">Why the assertion is expected to pass. Composite format items are supported.</param>
+    /// <param name="becauseArgs">Values used to format <paramref name="because"/>.</param>
+    public void StartWith(string expected, string? because, params object?[] becauseArgs)
     {
         if (_actual is null || expected is null || !_actual.StartsWith(expected, StringComparison.Ordinal))
         {
-            AssertionFailure.Fail($"Expected string to start with a value of length {expected?.Length.ToString() ?? "<null>"}; actual string length was {_actual?.Length.ToString() ?? "<null>"}.");
+            AssertionFailure.FailWithBecause($"Expected string to start with a value of length {expected?.Length.ToString() ?? "<null>"}; actual string length was {_actual?.Length.ToString() ?? "<null>"}.", because, becauseArgs);
         }
     }
 

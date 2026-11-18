@@ -1,6 +1,6 @@
 # Migrating from AwesomeAssertions
 
-`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2, 2.4.3, and 2.4.4 compatibility patches. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
+`AstraFlow.Assertions` is not a drop-in replacement for every AwesomeAssertions API. Use the patterns below for common migration calls covered by the AstraFlow 2.4.2, 2.4.3, 2.4.4, and 2.4.5 compatibility patches. The examples are compile-tested in `AwesomeAssertionsMigrationCompatibilityTests`.
 
 Install the package in the test project:
 
@@ -50,6 +50,25 @@ text.Should().NotContainEquivalentOf("private-marker", "the {0} must be omitted"
 These APIs are available in AstraFlow.Assertions 2.4.4. The negative string containment assertion compares ordinally while ignoring case, and failure messages omit the compared values.
 
 For an `IEnumerable<string>`, `Contain(expected, because, args)` overlaps with the existing multiple-item `Contain(params T[])` overload. Cast string formatting arguments to `object` so overload resolution selects the context overload. To assert several expected strings, pass them as one array with `Contain(new[] { first, second })`.
+
+## 2.4.5 migration coverage
+
+The 2.4.5 release adds formatted reasons to these remaining reported call shapes while keeping regex evaluation bounded and nullable equality predictable:
+
+```csharp
+name.Should().StartWith("api-", "the {0} prefix is required", "route");
+value.Should().MatchRegex("^api-", TimeSpan.FromSeconds(1), "the {0} pattern must match", "route");
+
+decimal? actualNullable = null;
+decimal? expectedNullable = null;
+actualNullable.Should().Be(expectedNullable, "the {0} nullable values must match", "amount");
+actual.Should().BeGreaterThanOrEqualTo(2, "the {0} minimum applies", "value");
+
+service.Should().BeSameAs(expectedService, "the {0} instance is reused", "registered");
+id.Should().NotBe(unexpectedGuid, "the {0} GUID must differ", "current");
+```
+
+`Be(T?)` compares nullable values with `EqualityComparer<T?>.Default`, so two null values match. `BeGreaterThanOrEqualTo` still fails for a null subject. `MatchRegex` requires a positive finite timeout even when a formatted reason is supplied.
 
 ## Typed values after type checks
 

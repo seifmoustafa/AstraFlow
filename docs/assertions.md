@@ -6,9 +6,9 @@
 dotnet add package AstraFlow.Assertions
 ```
 
-The 2.4.2, 2.4.3, and 2.4.4 patches add the migration compatibility APIs described in [the migration guide](assertion-migration.md). Consumers who pin versions should use the exact version available on NuGet.org.
+The released 2.4.2, 2.4.3, 2.4.4, and 2.4.5 patches add migration compatibility APIs described in [the migration guide](assertion-migration.md). The 2.4.5 release adds formatted reasons to string prefix and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality. Consumers who pin versions should use the exact version available on NuGet.org.
 
-The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, whitespace checks, negative containment, and positive dictionary-key checks. The 2.4.4 release adds reason overloads for type identity, numeric comparisons, collection and dictionary count/containment/prefix/single-item checks, dictionary key exclusion, predicate matching, and sync/async exception assertions. It also adds case-insensitive string `NotContainEquivalentOf`.
+The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, whitespace checks, negative containment, and positive dictionary-key checks. The published 2.4.4 release adds reason overloads for type identity, numeric comparisons, collection and dictionary count/containment/prefix/single-item checks, dictionary key exclusion, predicate matching, and sync/async exception assertions. It also adds case-insensitive string `NotContainEquivalentOf`. The published 2.4.5 release adds formatted reasons to `StartWith`, finite-timeout `MatchRegex`, nullable `Be(T?)` and `BeGreaterThanOrEqualTo`, `BeSameAs`, and GUID `NotBe`.
 
 The shipping project has no `PackageReference` dependencies. Test-runner packages stay in the consumer's test project.
 
@@ -159,7 +159,7 @@ Invalid expected enum values and negative depths are argument errors. Null reade
 
 ## Nullable values
 
-Calling `Should()` on `T?` creates `NullableValueAssertions<T>` and keeps the underlying type. `BeNull`, `NotBeNull`, `HaveValue`, and `NotHaveValue` check presence; `Which` returns a present value. Equality, comparison, inclusive range, and one-of checks operate on the underlying value. Checks that need a value fail safely when the subject is null. `NotBeOneOf` succeeds for null because null cannot equal any supplied non-nullable `T` value. Nullable GUID values also support `BeEmpty` and `NotBeEmpty`.
+Calling `Should()` on `T?` creates `NullableValueAssertions<T>` and keeps the underlying type. `BeNull`, `NotBeNull`, `HaveValue`, and `NotHaveValue` check presence; `Which` returns a present value. Equality, comparison, inclusive range, and one-of checks operate on the underlying value. Nullable-to-nullable `Be(T?)` uses `EqualityComparer<T?>.Default`, so null equals null. Checks that need a present value fail safely when the subject is null. `NotBeOneOf` succeeds for null because null cannot equal any supplied non-nullable `T` value. Nullable GUID values also support `BeEmpty` and `NotBeEmpty`.
 
 Nullable numeric values also support the matching sign checks for standard integer and floating-point types plus `decimal`, inclusive absolute approximation for `float`, `double`, and `decimal`, and NaN/finite classification for `float` and `double`. Nullable enums support defined-member and flag checks. Nullable `DateTime`, `DateTimeOffset`, and `TimeSpan` support the corresponding temporal ordering, precision, kind/offset, and duration-sign assertions. Nullable `DateOnly` and `TimeOnly` add the same date/clock operations on `net8.0` and later. A null numeric, temporal, or enum subject fails these value checks; assert nullability separately when null is expected. Floating-point NaN is neither positive nor negative and is not finite.
 
@@ -223,7 +223,7 @@ On `net8.0`, `net9.0`, and `net10.0`, `DateOnly` and `TimeOnly` also support `Be
 
 ## String and predicate checks
 
-String matching and negative prefix/suffix checks use ordinal, case-sensitive rules. `Match` treats `*` as any number of characters and `?` as one character; both may match line breaks, and the pattern must cover the whole string. Empty wildcard patterns are rejected. `MatchRegex` uses .NET regular-expression search semantics, so it can match a substring unless the pattern is anchored. It requires a positive timeout and rejects an empty pattern. Invalid patterns throw a safe `ArgumentException`; a matching timeout throws `AstraFlowAssertionException`. Neither failure includes the pattern or subject. `HaveLength` accepts zero and rejects negative lengths as an argument error.
+String matching and negative prefix/suffix checks use ordinal, case-sensitive rules. In 2.4.5, string `StartWith` assertions accept formatted failure context. `Match` treats `*` as any number of characters and `?` as one character; both may match line breaks, and the pattern must cover the whole string. Empty wildcard patterns are rejected. `MatchRegex` uses .NET regular-expression search semantics, so it can match a substring unless the pattern is anchored. It requires a positive finite timeout and rejects an empty pattern; the 2.4.5 reason overload preserves this bound. Invalid patterns throw a safe `ArgumentException`; a matching timeout throws `AstraFlowAssertionException`. Neither failure includes the pattern or subject. `HaveLength` accepts zero and rejects negative lengths as an argument error.
 
 `BeEquivalentTo` requires an explicit `StringComparison`, so comparison behavior is never selected implicitly. `NotBeEmpty` fails for both null and empty strings. Negative prefix and suffix checks reject null search values. Object `Match` and `NotMatch` invoke the supplied predicate once; a null predicate is an argument error and exceptions thrown by the predicate propagate to the caller. These predicate failures omit the subject value.
 
