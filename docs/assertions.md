@@ -6,11 +6,11 @@
 dotnet add package AstraFlow.Assertions
 ```
 
-The released 2.4.2, 2.4.3, 2.4.4, and 2.4.5 patches add migration compatibility APIs described in [the migration guide](assertion-migration.md). The 2.4.5 release adds formatted reasons to string prefix and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality. Consumers who pin versions should use the exact version available on NuGet.org.
+The released 2.4.2, 2.4.3, 2.4.4, and 2.4.5 patches add migration compatibility APIs; the upcoming 2.4.6 patch adds the remaining confirmed call shapes described in [the migration guide](assertion-migration.md). The 2.4.5 release adds formatted reasons to string prefix and finite-timeout regex checks, nullable equality and inclusive comparisons, reference identity, and GUID inequality. Consumers who pin versions should use the exact version available on NuGet.org.
 
 The 2.4.3 patch extends formatted failure context to Boolean equality, null/presence checks, whitespace checks, negative containment, and positive dictionary-key checks. The published 2.4.4 release adds reason overloads for type identity, numeric comparisons, collection and dictionary count/containment/prefix/single-item checks, dictionary key exclusion, predicate matching, and sync/async exception assertions. It also adds case-insensitive string `NotContainEquivalentOf`. The published 2.4.5 release adds formatted reasons to `StartWith`, finite-timeout `MatchRegex`, nullable `Be(T?)` and `BeGreaterThanOrEqualTo`, `BeSameAs`, and GUID `NotBe`.
 
-The next 2.4.x patch adds formatted failure context to non-nullable `BeGreaterThanOrEqualTo` and chainable `BeNull` / `NotBeNull` checks for dictionary assertions. These APIs are not part of the published 2.4.5 package.
+The upcoming 2.4.6 patch adds formatted failure context to non-nullable `BeGreaterThanOrEqualTo` and chainable `BeNull` / `NotBeNull` checks for dictionary assertions. These APIs are not part of the published 2.4.5 package.
 
 The shipping project has no `PackageReference` dependencies. Test-runner packages stay in the consumer's test project.
 
